@@ -1,0 +1,10 @@
+[objects]
+src/snes/main.obj
+build/gen_audio/soundbank.obj
+hdr.obj
+src/snes/boot64.obj
+src/snes/fight_bridge.obj
+/run/media/fabio/Dados/Fabio/pvsneslib-sdk-4.6/pvsneslib/lib/HiROM_FastROM/crt0_snes.obj
+/run/media/fabio/Dados/Fabio/pvsneslib-sdk-4.6/pvsneslib/lib/HiROM_FastROM/libc.obj
+/run/media/fabio/Dados/Fabio/pvsneslib-sdk-4.6/pvsneslib/lib/HiROM_FastROM/libm.obj
+/run/media/fabio/Dados/Fabio/pvsneslib-sdk-4.6/pvsneslib/lib/HiROM_FastROM/libtcc.obj

@@ -1,0 +1,35 @@
+;=====================================================================
+;  DEF File For "Vice"                                  Made By M.M.R.
+;                                       Ver. 1.0           2002.Apr.14
+;=====================================================================
+; Player Information
+[Info]
+name    = "Vice"
+displayname = "Vice"
+versiondate = 04,14,2002
+mugenversion = 04,14,2001
+author = "M.M.R."
+
+; Files for the Player
+[Files]
+cmd     = Vice.cmd
+cns     = Vice-N.cns    ;Constants
+st      = Vice-N.cns    ;States (Normal)
+st1     = Vice-S.cns    ;States (Special)
+st2     = Vice-H.cns    ;States (Hyper)
+stcommon = common1.cns    ;Common states (in data/)
+sprite  = Vice.sff      ;Sprite
+anim    = Vice.air      ;Animation
+sound   = Vice.snd      ;Sound
+pal1    = Vice01.act    ;Palettes
+pal2    = Vice02.act
+pal3    = Vice03.act
+pal4    = Vice04.act
+pal5    = Vice05.act
+pal6    = Vice06.act
+pal7    = Vice07.act
+pal8    = Vice08.act
+pal9    = Vice09.act
+pal10   = Vice10.act
+pal11   = Vice11.act
+pal12   = Vice12.act

@@ -1,0 +1,3406 @@
+;---------------------------------------------------------------------------
+; ここからは超必殺技のステート
+;---------------------------------------------------------------------------
+; ウルトラアルゼンチンバックブリーカー
+
+[Statedef 3000]
+type     = S
+movetype = A
+physics  = S
+juggle   = 0
+velset   = 0,0
+anim     = 3000
+ctrl     = 0
+sprpriority = 2
+poweradd = 0
+facep2 = 1
+
+[State 3000, パワーゲージ消費]
+type = PowerAdd
+trigger1 = var(40) = 0
+trigger1 = time = 0
+value = -1000
+
+[State 3000, パワーMAX解除]
+type = VarSet
+trigger1 = time = 0
+v = 40
+value = 0
+
+[State 3000, 無敵]
+type = NotHitBy
+trigger1 = AnimElemTime(1) >= 0 && AnimElemTime(3) < 0
+value = SCA
+
+[State 3000, 残像]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 3000, 超必殺技発動の時間停止]
+type = SuperPause
+trigger1 = AnimElem = 2
+trigger1 = var(11) := 1
+anim = -1
+time = 28
+movetime = 28
+darken = 0
+p2defmul = 1.0
+
+[State 3000, 超必殺技発動のエフェクト表示]
+type = Helper
+trigger1 = AnimElem = 2
+name = "DM"
+stateno = 7000
+id = 7000
+pos = 14,-100
+postype = p1
+helpertype = normal
+ownpal = 1
+keyctrl = 0
+size.xscale = 1
+size.yscale = 1
+persistent = 0
+ignorehitpause = 1
+supermovetime = 999
+pausemovetime = 999
+
+[State 3000, AttackDist]
+type = AttackDist
+trigger1 = 1
+value = 0
+
+[State 3000, ヒット定義（投げ用）]
+type = HitDef
+triggerall = var(17) = 0 || p2movetype = H
+triggerall = var(18) != 2
+triggerall = p2stateNo != [150,155]
+trigger1 = AnimElem = 1
+trigger1 = p2bodydist X <= 47
+attr = S, HT
+hitflag = M
+priority = 1, Miss
+sparkno = -1
+p1sprpriority = 1
+p2sprpriority = 0
+p1facing = 1
+p2facing = 1
+p1stateno = 3010
+;p2stateno = 3020
+guard.dist = 0
+fall = 1
+fall.recover = 0
+fall.yvelocity = -3.5
+numhits = 0
+
+[State 3000, ステート変更]
+type = ChangeState
+trigger1 = animtime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; ウルトラアルゼンチンバックブリーカー　投げ
+
+[Statedef 3010]
+type     = S
+movetype = A
+physics  = N
+anim     = 3010
+sprpriority = 4
+
+[State 3010, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3020
+
+[State 3010, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3010, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3010, 超必殺技発動のエフェクト表示]
+type = Helper
+trigger1 = AnimElem = 1
+name = "DM"
+stateno = 7000
+id = 7000
+pos = 14,-100
+postype = p1
+helpertype = normal
+ownpal = 1
+keyctrl = 0
+size.xscale = 1
+size.yscale = 1
+persistent = 0
+ignorehitpause = 1
+supermovetime = 999
+pausemovetime = 999
+
+[State 3010, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 3
+anim = 6021
+postype = P1
+pos = 48, -56
+sprpriority = 0
+ownpal = 1
+
+[State 3010, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 2
+value = s10,23
+channel = 0
+
+[State 3010, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = s1,6
+
+[State 3010, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 5
+value = s0,4
+
+[State 3010, SprPriority]
+type = SprPriority
+trigger1 = AnimElem = 5
+value = -1
+
+[State 3010, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(1) >= 0 && AnimElemtime(3) < 0
+pos = 40, 0
+
+[State 3010, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(3) >= 0 && AnimElemtime(4) < 0
+pos = 32, 0
+
+[State 3010, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(4) >= 0 && AnimElemtime(5) < 0
+pos = 36,-88
+
+[State 3010, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(5) >= 0 && AnimElemtime(6) < 0
+pos = 20,-112
+
+[State 3010, TargetBind]
+type = TargetBind
+trigger1 = AnimElemtime(6) = 0
+pos = 8,-168
+
+[State 3010, SprPriority]
+type = SprPriority
+trigger1 = AnimElem = 8
+value = 2
+
+[State 3010, ChangeState]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3011
+
+[Statedef 3011]
+type     = S
+movetype = A
+physics  = N
+anim     = 3011
+sprpriority = -2
+
+[State 3011, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3021
+
+[State 3011, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3011, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3011, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s6,1
+
+[State 3011, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s12,2
+
+[State 3011, EnvShake]
+type = EnvShake
+trigger1 = AnimElem = 1
+time = 12
+ampl = -6
+freq = 96
+phase = 96
+
+[State 3011, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6005
+postype = P1
+pos = 0, -85
+sprpriority = 5
+ownpal = 1
+
+[State 3011, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6040
+postype = P1
+pos = 4, 0
+sprpriority = -5
+ownpal = 1
+
+[State 3011, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(1) >= 0 && AnimElemtime(2) < 0
+pos = 0,-86
+
+[State 3011, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(2) >= 0
+pos = 0,-100
+
+[State 3011, DM/SDM Flash]
+type = EnvColor
+trigger1 = AnimElem = 1
+time = 1
+value = 255,255,255
+under = 1
+
+[State 3011, TargetLifeAdd]
+type = TargetLifeAdd
+trigger1 = AnimElem = 1
+value = -floor((((13-var(21))*fvar(7))*fvar(0))*(Const(data.attack)/100.0))
+Kill = 0
+
+[State 3011, ChangeState]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3012
+
+[Statedef 3012]
+type     = S
+movetype = A
+physics  = N
+anim     = 3012
+sprpriority = 4
+
+[State 3012, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3022
+
+[State 3012, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3012, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3012, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s10,23
+channel = 0
+
+[State 3012, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = s0,4
+
+[State 3012, SprPriority]
+type = SprPriority
+trigger1 = AnimElem = 3
+value = -1
+
+[State 3012, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(1) >= 0 && AnimElemtime(2) < 0
+pos = 42, -54
+
+[State 3012, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(2) >= 0 && AnimElemtime(3) < 0
+pos = 36,-88
+
+[State 3012, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(3) >= 0 && AnimElemtime(4) < 0
+pos = 20,-112
+
+[State 3012, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(4) = 0
+pos = 8,-168
+
+[State 3012, SprPriority]
+type = SprPriority
+trigger1 = AnimElem = 6
+value = 2
+
+[State 3012, ChangeState]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3013
+
+[Statedef 3013]
+type     = S
+movetype = A
+physics  = N
+anim     = 3011
+sprpriority = -2
+
+[State 3013, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3021
+
+[State 3013, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3013, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3013, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s6,1
+
+[State 3013, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s12,2
+
+[State 3013, EnvShake]
+type = EnvShake
+trigger1 = AnimElem = 1
+time = 12
+ampl = -6
+freq = 96
+phase = 96
+
+[State 3013, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6005
+postype = P1
+pos = 0, -85
+sprpriority = 5
+ownpal = 1
+
+[State 3013, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6040
+postype = P1
+pos = 4, 0
+sprpriority = -5
+ownpal = 1
+
+[State 3013, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(1) >= 0 && AnimElemtime(2) < 0
+pos = 0,-86
+
+[State 3013, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(2) >= 0
+pos = 0,-100
+
+[State 3013, DM/SDM Flash]
+type = EnvColor
+trigger1 = AnimElem = 1
+time = 1
+value = 255,255,255
+under = 1
+
+[State 3013, TargetLifeAdd]
+type = TargetLifeAdd
+trigger1 = AnimElem = 1
+value = -floor((((13-var(21))*fvar(7))*fvar(0))*(Const(data.attack)/100.0))
+Kill = 0
+
+[State 3013, ChangeState]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3014
+
+[Statedef 3014]
+type     = S
+movetype = A
+physics  = N
+anim     = 3012
+sprpriority = 4
+
+[State 3014, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3022
+
+[State 3014, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3014, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3014, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s10,23
+channel = 0
+
+[State 3014, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = s0,4
+
+[State 3014, SprPriority]
+type = SprPriority
+trigger1 = AnimElem = 3
+value = -1
+
+[State 3014, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(1) >= 0 && AnimElemtime(2) < 0
+pos = 42, -54
+
+[State 3014, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(2) >= 0 && AnimElemtime(3) < 0
+pos = 36,-88
+
+[State 3014, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(3) >= 0 && AnimElemtime(4) < 0
+pos = 20,-112
+
+[State 3014, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(4) = 0
+pos = 8,-168
+
+[State 3014, SprPriority]
+type = SprPriority
+trigger1 = AnimElem = 6
+value = 2
+
+[State 3014, ChangeState]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3015
+
+[Statedef 3015]
+type     = S
+movetype = A
+physics  = N
+anim     = 3015
+sprpriority = -2
+
+[State 3015, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3025
+
+[State 3015, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3015, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3015, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s6,1
+
+[State 3015, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s12,2
+
+[State 3015, EnvShake]
+type = EnvShake
+trigger1 = AnimElem = 1
+time = 12
+ampl = -6
+freq = 96
+phase = 96
+
+[State 3015, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6005
+postype = P1
+pos = 0, -85
+sprpriority = 5
+ownpal = 1
+
+[State 3015, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6040
+postype = P1
+pos = 4, 0
+sprpriority = -5
+ownpal = 1
+
+[State 3015, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(1) >= 0 && AnimElemtime(2) < 0
+pos = 0,-86
+
+[State 3015, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(2) >= 0
+pos = 0,-100
+
+[State 3015, DM/SDM Flash]
+type = EnvColor
+trigger1 = AnimElem = 1
+time = 1
+value = 255,255,255
+under = 1
+
+[State 3015, TargetLifeAdd]
+type = TargetLifeAdd
+trigger1 = AnimElem = 1
+value = -floor((((13-var(21))*fvar(7))*fvar(0))*(Const(data.attack)/100.0))
+Kill = 0
+
+[State 3015, ChangeState]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3016
+
+[Statedef 3016]
+type     = S
+movetype = A
+physics  = N
+anim     = 3016
+sprpriority = 4
+
+[State 3016, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3026
+
+[State 3016, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3016, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3016, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = s10,30
+channel = 0
+
+[State 3016, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 5
+value = s0,3
+
+[State 3016, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 8
+value = s12,3
+
+[State 3016, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 8
+anim = 6045
+postype = P1
+pos = -24, 0
+sprpriority = -5
+ownpal = 1
+
+[State 3016, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 8
+anim = 6046
+postype = P1
+pos = -24, 0
+sprpriority = 15
+ownpal = 1
+
+[State 3016, EnvShake]
+type = EnvShake
+trigger1 = AnimElem = 8
+time = 12
+ampl = -8
+freq = 96
+phase = 96
+
+[State 3016, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(1) >= 0 && AnimElemtime(2) < 0
+pos = 0, -104
+
+[State 3016, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(2) >= 0 && AnimElemtime(3) < 0
+pos = 8, -100
+
+[State 3016, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(3) >= 0 && AnimElemtime(4) < 0
+pos = -8, -108
+
+[State 3016, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(4) >= 0 && AnimElemtime(6) < 0
+pos = -20, -116
+
+[State 3016, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(6) >= 0 && AnimElemtime(7) < 0
+pos = -16, -110
+
+[State 3016, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(7) >= 0 && AnimElemtime(8) < 0
+pos = -14, -80
+
+[State 3016, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(8) >= 0 && AnimElemtime(10) < 0
+pos = -36, 0
+
+[State 3016, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(10) = 0
+pos = -40, -6
+
+[State 3016, DM/SDM Flash]
+type = EnvColor
+trigger1 = AnimElem = 8
+time = 1
+value = 255,255,255
+under = 1
+
+[State 3016, TargetLifeAdd]
+type = TargetLifeAdd
+trigger1 = AnimElem = 8
+value = -floor((((13-var(21))*fvar(7))*fvar(0))*(Const(data.attack)/100.0))
+
+[State 3016, Turn]
+type = Turn
+trigger1 = AnimElem = 11
+
+[State 3016, ChangeState]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+;(ENEMY)スーパーアルゼンチンバックブリーカー・掴まれ
+
+[Statedef 3020]
+type     = A
+movetype = H
+physics  = N
+ctrl     = 0
+
+[State 3020, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3020, ScreenBound]
+type = ScreenBound
+trigger1 = 1
+value = 1
+movecamera = 1,0
+
+[State 3020, ChangeAnim2]
+type = ChangeAnim2
+trigger1 = Time = 0
+value = 3020
+
+[State 3020, VelSet]
+type = VelSet
+trigger1 = AnimElem = 6
+x = 0
+y = -14
+
+[State 3020, VelAdd]
+type = VelAdd
+Trigger1 = AnimElemtime(6) >= 0
+y = .5
+
+[State 3020, ChangeState]
+type = ChangeState
+trigger1 = Vel Y > 0 && Pos Y >= 0
+value = 5690
+
+[Statedef 3021]
+type     = A
+movetype = H
+physics  = N
+ctrl     = 0
+
+[State 3021, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3021, ScreenBound]
+type = ScreenBound
+trigger1 = 1
+value = 1
+movecamera = 1,0
+
+[State 3021, ChangeAnim2]
+type = ChangeAnim2
+trigger1 = Time = 0
+value = 3021
+
+[State 3021, ChangeState]
+type = SelfState
+Trigger1 = Time = 300
+value = 5050
+
+[Statedef 3022]
+type     = A
+movetype = H
+physics  = N
+ctrl     = 0
+
+[State 3022, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3022, ScreenBound]
+type = ScreenBound
+trigger1 = 1
+value = 1
+movecamera = 1,0
+
+[State 3022, ChangeAnim2]
+type = ChangeAnim2
+trigger1 = Time = 0
+value = 3022
+
+[State 3022, VelSet]
+type = VelSet
+trigger1 = AnimElem = 4
+x = 0
+y = -14
+
+[State 3022, VelAdd]
+type = VelAdd
+Trigger1 = AnimElemtime(4) >= 0
+y = .5
+
+[State 3022, ChangeState]
+type = ChangeState
+trigger1 = Vel Y > 0 && Pos Y >= 0
+value = 5690
+
+[Statedef 3025]
+type     = A
+movetype = H
+physics  = N
+ctrl     = 0
+
+[State 3025, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3025, ScreenBound]
+type = ScreenBound
+trigger1 = 1
+value = 1
+movecamera = 1,0
+
+[State 3025, ChangeAnim2]
+type = ChangeAnim2
+trigger1 = Time = 0
+value = 3025
+
+[State 3025, ChangeState]
+type = SelfState
+Trigger1 = Time = 300
+value = 5050
+
+[Statedef 3026]
+type     = A
+movetype = H
+physics  = N
+ctrl     = 0
+
+[State 3026, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3026, ScreenBound]
+type = ScreenBound
+trigger1 = 1
+value = 1
+movecamera = 1,0
+
+[State 3026, ChangeAnim2]
+type = ChangeAnim2
+trigger1 = Time = 0
+value = 3026
+
+[State 3026, ChangeState]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3027
+
+[Statedef 3027]
+type    = A
+movetype= H
+physics = N
+velset = 0,0
+
+[State 3027, Turn]
+type = null;Turn
+Trigger1 = time = 0
+
+[State 3027, PosSet]
+type = PosSet
+trigger1 = time = 0
+y = -1
+
+[State 3027, ChangeAnim]
+type = ChangeAnim
+trigger1 = Time = 0
+value = 5160
+
+[State 3027, VelSet]
+type = VelSet
+trigger1 = time = 1
+x = 4.2
+y = -6
+
+[State 3027, VelAdd]
+type = VelAdd
+trigger1 = time >= 1
+y = .5
+
+[State 3027, ChangeState]
+type = ChangeState
+trigger1 = Vel Y > 0 && Pos Y >= 0
+value = 5690
+
+;=============================================================================
+; MAXウルトラアルゼンチンバックブリーカー
+
+[Statedef 3050]
+type     = S
+movetype = A
+physics  = S
+juggle   = 0
+velset   = 0,0
+anim     = 3000
+ctrl     = 0
+sprpriority = 2
+poweradd = -1000
+facep2 = 1
+
+[State 3050, パワーゲージ消費]
+type = poweradd
+trigger1 = var(40) = 0
+trigger1 = time = 0
+value = -2000
+
+[State 3050, パワーMAX解除]
+type = varset
+trigger1 = time = 0
+v = 40
+value = 0
+
+[State 3050, 無敵]
+type = NotHitBy
+trigger1 = AnimElemTime(1) >= 0 && AnimElemTime(3) < 0
+value = SCA
+
+[State 3050, 残像]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 3050, 超必殺技発動の時間停止]
+type = SuperPause
+trigger1 = AnimElem = 2
+trigger1 = var(11) := 1
+anim = -1
+time = 28
+movetime = 28
+darken = 0
+p2defmul = 1.0
+
+[State 3050, 超必殺技発動のエフェクト表示]
+type = Helper
+trigger1 = AnimElem = 2
+name = "SDM"
+stateno = 7010
+id = 7000
+pos = 14,-100
+postype = p1
+helpertype = normal
+ownpal = 1
+keyctrl = 0
+size.xscale = 1
+size.yscale = 1
+persistent = 0
+ignorehitpause = 1
+supermovetime = 999
+pausemovetime = 999
+
+[State 3050, AttackDist]
+type = AttackDist
+trigger1 = 1
+value = 0
+
+[State 3050, ヒット定義（投げ用）]
+type = HitDef
+triggerall = var(17) = 0 || p2movetype = H
+triggerall = var(18) != 2
+triggerall = p2stateNo != [150,155]
+trigger1 = AnimElem = 1
+trigger1 = p2bodydist X <= 47
+attr = S, HT
+hitflag = M
+priority = 1, Miss
+sparkno = -1
+p1sprpriority = 1
+p2sprpriority = 0
+p1facing = 1
+p2facing = 1
+p1stateno = 3060
+;p2stateno = 3020
+guard.dist = 0
+fall = 1
+fall.recover = 0
+fall.yvelocity = -3.5
+numhits = 0
+
+[State 3050, ステート変更]
+type = ChangeState
+trigger1 = animtime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; ウルトラアルゼンチンバックブリーカー　投げ
+
+[Statedef 3060]
+type     = S
+movetype = A
+physics  = N
+anim     = 3010
+sprpriority = 4
+
+[State 3060, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3020
+
+[State 3060, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3060, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3060, 超必殺技発動のエフェクト表示]
+type = Helper
+trigger1 = AnimElem = 1
+name = "SDM"
+stateno = 7010
+id = 7000
+pos = 14,-100
+postype = p1
+helpertype = normal
+ownpal = 1
+keyctrl = 0
+size.xscale = 1
+size.yscale = 1
+persistent = 0
+ignorehitpause = 1
+supermovetime = 999
+pausemovetime = 999
+
+[State 3060, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 3
+anim = 6021
+postype = P1
+pos = 48, -56
+sprpriority = 0
+ownpal = 1
+
+[State 3060, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 2
+value = s10,23
+channel = 0
+
+[State 3060, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = s1,6
+
+[State 3060, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 5
+value = s0,4
+
+[State 3060, SprPriority]
+type = SprPriority
+trigger1 = AnimElem = 5
+value = -1
+
+[State 3060, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(1) >= 0 && AnimElemtime(3) < 0
+pos = 40, 0
+
+[State 3060, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(3) >= 0 && AnimElemtime(4) < 0
+pos = 32, 0
+
+[State 3060, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(4) >= 0 && AnimElemtime(5) < 0
+pos = 36,-88
+
+[State 3060, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(5) >= 0 && AnimElemtime(6) < 0
+pos = 20,-112
+
+[State 3060, TargetBind]
+type = TargetBind
+trigger1 = AnimElemtime(6) = 0
+pos = 8,-168
+
+[State 3060, SprPriority]
+type = SprPriority
+trigger1 = AnimElem = 8
+value = 2
+
+[State 3060, ChangeState]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3061
+
+[Statedef 3061]
+type     = S
+movetype = A
+physics  = N
+anim     = 3011
+sprpriority = -2
+
+[State 3061, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3021
+
+[State 3061, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3061, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3061, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s6,1
+
+[State 3061, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s12,2
+
+[State 3061, EnvShake]
+type = EnvShake
+trigger1 = AnimElem = 1
+time = 12
+ampl = -6
+freq = 96
+phase = 96
+
+[State 3061, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6005
+postype = P1
+pos = 0, -85
+sprpriority = 5
+ownpal = 1
+
+[State 3061, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6045
+postype = P1
+pos = 4, 0
+sprpriority = -5
+ownpal = 1
+
+[State 3061, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6046
+postype = P1
+pos = 4, 0
+sprpriority = 15
+ownpal = 1
+
+[State 3061, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(1) >= 0 && AnimElemtime(2) < 0
+pos = 0,-86
+
+[State 3061, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(2) >= 0
+pos = 0,-100
+
+[State 3061, DM/SDM Flash]
+type = EnvColor
+trigger1 = AnimElem = 1
+time = 1
+value = 255,255,255
+under = 1
+
+[State 3061, TargetLifeAdd]
+type = TargetLifeAdd
+trigger1 = AnimElem = 1
+value = -floor((((12-var(21))*fvar(7))*fvar(0))*(Const(data.attack)/100.0))
+Kill = 0
+
+[State 3061, ChangeState]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3062
+
+[Statedef 3062]
+type     = S
+movetype = A
+physics  = N
+anim     = 3012
+sprpriority = 4
+
+[State 3062, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3022
+
+[State 3062, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3062, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3062, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s10,23
+channel = 0
+
+[State 3062, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = s0,4
+
+[State 3062, SprPriority]
+type = SprPriority
+trigger1 = AnimElem = 3
+value = -1
+
+[State 3062, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(1) >= 0 && AnimElemtime(2) < 0
+pos = 42, -54
+
+[State 3062, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(2) >= 0 && AnimElemtime(3) < 0
+pos = 36,-88
+
+[State 3062, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(3) >= 0 && AnimElemtime(4) < 0
+pos = 20,-112
+
+[State 3062, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(4) = 0
+pos = 8,-168
+
+[State 3062, SprPriority]
+type = SprPriority
+trigger1 = AnimElem = 6
+value = 2
+
+[State 3062, ChangeState]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3063
+
+[Statedef 3063]
+type     = S
+movetype = A
+physics  = N
+anim     = 3011
+sprpriority = -2
+
+[State 3063, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3021
+
+[State 3063, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3063, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3063, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s6,1
+
+[State 3063, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s12,2
+
+[State 3063, EnvShake]
+type = EnvShake
+trigger1 = AnimElem = 1
+time = 12
+ampl = -6
+freq = 96
+phase = 96
+
+[State 3063, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6005
+postype = P1
+pos = 0, -85
+sprpriority = 5
+ownpal = 1
+
+[State 3063, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6045
+postype = P1
+pos = 4, 0
+sprpriority = -5
+ownpal = 1
+
+[State 3063, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6046
+postype = P1
+pos = 4, 0
+sprpriority = 15
+ownpal = 1
+
+[State 3063, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(1) >= 0 && AnimElemtime(2) < 0
+pos = 0,-86
+
+[State 3063, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(2) >= 0
+pos = 0,-100
+
+[State 3063, DM/SDM Flash]
+type = EnvColor
+trigger1 = AnimElem = 1
+time = 1
+value = 255,255,255
+under = 1
+
+[State 3063, TargetLifeAdd]
+type = TargetLifeAdd
+trigger1 = AnimElem = 1
+value = -floor((((12-var(21))*fvar(7))*fvar(0))*(Const(data.attack)/100.0))
+Kill = 0
+
+[State 3063, ChangeState]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3064
+
+[Statedef 3064]
+type     = S
+movetype = A
+physics  = N
+anim     = 3060
+sprpriority = 4
+
+[State 3064, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3022
+
+[State 3064, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3064, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3064, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+trigger2 = AnimElem = 8
+value = s10,23
+channel = 0
+
+[State 3064, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = s0,4
+
+[State 3064, SprPriority]
+type = SprPriority
+trigger1 = AnimElem = 3
+value = -1
+
+[State 3064, StateTypeSet]
+type = StateTypeSet
+trigger1 = AnimElem = 8
+statetype = A
+
+[State 3064, VelSet]
+type = VelSet
+trigger1 = AnimElem = 8
+y = -11
+
+[State 3064, VelAdd]
+type = VelAdd
+Trigger1 = AnimElemtime(8) > 0
+y = .5
+
+[State 3064, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(1) >= 0 && AnimElemtime(2) < 0
+pos = 42, -54
+
+[State 3064, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(2) >= 0 && AnimElemtime(3) < 0
+pos = 36,-88
+
+[State 3064, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(3) >= 0 && AnimElemtime(4) < 0
+pos = 20,-112
+
+[State 3064, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(4) = 0
+pos = 8,-168
+
+[State 3064, SprPriority]
+type = SprPriority
+trigger1 = AnimElem = 7
+value = 2
+
+[State 3064, ChangeState]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3065
+
+[Statedef 3065]
+type     = A
+movetype = A
+physics  = N
+velset   = 0,0
+anim     = 3061
+sprpriority = 2
+
+[State 3065, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3075
+
+[State 3065, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3065, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3065, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s1,1
+
+[State 3065, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 6
+value = s10,31
+channel = 0
+
+[State 3063, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6005
+postype = P1
+pos = 0,-76
+sprpriority = 5
+ownpal = 1
+
+[State 3065, VelSet]
+type = VelSet
+trigger1 = AnimElem = 6
+y = -5.5
+
+[State 3065, VelAdd]
+type = VelAdd
+trigger1 = AnimElem = 6,>0
+y = .5
+
+[State 3065, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(1) >= 0 && AnimElemtime(2) < 0
+pos = 30,-54
+
+[State 3065, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(2) >= 0 && AnimElemtime(3) < 0
+pos = 28,-48
+
+[State 3065, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(3) >= 0 && AnimElemtime(4) < 0
+pos = -6,-42
+
+[State 3065, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(4) >= 0 && AnimElemtime(5) < 0
+pos = -10,-32
+
+[State 3065, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(5) >= 0 && AnimElemtime(6) < 0
+pos = -4,-28
+
+[State 3065, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(6) >= 0 && AnimElemtime(7) < 0
+pos = 4,-28
+
+[State 3065, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(7) >= 0 && AnimElemtime(8) < 0
+pos = 4,-28
+
+[State 3065, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(8) >= 0
+pos = -2,-12
+
+[State 3065, DM/SDM Flash]
+type = EnvColor
+trigger1 = AnimElem = 1
+time = 1
+value = 255,255,255
+under = 1
+
+[State 3065, TargetLifeAdd]
+type = TargetLifeAdd
+trigger1 = AnimElem = 1
+value = -floor((((23-var(21))*fvar(7))*fvar(0))*(Const(data.attack)/100.0))
+Kill = 0
+
+[State 3065, ChangeState]
+type = ChangeState
+trigger1 = Vel Y > 0 && Pos Y >= 0
+value = 3066
+
+[Statedef 3066]
+type     = S
+movetype = A
+physics  = N
+velset   = 0,0
+anim     = 3062
+sprpriority = 2
+
+[State 3066, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3076
+
+[State 3066, PosSet]
+type = PosSet
+trigger1 = time = 0
+y = 0
+
+[State 3066, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3066, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3066, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s12,3
+
+[State 3066, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6045
+postype = P1
+pos = 0, 0
+sprpriority = -5
+ownpal = 1
+
+[State 3066, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6046
+postype = P1
+pos = 0, 0
+sprpriority = 15
+ownpal = 1
+
+[State 3066, EnvShake]
+type = EnvShake
+trigger1 = AnimElem = 1
+time = 12
+ampl = -8
+freq = 96
+phase = 96
+
+[State 3066, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(1) >= 0
+pos = -4,0
+
+[State 3066, DM/SDM Flash]
+type = EnvColor
+trigger1 = AnimElem = 1
+time = 1
+value = 255,255,255
+under = 1
+
+[State 3066, TargetLifeAdd]
+type = TargetLifeAdd
+trigger1 = AnimElem = 1
+value = -floor((((23-var(21))*fvar(7))*fvar(0))*(Const(data.attack)/100.0))
+
+[State 3066, ChangeState]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3067
+
+[Statedef 3067]
+type     = S
+movetype = I
+physics  = N
+anim = 3063
+ctrl = 0
+velset = 0,0
+
+[State 3067, StateTypeSet]
+type = StateTypeSet
+trigger1 = AnimElem = 2
+statetype = A
+
+[State 3067, VelSet]
+type = VelSet
+trigger1 = AnimElem = 2
+x = -2.5
+y = -8
+
+[State 3067, VelAdd]
+type = VelAdd
+trigger1 = AnimElemtime(2) > 0
+y = .5
+
+[State 3067, ChangeState]
+type = ChangeState
+trigger1 = Vel Y > 0 && Pos Y >= 0
+value = 52
+
+;---------------------------------------------------------------------------
+;(ENEMY)スーパーアルゼンチンバックブリーカー・掴まれ
+
+[Statedef 3075]
+type     = A
+movetype = H
+physics  = N
+ctrl     = 0
+
+[State 3075, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3075, ScreenBound]
+type = ScreenBound
+trigger1 = 1
+value = 1
+movecamera = 1,0
+
+[State 3075, ChangeAnim2]
+type = ChangeAnim2
+trigger1 = Time = 0
+value = 3070
+
+[Statedef 3076]
+type     = A
+movetype = H
+physics  = N
+ctrl     = 0
+
+[State 3076, SmashedAnim]
+type = ChangeAnim
+trigger1 = Time < 22
+value = ifelse(SelfAnimExist(5112),5112,ifelse(SelfAnimExist(5111),5111,5110))
+
+[State 3076, Turn]
+type = Turn
+trigger1 = !Time
+trigger1 = !SelfAnimExist(5112) && !SelfAnimExist(5111)
+
+[State 3076, Camera]
+type = ScreenBound
+trigger1 = Anim = [5110,5112]
+value = 1
+
+[State 3076, BounceAnim]
+type = ChangeAnim
+trigger1 = Time = 22
+value = ifelse(SelfAnimExist(5162),5162,ifelse(SelfAnimExist(5161),5161,5160))
+
+[State 3076, HitVelSet]
+type = VelSet
+trigger1 = Anim = [5160,5162]
+x = 4.5 * ifelse(Anim = 5160,1,-1)
+y = -6.5
+persistent = 0
+
+[State 3076, Gravity]
+type = VelAdd
+trigger1 = Anim = [5160,5162]
+y = .5
+
+[State 3076, BounceAnim]
+type = ChangeAnim
+trigger1 = Vel Y > 0 && Pos Y >= 0
+value = ifelse(SelfAnimExist(5052),5052,ifelse(SelfAnimExist(5051),5051,5050))
+
+[State 3076, ChangeState]
+type = ChangeState
+trigger1 = Vel Y > 0 && Pos Y >= 0
+value = 5690
+
+;=============================================================================
+; ランニングスリー
+
+[Statedef 3100]
+type     = S
+movetype = A
+physics  = N
+juggle   = 0
+poweradd = 0
+velset   = 0,0
+anim     = 3100
+ctrl     = 0
+sprpriority = 2
+facep2 = 1
+
+[State 3000, パワーゲージ消費]
+type = poweradd
+trigger1 = var(40) = 0
+trigger1 = time = 0
+value = -1000
+
+[State 3000, パワーMAX解除]
+type = VarSet
+trigger1 = time = 0
+v = 40
+value = 0
+
+[State 3200, 無敵]
+type = NotHitBy
+trigger1 = AnimElemTime (1) >= 0 && AnimElemTime (5) < 0
+value = SCA
+
+[State 3000, 超必殺技発動の時間停止]
+type = SuperPause
+trigger1 = AnimElem = 3
+trigger1 = var(11) := 1
+anim = -1
+time = 28
+movetime = 28
+darken = 0
+p2defmul = 1.0
+
+[State 3100, 超必殺技発動のエフェクト表示]
+type = Helper
+trigger1 = AnimElem = 3
+name = "DM"
+stateno = 7000
+id = 7000
+pos = 14,-90
+postype = p1
+helpertype = normal
+ownpal = 1
+keyctrl = 0
+size.xscale = 1
+size.yscale = 1
+persistent = 0
+ignorehitpause = 1
+supermovetime = 999
+pausemovetime = 999
+
+[State 3100, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = s10,32
+channel = 0
+
+[State 3100, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 6
+value = s5,0
+channel = 3
+
+[State 3100, 軸位置移動]
+type = VelSet
+trigger1 = AnimElem = 6
+x = 7
+
+[State 3000, 残像]
+type = AfterImage
+trigger1 = AnimElem = 6
+time = 2
+palcolor = 0
+paladd = 60,20,100
+PalContrast = 220,200,350
+Trans = none
+TimeGap  = 1
+FrameGap = 3
+length = 11
+ignorehitpause = 1
+
+[State 3000, AfterImageTime]
+type = AfterImageTime
+trigger1 = AnimElemTime(6) >= 0
+trigger1 = gametime%2 = 0
+time = 2
+
+[State 3100, ステート変更]
+type = ChangeState
+trigger1 = AnimElemtime(6) >= 0
+trigger1 = P2bodydist X <= 9
+value = 3105
+
+[State 3100, ステート変更]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 1201
+
+;---------------------------------------------------------------------------
+; ランニングスリー　投げ
+
+[Statedef 3105]
+type     = S
+movetype = A
+physics  = N
+juggle   = 0
+poweradd = 0
+velset   = 0,0
+anim     = 3105
+ctrl     = 0
+sprpriority = 1
+
+[State 3105, 音を鳴らす]
+type = StopSnd
+trigger1 = Time = 0
+channel = 3
+
+[State 3105, AttackDist]
+type = AttackDist
+trigger1 = 1
+value = 0
+
+[State 3105, ヒット定義（投げ用）]
+type = HitDef
+triggerall = var(17) = 0 || p2movetype = H
+triggerall = var(18) != 2
+triggerall = p2stateNo != [150,155]
+trigger1 = AnimElemTime(2) >= 0 && AnimElemTime(3) < 0
+trigger1 = p2bodydist X <= 15
+attr = S, HT
+hitflag = M
+priority = 1, Miss
+sparkno = -1
+p1sprpriority = 1
+p2sprpriority = 0
+p1facing = 1
+p2facing = 1
+p1stateno = 3110
+;p2stateno = 3120
+guard.dist = 0
+fall = 1
+fall.recover = 0
+fall.yvelocity = -3.5
+numhits = 0
+ground.velocity = -1,-1
+air.velocity = -1,-1
+ID = 90
+
+[State 3105, MoveType]
+type = StateTypeSet
+trigger1 = AnimElem = 3
+MoveType = I
+
+[State 3105, ステート変更]
+type = ChangeState
+trigger1 = animtime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; ランニングスリー　投げ
+
+[Statedef 3110]
+type     = S
+movetype = A
+physics  = N
+juggle   = 0
+poweradd = 0
+velset   = 0,0
+anim     = 3110
+ctrl     = 0
+sprpriority = 2
+
+[State 3110, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3120
+
+[State 3110, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3110, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s1,6
+
+[State 3110, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 15
+value = s5,0
+channel = 2
+
+[State 3110, 音を鳴らす]
+type = StopSnd
+trigger1 = AnimElem = 19
+channel = 2
+
+[State 3110, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 19
+value = s3,1
+
+[State 3110, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6021
+postype = P1
+pos = 61, -85
+sprpriority = 0
+ownpal = 1
+
+[State 3110, Turn]
+type = Turn
+trigger1 = AnimElem = 6
+
+[State 3110, SprPriority]
+type = SprPriority
+trigger1 = AnimElem = 3
+value = 1
+
+[State 3110, SprPriority]
+type = SprPriority
+trigger1 = AnimElem = 7
+value = 2
+
+[State 3110, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 8 || AnimElem = 9 || AnimElem = 10
+x = -16
+
+[State 3110, VelAdd]
+type = VelAdd
+Trigger1 = AnimElemtime(13) > 0 && AnimElemtime(19) < 0
+x = .25
+
+[State 3110, SetAir]
+type = StateTypeSet
+trigger1 = AnimElem = 19
+statetype = A
+
+[State 3110, JumpImpulsion]
+type = PosAdd
+trigger1 = AnimElem = 19
+x = 7
+
+[State 3110, StartJumpVel]
+type = VelSet
+trigger1 = AnimElem = 19
+x = 7.25
+y = -8
+
+[State 3110, Gravity]
+type = VelAdd
+Trigger1 = AnimElemtime(19) > 0
+y = .5
+
+[State 3110, Bind01]
+type = TargetBind
+trigger1 = AnimElem = 1,= 0
+pos = (Target,const(size.head.pos.x)) + 48,0
+
+[State 3110, Bind02]
+type = TargetBind
+trigger1 = AnimElem = 2,= 0
+pos = (Target,const(size.head.pos.x)) + 24,0
+
+[State 3110, Bind03]
+type = TargetBind
+trigger1 = AnimElem = 3
+pos = 16,-76
+
+[State 3110, Bind04]
+type = TargetBind
+trigger1 = AnimElem = 4
+pos = 8,-80
+
+[State 3110, Bind05]
+type = TargetBind
+trigger1 = AnimElem = 5
+pos = -4,-96
+
+[State 3110, Bind06]
+type = TargetBind
+trigger1 = AnimElem = 6
+pos = 2,-116
+
+[State 3110, Bind07]
+type = TargetBind
+trigger1 = AnimElem = 7
+pos = 4,-116
+
+[State 3110, Bind08]
+type = TargetBind
+trigger1 = AnimElem = 8
+pos = 2,-116
+
+[State 3110, Bind09]
+type = TargetBind
+trigger1 = AnimElem = 9
+pos = 6,-112
+
+[State 3110, Bind10]
+type = TargetBind
+trigger1 = AnimElem = 10
+pos = 14,-102
+
+[State 3110, Bind11]
+type = TargetBind
+trigger1 = AnimElem = 11
+pos = 6,-100
+
+[State 3110, Bind12]
+type = TargetBind
+trigger1 = AnimElem = 12
+pos = 6,-100
+
+[State 3110, Bind13]
+type = TargetBind
+Trigger1 = AnimElemtime(13) >= 0 && AnimElemtime(14) < 0
+pos = 8,-110
+
+[State 3110, Bind14]
+type = TargetBind
+Trigger1 = AnimElemtime(14) >= 0 && AnimElemtime(15) < 0
+pos = 0,-104
+
+[State 3110, Bind15]
+type = TargetBind
+Trigger1 = AnimElemtime(15) >= 0 && AnimElemtime(16) < 0
+pos = 12,-98
+
+[State 3110, Bind16]
+type = TargetBind
+Trigger1 = AnimElemtime(16) >= 0 && AnimElemtime(17) < 0
+pos = 20,-104
+
+[State 3110, Bind17]
+type = TargetBind
+Trigger1 = AnimElemtime(17) >= 0 && AnimElemtime(18) < 0
+pos = 22,-104
+
+[State 3110, Bind18]
+type = TargetBind
+Trigger1 = AnimElemtime(18) >= 0 && AnimElemtime(19) < 0
+pos = 16,-100
+
+[State 3110, Bind19]
+type = TargetBind
+Trigger1 = AnimElemtime(19) >= 0 && AnimElemtime(20) < 0
+pos = 20,-124
+
+[State 3110, Bind20]
+type = TargetBind
+Trigger1 = AnimElemtime(20) >= 0 && AnimElemtime(21) < 0
+pos = 20,-122
+
+[State 3110, Bind21]
+type = TargetBind
+Trigger1 = AnimElemtime(21) >= 0
+pos = 16,-95
+
+[State 3110, ChangeState]
+type = ChangeState
+trigger1 = Vel Y > 0 && Pos Y >= 0
+value = 3111
+
+[Statedef 3111]
+type     = S
+movetype = A
+physics  = N
+velset   = 0,0
+anim     = 3111
+sprpriority = 2
+
+[State 3111, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3121
+
+[State 3111, PosSet]
+type = PosSet
+trigger1 = time = 0
+y = 0
+
+[State 3111, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3111, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3111, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s12,3
+
+[State 3111, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6045
+postype = P1
+pos = 56, 0
+sprpriority = -5
+ownpal = 1
+
+[State 3111, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6046
+postype = P1
+pos = 56, 0
+sprpriority = 15
+ownpal = 1
+
+[State 3111, EnvShake]
+type = EnvShake
+trigger1 = AnimElem = 1
+time = 12
+ampl = -8
+freq = 96
+phase = 96
+
+[State 3111, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(1) = 0
+pos = 56,-5
+
+[State 3111, DM/SDM Flash]
+type = EnvColor
+trigger1 = AnimElem = 1
+time = 1
+value = 255,255,255
+under = 1
+
+[State 3111, TargetLifeAdd]
+type = TargetLifeAdd
+trigger1 = AnimElem = 1
+value = -floor((((41-var(21))*fvar(7))*fvar(0))*(Const(data.attack)/100.0))
+
+[State 3111, ChangeState]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+;(ENEMY)ランニングスリー・掴まれ
+
+[Statedef 3120]
+type     = A
+movetype = H
+physics  = N
+ctrl     = 0
+
+[State 3120, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3120, ScreenBound]
+type = ScreenBound
+trigger1 = 1
+value = 1
+movecamera = 1,0
+
+[State 3120, BringToFront]
+type = SprPriority
+trigger1 = AnimElem = 3
+value = 2
+
+[State 3120, SendToBack]
+type = SprPriority
+trigger1 = AnimElem = 7
+value = 1
+
+[State 3120, ChangeAnim2]
+type = ChangeAnim2
+trigger1 = Time = 0
+value = 3120
+
+[Statedef 3121]
+type     = A
+movetype = H
+physics  = N
+ctrl     = 0
+
+[State 3121, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3121, ScreenBound]
+type = ScreenBound
+trigger1 = 1
+value = 1
+movecamera = 1,0
+
+[State 3121, ChangeAnim2]
+type = ChangeAnim2
+trigger1 = Time = 0
+value = 3121
+
+[State 3121, ChangeState]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3122
+
+[Statedef 3122]
+type    = A
+movetype= H
+physics = N
+velset = 0,0
+
+[State 3122, Turn]
+type = Turn
+Trigger1 = time = 0
+
+[State 3122, PosSet]
+type = PosSet
+trigger1 = time = 0
+y = -1
+
+[State 3122, ChangeAnim]
+type = ChangeAnim
+trigger1 = Time = 0
+value = 5160
+
+[State 3122, VelSet]
+type = VelSet
+trigger1 = time = 1
+x = -6
+y = -4.5
+
+[State 3122, VelAdd]
+type = VelAdd
+trigger1 = time >= 1
+y = .5
+
+[State 3122, ChangeState]
+type = ChangeState
+trigger1 = Vel Y > 0 && Pos Y >= 0
+value = 5690
+
+;=============================================================================
+; MAXランニングスリー
+
+[Statedef 3150]
+type     = S
+movetype = A
+physics  = N
+juggle   = 0
+poweradd = -1000
+velset   = 0,0
+anim     = 3100
+ctrl     = 0
+sprpriority = 2
+facep2 = 1
+
+[State 3150, パワーゲージ消費]
+type = poweradd
+trigger1 = var(40) = 0
+trigger1 = time = 0
+value = -2000
+
+[State 3150, パワーMAX解除]
+type = varset
+trigger1 = time = 0
+v = 40
+value = 0
+
+[State 3150, 無敵]
+type = NotHitBy
+trigger1 = AnimElemTime (1) >= 0 && AnimElemTime (5) < 0
+value = SCA
+
+[State 3150, 超必殺技発動の時間停止]
+type = SuperPause
+trigger1 = AnimElem = 3
+trigger1 = var(11) := 1
+anim = -1
+time = 28
+movetime = 28
+darken = 0
+p2defmul = 1.0
+
+[State 3150, 超必殺技発動のエフェクト表示]
+type = Helper
+trigger1 = AnimElem = 3
+name = "SDM"
+stateno = 7010
+id = 7000
+pos = 14,-90
+postype = p1
+helpertype = normal
+ownpal = 1
+keyctrl = 0
+size.xscale = 1
+size.yscale = 1
+persistent = 0
+ignorehitpause = 1
+supermovetime = 999
+pausemovetime = 999
+
+[State 3150, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = s10,32
+channel = 0
+
+[State 3150, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 6
+value = s5,0
+channel = 3
+
+[State 3150, 軸位置移動]
+type = VelSet
+trigger1 = AnimElem = 6
+x = 7
+
+[State 3150, 残像]
+type = AfterImage
+trigger1 = AnimElem = 6
+time = 2
+palcolor = 0
+paladd = 60,20,100
+PalContrast = 220,200,350
+Trans = none
+TimeGap  = 1
+FrameGap = 3
+length = 11
+ignorehitpause = 1
+
+[State 3150, AfterImageTime]
+type = AfterImageTime
+trigger1 = AnimElemTime(6) >= 0
+trigger1 = gametime%2 = 0
+time = 2
+
+[State 3150, ステート変更]
+type = ChangeState
+trigger1 = AnimElemtime(6) >= 0
+trigger1 = P2bodydist X <= 9
+value = 3155
+
+[State 3150, ステート変更]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 1201
+
+;---------------------------------------------------------------------------
+; ランニングスリー　投げ
+
+[Statedef 3155]
+type     = S
+movetype = A
+physics  = N
+juggle   = 0
+poweradd = 0
+velset   = 0,0
+anim     = 3105
+ctrl     = 0
+sprpriority = 1
+
+[State 3155, 音を鳴らす]
+type = StopSnd
+trigger1 = Time = 0
+channel = 3
+
+[State 3155, AttackDist]
+type = AttackDist
+trigger1 = 1
+value = 0
+
+[State 3155, ヒット定義（投げ用）]
+type = HitDef
+triggerall = var(17) = 0 || p2movetype = H
+triggerall = var(18) != 2
+triggerall = p2stateNo != [150,155]
+trigger1 = AnimElemTime(2) >= 0 && AnimElemTime(3) < 0
+trigger1 = p2bodydist X <= 15
+attr = S, HT
+hitflag = M
+priority = 1, Miss
+sparkno = -1
+p1sprpriority = 1
+p2sprpriority = 0
+p1facing = 1
+p2facing = 1
+p1stateno = 3160
+;p2stateno = 3120
+guard.dist = 0
+fall = 1
+fall.recover = 0
+fall.yvelocity = -3.5
+numhits = 0
+ground.velocity = -1,-1
+air.velocity = -1,-1
+ID = 90
+
+[State 3155, MoveType]
+type = StateTypeSet
+trigger1 = AnimElem = 3
+MoveType = I
+
+[State 3155, ステート変更]
+type = ChangeState
+trigger1 = animtime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; ランニングスリー　投げ
+
+[Statedef 3160]
+type     = S
+movetype = A
+physics  = N
+juggle   = 0
+poweradd = 0
+velset   = 0,0
+anim     = 3110
+ctrl     = 0
+sprpriority = 2
+
+[State 3160, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3120
+
+[State 3160, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3160, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s1,6
+
+[State 3160, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 15
+value = s5,0
+channel = 2
+
+[State 3160, 音を鳴らす]
+type = StopSnd
+trigger1 = AnimElem = 19
+channel = 2
+
+[State 3160, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 19
+value = s3,1
+
+[State 3150, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 19
+value = s10,23
+channel = 0
+
+[State 3160, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6021
+postype = P1
+pos = 61, -85
+sprpriority = 0
+ownpal = 1
+
+[State 3160, Turn]
+type = Turn
+trigger1 = AnimElem = 6
+
+[State 3160, SprPriority]
+type = SprPriority
+trigger1 = AnimElem = 3
+value = 1
+
+[State 3160, SprPriority]
+type = SprPriority
+trigger1 = AnimElem = 7
+value = 2
+
+[State 3160, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 8 || AnimElem = 9 || AnimElem = 10
+x = -16
+
+[State 3160, VelAdd]
+type = VelAdd
+Trigger1 = AnimElemtime(13) > 0 && AnimElemtime(19) < 0
+x = .25
+
+[State 3160, SetAir]
+type = StateTypeSet
+trigger1 = AnimElem = 19
+statetype = A
+
+[State 3160, JumpImpulsion]
+type = PosAdd
+trigger1 = AnimElem = 19
+x = 7
+
+[State 3160, StartJumpVel]
+type = VelSet
+trigger1 = AnimElem = 19
+x = 7.25
+y = -8
+
+[State 3160, Gravity]
+type = VelAdd
+Trigger1 = AnimElemtime(19) > 0
+y = .5
+
+[State 3160, Bind01]
+type = TargetBind
+trigger1 = AnimElem = 1,= 0
+pos = (Target,const(size.head.pos.x)) + 48,0
+
+[State 3160, Bind02]
+type = TargetBind
+trigger1 = AnimElem = 2,= 0
+pos = (Target,const(size.head.pos.x)) + 24,0
+
+[State 3160, Bind03]
+type = TargetBind
+trigger1 = AnimElem = 3
+pos = 16,-76
+
+[State 3160, Bind04]
+type = TargetBind
+trigger1 = AnimElem = 4
+pos = 8,-80
+
+[State 3160, Bind05]
+type = TargetBind
+trigger1 = AnimElem = 5
+pos = -4,-96
+
+[State 3160, Bind06]
+type = TargetBind
+trigger1 = AnimElem = 6
+pos = 2,-116
+
+[State 3160, Bind07]
+type = TargetBind
+trigger1 = AnimElem = 7
+pos = 4,-116
+
+[State 3160, Bind08]
+type = TargetBind
+trigger1 = AnimElem = 8
+pos = 2,-116
+
+[State 3160, Bind09]
+type = TargetBind
+trigger1 = AnimElem = 9
+pos = 6,-112
+
+[State 3160, Bind10]
+type = TargetBind
+trigger1 = AnimElem = 10
+pos = 14,-102
+
+[State 3160, Bind11]
+type = TargetBind
+trigger1 = AnimElem = 11
+pos = 6,-100
+
+[State 3160, Bind12]
+type = TargetBind
+trigger1 = AnimElem = 12
+pos = 6,-100
+
+[State 3160, Bind13]
+type = TargetBind
+Trigger1 = AnimElemtime(13) >= 0 && AnimElemtime(14) < 0
+pos = 8,-110
+
+[State 3160, Bind14]
+type = TargetBind
+Trigger1 = AnimElemtime(14) >= 0 && AnimElemtime(15) < 0
+pos = 0,-104
+
+[State 3160, Bind15]
+type = TargetBind
+Trigger1 = AnimElemtime(15) >= 0 && AnimElemtime(16) < 0
+pos = 12,-98
+
+[State 3160, Bind16]
+type = TargetBind
+Trigger1 = AnimElemtime(16) >= 0 && AnimElemtime(17) < 0
+pos = 20,-104
+
+[State 3160, Bind17]
+type = TargetBind
+Trigger1 = AnimElemtime(17) >= 0 && AnimElemtime(18) < 0
+pos = 22,-104
+
+[State 3160, Bind18]
+type = TargetBind
+Trigger1 = AnimElemtime(18) >= 0 && AnimElemtime(19) < 0
+pos = 16,-100
+
+[State 3160, Bind19]
+type = TargetBind
+Trigger1 = AnimElemtime(19) >= 0 && AnimElemtime(20) < 0
+pos = 20,-124
+
+[State 3160, Bind20]
+type = TargetBind
+Trigger1 = AnimElemtime(20) >= 0 && AnimElemtime(21) < 0
+pos = 20,-122
+
+[State 3160, Bind21]
+type = TargetBind
+Trigger1 = AnimElemtime(21) >= 0
+pos = 16,-95
+
+[State 3160, ChangeState]
+type = ChangeState
+trigger1 = Vel Y > 0 && Pos Y >= 0
+value = 3161
+
+[Statedef 3161]
+type     = S
+movetype = A
+physics  = N
+velset   = 0,0
+anim     = 3161
+sprpriority = 2
+
+[State 3161, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3171
+
+[State 3161, PosSet]
+type = PosSet
+trigger1 = time = 0
+y = 0
+
+[State 3161, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3161, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3161, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s12,3
+
+[State 3161, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6045
+postype = P1
+pos = 56, 0
+sprpriority = -5
+ownpal = 1
+
+[State 3161, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6046
+postype = P1
+pos = 56, 0
+sprpriority = 15
+ownpal = 1
+
+[State 3161, EnvShake]
+type = EnvShake
+trigger1 = AnimElem = 1
+time = 12
+ampl = -8
+freq = 96
+phase = 96
+
+[State 3161, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(1) = 0
+pos = 56,-5
+
+[State 3161, DM/SDM Flash]
+type = EnvColor
+trigger1 = AnimElem = 1
+time = 1
+value = 255,255,255
+under = 1
+
+[State 3161, TargetLifeAdd]
+type = TargetLifeAdd
+trigger1 = AnimElem = 1
+value = -floor((((27-var(21))*fvar(7))*fvar(0))*(Const(data.attack)/100.0))
+
+[State 3110, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 20
+value = s5,0
+channel = 2
+
+[State 3110, 音を鳴らす]
+type = StopSnd
+trigger1 = AnimElem = 24
+channel = 2
+
+[State 3110, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 24
+value = s3,1
+
+[State 3150, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 24
+value = s10,23
+channel = 0
+
+[State 3161, SendToBack]
+type = SprPriority
+trigger1 = AnimElem = 8
+value = -1
+
+[State 3161, BringToFront]
+type = SprPriority
+trigger1 = AnimElem = 12
+value = 2
+
+[State 3161, Turn]
+type = Turn
+trigger1 = AnimElem = 11
+
+[State 3161, GoBackwards]
+type = PosAdd
+trigger1 = AnimElem = 13
+trigger2 = AnimElem = 14
+trigger3 = AnimElem = 15
+x = -16
+
+[State 3161, RunAcceleration]
+type = VelAdd
+trigger1 = AnimElem = 18,>1 && AnimElem = 24,<0
+x = .5
+
+[State 3161, SetAir]
+type = StateTypeSet
+trigger1 = AnimElem = 24
+statetype = A
+
+[State 3161, JumpImpulsion]
+type = PosAdd
+trigger1 = AnimElem = 24
+x = 14
+
+[State 3161, StartJumpVel]
+type = VelSet
+trigger1 = AnimElem = 24
+x = 14.5
+y = -8
+
+[State 3161, SecondVelYJump]
+type = VelSet
+trigger1 = AnimElem = 24,=3
+x = 10
+
+[State 3161, ThirdVelYJump]
+type = VelSet
+trigger1 = AnimElem = 24,=4
+x = 8
+
+[State 3161, Gravity]
+type = VelAdd
+trigger1 = AnimElem = 24,>0
+y = .5
+
+[State 3161, Bind01]
+type = TargetBind
+trigger1 = AnimElem = 1
+pos = 52,-8
+
+[State 3161, Bind02]
+type = TargetBind
+trigger1 = AnimElem = 2
+pos = 52,-8
+
+[State 3161, Bind03]
+type = TargetBind
+trigger1 = AnimElem = 3
+pos = 32,-16
+
+[State 3161, Bind04]
+type = TargetBind
+trigger1 = AnimElem = 4
+pos = 32,-16
+
+[State 3161, Bind05]
+type = TargetBind
+trigger1 = AnimElem = 5
+pos = 32,-16
+
+[State 3161, Bind06]
+type = TargetBind
+trigger1 = AnimElem = 6
+pos = 36,-40
+
+[State 3161, Bind07]
+type = TargetBind
+trigger1 = AnimElem = 7
+pos = (Target,const(size.head.pos.x)) + 24,0
+
+[State 3161, Bind08]
+type = TargetBind
+trigger1 = AnimElem = 8
+pos = 16,-72
+
+[State 3161, Bind09]
+type = TargetBind
+trigger1 = AnimElem = 9
+pos = 4,-72
+
+[State 3161, Bind10]
+type = TargetBind
+trigger1 = AnimElem = 10
+pos = -4,-96
+
+[State 3161, Bind11]
+type = TargetBind
+trigger1 = AnimElem = 11
+pos = 2,-120
+
+[State 3161, Bind12]
+type = TargetBind
+trigger1 = AnimElem = 12
+pos = -4,-118
+
+[State 3161, Bind13]
+type = TargetBind
+trigger1 = AnimElem = 13
+pos = 0,-114
+
+[State 3161, Bind14]
+type = TargetBind
+trigger1 = AnimElem = 14
+pos = 6,-110
+
+[State 3161, Bind15]
+type = TargetBind
+trigger1 = AnimElem = 15
+pos = 16,-102
+
+[State 3161, Bind16]
+type = TargetBind
+trigger1 = AnimElem = 16
+pos = 6,-102
+
+[State 3161, Bind17]
+type = TargetBind
+trigger1 = AnimElem = 17
+pos = 6,-102
+
+[State 3161, Bind18]
+type = TargetBind
+trigger1 = AnimElem = 18,>=0 && AnimElem = 19,<0
+pos = 8,-110
+
+[State 3161, Bind19]
+type = TargetBind
+trigger1 = AnimElem = 19,>=0 && AnimElem = 20,<0
+pos = 0,-104
+
+[State 3161, Bind20]
+type = TargetBind
+trigger1 = AnimElem = 20,>=0 && AnimElem = 21,<0
+pos = 8,-100
+
+[State 3161, Bind21]
+type = TargetBind
+trigger1 = AnimElem = 21,>=0 && AnimElem = 22,<0
+pos = 20,-104
+
+[State 3161, Bind22]
+type = TargetBind
+trigger1 = AnimElem = 22,>=0 && AnimElem = 23,<0
+pos = 20,-102
+
+[State 3161, Bind23]
+type = TargetBind
+trigger1 = AnimElem = 23,>=0 && AnimElem = 24,<0
+pos = 18,-102
+
+[State 3161, Bind24]
+type = TargetBind
+trigger1 = AnimElem = 24,>=0 && AnimElem = 25,<0
+pos = 20,-126
+
+[State 3161, Bind25]
+type = TargetBind
+trigger1 = AnimElem = 25,>=0 && AnimElem = 26,<0
+pos = 18,-122
+
+[State 3161, Bind26]
+type = TargetBind
+trigger1 = AnimElem = 26,>=0
+pos = 18,-98
+
+[State 3161, ChangeState]
+type = ChangeState
+trigger1 = Vel Y > 0 && Pos Y >= 0
+value = 3162
+
+[Statedef 3162]
+type     = S
+movetype = A
+physics  = N
+velset   = 0,0
+anim     = 3161
+sprpriority = 2
+
+[State 3162, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3171
+
+[State 3162, PosSet]
+type = PosSet
+trigger1 = time = 0
+y = 0
+
+[State 3162, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3162, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3162, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s12,3
+
+[State 3162, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6045
+postype = P1
+pos = 56, 0
+sprpriority = -5
+ownpal = 1
+
+[State 3162, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6046
+postype = P1
+pos = 56, 0
+sprpriority = 15
+ownpal = 1
+
+[State 3162, EnvShake]
+type = EnvShake
+trigger1 = AnimElem = 1
+time = 12
+ampl = -8
+freq = 96
+phase = 96
+
+[State 3162, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(1) = 0
+pos = 56,-5
+
+[State 3162, DM/SDM Flash]
+type = EnvColor
+trigger1 = AnimElem = 1
+time = 1
+value = 255,255,255
+under = 1
+
+[State 3162, TargetLifeAdd]
+type = TargetLifeAdd
+trigger1 = AnimElem = 1
+value = -floor((((27-var(21))*fvar(7))*fvar(0))*(Const(data.attack)/100.0))
+
+[State 3110, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 20
+value = s5,0
+channel = 2
+
+[State 3110, 音を鳴らす]
+type = StopSnd
+trigger1 = AnimElem = 24
+channel = 2
+
+[State 3110, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 24
+value = s3,1
+
+[State 3150, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 24
+value = s10,23
+channel = 0
+
+[State 3162, SendToBack]
+type = SprPriority
+trigger1 = AnimElem = 8
+value = -1
+
+[State 3162, BringToFront]
+type = SprPriority
+trigger1 = AnimElem = 12
+value = 2
+
+[State 3162, Turn]
+type = Turn
+trigger1 = AnimElem = 11
+
+[State 3162, GoBackwards]
+type = PosAdd
+trigger1 = AnimElem = 13
+trigger2 = AnimElem = 14
+trigger3 = AnimElem = 15
+x = -16
+
+[State 3162, RunAcceleration]
+type = VelAdd
+trigger1 = AnimElem = 18,>1 && AnimElem = 24,<0
+x = .5
+
+[State 3162, SetAir]
+type = StateTypeSet
+trigger1 = AnimElem = 24
+statetype = A
+
+[State 3162, JumpImpulsion]
+type = PosAdd
+trigger1 = AnimElem = 24
+x = 14
+
+[State 3162, StartJumpVel]
+type = VelSet
+trigger1 = AnimElem = 24
+x = 14.5
+y = -8
+
+[State 3162, SecondVelYJump]
+type = VelSet
+trigger1 = AnimElem = 24,=3
+x = 10
+
+[State 3162, ThirdVelYJump]
+type = VelSet
+trigger1 = AnimElem = 24,=4
+x = 8
+
+[State 3162, Gravity]
+type = VelAdd
+trigger1 = AnimElem = 24,>0
+y = .5
+
+[State 3162, Bind01]
+type = TargetBind
+trigger1 = AnimElem = 1
+pos = 52,-8
+
+[State 3162, Bind02]
+type = TargetBind
+trigger1 = AnimElem = 2
+pos = 52,-8
+
+[State 3162, Bind03]
+type = TargetBind
+trigger1 = AnimElem = 3
+pos = 32,-16
+
+[State 3162, Bind04]
+type = TargetBind
+trigger1 = AnimElem = 4
+pos = 32,-16
+
+[State 3162, Bind05]
+type = TargetBind
+trigger1 = AnimElem = 5
+pos = 32,-16
+
+[State 3162, Bind06]
+type = TargetBind
+trigger1 = AnimElem = 6
+pos = 36,-40
+
+[State 3162, Bind07]
+type = TargetBind
+trigger1 = AnimElem = 7
+pos = (Target,const(size.head.pos.x)) + 24,0
+
+[State 3162, Bind08]
+type = TargetBind
+trigger1 = AnimElem = 8
+pos = 16,-72
+
+[State 3162, Bind09]
+type = TargetBind
+trigger1 = AnimElem = 9
+pos = 4,-72
+
+[State 3162, Bind10]
+type = TargetBind
+trigger1 = AnimElem = 10
+pos = -4,-96
+
+[State 3162, Bind11]
+type = TargetBind
+trigger1 = AnimElem = 11
+pos = 2,-120
+
+[State 3162, Bind12]
+type = TargetBind
+trigger1 = AnimElem = 12
+pos = -4,-118
+
+[State 3162, Bind13]
+type = TargetBind
+trigger1 = AnimElem = 13
+pos = 0,-114
+
+[State 3162, Bind14]
+type = TargetBind
+trigger1 = AnimElem = 14
+pos = 6,-110
+
+[State 3162, Bind15]
+type = TargetBind
+trigger1 = AnimElem = 15
+pos = 16,-102
+
+[State 3162, Bind16]
+type = TargetBind
+trigger1 = AnimElem = 16
+pos = 6,-102
+
+[State 3162, Bind17]
+type = TargetBind
+trigger1 = AnimElem = 17
+pos = 6,-102
+
+[State 3162, Bind18]
+type = TargetBind
+trigger1 = AnimElem = 18,>=0 && AnimElem = 19,<0
+pos = 8,-110
+
+[State 3162, Bind19]
+type = TargetBind
+trigger1 = AnimElem = 19,>=0 && AnimElem = 20,<0
+pos = 0,-104
+
+[State 3162, Bind20]
+type = TargetBind
+trigger1 = AnimElem = 20,>=0 && AnimElem = 21,<0
+pos = 8,-100
+
+[State 3162, Bind21]
+type = TargetBind
+trigger1 = AnimElem = 21,>=0 && AnimElem = 22,<0
+pos = 20,-104
+
+[State 3162, Bind22]
+type = TargetBind
+trigger1 = AnimElem = 22,>=0 && AnimElem = 23,<0
+pos = 20,-102
+
+[State 3162, Bind23]
+type = TargetBind
+trigger1 = AnimElem = 23,>=0 && AnimElem = 24,<0
+pos = 18,-102
+
+[State 3162, Bind24]
+type = TargetBind
+trigger1 = AnimElem = 24,>=0 && AnimElem = 25,<0
+pos = 20,-126
+
+[State 3162, Bind25]
+type = TargetBind
+trigger1 = AnimElem = 25,>=0 && AnimElem = 26,<0
+pos = 18,-122
+
+[State 3162, Bind26]
+type = TargetBind
+trigger1 = AnimElem = 26,>=0
+pos = 18,-98
+
+[State 3162, ChangeState]
+type = ChangeState
+trigger1 = Vel Y > 0 && Pos Y >= 0
+value = 3163
+
+[Statedef 3163]
+type     = S
+movetype = A
+physics  = N
+velset   = 0,0
+anim     = 3111
+sprpriority = 2
+
+[State 3163, TargetState]
+type = TargetState
+Trigger1 = time = 0
+value = 3121
+
+[State 3163, PosSet]
+type = PosSet
+trigger1 = time = 0
+y = 0
+
+[State 3163, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3163, Width]
+type = Width
+trigger1 = 1
+edge = 60,0
+
+[State 3163, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s12,3
+
+[State 3163, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6045
+postype = P1
+pos = 56, 0
+sprpriority = -5
+ownpal = 1
+
+[State 3163, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6046
+postype = P1
+pos = 56, 0
+sprpriority = 15
+ownpal = 1
+
+[State 3163, EnvShake]
+type = EnvShake
+trigger1 = AnimElem = 1
+time = 12
+ampl = -8
+freq = 96
+phase = 96
+
+[State 3163, TargetBind]
+type = TargetBind
+Trigger1 = AnimElemtime(1) = 0
+pos = 56,-5
+
+[State 3163, DM/SDM Flash]
+type = EnvColor
+trigger1 = AnimElem = 1
+time = 1
+value = 255,255,255
+under = 1
+
+[State 3163, TargetLifeAdd]
+type = TargetLifeAdd
+trigger1 = AnimElem = 1
+value = -floor((((27-var(21))*fvar(7))*fvar(0))*(Const(data.attack)/100.0))
+
+[State 3163, ChangeState]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+;(ENEMY)ランニングスリー・掴まれ
+
+[Statedef 3171]
+type     = A
+movetype = H
+physics  = N
+ctrl     = 0
+
+[State 3171, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3171, ScreenBound]
+type = ScreenBound
+trigger1 = 1
+value = 1
+movecamera = 1,0
+
+[State 3171, BringToFront]
+type = SprPriority
+trigger1 = AnimElem = 8
+value = 2
+
+[State 3171, SendToBack]
+type = SprPriority
+trigger1 = AnimElem = 12
+value = 1
+
+[State 3120, ChangeAnim2]
+type = ChangeAnim2
+trigger1 = Time = 0
+value = 3171
+
+;この下、一行以上空ける事…

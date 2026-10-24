@@ -1,0 +1,528 @@
+;----------------------
+;----<>FINGERROLL<>----
+;-----------------------
+
+
+;--------------------------------------------------------
+;FINGERROLL <1> MOTION
+[Statedef 2500]
+type = S
+movetype = A
+physics = S
+anim = 2500
+velset = 0,0
+poweradd = 100
+ctrl = 0
+
+[State 2100, 0] 
+type = PlaySnd
+trigger1 = Time = 0
+value = 5,9
+volume = 50
+
+[State 2100, 0] 
+type = PlaySnd
+trigger1 = animelem = 3
+value = 5,10
+volume = -10
+
+[State 2500, 0]
+type = Helper
+;triggerall = NumHelper(171) = 0
+trigger1 = animelem = 1
+name = "ShootBall1"
+id = 2501
+pos = -36,-229
+postype = p1
+stateno = 2501
+helpertype = normal
+keyctrl = 0
+ownpal = 1
+
+[State 2500, 0]
+type = Helper
+;triggerall = NumHelper(171) = 0
+trigger1 = animelem = 3
+name = "ShootBall1"
+id = 2502
+pos = -36,-117
+postype = p1
+stateno = 2502
+helpertype = normal
+keyctrl = 0
+ownpal = 1
+
+[State 2500, 0]
+type = Helper
+;triggerall = NumHelper(171) = 0
+trigger1 = animelem = 4
+name = "ShootBall1"
+id = 2503
+pos = -36,-114
+postype = p1
+stateno = 2503
+helpertype = normal
+keyctrl = 0
+ownpal = 1
+
+[State 2500, 0]
+type = Helper
+;triggerall = NumHelper(171) = 0
+trigger1 = animelem = 5
+name = "ShootBall1"
+id = 2504
+pos = 53,10
+postype = p1
+stateno = 2504
+helpertype = normal
+keyctrl = 0
+ownpal = 1
+
+[State 2500, 1]
+type = ChangeState
+trigger1 = animelem = 2, = 9 && p2movetype = H && frontedgedist = [50,100]
+trigger1 = Prevstateno = 250
+trigger2 = animelem = 2, = 9 && p2movetype = H && frontedgedist = [100,150]
+trigger2 = Prevstateno = 235
+value = 2506
+ctrl = 0
+
+[State 2500, 1]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;-----------------------------------------
+
+;FINGERROLL Ball
+[Statedef 2501]
+type = A
+anim = 171
+sprpriority = 2
+
+[State 2501, 0]
+type = veladd
+trigger1 = time >= 0
+y = .35
+
+[State 2501, 3]
+type = changestate
+trigger1 = (root, movetype = H) || (parent, stateno = 2506)
+value = 2113
+ctrl = 0
+
+[State 2501, 4]
+type = destroyself
+trigger1 = time = 24
+
+;----------------------------
+
+;explod ball 1
+[Statedef 2502]
+type = A
+physics = N
+movetype = I
+anim = 172
+velset = 0,0
+sprpriority = 2
+
+[State 2502, 0]
+type = changestate
+trigger1 = root, movetype = H
+value = 2113
+ctrl = 0
+
+[State 2502, 1]
+type = destroyself
+trigger1 = time = 3
+
+;----------------------------------
+;explod ball 2
+[Statedef 2503]
+type = A
+physics = N
+movetype = I
+anim = 172
+velset = 0,0
+sprpriority = 2
+
+[State 2503, 0]
+type = changestate
+trigger1 = root, movetype = H
+value = 2113
+ctrl = 0
+
+[State 2503, 1]
+type = destroyself
+trigger1 = time = 3
+
+;----------------------------------
+;Attack Ball hitground
+[Statedef 2504]
+type = A
+physics = N
+movetype = I
+anim = 173
+velset = 0,0
+sprpriority = 2
+
+[State 2104, 1]
+type = PlaySnd
+trigger1 = time = 0
+value = 5,0
+volume = 50
+
+[State 180, 2]
+type = Explod
+trigger1 = time = 0
+id = 61
+anim = F61
+pos = 0,0
+sprpriority = -1
+ownpal = 1
+removeongethit = 1
+removetime = 14
+
+[State 2503, 0]
+type = changestate
+trigger1 = root, movetype = H
+value = 2113
+ctrl = 0
+
+[State 2504, 1]
+type = changestate
+trigger1 = time = 4
+value = 2505
+ctrl = 0
+;----------------------------------
+;Attack Ball Flying 
+[Statedef 2505]
+type = A
+physics = N
+movetype = A
+anim = 2101
+velset = 7,-5.5
+sprpriority = 2
+
+[State 2505, Override]
+type = HitOverride
+trigger1 = Time = 0
+attr = SCA, AP,AA,AT
+slot = 0
+stateno = 2113
+time = -1
+ignorehitpause = 1
+
+[State 2505, Override]
+type = hitby
+trigger1 = Time >= 0
+value = SCA, NP,SP,HP
+time = 1
+ignorehitpause = 1
+
+[State 2505, 3]
+type = HitDef
+trigger1 = AnimElem = 1
+attr = S, SP
+hitflag = MAFD
+animtype = hard
+damage = 109,5
+guardflag = MA
+pausetime = 7,14
+sparkno = S1041
+guard.sparkno = S1042
+sparkxy = 2,-7
+hitsound = S240,0
+guardsound = S200,3
+ground.type = High
+ground.slidetime = 14
+ground.hittime = 18
+ground.velocity = -8
+air.velocity = -6,-2.5
+airguard.velocity = -6,-1.5
+guard.velocity = -9
+ground.cornerpush.veloff = 0
+getpower = 40,40
+givepower = 40,40
+air.fall = 1
+
+[State 2505, 4]
+type = changestate
+trigger1 = movecontact
+value = 2110
+
+[State 2505, 5]
+type = changestate
+trigger1 = vel y > 0 && pos y >= 0
+value = 2104
+
+[State 2505, 6]
+type = destroyself
+trigger1 = time = 70
+
+;-------------------------------------------------
+;CORNER MISFIRE
+[Statedef 2506]
+type = S
+movetype = A
+physics = S
+anim = 240
+juggle = 10
+velset = 0
+poweradd = 70
+ctrl = 0
+
+[State 2506, 1]
+type = posadd
+trigger1 = animelem = 5 
+x = 10
+
+[State 2506, 2]
+type = PlaySnd
+trigger1 = Time = 0
+trigger1 = random < 750
+volume = 50
+value = 2,1
+channel = 0
+
+[State 2506, 3]
+type = PlaySnd
+trigger1 = Time = 0
+value = 200,2
+
+[State 2506, 4]
+type = HitDef
+trigger1 = animelem = 4 
+attr = S, SA
+animtype = hard
+damage = 109,5
+guardflag = MA
+hitflag = MAF
+pausetime = 14,14
+sparkno = S1041
+guard.sparkno = S1042
+sparkxy = 0,-85
+hitsound = S280,0
+guardsound = S200,3
+ground.type = High
+ground.slidetime = 18
+ground.hittime = 18
+ground.velocity = -10.5,-4
+air.velocity = -9,-2.5
+airguard.velocity = -10,-1.5
+guard.velocity = -10
+getpower = 30,10
+givepower = 30,10
+fall = 1
+air.fall = 1
+
+[State 2506, 5]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;==================================================================
+
+
+;--------------------------------------------------------
+;FINGERROLL <2> MOTION
+[Statedef 2600]
+type = S
+movetype = A
+physics = S
+anim = 2500
+velset = 0,0
+poweradd = 100
+ctrl = 0
+
+[State 2100, 0] 
+type = PlaySnd
+trigger1 = Time = 0
+value = 5,9
+volume = 50
+
+[State 2100, 0] 
+type = PlaySnd
+trigger1 = animelem = 3
+value = 5,10
+volume = -10
+
+[State 2500, 0]
+type = Helper
+;triggerall = NumHelper(171) = 0
+trigger1 = animelem = 1
+name = "ShootBall1"
+id = 2501
+pos = -36,-229
+postype = p1
+stateno = 2501
+helpertype = normal
+keyctrl = 0
+ownpal = 1
+
+[State 2500, 0]
+type = Helper
+;triggerall = NumHelper(171) = 0
+trigger1 = animelem = 3
+name = "ShootBall1"
+id = 2502
+pos = -36,-117
+postype = p1
+stateno = 2502
+helpertype = normal
+keyctrl = 0
+ownpal = 1
+
+[State 2500, 0]
+type = Helper
+;triggerall = NumHelper(171) = 0
+trigger1 = animelem = 4
+name = "ShootBall1"
+id = 2503
+pos = -36,-114
+postype = p1
+stateno = 2503
+helpertype = normal
+keyctrl = 0
+ownpal = 1
+
+[State 2500, 0]
+type = Helper
+;triggerall = NumHelper(171) = 0
+trigger1 = animelem = 5
+name = "ShootBall1"
+id = 2601
+pos = 53,10
+postype = p1
+stateno = 2601
+helpertype = normal
+keyctrl = 0
+ownpal = 1
+
+[State 2500, 1]
+type = ChangeState
+trigger1 = animelem = 2, = 9 && p2movetype = H && frontedgebodydist <= 100
+trigger1 = Prevstateno = 250
+trigger2 = animelem = 2, = 9 && p2movetype = H && frontedgebodydist <= 180
+trigger2 = Prevstateno = 235
+value = 2506
+ctrl = 0
+
+[State 2500, 1]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;-----------------------------------------
+
+;----------------------------------
+;Attack Ball hitground
+[Statedef 2601]
+type = A
+physics = N
+movetype = I
+anim = 173
+velset = 0,0
+sprpriority = 2
+
+[State 2503, 0]
+type = changestate
+trigger1 = root, movetype = H
+value = 2113
+ctrl = 0
+
+[State 2104, 1]
+type = PlaySnd
+trigger1 = time = 0
+value = 5,0
+volume = 50
+
+[State 180, 2]
+type = Explod
+trigger1 = time = 0
+id = 61
+anim = F61
+pos = 0,0
+sprpriority = -1
+ownpal = 1
+removeongethit = 1
+removetime = 14
+
+[State 2601, 1]
+type = changestate
+trigger1 = time = 4
+value = 2602
+ctrl = 0
+
+;----------------------------------
+;Attack Ball Flying 
+[Statedef 2602]
+type = A
+physics = N
+movetype = A
+anim = 2101
+velset = 7,-3.5
+sprpriority = 2
+
+[State 2505, Override]
+type = HitOverride
+trigger1 = Time >= 0
+attr = SCA, AP,AA,AT
+slot = 0
+stateno = 2113
+time = 1
+ignorehitpause = 1
+
+[State 2505, Override]
+type = hitby
+trigger1 = Time >= 0
+value = SCA, NP,SP,HP
+time = 1
+ignorehitpause = 1
+
+[State 2505, 3]
+type = HitDef
+trigger1 = AnimElem = 1
+attr = S, SP
+hitflag = MAFD
+animtype = hard
+damage = 109,5
+guardflag = MA
+pausetime = 7,14
+sparkno = S1041
+guard.sparkno = S1042
+sparkxy = 2,-7
+hitsound = S240,0
+guardsound = S200,3
+ground.type = High
+ground.slidetime = 14
+ground.hittime = 18
+ground.velocity = -8
+air.velocity = -6,-2.5
+airguard.velocity = -6,-1.5
+guard.velocity = -9
+ground.cornerpush.veloff = 0
+getpower = 40,40
+givepower = 40,40
+air.fall = 1
+
+[State 2505, 4]
+type = changestate
+trigger1 = movecontact
+value = 2110
+
+[State 2505, 5]
+type = changestate
+trigger1 = vel y > 0 && pos y >= 0
+value = 2104
+
+[State 2505, 6]
+type = destroyself
+trigger1 = time = 70
+
+;-------------------------------------------------
+
+ 

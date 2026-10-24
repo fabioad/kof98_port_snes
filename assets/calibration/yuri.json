@@ -1,0 +1,74 @@
+{
+  "character": "yuri",
+  "config_hash": "5aa667a4a696822eaa969a4f46ddca5e4153def1e59cbcdb91de449961f7f8f6",
+  "corrections": [
+    {
+      "after": 0,
+      "before": 384,
+      "confidence": "ALTA",
+      "controller": 17,
+      "expression": "0",
+      "key": "gvx",
+      "kind": "combat",
+      "property": "ground.velocity",
+      "runtime_scope": "native_scalar",
+      "sid": 64,
+      "source": {
+        "file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Yuri/yuri_H.cns",
+        "line": 1980
+      },
+      "state": 513,
+      "status": "correctable"
+    },
+    {
+      "after": 0,
+      "before": 384,
+      "confidence": "ALTA",
+      "controller": 17,
+      "expression": "0",
+      "key": "avx",
+      "kind": "combat",
+      "property": "air.velocity",
+      "runtime_scope": "native_scalar",
+      "sid": 64,
+      "source": {
+        "file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Yuri/yuri_H.cns",
+        "line": 1981
+      },
+      "state": 513,
+      "status": "correctable"
+    }
+  ],
+  "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Yuri/!yuri.def",
+  "inputs": {
+    "assets/characters/Yuri/!yuri.def": "88a322f6cabab673e838f6f88b4ac903b33284b8f3c52ba20e729fcc645bd74c",
+    "assets/characters/Yuri/Yuri_SNES.cmd": "c9851ec789bca9b9b61d4da2b7a0ffd35edaa9b2021c964d1d81b758ae4adfa5",
+    "assets/characters/Yuri/Yuri_SNES.cns": "02e4d43f86063d29e4959354857dea925d33da285c41f1412001cb05c25614b5",
+    "assets/characters/Yuri/member.cns": "8b4a8535add9c78b3b5619029d6ce65026f89a63e8d94cc51faa4ac5fb248c9e",
+    "assets/characters/Yuri/yarare.cns": "09da9cbd4a73ecc2e7187194636f067ced5ecf25995980fe4acc4293339d5bf4",
+    "assets/characters/Yuri/yuri-2.cns": "ad88ee28ee5374639954fe4277e69ee4d9764ed501096558a768015af0702c3c",
+    "assets/characters/Yuri/yuri.air": "f0373a08a9bac4ee684d69fd3e7b809612ef27924fb1ee627c06029c4a8aae75",
+    "assets/characters/Yuri/yuri.cmd": "1a276b0dfc1610c7ce1a40f0801ce1c8bc489a3f3d4db676713562658b14bf1e",
+    "assets/characters/Yuri/yuri.cns": "0fe8f9a8678a7e3757acd1a6f45d586295895ffc86d2c771d8820ec8c1f4fc96",
+    "assets/characters/Yuri/yuri.sff": "89eb24b3491d024b4ada5dfb0264dded9c18032a47ecaaa732a1913e8ade5052",
+    "assets/characters/Yuri/yuri.snd": "73d0a730c29d8438ad3a13fa1e55fb0881300784d41eb77388a67fa8346ba99a",
+    "assets/characters/Yuri/yuri01.act": "fcfe8f485f8ccd5f0a6b44cfe711671f24876312aeead1667788f7662e20d1e5",
+    "assets/characters/Yuri/yuri02.act": "db1dcc30413d04156acf2daa59ff283bb47474b105663c195d514eabd84fdbe2",
+    "assets/characters/Yuri/yuri03.act": "68785b6692b75ee3dc0634d6cfaa155203e1a75b1a2e80696b99c566d67a5d8c",
+    "assets/characters/Yuri/yuri04.act": "a70c7af3ea2666bc546b318994f49b63196e8a3ca5de311038ad6652deed58ea",
+    "assets/characters/Yuri/yuri05.act": "93c1d7eb5d25f3bfdec66eeefcdd403c42e2c5b35e6987f86083ffbc324e4232",
+    "assets/characters/Yuri/yuri06.act": "ee8d344ff40f0fe937b4f5d53eeda14c3755799841937ac0ce0cd5ae01951abd",
+    "assets/characters/Yuri/yuri07.act": "f73c6dd5e006112d35881025d23d14f49d13624ef2b15a4a5b9a72ba8307e75f",
+    "assets/characters/Yuri/yuri08.act": "3ba963c7d58a469b5367a93af9fd3f5ac5cee1d5efb955b05a415fb8e81a2107",
+    "assets/characters/Yuri/yuri09.act": "ca2b8043a7a11bd02e4e0291a3acaeb8aa9f3f2dfa05e5ba7c5c706013cecfd5",
+    "assets/characters/Yuri/yuri10.act": "95b36d8d282db9ce1073c9578a45c936a1d508514bde0228f2966e135e3f3a40",
+    "assets/characters/Yuri/yuri11.act": "994b9e25fe4fa49832f6641c5cecf58975797cb86dc07a6672cbe0ab870077cf",
+    "assets/characters/Yuri/yuri12.act": "fa34678ef6bdfa0a8861dabb7f7bb7ba5be5032ce9e917086ecd2ead6e25161b",
+    "assets/characters/Yuri/yuri_H.cns": "744aa666a32e4ae789b8efd3955f425a00a6d4942fdd1a3267633bf2fb2fc796",
+    "assets/characters/Yuri/yuri_I.cns": "3ce6b906e0c25dadb3352668f182752e2d27e6d1ca211cc02410dbb06fe4964e",
+    "assets/characters/Yuri/yuri_S.cns": "a0894034410a363e4bf903f1132f7274e94434d1945ef3c69bcad322e9941a35",
+    "assets/characters/Yuri/yuri_common.cns": "9d18d9d4fda75a1b15f8db32b7f0d3fcb5c4cb94f5a5772d3668c806c1c711f6",
+    "assets/characters/Yuri/yuri_helper.cns": "2c1eb33dfea4c9f663b258d7400ded707e50f647e4ee931f665ffbd5ca5f8c04"
+  },
+  "schema": 1
+}

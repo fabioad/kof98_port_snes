@@ -1,0 +1,1128 @@
+; SPC700 driver: 6 music voices + 2 SFX. Sequences are 60 Hz MIDI-derived
+; events; samples are BRR. This is how the S-DSP is meant to be used.
+
+.MEMORYMAP
+    SLOTSIZE $10000
+    DEFAULTSLOT 0
+    SLOT 0 $0000
+.ENDME
+
+.ROMBANKSIZE $10000
+.ROMBANKS 1
+
+.DEFINE APUIO0      $F4
+.DEFINE APUIO1      $F5
+.DEFINE APUIO2      $F6
+.DEFINE APUIO3      $F7
+.DEFINE TIMER0      $FA
+.DEFINE COUNTER0    $FD
+.DEFINE CONTROL     $F1
+.DEFINE DSPADDR     $F2
+.DEFINE DSPDATA     $F3
+
+.DEFINE CMD_PLAY    1
+.DEFINE CMD_SFX     2
+.DEFINE CMD_STOP    3
+.DEFINE CMD_LOAD    4
+.DEFINE CMD_LOADV0  5               ; voice pack -> $E000, dir slots 22..25
+.DEFINE CMD_LOADV1  6               ; voice pack -> $F000, dir slots 26..29
+
+.DEFINE OP_REST     $80
+.DEFINE OP_INST     $81
+.DEFINE OP_VOL      $82
+.DEFINE OP_PAN      $83
+.DEFINE OP_LOOP     $FE
+.DEFINE OP_END      $FF
+
+.DEFINE INST_KICK   9
+.DEFINE INST_SFX0   12
+
+.ENUM $00
+    ch_wait     ds 6
+    ch_dur      ds 6
+    ch_vol      ds 6
+    ch_inst     ds 6
+    ch_pan      ds 6              ; 0=hard left, 1=left, 2=center, 3=right
+    ch_op       ds 6
+    ch_arg      ds 6
+    ch_plo      ds 6
+    ch_phi      ds 6
+    ch_slo      ds 6
+    ch_shi      ds 6
+    song_lo     db
+    song_hi     db
+    playing     db
+    sfx_rr      db
+    sfx_used    db
+    sfx_t6      db
+    sfx_t7      db
+    sfx_k6      db              ; KOFF hold ticks for voice 6
+    sfx_k7      db              ; KOFF hold ticks for voice 7
+    sfx_seq_seen db              ; last CMD_SFX token consumed from APUIO2
+    tmp0        db
+    tmp1        db
+    tmp2        db
+    tmp3        db
+    ch          db
+    kon_bits    db
+    koff_bits   db
+    ptr_lo      db
+    ptr_hi      db
+    cmd_id      db
+    cmd_arg     db
+    load_dst    db              ; dest page for CMD_LOAD* uploads
+    load_dir    db              ; $FF = song (StartSong), else first DIR slot
+    log_hb      db              ; AUDIOLOG: per-tick heartbeat counter
+.ENDE
+
+.BANK 0 SLOT 0
+.ORGA $0200
+.SECTION "SpcDriver" FORCE
+
+SpcStart:
+    CLRP
+    MOV     X, #$EF
+    MOV     SP, X
+    ; The CPU waits for the exact kick value before continuing the IPL
+    ; upload handshake. Echo it before the DSP initialization work.
+    MOV     A, APUIO0
+    MOV     APUIO0, A
+    MOV     A, #133             ; 8000/133 ≈ 60.15 Hz
+    MOV     TIMER0, A
+    MOV     A, #$01             ; IPL unmapped, timer0 on
+    MOV     CONTROL, A
+    CALL    !DspInit
+    MOV     A, COUNTER0         ; ack
+    MOV     APUIO0, #$00
+    MOV     APUIO1, #$00
+    MOV     playing, #$00
+    MOV     sfx_rr, #$00
+    MOV     sfx_used, #$00
+    MOV     sfx_t6, #$00
+    MOV     sfx_t7, #$00
+    MOV     sfx_k6, #$00
+    MOV     sfx_k7, #$00
+    MOV     sfx_seq_seen, #$00
+MainLoop:
+    CALL    !CheckCmd
+.IFDEF AUDIOLOG
+    MOV     A, cmd_id           ; last command byte seen by the driver
+    MOV     APUIO3, A
+.ENDIF
+    MOV     A, COUNTER0
+    BEQ     MainLoop
+TickAccum:
+    MOV     tmp3, A
+TickOne:
+    CALL    !TickMusic
+.IFDEF AUDIOLOG
+    INC     log_hb
+    MOV     A, log_hb
+    MOV     APUIO1, A           ; tick heartbeat
+    CALL    !ReadEndX
+    MOV     APUIO2, A           ; ENDX snapshot after the tick
+.ENDIF
+    DBNZ    tmp3, TickOne
+    BRA     MainLoop
+
+CheckCmd:
+    MOV     A, APUIO0
+    BNE     CheckCmdActive
+    RET
+CheckCmdActive:
+    MOV     cmd_id, A
+    MOV     A, APUIO1
+    MOV     cmd_arg, A
+    MOV     A, cmd_id
+    CMP     A, #CMD_LOAD
+    BNE     CheckLoadV0
+    JMP     !DoLoad
+CheckLoadV0:
+    CMP     A, #CMD_LOADV0
+    BNE     CheckLoadV1
+    JMP     !DoLoadV0
+CheckLoadV1:
+    CMP     A, #CMD_LOADV1
+    BNE     CheckPlayCmd
+    JMP     !DoLoadV1
+CheckPlayCmd:
+    MOV     APUIO0, A           ; echo play/sfx/stop
+    CMP     A, #CMD_PLAY
+    BNE     CheckSfxCmd
+    JMP     !DoPlay
+CheckSfxCmd:
+    CMP     A, #CMD_SFX
+    BNE     CheckStopCmd
+    ; APUIO2 carries a monotonically changing event token. This lets two
+    ; identical SFX ids be accepted consecutively while rejecting a stale
+    ; port value that is observed more than once.
+    MOV     A, APUIO2
+    CMP     A, sfx_seq_seen
+    BEQ     CmdAck
+    MOV     sfx_seq_seen, A
+    JMP     !DoSfx
+CheckStopCmd:
+    CMP     A, #CMD_STOP
+    BNE     CmdAck
+    JMP     !DoStop
+CmdAck:
+    MOV     APUIO0, #$00
+CmdDone:
+    RET
+
+DoLoad:
+    MOV     load_dst, #$82
+    MOV     load_dir, #$FF      ; song upload: StartSong when the copy ends
+    BRA     DoLoadGo
+DoLoadV0:
+    MOV     load_dst, #$E0      ; side-0 voice pack, DIR slots 22..25
+    MOV     load_dir, #22
+    BRA     DoLoadGo
+DoLoadV1:
+    MOV     load_dst, #$F0      ; side-1 voice pack, DIR slots 26..29
+    MOV     load_dir, #26
+DoLoadGo:
+    MOV     A, APUIO2
+    MOV     tmp0, A
+    MOV     A, APUIO3
+    MOV     tmp1, A
+    MOV     A, cmd_id
+    MOV     APUIO0, A           ; echo after length is latched
+    MOV     ptr_lo, #$00
+    ; The Java SND effects expand the BRR bank through $8093. Keep uploaded
+    ; sequences above that end address so loading Cipher cannot overwrite the
+    ; tail of the sample bank.  Voice packs live at $E000/$F000 instead.
+    MOV     ptr_hi, load_dst
+    MOV     Y, #$00
+LoadByte:
+    MOV     A, tmp0
+    OR      A, tmp1
+    BEQ     LoadDone
+    MOV     tmp3, #$80          ; sender-stall grace: ~0.3s of polls, then
+    MOV     X, #$FF             ;  bail -- a stuck wait holds io0 nonzero and
+LoadWaitY:                      ;  wedges every later command (dead audio)
+    MOV     A, APUIO0
+    MOV     tmp2, A
+    MOV     A, Y
+    CMP     A, tmp2
+    BEQ     LoadGotY
+    DEC     X
+    BNE     LoadWaitY
+    DEC     tmp3
+    BNE     LoadWaitY
+    JMP     !LoadAbort
+LoadGotY:
+    MOV     X, #$00
+    MOV     A, APUIO1
+    MOV     [ptr_lo+X], A
+    INC     ptr_lo
+    BNE     LoadB1
+    INC     ptr_hi
+LoadB1:
+    MOV     A, APUIO2
+    MOV     [ptr_lo+X], A
+    INC     ptr_lo
+    BNE     LoadB2
+    INC     ptr_hi
+LoadB2:
+    MOV     A, APUIO3
+    MOV     [ptr_lo+X], A
+    INC     ptr_lo
+    BNE     LoadB3
+    INC     ptr_hi
+LoadB3:
+    MOV     A, Y
+    MOV     APUIO0, A
+    INC     Y
+    INC     Y
+    INC     Y
+    MOV     A, tmp0
+    SETC
+    SBC     A, #3
+    MOV     tmp0, A
+    BCS     LoadByte
+    DEC     tmp1
+    BRA     LoadByte
+LoadAbort:
+    MOV     APUIO0, #$00        ; sender vanished mid-stream: release the
+    RET                         ;  command port so later SFX/songs still play
+LoadDone:
+    MOV     A, load_dir
+    BMI     LoadSongTail        ; $FF = song upload
+    CALL    !VoxDirPatch        ; voice pack: patch DIR slots from the header
+    JMP     !CmdAck
+LoadSongTail:
+    ; Start every newly uploaded song immediately, without waiting for a
+    ; later CPU input or PLAY handshake.
+    CALL    !StartSong
+    JMP     !CmdAck
+
+; Copy the voice-pack dir header into SampleDir.  Pack at load_dst:$00 =
+; [count][u16 offset]*count + BRR blobs; each offset is relative to the
+; pack base, so DIR start/loop both land on base+offset (one-shot clips).
+VoxDirPatch:
+    MOV     ptr_lo, #$00
+    MOV     A, load_dst
+    MOV     ptr_hi, A
+    MOV     Y, #$00
+    MOV     A, [ptr_lo]+Y       ; clip count
+    MOV     tmp3, A
+    MOV     A, load_dir
+    ASL     A
+    ASL     A
+    MOV     tmp2, A             ; SampleDir byte offset (base slot * 4)
+    MOV     Y, #$01
+VDP_Loop:
+    MOV     A, tmp3
+    BEQ     VDP_Done
+    MOV     A, [ptr_lo]+Y       ; offset lo
+    MOV     tmp0, A
+    INC     Y
+    MOV     A, [ptr_lo]+Y       ; offset hi
+    INC     Y
+    CLRC
+    ADC     A, load_dst         ; start hi = off hi + pack page
+    MOV     tmp1, A
+    MOV     X, tmp2
+    MOV     A, tmp0
+    MOV     !SampleDir+X, A     ; start lo
+    MOV     !SampleDir+2+X, A   ; loop lo = start (one-shot)
+    MOV     A, tmp1
+    MOV     !SampleDir+1+X, A   ; start hi
+    MOV     !SampleDir+3+X, A   ; loop hi
+    INC     tmp2
+    INC     tmp2
+    INC     tmp2
+    INC     tmp2
+    DEC     tmp3
+    BRA     VDP_Loop
+VDP_Done:
+    RET
+
+DoStop:
+    MOV     playing, #$00
+    MOV     sfx_used, #$00
+    MOV     sfx_t6, #$00
+    MOV     sfx_t7, #$00
+    MOV     sfx_k6, #$00
+    MOV     sfx_k7, #$00
+    MOV     A, #$FF
+    MOV     Y, #$5C
+    CALL    !DspW
+    JMP     !CmdAck
+
+DoPlay:
+    CALL    !StartSong
+    JMP     !CmdAck
+
+DoSfx:
+    ; Keep the echo visible while PlaySfx runs so the 65816 can complete its
+    ; handshake. sfx_seq_seen blocks a stale command token from being
+    ; processed again; CmdAck releases the port after DSP programming.
+    CALL    !PlaySfx
+    JMP     !CmdAck
+
+StartSong:
+    MOV     song_lo, #$00
+    MOV     song_hi, #$82
+    MOV     playing, #$01
+    MOV     sfx_used, #$00
+    MOV     sfx_t6, #$00
+    MOV     sfx_t7, #$00
+    MOV     sfx_k6, #$00
+    MOV     sfx_k7, #$00
+    MOV     A, #$FF             ; koff music and SFX voices
+    MOV     Y, #$5C
+    CALL    !DspW
+    MOV     ch, #$00
+InitCh:
+    MOV     X, ch
+    MOV     A, #$50
+    MOV     ch_vol+X, A
+    MOV     A, #$00
+    MOV     ch_dur+X, A
+    MOV     ch_inst+X, A
+    MOV     A, #$02
+    MOV     ch_pan+X, A
+    ; track offset = word at song+2+ch*2
+    MOV     A, ch
+    ASL     A
+    MOV     tmp0, A
+    MOV     A, song_lo
+    CLRC
+    ADC     A, #$02
+    MOV     ptr_lo, A
+    MOV     A, song_hi
+    ADC     A, #$00
+    MOV     ptr_hi, A
+    MOV     A, ptr_lo
+    CLRC
+    ADC     A, tmp0
+    MOV     ptr_lo, A
+    MOV     A, ptr_hi
+    ADC     A, #$00
+    MOV     ptr_hi, A
+    CALL    !ReadPtr
+    MOV     tmp0, A             ; offset lo
+    CALL    !IncPtr
+    CALL    !ReadPtr
+    MOV     tmp1, A             ; offset hi
+    MOV     A, song_lo
+    CLRC
+    ADC     A, tmp0
+    MOV     X, ch
+    MOV     ch_plo+X, A
+    MOV     ch_slo+X, A
+    MOV     A, song_hi
+    ADC     A, tmp1
+    MOV     ch_phi+X, A
+    MOV     ch_shi+X, A
+    CALL    !FetchCh
+    INC     ch
+    MOV     A, ch
+    CMP     A, #$06
+    BNE     InitCh
+    RET
+
+; Apply pending events whose wait has expired, then tick durations.
+TickSfx:
+    ; ENDX is the DSP's authoritative end-of-sample indication. Read it in
+    ; addition to the duration table so a one-shot can never remain audible
+    ; if a BRR decoder/emulator keeps decoding after the E flag.
+    CALL    !ReadEndX
+    MOV     tmp0, A
+    MOV     A, sfx_used
+    AND     A, #$40
+    BEQ     TickSfxEnd6Done
+    MOV     A, tmp0
+    AND     A, #$40
+    BEQ     TickSfxEnd6Done
+    MOV     sfx_t6, #$00
+    MOV     sfx_k6, #$00
+    MOV     A, sfx_used
+    AND     A, #$BF
+    MOV     sfx_used, A
+    CALL    !StopSfx6
+TickSfxEnd6Done:
+    MOV     A, sfx_used
+    AND     A, #$80
+    BEQ     TickSfxEnd7Done
+    MOV     A, tmp0
+    AND     A, #$80
+    BEQ     TickSfxEnd7Done
+    MOV     sfx_t7, #$00
+    MOV     sfx_k7, #$00
+    MOV     A, sfx_used
+    AND     A, #$7F
+    MOV     sfx_used, A
+    CALL    !StopSfx7
+TickSfxEnd7Done:
+    ; KOFF is sampled by the DSP asynchronously. Hold each stop request for
+    ; four 60 Hz ticks so a busy DSP cannot lose the only KOFF write.
+    MOV     A, sfx_k6
+    BEQ     TickSfx6Run
+    DEC     A
+    MOV     sfx_k6, A
+    CALL    !StopSfx6
+    BRA     TickSfx7
+TickSfx6Run:
+    MOV     A, sfx_t6
+    BEQ     TickSfx6Idle
+    DEC     A
+    MOV     sfx_t6, A
+    BNE     TickSfx7
+    MOV     sfx_k6, #$04
+    CALL    !StopSfx6
+    BRA     TickSfx7
+TickSfx6Idle:
+    ; Keep an inactive SFX voice electrically silent even if a previous
+    ; KOFF was missed by the DSP.
+    CALL    !MuteSfx6
+TickSfx7:
+    MOV     A, sfx_k7
+    BEQ     TickSfx7Run
+    DEC     A
+    MOV     sfx_k7, A
+    CALL    !StopSfx7
+    RET
+TickSfx7Run:
+    MOV     A, sfx_t7
+    BEQ     TickSfx7Idle
+    DEC     A
+    MOV     sfx_t7, A
+    BNE     TickSfxDone
+    MOV     sfx_k7, #$04
+    CALL    !StopSfx7
+    BRA     TickSfxDone
+TickSfx7Idle:
+    CALL    !MuteSfx7
+TickSfxDone:
+    RET
+
+StopSfx6:
+    MOV     A, #$80
+    ; Replace the voice-7 bit with voice 6's bit.
+    LSR     A
+    MOV     Y, #$5C
+    CALL    !DspW
+    MOV     A, #$00
+    MOV     Y, #$67             ; GAIN: force the one-shot envelope silent
+    CALL    !DspW
+    MOV     Y, #$60
+    CALL    !DspW
+    MOV     Y, #$61
+    CALL    !DspW
+    RET
+
+StopSfx7:
+    MOV     A, #$80
+    MOV     Y, #$5C
+    CALL    !DspW
+    MOV     A, #$00
+    MOV     Y, #$77             ; GAIN: force the one-shot envelope silent
+    CALL    !DspW
+    MOV     Y, #$70
+    CALL    !DspW
+    MOV     Y, #$71
+    CALL    !DspW
+    RET
+
+MuteSfx6:
+    MOV     A, #$00
+    MOV     Y, #$60
+    CALL    !DspW
+    MOV     Y, #$61
+    CALL    !DspW
+    RET
+
+MuteSfx7:
+    MOV     A, #$00
+    MOV     Y, #$70
+    CALL    !DspW
+    MOV     Y, #$71
+    CALL    !DspW
+    RET
+
+TickMusic:
+    CALL    !TickSfx
+    MOV     A, playing
+    BEQ     TickDone
+    MOV     kon_bits, #$00
+    MOV     koff_bits, #$00
+    MOV     ch, #$00
+TickCh:
+    MOV     X, ch
+    MOV     A, ch_dur+X
+    BEQ     TickWait
+    DEC     A
+    MOV     ch_dur+X, A
+    BNE     TickWait
+    MOV     A, ch
+    ASL     A
+    ASL     A
+    ASL     A
+    ASL     A
+    MOV     tmp0, A             ; v*16
+    SETC
+    SBC     A, tmp0             ; 0? want bit ch
+    ; koff this voice: kon_bits handled below
+    MOV     A, #$01
+    MOV     Y, ch
+ShiftKoff:
+    BEQ     StoreKoff
+    ASL     A
+    DEC     Y
+    BRA     ShiftKoff
+StoreKoff:
+    OR      A, koff_bits
+    MOV     koff_bits, A
+TickWait:
+    MOV     X, ch
+    MOV     A, ch_wait+X
+    BEQ     NeedApply
+    DEC     A
+    MOV     ch_wait+X, A
+    BNE     NextCh
+NeedApply:
+    CALL    !ApplyCh
+NextCh:
+    INC     ch
+    MOV     A, ch
+    CMP     A, #$06
+    BNE     TickCh
+    ; KON on a playing voice already retriggers it, so the KOFF of a note
+    ; whose duration ends on the same tick its successor starts is redundant
+    ; — and harmful: the S-DSP samples KON and KOFF for a voice in the same
+    ; DSP cycle as undefined (in practice the key-on is lost and the note
+    ; never sounds). Mask the retiring bits of voices that key on this tick.
+    MOV     A, kon_bits
+    EOR     A, #$FF
+    AND     A, koff_bits
+    BEQ     DoKon
+    MOV     Y, #$5C
+    CALL    !DspW
+DoKon:
+    MOV     A, kon_bits
+    BEQ     TickDone
+    ; Clear stale ENDX latches first: a music voice whose previous one-shot
+    ; ended with ENDX set silently drops the next KON. $FF, not $00: cores
+    ; that implement "ENDX &= ~value" would clear nothing.
+    MOV     A, #$FF
+    MOV     Y, #$7C
+    CALL    !DspW
+    MOV     A, kon_bits
+    MOV     Y, #$4C
+    CALL    !DspW
+    ; KON/KOFF latch the last written value. While a bit remains set the DSP
+    ; retriggers (KON) or holds released (KOFF) that voice every DSP cycle,
+    ; which leaves freshly keyed notes at ~zero output.  Hold the request for
+    ; a few DSP periods, then release the latches.
+    CALL    !DspWait
+    MOV     A, #$00
+    MOV     Y, #$4C
+    CALL    !DspW
+    MOV     Y, #$5C
+    CALL    !DspW
+TickDone:
+    RET
+
+ApplyCh:
+    MOV     X, ch
+ApplyLoop:
+    MOV     A, ch_wait+X
+    BNE     ApplyRet
+    MOV     A, ch_op+X
+    CMP     A, #OP_LOOP
+    BEQ     DoLoop
+    CMP     A, #OP_INST
+    BEQ     DoInst
+    CMP     A, #OP_VOL
+    BEQ     DoVol
+    CMP     A, #OP_PAN
+    BEQ     DoPan
+    CMP     A, #OP_REST
+    BEQ     DoRest
+    CMP     A, #OP_END
+    BEQ     DoEnd
+    ; note 0-127
+    CALL    !VoiceOn
+    MOV     X, ch
+    MOV     A, ch_arg+X
+    MOV     ch_dur+X, A
+    CALL    !FetchCh
+    RET
+DoInst:
+    MOV     A, ch_arg+X
+    MOV     ch_inst+X, A
+    CALL    !FetchCh
+    MOV     X, ch
+    BRA     ApplyLoop
+DoVol:
+    MOV     A, ch_arg+X
+    MOV     ch_vol+X, A
+    CALL    !FetchCh
+    MOV     X, ch
+    BRA     ApplyLoop
+DoPan:
+    MOV     A, ch_arg+X
+    MOV     ch_pan+X, A
+    CALL    !FetchCh
+    MOV     X, ch
+    BRA     ApplyLoop
+DoRest:
+    MOV     A, ch_arg+X
+    MOV     ch_dur+X, A
+    CALL    !FetchCh
+    RET
+DoEnd:
+    ; Legacy-format songs (song_intro/song_title) place OP_END mid-stream as
+    ; a phrase separator. Without this case the byte falls through to the
+    ; note path and VoiceOn keys the voice at pitch index $FF — out of the
+    ; pitch table — producing a sustained high-pitched phantom tone.
+    CALL    !FetchCh
+    MOV     X, ch
+    BRA     ApplyLoop
+DoLoop:
+    MOV     X, ch
+    MOV     A, ch_slo+X
+    MOV     ch_plo+X, A
+    MOV     A, ch_shi+X
+    MOV     ch_phi+X, A
+    CALL    !FetchCh
+    MOV     X, ch
+    BRA     ApplyLoop
+ApplyRet:
+    RET
+
+FetchCh:
+    MOV     X, ch
+    MOV     A, ch_plo+X
+    MOV     ptr_lo, A
+    MOV     A, ch_phi+X
+    MOV     ptr_hi, A
+    CALL    !ReadPtr
+    MOV     X, ch
+    MOV     ch_wait+X, A
+    CALL    !IncPtr
+    CALL    !ReadPtr
+    MOV     X, ch
+    MOV     ch_op+X, A
+    CALL    !IncPtr
+    CALL    !ReadPtr
+    MOV     X, ch
+    MOV     ch_arg+X, A
+    CALL    !IncPtr
+    MOV     X, ch
+    MOV     A, ptr_lo
+    MOV     ch_plo+X, A
+    MOV     A, ptr_hi
+    MOV     ch_phi+X, A
+    RET
+
+ReadPtr:
+    MOV     X, #$00
+    MOV     A, [ptr_lo+X]
+    RET
+
+IncPtr:
+    INC     ptr_lo
+    BNE     IncPtrDone
+    INC     ptr_hi
+IncPtrDone:
+    RET
+
+; Start note on music voice `ch`. Uses ch_op as MIDI note, ch_inst, ch_vol.
+VoiceOn:
+    MOV     A, ch
+    ASL     A
+    ASL     A
+    ASL     A
+    ASL     A
+    MOV     tmp2, A             ; v*16
+    MOV     X, ch
+    MOV     A, ch_inst+X
+    MOV     Y, tmp2
+    ; Y = v*16 + 4 (SRCN)
+    MOV     A, Y
+    CLRC
+    ADC     A, #$04
+    MOV     Y, A
+    MOV     A, ch_inst+X
+    CALL    !DspW
+    ; ADSR
+    MOV     A, tmp2
+    CLRC
+    ADC     A, #$05
+    MOV     Y, A
+    MOV     A, ch_inst+X
+    CMP     A, #INST_KICK
+    BCS     PercAdsr
+    MOV     A, #$8F
+    CALL    !DspW
+    MOV     A, tmp2
+    CLRC
+    ADC     A, #$06
+    MOV     Y, A
+    MOV     A, #$E8
+    CALL    !DspW
+    BRA     SetPitch
+PercAdsr:
+    MOV     A, #$00             ; GAIN mode
+    CALL    !DspW
+    MOV     A, tmp2
+    CLRC
+    ADC     A, #$07
+    MOV     Y, A
+    MOV     A, #$7F
+    CALL    !DspW
+SetPitch:
+    MOV     X, ch
+    MOV     A, ch_inst+X
+    CMP     A, #INST_KICK
+    BCS     PercPUse
+    MOV     A, ch_op+X          ; MIDI note
+    ASL     A
+    MOV     Y, A
+    MOV     A, !PitchTab+Y
+    MOV     tmp0, A
+    INC     Y
+    MOV     A, !PitchTab+Y
+    MOV     tmp1, A
+    BRA     WritePitch
+PercPUse:
+    SETC
+    SBC     A, #INST_KICK
+    ASL     A
+    MOV     Y, A
+    MOV     A, !PercPTab+Y
+    MOV     tmp0, A
+    INC     Y
+    MOV     A, !PercPTab+Y
+    MOV     tmp1, A
+WritePitch:
+    MOV     A, tmp2
+    CLRC
+    ADC     A, #$02
+    MOV     Y, A
+    MOV     A, tmp0
+    CALL    !DspW
+    MOV     A, tmp2
+    CLRC
+    ADC     A, #$03
+    MOV     Y, A
+    MOV     A, tmp1
+    CALL    !DspW
+    ; volume L/R.  The Java MIDI pans the accompaniment away from the
+    ; center; retain a gentle version of that separation on the SNES.
+    MOV     X, ch
+    MOV     A, ch_vol+X
+    LSR     A                   ; 0-63-ish
+    MOV     tmp0, A
+    MOV     A, ch_pan+X
+    CMP     A, #$01
+    BEQ     PanLeft
+    CMP     A, #$03
+    BEQ     PanRight
+PanCenter:
+    MOV     A, tmp2
+    MOV     Y, A                ; VOLL
+    MOV     A, tmp0
+    CALL    !DspW
+    MOV     A, tmp2
+    INC     A
+    MOV     Y, A                ; VOLR
+    MOV     A, tmp0
+    CALL    !DspW
+    BRA     PanDone
+PanLeft:
+    MOV     A, tmp2
+    MOV     Y, A                ; VOLL
+    MOV     A, tmp0
+    CALL    !DspW
+    MOV     A, tmp2
+    INC     A
+    MOV     Y, A                ; VOLR
+    MOV     A, tmp0
+    LSR     A
+    CALL    !DspW
+    BRA     PanDone
+PanRight:
+    MOV     A, tmp2
+    MOV     Y, A                ; VOLL
+    MOV     A, tmp0
+    LSR     A
+    CALL    !DspW
+    MOV     A, tmp2
+    INC     A
+    MOV     Y, A                ; VOLR
+    MOV     A, tmp0
+    CALL    !DspW
+PanDone:
+    ; KON bit
+    MOV     A, #$01
+    MOV     Y, ch
+KonShift:
+    BEQ     KonStore
+    ASL     A
+    DEC     Y
+    BRA     KonShift
+KonStore:
+    OR      A, kon_bits
+    MOV     kon_bits, A
+    RET
+
+PlaySfx:
+    ; Every command is a new event, including consecutive commands with the
+    ; same id. Select a free voice without filtering by the previous SFX id.
+    ; Never retrigger a voice while its BRR sample is active: that restart is
+    ; what produces phase noise.
+    ; Class-pinned voices: authored voice clips (sfx id >= 10) prefer
+    ; voice 7 so a long grunt cannot starve hit/swing sfx, which prefer
+    ; voice 6.  The alternate-attempt below still grants the other voice
+    ; when the preferred one is busy.
+    MOV     A, #$06
+    MOV     Y, cmd_arg
+    CMP     Y, #$0A
+    BCC     SfxPinDone
+    MOV     A, #$07
+SfxPinDone:
+    MOV     tmp3, A             ; preferred voice
+    MOV     tmp1, #$00          ; alternate-attempt flag
+SfxChooseVoice:
+    MOV     A, tmp3
+    ASL     A
+    ASL     A
+    ASL     A
+    ASL     A
+    MOV     tmp2, A             ; v*16
+    MOV     A, tmp3
+    CMP     A, #$07
+    BEQ     SfxChoose7
+    MOV     A, #$40
+    BRA     SfxChooseMask
+SfxChoose7:
+    MOV     A, #$80
+SfxChooseMask:
+    MOV     tmp0, A             ; selected voice bit
+    MOV     A, sfx_used
+    AND     A, tmp0
+    BEQ     SfxVoiceFree
+    MOV     A, tmp3
+    CMP     A, #$07
+    BEQ     SfxCheckTimer7
+    MOV     A, sfx_t6
+    BRA     SfxCheckTimer
+SfxCheckTimer7:
+    MOV     A, sfx_t7
+SfxCheckTimer:
+    BNE     SfxVoiceBusy
+    MOV     A, tmp3
+    CMP     A, #$07
+    BEQ     SfxCheckKill7
+    MOV     A, sfx_k6
+    BRA     SfxCheckKill
+SfxCheckKill7:
+    MOV     A, sfx_k7
+SfxCheckKill:
+    BEQ     SfxVoiceFree        ; KOFF hold has finished
+SfxVoiceBusy:
+    MOV     A, tmp1
+    BEQ     SfxTryAlternate
+    JMP     !SfxDrop            ; both SFX voices are still active
+SfxTryAlternate:
+    MOV     tmp1, #$01
+    MOV     A, tmp3
+    EOR     A, #$01
+    MOV     tmp3, A
+    BRA     SfxChooseVoice
+SfxVoiceFree:
+    MOV     A, sfx_used
+    OR      A, tmp0
+    MOV     sfx_used, A
+    ; Duration in 60 Hz ticks for the 12 kHz one-shot samples.
+    MOV     Y, cmd_arg
+    MOV     A, !SfxFrames+Y
+    MOV     tmp1, A
+    MOV     A, tmp3
+    CMP     A, #$07
+    BEQ     SfxTimer7
+    MOV     A, tmp1
+    MOV     sfx_t6, A
+    BRA     SfxTimerDone
+SfxTimer7:
+    MOV     A, tmp1
+    MOV     sfx_t7, A
+SfxTimerDone:
+    MOV     A, cmd_arg
+    CLRC
+    ADC     A, #INST_SFX0
+    MOV     tmp1, A             ; srcn
+    ; SRCN
+    MOV     A, tmp2
+    CLRC
+    ADC     A, #$04
+    MOV     Y, A
+    MOV     A, tmp1
+    CALL    !DspW
+    ; GAIN
+    MOV     A, tmp2
+    CLRC
+    ADC     A, #$05
+    MOV     Y, A
+    MOV     A, #$00
+    CALL    !DspW
+    MOV     A, tmp2
+    CLRC
+    ADC     A, #$07
+    MOV     Y, A
+    MOV     A, #$7F
+    CALL    !DspW
+    ; pitch: per-slot rate from PercPTab[srcn-INST_KICK]. A fixed pitch here
+    ; played the 6 kHz vox/menu clips at 12 kHz — an octave up and thin.
+    MOV     A, tmp1             ; srcn
+    SETC
+    SBC     A, #INST_KICK
+    ASL     A
+    MOV     Y, A
+    MOV     A, !PercPTab+Y
+    MOV     tmp0, A
+    INC     Y
+    MOV     A, !PercPTab+Y
+    MOV     tmp1, A
+    MOV     A, tmp2
+    CLRC
+    ADC     A, #$02
+    MOV     Y, A
+    MOV     A, tmp0
+    CALL    !DspW
+    MOV     A, tmp2
+    CLRC
+    ADC     A, #$03
+    MOV     Y, A
+    MOV     A, tmp1
+    CALL    !DspW
+    ; vol
+    MOV     A, tmp2
+    MOV     Y, A
+    MOV     A, #$48
+    CALL    !DspW
+    MOV     A, tmp2
+    INC     A
+    MOV     Y, A
+    MOV     A, #$48
+    CALL    !DspW
+    ; Clear stale ENDX flags before keying this voice. The DSP clears ENDX
+    ; when KON is accepted, but clearing it here avoids a race on the first
+    ; tick when a previous one-shot ended on the same voice. Write $FF:
+    ; cores that implement "ENDX &= ~value" ignore a $00 write.
+    MOV     A, #$FF
+    MOV     Y, #$7C
+    CALL    !DspW
+    MOV     A, tmp3
+    CMP     A, #$07
+    BEQ     SfxKon7
+    MOV     A, #$40
+    BRA     SfxKon
+SfxKon7:
+    MOV     A, #$80
+SfxKon:
+    MOV     tmp0, A
+    MOV     Y, #$4C
+    MOV     A, tmp0
+    CALL    !DspW
+    ; Hold KON long enough for the DSP to sample it, then release: a latched
+    ; KON bit retriggers the voice every DSP cycle.
+    CALL    !DspWait
+    MOV     A, #$00
+    MOV     Y, #$4C
+    CALL    !DspW
+    MOV     Y, #$5C             ; drop any stale KOFF bit on the SFX voices
+    CALL    !DspW
+    RET
+SfxDrop:
+    RET
+
+DspInit:
+    MOV     A, #$60             ; mute, echo off (NO reset bit: writes while
+    MOV     Y, #$6C             ; FLG.7 is set are dropped on some DSPs/cores)
+    CALL    !DspW
+    ; Echo buffer at $B800, ~80 ms (EDL=5 -> 5*2048 B). Songs end below
+    ; $B4EC, so the ring buffer stays clear of uploads. One unit does both
+    ; jobs: a light slap on the drum voice and a chorus-style doubler on
+    ; the melodic voices (short delay + low feedback thickens the line).
+    MOV     A, #$B8
+    MOV     Y, #$6D             ; ESA $B800
+    CALL    !DspW
+    MOV     A, #$05
+    MOV     Y, #$7D             ; EDL 5 * 16 ms
+    CALL    !DspW
+    MOV     A, #$18
+    MOV     Y, #$0D             ; EFB feedback ~19%
+    CALL    !DspW
+    MOV     A, #$7F             ; FIR taps: repeat + fainter second tap
+    MOV     Y, #$0F
+    CALL    !DspW
+    MOV     A, #$30
+    MOV     Y, #$1F
+    CALL    !DspW
+    MOV     A, #$24             ; echo mix ~28%
+    MOV     Y, #$2C             ; evol L
+    CALL    !DspW
+    MOV     Y, #$3C
+    CALL    !DspW
+    MOV     A, #$3F
+    MOV     Y, #$4D             ; eon: all six music voices
+    CALL    !DspW
+    MOV     A, #$00
+    MOV     Y, #$3D             ; noise
+    CALL    !DspW
+    MOV     Y, #$2D             ; pmon
+    CALL    !DspW
+    MOV     Y, #$5D
+    MOV     A, #$0F             ; DIR page $0F00
+    CALL    !DspW
+    MOV     A, #$50             ; lower master music level; leave headroom
+    MOV     Y, #$0C             ; mvol L
+    CALL    !DspW
+    MOV     Y, #$1C
+    CALL    !DspW
+    MOV     A, #$FF
+    MOV     Y, #$5C
+    CALL    !DspW
+    MOV     A, #$00             ; unmute, echo write enabled
+    MOV     Y, #$6C
+    CALL    !DspW
+    RET
+
+; Read the DSP's end-of-sample flags. A short settle is required after the
+; address write, just like for DSP writes.
+ReadEndX:
+    MOV     Y, #$7C
+    MOV     DSPADDR, Y
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    MOV     A, DSPDATA
+    RET
+
+; Wait ~100 SPC cycles (a few DSP sample periods) so a KON/KOFF write is
+; guaranteed to be latched by the DSP before the register is cleared.
+DspWait:
+    MOV     Y, #$14
+DspWaitLoop:
+    DBNZ    Y, DspWaitLoop
+    RET
+
+; A = value, Y = DSP register
+DspW:
+    MOV     DSPADDR, Y
+    ; The S-DSP port needs a short settle time between address and data.
+    ; Without it, consecutive KON/KOFF/volume writes can be dropped.
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    MOV     DSPDATA, A
+    NOP
+    NOP
+    NOP
+    NOP
+    RET
+
+; Percussion / one-shot default pitches (14-bit), INST_KICK.. and extra.
+; Generated alongside the BRR bank so Neo Geo samples keep their rates.
+PercPTab:
+    .INCLUDE "gen_neogeo/spc_perc.inc"
+
+; BRR lengths at pitch $0600, rounded up to 60 Hz ticks.
+SfxFrames:
+    .INCLUDE "gen_neogeo/spc_sfxframes.inc"
+
+.ENDS
+
+.ORGA $0E00
+.SECTION "PitchTab" FORCE
+PitchTab:
+    .INCBIN "gen_neogeo/spc_pitch.bin"
+.ENDS
+
+.ORGA $0F00
+.SECTION "SampleDir" FORCE
+SampleDir:
+    .INCBIN "gen_neogeo/spc_dir.bin"
+.ENDS
+
+.ORGA $1000
+.SECTION "BrrData" FORCE
+BrrData:
+    .INCBIN "gen_neogeo/spc_brr.bin"
+.ENDS

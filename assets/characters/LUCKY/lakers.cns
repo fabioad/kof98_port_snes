@@ -1,0 +1,1246 @@
+
+;=================================
+; ---<> SLAM 1 (One Handed) <>---
+;=================================
+[Statedef 1250]
+type     = S
+movetype = A
+physics  = S
+juggle   = 6
+poweradd = 20
+velset   = 0,0
+anim     = 1250
+ctrl     = 0
+sprpriority = 5
+
+[State 1000, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s0,4
+channel = 4
+
+[State 1000, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 4
+value = s3,2
+
+[State 1000, 軸位置移動]
+type = Velset
+trigger1 = AnimElem = 1
+trigger2 = AnimElem = 2
+x = 12.75
+
+[State 1000, 軸位置移動]
+type = Velset
+trigger1 = AnimElem = 7
+x = 0
+
+[State 200, ヒット定義]
+type = HitDef
+trigger1 = AnimElem = 5
+attr = S, SA
+damage = 36,3
+animtype = Hard
+guardflag = MA
+hitflag = MAF
+priority = 3, Hit
+pausetime = 8,10
+sparkno = S1037
+guard.sparkno = S1039
+sparkxy = -20, -65
+hitsound = s260,0
+guardsound = s0,13
+ground.type = High
+ground.slidetime = 20
+ground.hittime  = 20
+ground.velocity = -6
+air.velocity = -4,-4
+air.type = High
+air.hittime = 12
+air.fall = 1
+
+[State 1000,]
+type = ChangeState
+trigger1 = command = "dbc" 
+trigger1 = AnimElemtime(5) > 1 && AnimElemtime(8) < 2
+value = 1260
+
+[State 1000, ステート変更]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+
+;強葵花　二段目
+
+[Statedef 1260]
+type     = S
+movetype = A
+physics  = S
+juggle   = 4
+poweradd = 20
+velset   = 0,0
+anim     = 1260
+ctrl     = 0
+sprpriority = 2
+
+[State 1000, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s0,4
+
+[State 1000, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 4
+value = s5,3
+
+[State 1000, 軸位置移動]
+type = Velset
+trigger1 = time = 0
+x = 0
+
+[State 1000, 軸位置移動]
+type = Velset
+trigger1 = AnimElem = 1
+trigger2 = AnimElem = 2
+x = 11
+
+[State 1000, 軸位置移動]
+type = Velset
+trigger1 = Animtime = 0
+x = 0
+
+[State 200, ヒット定義]
+type = HitDef
+trigger1 = AnimElem = 4
+attr = S, SA
+damage = 36,3
+animtype = Hard
+guardflag = MA
+hitflag = MAF
+priority = 3, Hit
+pausetime = 8,10
+sparkno = S1037
+guard.sparkno = S1039
+sparkxy = -20, -65
+hitsound = s240,0
+guardsound = s0,13
+ground.type = High
+ground.slidetime = 20
+ground.hittime  = 20
+ground.velocity = -4,-6
+air.velocity = -4,-6
+air.type = High
+air.hittime = 12
+fall = 1
+fall.recover = 0
+
+[State 1000,]
+type = ChangeState
+trigger1 = command = "dbc" 
+trigger1 = AnimElemtime(4) > 1 && AnimElemtime(7) < 2
+value = 1270
+
+[State 1000, ステート変更]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+
+;強葵花　三段目
+
+[Statedef 1270]
+type     = A
+movetype = A
+physics  = S
+juggle   = 5
+poweradd = 20
+velset   = 0,0
+anim     = 1270
+ctrl     = 0
+sprpriority = 3
+
+[State 1000, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s0,4
+
+[State 1000, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = s15,6
+
+[State 1000, 軸位置移動]
+type = Velset
+trigger1 = time = 0
+x = 0
+
+[State 1000, 軸位置移動]
+type = Velset
+trigger1 = time > 1
+x = 5
+
+[State 1000, 軸位置移動]
+type = Velset
+trigger1 = AnimElem = 1
+y = -5.5
+
+[State 1000, 軸位置移動]
+type = VelAdd
+trigger1 = time > 0
+y = .5
+
+[State 200, ヒット定義]
+type = HitDef
+trigger1 = AnimElem = 4
+attr = S, SA
+damage = 38,3
+animtype = up
+guardflag = HA
+hitflag = MAF
+priority = 3, Hit
+pausetime = 4,5
+sparkno = S1041
+guard.sparkno = S1042
+sparkxy = -25, -60
+hitsound = s280,0
+guardsound = s0,13
+ground.type = High
+ground.slidetime = 20
+ground.hittime  = 20
+ground.velocity = -7,15
+airguard.velocity = -2.3,-1.8
+air.velocity = -7,15
+air.type = High
+air.hittime = 12
+fall = 1
+fall.recover = 0
+fall.envshake.ampl = 6
+fall.envshake.freq = 100
+fall.envshake.time = 12
+
+[State 1000, ステート変更]
+type = ChangeState
+trigger1 = Vel Y > 0 && Pos Y >= 0
+value = 1280
+
+
+;強葵花　着地
+
+[Statedef 1280]
+type     = S
+movetype = I
+physics  = S
+juggle   = 0
+poweradd = 0
+velset   = 0,0
+anim     = 1280
+ctrl     = 0
+sprpriority = 2
+
+[State 1000, 音を鳴らす]
+type = PlaySnd
+trigger1 = time = 1
+value = s2,4
+
+[State 1000,]
+type = Posset
+trigger1 = time = 0
+y = 0
+
+[State 1000, 軸位置移動]
+type = Velset
+trigger1 = time = 0
+x = 0
+y = 0
+
+[State 1000, ステート変更]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+;--------------------------------------------------------
+; SLAM <1> START
+[Statedef 2700]
+type = S
+movetype = I
+physics = S
+anim = 2700
+velset = 0,0
+poweradd = 100
+ctrl = 0
+
+[State 2700, 1]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 2701
+ctrl = 0
+
+;-----------------------------------------
+;SLAM <1> ON AIR
+[Statedef 2701]
+type = A
+movetype = A
+physics = N
+anim = 2701
+velset = .5,-6.5
+juggle = 10
+ctrl = 0
+
+[State 2702, 1]
+type = PlaySnd
+trigger1 = Time = 0
+value = 5,8
+volume = 50
+
+[State 2100, 0] 
+type = PlaySnd
+trigger1 = Time = 0
+value = 0,16
+volume = -30
+
+[State 2701, 0]
+type = Helper
+;triggerall = NumHelper(171) = 0
+trigger1 = animelem = 5
+name = "SlamBall1"
+id = 2703
+pos = -5,-155
+postype = p1
+stateno = 2703
+helpertype = normal
+keyctrl = 0
+ownpal = 1
+
+[State 2701, 1]
+type = Helper
+;triggerall = NumHelper(171) = 0
+trigger1 = animelem = 6
+name = "SlamBall1"
+id = 2704
+pos = 12,-157
+postype = p1
+stateno = 2704
+helpertype = normal
+keyctrl = 0
+ownpal = 1
+
+[State 2701, 1]
+type = Helper
+;triggerall = NumHelper(171) = 0
+trigger1 = animelem = 7
+name = "SlamBall1"
+id = 2705
+pos = 72,-127
+postype = p1
+stateno = 2705
+helpertype = normal
+keyctrl = 0
+ownpal = 1
+
+[State 2701, 1]
+type = Helper
+;triggerall = NumHelper(171) = 0
+trigger1 = animelem = 8
+name = "SlamBall1"
+id = 2706
+pos = 70,-81
+postype = p1
+stateno = 2706
+helpertype = normal
+keyctrl = 0
+ownpal = 1
+
+[State 2701, 1]
+type = veladd
+trigger1 = animelem = 2, >= 0
+y = .45
+
+[State 2701, 2]
+type = ChangeState
+trigger1 = vel y > 0 && pos y >= 0
+value = 2702
+ctrl = 0
+;------------------------------------------------
+
+; SLAM <1> LAND
+[Statedef 2702]
+type = S
+movetype = I
+physics = S
+anim = 2702
+velset = 0,0
+poweradd = 100
+ctrl = 0
+
+[State 2702, 0]
+type = posset
+trigger1 = Time = 0
+y = 0
+
+[State 2702, 1]
+type = PlaySnd
+trigger1 = Time = 0
+value = 0,7
+
+[State 2702, 2]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;------------------------------------------------------
+;explod ball 1
+[Statedef 2703]
+type = A
+physics = N
+movetype = I
+anim = 172
+velset = 0,0
+sprpriority = 2
+
+[State 2703, 1]
+type = changestate
+trigger1 = root, movetype = H
+value = 2113
+ctrl = 0
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 1
+x = 1
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 2
+x = 1
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 3
+x = 1
+y = 1
+
+[State 2703, 2]
+type = destroyself
+trigger1 = time = 4
+
+;------------------------------------------------------
+;explod ball 2
+[Statedef 2704]
+type = A
+physics = N
+movetype = I
+anim = 172
+velset = 0,0
+sprpriority = 2
+
+[State 2703, 1]
+type = changestate
+trigger1 = root, movetype = H
+value = 2113
+ctrl = 0
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 1
+y = 1
+x = 1
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 2
+y = 1
+x = 1
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 3
+x = 2
+y = 2
+
+[State 2703, 2]
+type = destroyself
+trigger1 = time = 3
+
+;------------------------------------------------------
+;explod ball 3
+[Statedef 2705]
+type = A
+physics = N
+movetype = I
+anim = 172
+velset = 0,0
+sprpriority = 2
+
+[State 2703, 1]
+type = changestate
+trigger1 = root, movetype = H
+value = 2113
+ctrl = 0
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 1
+y = 3
+x = 1
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 2
+y = 1
+x = 1
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 3
+x = 2
+y = 2
+
+[State 2703, 2]
+type = destroyself
+trigger1 = time = 3
+
+;----------------------------------------------------------------
+
+;SLAM attacking Ball2 going down
+[Statedef 2706]
+type = A
+physics = N
+movetype = A
+anim = 2101
+velset = 5,5
+sprpriority = 2
+
+[State 2103, Override]
+type = HitOverride
+trigger1 = Time >= 0
+attr = SCA, AP,AA,AT
+slot = 0
+stateno = 2113
+time = 1
+ignorehitpause = 1
+
+[State 2103, Override]
+type = hitby
+trigger1 = Time >= 0
+value = SCA, NP,SP,HP
+time = 1
+ignorehitpause = 1
+
+[State 2103, 1]
+type = veladd
+trigger1 = time >=0
+y = .45
+
+[State 250, 3]
+type = HitDef
+trigger1 = AnimElem = 1
+attr = S, SP
+hitflag = MAFD
+animtype = hard
+damage = 109,5
+guardflag = MA
+pausetime = 7,14
+sparkno = S1041
+guard.sparkno = S1042
+sparkxy = 0,5
+hitsound = S240,0
+guardsound = S200,3
+ground.type = High
+ground.slidetime = 14
+ground.hittime = 18
+ground.velocity = -8
+air.velocity = -6,-2.5
+airguard.velocity = -6,-1.5
+guard.velocity = -9
+ground.cornerpush.veloff = 0
+getpower = 40,40
+givepower = 40,40
+air.fall = 1
+
+[State 2103, 2]
+type = changestate
+trigger1 = movecontact
+value = 2110
+
+[State 2103, 3]
+type = changestate
+trigger1 = vel y >0 && pos y >= 0
+value = 2707
+
+;----------------------------------
+
+;BAll <hit ground>
+[Statedef 2707]
+type = S
+velset = 0,0
+movetype = A
+anim = 2707
+sprpriority = 2
+
+[State 2110, autoturn]
+type = assertspecial
+trigger1 = time >= 0
+flag = noautoturn
+
+[State 2103, Override]
+type = HitOverride
+trigger1 = Time >= 0
+attr = SCA, AP,AA,AT
+slot = 0
+stateno = 2113
+time = 1
+ignorehitpause = 1
+
+[State 2103, Override]
+type = hitby
+trigger1 = Time >= 0
+value = SCA, NP,SP,HP
+time = 1
+ignorehitpause = 1
+
+[State 2104, 0]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[State 250, 3]
+type = HitDef
+trigger1 = AnimElem = 1
+attr = S, SP
+hitflag = MAFD
+animtype = hard
+damage = 109,5
+guardflag = MA
+pausetime = 7,14
+sparkno = S1041
+guard.sparkno = S1042
+sparkxy = 0,5
+hitsound = S240,0
+guardsound = S200,3
+ground.type = High
+ground.slidetime = 14
+ground.hittime = 18
+ground.velocity = -8
+air.velocity = -6,-2.5
+airguard.velocity = -6,-1.5
+guard.velocity = -9
+ground.cornerpush.veloff = 0
+getpower = 40,40
+givepower = 40,40
+air.fall = 1
+
+[State 2104, 1]
+type = PlaySnd
+trigger1 = time = 0
+value = 5,0
+
+[State 2103, 2]
+type = changestate
+trigger1 = movecontact
+value = 2110
+
+[State 180, 2]
+type = Explod
+trigger1 = time = 0
+id = 61
+anim = F61
+pos = 0,0
+sprpriority = -1
+ownpal = 1
+removeongethit = 1
+removetime = 14
+
+[State 2104, 2]
+type = changestate
+trigger1 = time = 4
+value = 2708
+
+;-------------------------------------
+;SLAM attacking Ball going Up
+[Statedef 2708]
+type = A
+physics = N
+movetype = A
+anim = 2101
+velset = 6,-7.5
+sprpriority = 2
+
+[State 2103, Override]
+type = HitOverride
+trigger1 = Time >= 0
+attr = SCA, AP,AA,AT
+slot = 0
+stateno = 2113
+time = 1
+ignorehitpause = 1
+
+[State 2103, Override]
+type = hitby
+trigger1 = Time >= 0
+value = SCA, NP,SP,HP
+time = 1
+ignorehitpause = 1
+
+[State 250, 3]
+type = HitDef
+trigger1 = AnimElem = 1
+attr = S, SP
+hitflag = MAFD
+animtype = hard
+damage = 109,5
+guardflag = MA
+pausetime = 7,14
+sparkno = S1041
+guard.sparkno = S1042
+sparkxy = 0,5
+hitsound = S240,0
+guardsound = S200,3
+ground.type = High
+ground.slidetime = 14
+ground.hittime = 18
+ground.velocity = -8
+air.velocity = -6,-2.5
+airguard.velocity = -6,-1.5
+guard.velocity = -9
+ground.cornerpush.veloff = 0
+getpower = 40,40
+givepower = 40,40
+air.fall = 1
+
+[State 2103, 2]
+type = changestate
+trigger1 = movecontact
+value = 2110
+
+[State 2103, 3]
+type = destroyself
+trigger1 = time = 70
+;----------------------------------
+
+
+
+
+
+
+
+;====================================================
+; ----<> SLAM <2> (Two Handed Jam) <>----
+;=========================================
+
+; SLAM <2> START
+[Statedef 2800]
+type = S
+movetype = I
+physics = S
+anim = 2700
+velset = 0,0
+poweradd = 100
+ctrl = 0
+
+[State 2800, 1]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 2801
+ctrl = 0
+
+;-----------------------------------------
+;SLAM <2> ON AIR
+[Statedef 2801]
+type = A
+movetype = A
+physics = N
+anim = 2800
+velset = .5,-6.5
+juggle = 10
+ctrl = 0
+
+[State 2702, 1]
+type = PlaySnd
+trigger1 = Time = 0
+value = 5,8
+volume = 50
+
+[State 2100, 0] 
+type = PlaySnd
+trigger1 = Time = 0
+value = 0,16
+volume = -30
+
+[State 2801, 0]
+type = Helper
+;triggerall = NumHelper(171) = 0
+trigger1 = animelem = 5
+name = "ShootBall1"
+id = 2803
+pos = -10,-156
+postype = p1
+stateno = 2803
+helpertype = normal
+keyctrl = 0
+ownpal = 1
+
+[State 2801, 1]
+type = Helper
+;triggerall = NumHelper(171) = 0
+trigger1 = animelem = 6
+name = "ShootBall1"
+id = 2804
+pos = -32,-134
+postype = p1
+stateno = 2804
+helpertype = normal
+keyctrl = 0
+ownpal = 1
+
+[State 2801, 2]
+type = Helper
+;triggerall = NumHelper(171) = 0
+trigger1 = animelem = 7
+name = "ShootBall1"
+id = 2805
+pos = -37,-130
+postype = p1
+stateno = 2805
+helpertype = normal
+keyctrl = 0
+ownpal = 1
+
+[State 2801, 3]
+type = Helper
+;triggerall = NumHelper(171) = 0
+trigger1 = animelem = 8
+name = "ShootBall1"
+id = 2806
+pos = 16,-138
+postype = p1
+stateno = 2806
+helpertype = normal
+keyctrl = 0
+ownpal = 1
+
+[State 2801, 3]
+type = Helper
+;triggerall = NumHelper(171) = 0
+trigger1 = animelem = 9
+name = "ShootBall1"
+id = 2807
+pos = 60,-80
+postype = p1
+stateno = 2807
+helpertype = normal
+keyctrl = 0
+ownpal = 1
+
+[State 2801, 4]
+type = veladd
+trigger1 = animelem = 3, >= 0
+y = .45
+
+[State 2801, 5]
+type = ChangeState
+trigger1 = vel y > 0 && pos y >= 0
+value = 2802
+ctrl = 0
+;------------------------------------------------
+
+; SLAM <2> LAND
+[Statedef 2802]
+type = S
+movetype = I
+physics = S
+anim = 2702
+velset = 0,0
+poweradd = 100
+ctrl = 0
+
+[State 2802, 0]
+type = posset
+trigger1 = Time = 0
+y = 0
+
+[State 2802, 1]
+type = PlaySnd
+trigger1 = Time = 0
+value = 0,7
+
+[State 2802, 2]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;------------------------------------------------------
+
+;------------------------------------------------------
+;explod ball 1
+[Statedef 2803]
+type = A
+physics = N
+movetype = I
+anim = 172
+velset = 0,0
+sprpriority = 0
+
+[State 2703, 1]
+type = changestate
+trigger1 = root, movetype = H
+value = 2113
+ctrl = 0
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 1
+y = -1
+x = 1
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 2
+y = -2
+x = 2
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 3
+x = 2
+y = -2
+
+
+[State 2703, 2]
+type = destroyself
+trigger1 = time = 3
+;------------------------------------------------------
+
+;------------------------------------------------------
+;explod ball 2
+[Statedef 2804]
+type = A
+physics = N
+movetype = I
+anim = 172
+velset = 0,0
+sprpriority = 0
+
+[State 2703, 1]
+type = changestate
+trigger1 = root, movetype = H
+value = 2113
+ctrl = 0
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 1
+y = -1
+x = 1
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 2
+y = -1
+x = 1
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 3
+y = -1
+x = 2
+
+
+[State 2703, 2]
+type = destroyself
+trigger1 = time = 3
+;------------------------------------------------------
+
+;------------------------------------------------------
+;explod ball 3
+[Statedef 2805]
+type = A
+physics = N
+movetype = I
+anim = 172
+velset = 0,0
+sprpriority = 0
+
+[State 2703, 1]
+type = changestate
+trigger1 = root, movetype = H
+value = 2113
+ctrl = 0
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 1
+y = 1
+x = 1
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 2
+y = 1
+x = 1
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 3
+y = 1
+x = 1
+
+
+[State 2703, 2]
+type = destroyself
+trigger1 = time = 3
+;------------------------------------------------------
+
+;------------------------------------------------------
+;explod ball 4
+[Statedef 2806]
+type = A
+physics = N
+movetype = I
+anim = 172
+velset = 0,0
+sprpriority = 0
+
+[State 2703, 1]
+type = changestate
+trigger1 = root, movetype = H
+value = 2113
+ctrl = 0
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 1
+y = 1
+x = 2
+
+[State 2702, 0]
+type = posadd
+trigger1 = Time = 2
+y = 2
+x = 2
+
+[State 2703, 2]
+type = destroyself
+trigger1 = time = 2
+;------------------------------------------------------
+
+;SLAM attacking Ball2 going down
+[Statedef 2807]
+type = A
+physics = N
+movetype = A
+anim = 2101
+velset = 6.5,5
+sprpriority = 2
+
+[State 2103, Override]
+type = HitOverride
+trigger1 = Time >= 0
+attr = SCA, AP,AA,AT
+slot = 0
+stateno = 2113
+time = 1
+ignorehitpause = 1
+
+[State 2103, Override]
+type = hitby
+trigger1 = Time >= 0
+value = SCA, NP,SP,HP
+time = 1
+ignorehitpause = 1
+
+[State 2103, 1]
+type = veladd
+trigger1 = time >=0
+y = .45
+
+[State 250, 3]
+type = HitDef
+trigger1 = AnimElem = 1
+attr = S, SP
+hitflag = MAFD
+animtype = hard
+damage = 109,5
+guardflag = MA
+pausetime = 7,14
+sparkno = S1041
+guard.sparkno = S1042
+sparkxy = 0,5
+hitsound = S240,0
+guardsound = S200,3
+ground.type = High
+ground.slidetime = 14
+ground.hittime = 18
+ground.velocity = -8
+air.velocity = -6,-2.5
+airguard.velocity = -6,-1.5
+guard.velocity = -9
+ground.cornerpush.veloff = 0
+getpower = 40,40
+givepower = 40,40
+air.fall = 1
+
+[State 2103, 2]
+type = changestate
+trigger1 = movecontact
+value = 2110
+
+[State 2103, 3]
+type = changestate
+trigger1 = vel y >0 && pos y >= 0
+value = 2808
+
+;----------------------------------
+
+;BAll <hit ground>
+[Statedef 2808]
+type = S
+velset = 0,0
+movetype = A
+anim = 2707
+sprpriority = 2
+
+[State 2110, autoturn]
+type = assertspecial
+trigger1 = time >= 0
+flag = noautoturn
+
+[State 2103, Override]
+type = HitOverride
+trigger1 = Time >= 0
+attr = SCA, AP,AA,AT
+slot = 0
+stateno = 2113
+time = 1
+ignorehitpause = 1
+
+[State 2103, Override]
+type = hitby
+trigger1 = Time >= 0
+value = SCA, NP,SP,HP
+time = 1
+ignorehitpause = 1
+
+[State 2104, 0]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[State 250, 3]
+type = HitDef
+trigger1 = AnimElem = 1
+attr = S, SP
+hitflag = MAFD
+animtype = hard
+damage = 109,5
+guardflag = MA
+pausetime = 7,14
+sparkno = S1041
+guard.sparkno = S1042
+sparkxy = 0,5
+hitsound = S240,0
+guardsound = S200,3
+ground.type = High
+ground.slidetime = 14
+ground.hittime = 18
+ground.velocity = -8
+air.velocity = -6,-2.5
+airguard.velocity = -6,-1.5
+guard.velocity = -9
+ground.cornerpush.veloff = 0
+getpower = 40,40
+givepower = 40,40
+air.fall = 1
+
+[State 2104, 1]
+type = PlaySnd
+trigger1 = time = 0
+value = 5,0
+
+[State 2103, 2]
+type = changestate
+trigger1 = movecontact
+value = 2110
+
+[State 180, 2]
+type = Explod
+trigger1 = time = 0
+id = 61
+anim = F61
+pos = 0,0
+sprpriority = -1
+ownpal = 1
+removeongethit = 1
+removetime = 14
+
+[State 2104, 2]
+type = changestate
+trigger1 = time = 4
+value = 2809
+
+;-------------------------------------
+;SLAM attacking Ball going Up
+[Statedef 2809]
+type = A
+physics = N
+movetype = A
+anim = 2101
+velset = 7,-7
+sprpriority = 2
+
+[State 2103, Override]
+type = HitOverride
+trigger1 = Time >= 0
+attr = SCA, AP,AA,AT
+slot = 0
+stateno = 2113
+time = 1
+ignorehitpause = 1
+
+[State 2103, Override]
+type = hitby
+trigger1 = Time >= 0
+value = SCA, NP,SP,HP
+time = 1
+ignorehitpause = 1
+
+[State 250, 3]
+type = HitDef
+trigger1 = AnimElem = 1
+attr = S, SP
+hitflag = MAFD
+animtype = hard
+damage = 109,5
+guardflag = MA
+pausetime = 7,14
+sparkno = S1041
+guard.sparkno = S1042
+sparkxy = 0,5
+hitsound = S240,0
+guardsound = S200,3
+ground.type = High
+ground.slidetime = 14
+ground.hittime = 18
+ground.velocity = -8
+air.velocity = -6,-2.5
+airguard.velocity = -6,-1.5
+guard.velocity = -9
+getpower = 40,40
+ground.cornerpush.veloff = 0
+givepower = 40,40
+air.fall = 1
+
+[State 2103, 2]
+type = changestate
+trigger1 = movecontact
+value = 2110
+
+[State 2103, 3]
+type = destroyself
+trigger1 = time = 70
+;----------------------------------
+

@@ -1,0 +1,54 @@
+ Ha pasado algún tiempo desde que libere la primera versión de Bao Xi, pues bien, ahora
+me decidí a liberar su actualización, la cual incluye multiples mejoras, tanto en jugabilidad 
+como apariencia.
+
+
+Reparado:
+- Algunas animaciones que antes estaban en tiempos no adecuados.
+- Alineamiento de sprites
+- Retoque en los códigos.
+
+
+agregados:
+- Nuevas especiales.
+- Nuevos poderes, sacados del estilo kof 2000
+- se agregó la hsdm del kof 2002um.
+
+
+faltantes:
+- mejorar las cajas de colisiones
+- alguno que otro código.
+
+
+ La verdad en esta actualización participaron  muchas personas 
+aca los agradecimientos.
+
+- Dios y mi familia.
+- Misamu por permitirme usar sus codes, y por crear buenos personajes.
+- A kod por los codigos y recursos del fondo 2002UM
+- GodRyu por ser tester y guiarme en codec.
+- leandro1412 por hacerme notar los errores y por crearme varios codigos para este personaje.
+- cosumo por sus apoyo y buenaa onda, y por crearme varios sprites para mi bao n.n.
+- shamma por ser un maestro.
+- Ace one por el la confianza.
+- checho por ser tela.. el sabe
+- xverso por la pasciencia y por las imagenes XD!
+- A mi ex team KMC... forever.
+- y si por ahí no recuerdo a alguíen el lo sabe....
+
+
+Aclaraciones:
+Este personaje por motivos de códigos y algunos otros recursos es close.(clompletamente)
+quizá en un futuro no  muy lejano pase hacer open... pero mis demás personajes serán totalmete open
+así que no se preocupen. En el caso de querer ocuparlo en un full game, comuniquence conmigo
+no soy apretado en ese sentido.
+
+
+Y bueno garcias por leer esto.. y espero te guste el personaje.
+Bye!
+
+:---------------------------------------------------------
+Esta actualización es exclusiva de Mugen Latino America
+
+www.mugenlatinoamerica.com
+

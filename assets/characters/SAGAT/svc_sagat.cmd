@@ -1,0 +1,1050 @@
+;#ADD004BASIC PIEs#
+;===========================================================================
+; CMD file for Sagat(SVC CHAOS Ver).
+;===========================================================================
+
+;-| Super Motions |---------------------------------------------------------
+[Command]
+name = "qcf2_xy"
+command = ~D, DF, F, D, DF, F, c;x+y
+time = 20
+
+[Command]
+name = "qcf2_ab"
+command = ~D, DF, F, D, DF, F, a+b
+time = 20
+
+[Command]
+name = "qcf2_x"
+command = ~D, DF, F, D, DF, F, x
+time = 20
+
+[Command]
+name = "qcf2_y"
+command = ~D, DF, F, D, DF, F, y
+time = 20
+
+[Command]
+name = "qcf2_a"
+command = ~D, DF, F, D, DF, F, a
+time = 20
+
+[Command]
+name = "qcf2_b"
+command = ~D, DF, F, D, DF, F, b
+time = 20
+
+[Command]
+name = "qcb2_x"
+command = ~D, DB, B, D, DB, B, x
+time = 20
+
+[Command]
+name = "qcb2_y"
+command = ~D, DB, B, D, DB, B, y
+time = 20
+
+[Command]
+name = "qcb2_a"
+command = ~D, DB, B, D, DB, B, a
+time = 20
+
+[Command]
+name = "qcb2_b"
+command = ~D, DB, B, D, DB, B, b
+time = 20
+
+;-| Special Motions |-------------------------------------------------------
+[Command]
+name = "qcf_x"
+command = ~D, DF, F, x
+
+[Command]
+name = "qcf_y"
+command = ~D, DF, F, y
+
+[Command]
+name = "qcf_a"
+command = ~D, DF, F, a
+
+[Command]
+name = "qcf_b"
+command = ~D, DF, F, b
+
+[Command]
+name = "qcf_s"
+command = ~D, DF, F, s
+
+[Command]
+name = "dp_x"
+command = ~F, D, DF, x
+
+[Command]
+name = "dp_y"
+command = ~F, D, DF, y
+
+[Command]
+name = "dp_a"
+command = ~F, D, DF, a
+
+[Command]
+name = "dp_b"
+command = ~F, D, DF, b
+
+;-| Button Combination |----------------------------------------------------
+[Command]
+name = "call-st"
+command = a+y
+time = 1
+
+[Command]
+name = "call-st"
+command = s
+time = 1
+
+[Command]
+name = "xa"
+command = x+a
+time = 1
+
+[Command]
+name = "xa"
+command = z
+time = 1
+
+[Command]
+name = "by"
+command = y+b
+time = 1
+
+[Command]
+name = "by"
+command = c
+time = 1
+
+[Command]
+name = "ay"
+command = a+y
+time = 1
+
+;-| Dir + Button |----------------------------------------------------------
+
+[Command]
+name = "q_fwd"
+command = /F, a+x
+time = 1
+
+[Command]
+name = "q_fwd"
+command = /F, z
+time = 1
+
+[Command]
+name = "q_back"
+command = /B, a+x
+time = 1
+
+[Command]
+name = "q_back"
+command = /B, z
+time = 1
+
+;-| Single Button |---------------------------------------------------------
+
+[Command]
+name = "a"
+command = a
+time = 1
+
+[Command]
+name = "b"
+command = b
+time = 1
+
+[Command]
+name = "c"
+command = c
+time = 1
+
+[Command]
+name = "x"
+command = x
+time = 1
+
+[Command]
+name = "y"
+command = y
+time = 1
+
+[Command]
+name = "z"
+command = z
+time = 1
+
+[Command]
+name = "s"
+command = s
+time = 1
+
+[Command]
+name = "down"
+command = D
+time = 1
+
+;----------------------------- レバガチャ
+[Command]
+name = "random"
+command = x
+time = 1
+
+[Command]
+name = "random"
+command = y
+time = 1
+
+[Command]
+name = "random"
+command = z
+time = 1
+
+[Command]
+name = "random"
+command = a
+time = 1
+
+[Command]
+name = "random"
+command = b
+time = 1
+
+[Command]
+name = "random"
+command = c
+time = 1
+
+[Command]
+name = "random"
+command = F
+time = 1
+
+[Command]
+name = "random"
+command = DF
+time = 1
+
+[Command]
+name = "random"
+command = D
+time = 1
+
+[Command]
+name = "random"
+command = DB
+time = 1
+
+[Command]
+name = "random"
+command = B
+time = 1
+
+[Command]
+name = "random"
+command = UB
+time = 1
+
+[Command]
+name = "random"
+command = U
+time = 1
+
+[Command]
+name = "random"
+command = UF
+time = 1
+
+;-| Do not remove! |--------------------------------------------------------
+[Command]
+name = "recovery"
+command = a+x
+time = 1
+
+[Command]
+name = "recovery"
+command = z
+time = 1
+
+[Command]
+name = "FF"
+command = F, F
+time = 10
+
+[Command]
+name = "BB"
+command = B, B
+time = 10
+
+[Command]
+name = "holdfwd"
+command = /$F
+time = 1
+
+[Command]
+name = "holdback"
+command = /$B
+time = 1
+
+[Command]
+name = "holdup"
+command = /$U
+time = 1
+
+[Command]
+name = "holddown"
+command = /$D
+time = 1
+
+[Command]
+name = "hold_a"
+command = /a
+time = 1
+
+[Command]
+name = "hold_b"
+command = /b
+time = 1
+
+[Command]
+name = "hold_x"
+command = /x
+time = 1
+
+[Command]
+name = "hold_y"
+command = /y
+time = 1
+
+[Command]
+name = "hold_s"
+command = /s
+time = 1
+
+[Command]
+name = "holdupfwd"
+command = /UF
+time = 1
+
+[Command]
+name = "holdupback"
+command = /UB
+time = 1
+
+[Command]
+name = "fwd_y"
+command = /F,y
+time = 1
+
+[Command]
+name = "fwd_b"
+command = /F,b
+time = 1
+
+[Command]
+name = "back_y"
+command = /B,y
+time = 1
+
+[Command]
+name = "back_b"
+command = /B,b
+time = 1
+
+[Command]
+name = "longjump"
+command = D, $U
+time = 18
+
+;===========================================================================
+
+
+[Statedef -1]
+
+;//==========================
+;// add004-1-sctrls-start
+;//==========================
+;--- partner_standby
+[state 0]
+	type=selfstate
+	trigger1=ctrl && numpartner && !ishelper && roundstate=2 && pos y=0
+	trigger1=sysfvar(4)>0 && sysfvar(0)>0 && playeridexist(floor(sysfvar(0)))
+	trigger1=playerid(floor(sysfvar(0))),var(0)=90900 && playerid(floor(sysfvar(0))),var(22)=4
+	value=190190
+	ctrl=0
+	ignorehitpause=1
+;//==========================
+;// add004-1-sctrls-end
+;//==========================
+
+
+
+
+;=====================================================================
+; キャンセル設定
+;=====================================================================
+;------------------------ キャンセル設定リセット
+[State -1]
+type = varset
+trigger1 = var(40)
+var(40) = 0
+;------------------------ スーパーキャンセル
+[State -1]
+type = varset
+triggerall = RoundState = 2
+triggerall = !var(40)
+triggerall = MoveContact
+trigger1  = 0
+var(40) = -1
+removeongethit = 1
+;------------------------ ダッシュキャンセル
+[State -1]
+type = varset
+triggerall = RoundState = 2
+trigger1 = !var(40)
+trigger1 = StateNo = 100 || stateno = 101
+var(40) = 1
+;------------------------ 必殺技キャンセル
+[State -1]
+type = varset
+triggerall = RoundState = 2
+triggerall = !var(40)
+triggerall = MoveContact
+trigger1  = StateNo = 200 || StateNo = 205 || StateNo = 210 || StateNo = 230 && AnimElemNo(0) <= 6
+trigger2  = StateNo = 400 || StateNo = 420 || StateNo = 305 || StateNo = 300 || StateNo = 500
+var(40) = 2
+removeongethit = 1
+;------------------------ 超必殺技キャンセル
+[State -1]
+type = varset
+triggerall = RoundState = 2
+triggerall = !var(40)
+triggerall  = MoveContact
+trigger1  = StateNo = 220 || StateNo = 225 || StateNo = 235 && AnimElemNo(0) <= 6
+trigger2  = StateNo = 410 || StateNo = 430 || StateNo = 300
+var(40) = 3
+removeongethit = 1
+;------------------------ どこでもキャンセル
+[State -1]
+type = varset
+triggerall = var(30)
+triggerall = RoundState = 2
+triggerall = !var(40)
+triggerall = var(47) && fvar(0) > 0
+trigger1  = !MoveContact && (StateNo = 200 || StateNo = 205 || StateNo = 210 || StateNo = 230 && AnimElemNo(0) <= 6)
+trigger2  = !MoveContact && (StateNo = 400 || StateNo = 420)
+trigger3  = StateNo = 215 || StateNo = 220 || StateNo = 225 || StateNo = 230 && AnimElemNo(0) > 6 || StateNo = 235
+trigger4  = StateNo = 410 || StateNo = 430 || StateNo = 300
+trigger5  = MoveHit && StateNo = [1000,1999]
+var(40) = 4
+removeongethit = 1
+
+;=====================================================================
+; 先行入力処理
+;=====================================================================
+;---------------------------------------------------------------------------
+[State -1]
+type = VarAdd
+trigger1 = var(56)
+var(56) = -1
+
+[State -1]
+type = VarSet
+;triggerall = var(56) < 6
+trigger1 = !var(56)
+trigger2 = (var(55) & 256) && command != "holdup"
+trigger3 = (var(55) & 512) && command != "holddown"
+trigger4 = (var(55) & 1024) && command != "holdback"
+trigger5 = (var(55) & 2048) && command != "holdfwd"
+trigger6 = (var(55) & 4096) && command != "hold_a"
+trigger7 = (var(55) & 8192) && command != "hold_b"
+trigger8 = (var(55) & 16384) && command != "hold_x"
+trigger9 = (var(55) & 32768) && command != "hold_y"
+trigger10 = (var(55) & 65536) && command != "hold_s"
+var(55) = 0
+
+[State -1]
+type = VarSet
+trigger1 = !var(55)
+var(56) = 0
+
+[State -1]
+type = VarSet
+trigger1 = command = "qcf_x"
+trigger2 = command = "qcf_y"
+trigger3 = command = "qcf_a"
+trigger4 = command = "qcf_b"
+trigger5 = command = "qcf_s"
+trigger6 = command = "dp_x"
+trigger7 = command = "dp_y"
+trigger8 = command = "dp_a"
+trigger9 = command = "dp_b"
+trigger10= command = "qcf2_x"
+trigger11= command = "qcf2_y"
+trigger12= command = "qcf2_a"
+trigger13= command = "qcf2_b"
+trigger14= command = "qcb2_x"
+trigger15= command = "qcb2_y"
+trigger16= command = "qcb2_a"
+trigger17= command = "qcb2_b"
+trigger18= command = "qcf2_xy"
+trigger19= command = "qcf2_ab"
+var(56) = 10
+;---------------------------------------
+[State -1]
+type = VarSet
+trigger1 = command = "qcf_x"
+var(55) = 3 | 2048 | 16384
+
+[State -1]
+type = VarSet
+trigger1 = command = "qcf_y"
+var(55) = 4 | 2048 | 32768
+
+[State -1]
+type = VarSet
+trigger1 = command = "qcf_a"
+var(55) = 5 | 2048 | 4096
+
+[State -1]
+type = VarSet
+trigger1 = command = "qcf_b"
+var(55) = 6 | 2048 | 8192
+
+[State -1]
+type = VarSet
+trigger1 = command = "qcf_s"
+var(55) = 7 | 2048 | 65536
+
+[State -1]
+type = VarSet
+trigger1 = command = "dp_x"
+var(55) = 1 | 2048 | 512 | 16384
+
+[State -1]
+type = VarSet
+trigger1 = command = "dp_y"
+var(55) = 2 | 2048 | 512 | 32768
+
+[State -1]
+type = VarSet
+trigger1 = command = "dp_a"
+var(55) = 8 | 2048 | 512 | 4096
+
+[State -1]
+type = VarSet
+trigger1 = command = "dp_b"
+var(55) = 9 | 2048 | 512 | 8192
+
+[State -1]
+type = VarSet
+trigger1 = Power >= 1000 && var(30)=0 && var(47)=0
+trigger2 = (Power >= 1000 || fvar(0) > 0) && (var(30)=[1,2])
+triggerall = command = "qcf2_x"
+var(55) = 10 | 2048 | 16384
+
+[State -1]
+type = VarSet
+trigger1 = Power >= 1000 && var(30)=0 && var(47)=0
+trigger2 = (Power >= 1000 || fvar(0) > 0) && (var(30)=[1,2])
+triggerall = command = "qcf2_y"
+var(55) = 11 | 2048 | 32768
+
+[State -1]
+type = VarSet
+trigger1 = Power >= 1000 && var(30)=0 && var(47)=0
+trigger2 = (Power >= 1000 || fvar(0) > 0) && (var(30)=[1,2])
+triggerall = command = "qcf2_a"
+var(55) = 12 | 2048 | 4096
+
+[State -1]
+type = VarSet
+trigger1 = Power >= 1000 && var(30)=0 && var(47)=0
+trigger2 = (Power >= 1000 || fvar(0) > 0) && (var(30)=1)
+triggerall = command = "qcf2_b"
+var(55) = 12 | 2048 | 8192
+
+[State -1]
+type = VarSet
+trigger1 = Power >= 1000 && var(30)=0 && var(47)=0
+trigger2 = (Power >= 1000 || fvar(0) > 0) && (var(30)=[1,2])
+triggerall = command = "qcb2_x"
+var(55) = 13 | 1024 | 16384
+
+[State -1]
+type = VarSet
+trigger1 = Power >= 1000 && var(30)=0 && var(47)=0
+trigger2 = (Power >= 1000 || fvar(0) > 0) && (var(30)=[1,2])
+triggerall = command = "qcb2_y"
+var(55) = 14 | 1024 | 32768
+
+[State -1]
+type = VarSet
+trigger1 = Power >= 1000 && var(30)=0 && var(47)=0
+trigger2 = (Power >= 1000 || fvar(0) > 0) && (var(30)=[1,2])
+triggerall = command = "qcb2_a"
+var(55) = 15 | 1024 | 4096
+
+[State -1]
+type = VarSet
+trigger1 = Power >= 1000 && var(30)=0 && var(47)=0
+trigger2 = (Power >= 1000 || fvar(0) > 0) && (var(30)=[1,2])
+triggerall = command = "qcb2_b"
+var(55) = 16 | 1024 | 8192
+
+[State -1]
+type = VarSet
+trigger1 = Power >= 2000 && var(30)=0 && var(47)=0
+trigger2 = Power >= 1000 && var(30)=1 && fvar(0) > 0
+trigger3 = var(30)=2 && ((!var(49) && (100*life/const(data.life))<=50) || var(44) = 2)
+triggerall = command = "qcf2_ab"
+var(55) = 17 | 1024 | 4096 | 8192
+
+[State -1]
+type = VarSet
+trigger1 = Power >= 3000 && var(30)=0 && var(47)=0
+trigger2 = Power >= 1000 && var(30)=1 && fvar(0) > 0 && ((100*life/const(data.life))<=25 || var(44) = 2)
+triggerall = command = "qcf2_xy"
+var(55) = 18 | 1024 | 16384 | 32768
+
+;=====================================================================
+; Super Arts
+;=====================================================================
+
+;---------------------------------------------------------------------------
+; タイガーストーム・MAX2
+[State -1]
+type = ChangeState
+value = 3400
+triggerall = (var(55) & 255) = 18
+trigger1 = Power >= 3000
+triggerall = StateType != A && (Ctrl || (var(40)=[1,3]))
+
+;---------------------------------------------------------------------------
+; タイガージェノサイド・MAX
+[State -1]
+type = ChangeState
+value = 3250
+triggerall = (var(55) & 255) = 17
+trigger1 = Power >= 2000
+triggerall = !StateType = A && (Ctrl || (var(40)=[1,3]))
+
+;---------------------------------------------------------------------------
+; タイガージェノサイド・ノーマル
+[State -1]
+type = ChangeState
+value = 3200
+triggerall = (var(55) & 255) = 12
+trigger1 = Power >= 1000
+triggerall = !StateType = A && (Ctrl || (var(40)=[1,3]))
+
+;---------------------------------------------------------------------------
+; タイガーキャノン弱
+[State -1]
+type = ChangeState
+value = 3000
+triggerall = (var(55) & 255) = 10
+trigger1 = Power >= 1000
+triggerall = !StateType = A && (Ctrl || (var(40)=[1,3]))
+
+;---------------------------------------------------------------------------
+; タイガーキャノン強
+[State -1]
+type = ChangeState
+value = 3010
+triggerall = (var(55) & 255) = 11
+trigger1 = Power >= 1000
+triggerall = !StateType = A && (Ctrl || (var(40)=[1,3]))
+
+;---------------------------------------------------------------------------
+; グランドタイガーキャノン弱
+[State -1]
+type = ChangeState
+value = 3050
+triggerall = (var(55) & 255) = 13
+trigger1 = Power >= 1000
+triggerall = !StateType = A && (Ctrl || (var(40)=[1,3]))
+
+;---------------------------------------------------------------------------
+; グランドタイガーキャノン強
+[State -1]
+type = ChangeState
+value = 3060
+triggerall = (var(55) & 255) = 14
+trigger1 = Power >= 1000
+triggerall = !StateType = A && (Ctrl || (var(40)=[1,3]))
+
+;---------------------------------------------------------------------------
+; タイガーレイド弱
+[State -1]
+type = ChangeState
+value = 3100
+triggerall = (var(55) & 255) = 15
+trigger1 = Power >= 1000
+triggerall = !StateType = A && (Ctrl || (var(40)=[1,3]))
+
+;---------------------------------------------------------------------------
+; タイガーレイド強
+[State -1]
+type = ChangeState
+value = 3110
+triggerall = (var(55) & 255) = 16
+trigger1 = Power >= 1000
+triggerall = !StateType = A && (Ctrl || (var(40)=[1,3]))
+
+;=====================================================================
+; Special Arts 
+;=====================================================================
+
+;---------------------------------------------------------------------------
+; タイガーアッパーカット弱
+[State -1]
+type = ChangeState
+value = 1000
+triggerall = (var(55) & 255) = 1
+triggerall= StateType != A
+trigger1 = ctrl || (var(40)=[1,2])
+trigger2 = var(40) = 4 && (StateNo != [1000,1009]) && (StateNo != [1030,1039])
+trigger3 = movecontact && stateno = 300
+removeongethit = (var(40) = 4)
+
+;---------------------------------------------------------------------------
+; タイガーアッパーカット強
+[State -1]
+type = ChangeState
+value = 1005
+triggerall = (var(55) & 255) = 2
+triggerall= StateType != A
+trigger1 = ctrl || (var(40)=[1,2])
+trigger2 = var(40) = 4 && (StateNo != [1000,1009]) && (StateNo != [1030,1039])
+trigger3 = movecontact && stateno = 300
+removeongethit = (var(40) = 4)
+
+;---------------------------------------------------------------------------
+; タイガークラッシュ弱
+[State -1]
+type = ChangeState
+value = 1030
+triggerall = (var(55) & 255) = 8
+triggerall= StateType != A
+trigger1 = ctrl || (var(40)=[1,2])
+trigger2 = var(40) = 4 && (StateNo != [1000,1009]) && (StateNo != [1030,1039])
+trigger3 = movecontact && stateno = 300
+removeongethit = (var(40) = 4)
+
+;---------------------------------------------------------------------------
+; タイガークラッシュ強
+[State -1]
+type = ChangeState
+value = 1035
+triggerall = (var(55) & 255) = 9
+triggerall= StateType != A
+trigger1 = ctrl || (var(40)=[1,2])
+trigger2 = var(40) = 4 && (StateNo != [1000,1009]) && (StateNo != [1030,1039])
+trigger3 = movecontact && stateno = 300
+removeongethit = (var(40) = 4)
+
+;---------------------------------------------------------------------------
+; アングリーチャージ
+[State -1]
+type = ChangeState
+value = 3300
+triggerall = (var(55) & 255) = 7
+triggerall= StateType != A
+trigger1 = Power >= 1000 && var(30)=0 && var(47)=0
+trigger2 = (Power >= 1000 || fvar(0) > 0) && (var(30)=1)
+trigger3 = movecontact && stateno = 300
+triggerall = !StateType = A && (Ctrl || (var(40)=[1,3]))
+
+;---------------------------------------------------------------------------
+; タイガーショット弱
+[State -1]
+type = ChangeState
+value = 1010
+triggerall = (var(55) & 255) = 3
+triggerall= StateType != A
+trigger1 = ctrl || (var(40)=[1,2])
+trigger2 = var(40) = 4 && (StateNo != [1010,1029])
+trigger3 = movecontact && stateno = 300
+removeongethit = (var(40) = 4)
+
+;---------------------------------------------------------------------------
+; タイガーショット強
+[State -1]
+type = ChangeState
+value = 1015
+triggerall = (var(55) & 255) = 4
+triggerall= StateType != A
+trigger1 = ctrl || (var(40)=[1,2])
+trigger2 = var(40) = 4 && (StateNo != [1010,1029])
+trigger3 = movecontact && stateno = 300
+removeongethit = (var(40) = 4)
+
+;---------------------------------------------------------------------------
+; グランドタイガーショット弱
+[State -1]
+type = ChangeState
+value = 1020
+triggerall = (var(55) & 255) = 5
+triggerall= StateType != A
+trigger1 = ctrl || (var(40)=[1,2])
+trigger2 = var(40) = 4 && (StateNo != [1010,1029])
+trigger3 = movecontact && stateno = 300
+removeongethit = (var(40) = 4)
+
+;---------------------------------------------------------------------------
+; グランドタイガーショット強
+[State -1]
+type = ChangeState
+value = 1025
+triggerall = (var(55) & 255) = 6
+triggerall= StateType != A
+trigger1 = ctrl || (var(40)=[1,2])
+trigger2 = var(40) = 4 && (StateNo != [1010,1029])
+trigger3 = movecontact && stateno = 300
+removeongethit = (var(40) = 4)
+
+;=====================================================================
+; Basic Throws
+;=====================================================================
+
+;---------------------------------------------------------------------------
+; タイガーレイジ
+[State -1]
+type = ChangeState
+value = 900
+triggerall = StateType = S && Ctrl
+trigger1 = P2MoveType != H && !P2StateType = A
+trigger1 = (Command = "fwd_y" && P2BodyDist X < 8) || (Command = "back_y" && P2BodyDist X < 20)
+
+;---------------------------------------------------------------------------
+; タイガーキャリー
+[State -1]
+type = ChangeState
+value = 910
+triggerall = StateType = S && Ctrl
+trigger1 = P2MoveType != H && !P2StateType = A
+trigger1 = (Command = "fwd_b" && P2BodyDist X < 8) || (Command = "back_b" && P2BodyDist X < 20)
+
+;---------------------------------------------------------------------
+; Special Attacks , Moves and so on.
+;---------------------------------------------------------------------
+
+;---------------------------------------------------------------------
+; 地上ふっとばし攻撃
+[State -1]
+type = ChangeState
+value = 500
+triggerall = Command = "by"
+trigger1 = StateType != A && (Ctrl || var(40)=1)
+trigger2 = movecontact && stateno = 300
+
+;---------------------------------------------------------------------
+; ガードキャンセル吹っ飛ばし攻撃
+[State -1]
+type = ChangeState
+value = 4500
+triggerall = Command = "by"
+triggerall = Power >= 1000 && StateType != A
+trigger1 = StateNo = [150,153]
+
+;---------------------------------------------------------------------
+; 空中ふっとばし攻撃
+[State -1]
+type = ChangeState
+value = 510
+triggerall = Command = "by"
+trigger1 = StateType = A && Ctrl
+trigger2 = movecontact && stateno = 300
+
+;---------------------------------------------------------------------
+; ガードキャンセル緊急回避動作（前・後）
+[State -1]
+type = ChangeState
+value = 4060
+triggerall = Command = "recovery" && Command = "holdback" && Power >= 1000
+triggerall = StateType != A
+trigger1 = StateNo = [150,153]
+
+[State -1]
+type = ChangeState
+value = 4050
+triggerall = Command = "recovery" && Power >= 1000
+triggerall = StateType != A
+trigger1 = StateNo = [150,153]
+
+;---------------------------------------------------------------------
+; 緊急回避動作（前）
+[State -1]
+type = ChangeState
+value = 4000
+triggerall = Command = "xa" && !Command = "holdback"
+trigger1 = StateType != A && (Ctrl || var(40)=1)
+
+[State -1]
+type = ChangeState
+value = 5201
+triggerall = Vel Y > 0 && Pos Y >= -20 && alive && (StateNo = 5050 || StateNo = 5071)
+trigger1 = Command = "xa"
+
+;---------------------------------------------------------------------
+; 緊急回避動作（後）
+[State -1]
+type = ChangeState
+value = 4010
+triggerall = Command = "q_back" && !Command = "holdfwd"
+trigger1 = StateType = S && (Ctrl || var(40)=1)
+trigger2 = stateno = 5050
+trigger2 = pos y > -30
+trigger3 = stateno = 5050 && (command = "holdback" || command = "holdfwd")
+trigger3 = pos y > -30
+
+;=====================================================================
+; Dir + Button
+;=====================================================================
+
+;---------------------------------------------------------------------------
+; タイガーフック
+[State -1]
+type = ChangeState
+value = 300
+triggerall = command = "x" && command = "holdfwd" && command != "holddown"
+trigger1 = statetype = S && (Ctrl || var(40)=1)
+trigger2 = stateno = [200,499]
+trigger2 = movecontact
+
+;---------------------------------------------------------------------------
+; タイガーテイル
+[State -1]
+type = ChangeState
+value = 305
+triggerall = command = "b" && command = "holdback" && command = "holddown"
+trigger1 = statetype = C && (Ctrl || var(40)=1)
+
+;=====================================================================
+; Basic Arts
+;=====================================================================
+
+;---------------------------------------------------------------------------
+; 立ち弱P
+[State -1]
+type = ChangeState
+value = ifelse(p2BodyDist X < 20,200,205)
+triggerall = command = "x" && command != "holddown"
+trigger1 = statetype = S && (Ctrl || var(40)=1)
+;---------------------------------------------------------------------------
+; 立ち強P
+[State -1]
+type = ChangeState
+value = ifelse(p2BodyDist X < 20,210,215)
+triggerall = command = "y" && command != "holddown"
+trigger1 = statetype = S && (Ctrl || var(40)=1)
+;---------------------------------------------------------------------------
+; 立ち弱K
+[State -1]
+type = ChangeState
+value = ifelse(p2BodyDist X < 20,220,225)
+triggerall = command = "a" && command != "holddown"
+trigger1 = statetype = S && (Ctrl || var(40)=1)
+;---------------------------------------------------------------------------
+; 立ち強K
+[State -1]
+type = ChangeState
+value = ifelse(p2BodyDist X < 20,230,235)
+triggerall = command = "b" && command != "holddown"
+trigger1 = statetype = S && (Ctrl || var(40)=1)
+;---------------------------------------------------------------------------
+; 屈み弱P
+[State -1]
+type = ChangeState
+value = 400
+triggerall = command = "x" && command = "holddown"
+trigger1 = (statetype = C && Ctrl) || var(40)=1
+;---------------------------------------------------------------------------
+; 屈み強P
+[State -1]
+type = ChangeState
+value = 410
+triggerall = command = "y" && command = "holddown"
+trigger1 = (statetype = C && Ctrl) || var(40)=1
+;---------------------------------------------------------------------------
+; 屈み弱K
+[State -1]
+type = ChangeState
+value = 420
+triggerall = command = "a" && command = "holddown"
+trigger1 = (statetype = C && Ctrl) || var(40)=1
+;---------------------------------------------------------------------------
+; 屈み強K
+[State -1]
+type = ChangeState
+value = 430
+triggerall = command = "b" && command = "holddown"
+trigger1 = (statetype = C && Ctrl) || var(40)=1
+;---------------------------------------------------------------------------
+; ジャンプ弱P
+[State -1]
+type = ChangeState
+value = IfElse(var(32) != 2 && Vel X = 0,600,605)
+triggerall = command = "x"
+trigger1 = statetype = A && ctrl
+;---------------------------------------------------------------------------
+; ジャンプ強P
+[State -1]
+type = ChangeState
+value = 610
+triggerall = command = "y"
+trigger1 = statetype = A && ctrl
+;---------------------------------------------------------------------------
+; ジャンプ弱K
+[State -1]
+type = ChangeState
+value = IfElse(var(32) != 2 && Vel X = 0,620,625)
+triggerall = command = "a"
+trigger1 = statetype = A && ctrl
+;---------------------------------------------------------------------------
+; ジャンプ強K
+[State -1]
+type = ChangeState
+value = IfElse(var(32) != 2 && Vel X = 0,630,635)
+triggerall = command = "b"
+trigger1 = statetype = A && ctrl
+
+;=====================================================================
+; Taunts
+;=====================================================================
+
+;---------------------------------------------------------------------------
+; 挑発
+[State -1]
+type = ChangeState
+value = 195
+trigger1 = command = "s"
+trigger1 = statetype = S && ctrl
+
+;=====================================================================
+; Basic Animation
+;=====================================================================
+
+;---------------------------------------------------------------------------
+; ダッシュ
+[State -1]
+type = ChangeState
+value = 100
+trigger1 = command = "FF"
+trigger1 = statetype = S && ctrl
+;---------------------------------------------------------------------------
+; バックステップ
+[State -1]
+type = ChangeState
+value = 105
+trigger1 = command = "BB"
+trigger1 = statetype = S && ctrl
+

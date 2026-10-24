@@ -1,0 +1,23 @@
+[Info]
+name = "Heavy D!" 
+displayname = "HEAVY D!" 
+versiondate = 04,14,2002  
+author = "Ahuron" 
+pal.defaults = 6,3,4,2 
+mugenversion = 1.0
+localcoord   = 320,240
+[Files]
+cmd     = HeavyD!.cmd 
+cns     = HeavyD!.cns 
+st      = HeavyD!.cns 
+st2     = HeavyD!2.cns 
+stcommon = common1.cns 
+sprite  = HeavyD!.sff 
+anim    = HeavyD!.air 
+sound   = HeavyD!.snd 
+pal1    = pals/HeavyD!1.act
+pal2    = pals/HeavyD!5.act
+pal3    = pals/HeavyD!6.act
+pal4    = pals/HeavyD!4.act
+pal5    = pals/HeavyD!2.act
+pal6    = pals/HeavyD!3.act

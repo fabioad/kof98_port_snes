@@ -1,0 +1,35 @@
+[Info]
+name="chizuru_maki"
+displayname="chizuru_maki"
+versiondate=2007-10-28
+mugenversion=12,09,2006
+author="MDK"
+pal.defaults=7,8,9,10,11,12
+[Files]
+sprite=chizuru_maki.sff
+sound=chizuru_maki.snd
+anim=chizuru_maki.air
+cmd=chizuru_maki.cmd
+cns=chizuru_maki.cns
+st=chizuru_maki_N.cns
+stcommon=common1.cns
+pal13=chizuru_maki-01.act
+pal1=chizuru_maki-01.act
+pal2=chizuru_maki-02.act
+pal3=chizuru_maki-03.act
+pal4=chizuru_maki-04.act
+pal5=chizuru_maki-05.act
+pal6=chizuru_maki-06.act
+pal7=chizuru_maki.act
+pal8=chizuru_maki-08.act
+pal9=chizuru_maki-09.act
+pal15=chizuru_maki-10.act
+pal11=chizuru_maki-11.act
+pal10=101010.act
+pal12=chizuru_maki-12.act
+st1=chizuru_maki.cns
+st2=chizuru_maki_S.cns
+
+[Arcade]
+;intro.storyboard = intro.def
+ending.storyboard = sacred.def

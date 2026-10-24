@@ -1,0 +1,211 @@
+-include build/pvsneslib.mk
+
+ifeq ($(strip $(PVSNESLIB_HOME)),)
+$(error Set PVSNESLIB_HOME to the official PVSnesLib installation directory)
+endif
+
+# PVSnesLib 4.5 ships a libc.obj whose spcProcessStream waits forever for the
+# SPC port-0 echo.  If an intro voice starts while the SPC is still finishing
+# a module message, the CPU spins there and the fight intro freezes.  4.6
+# bounds that wait and aborts/restores the stream cleanly.  Fail the build
+# instead of linking a ROM that hangs on the intro.
+PVSNESLIB_VERSION_FILE := $(PVSNESLIB_HOME)/pvsneslib/pvsneslib_version.txt
+PVSNESLIB_VERSION := $(strip $(shell cat $(PVSNESLIB_VERSION_FILE) 2>/dev/null))
+PVSNESLIB_MAJOR := $(word 1,$(subst ., ,$(PVSNESLIB_VERSION)))
+PVSNESLIB_MINOR := $(word 2,$(subst ., ,$(PVSNESLIB_VERSION)))
+PVSNESLIB_VERSION_OK := $(shell test -n "$(PVSNESLIB_MAJOR)" && \
+	test -n "$(PVSNESLIB_MINOR)" && \
+	{ [ "$(PVSNESLIB_MAJOR)" -gt 4 ] || \
+	  { [ "$(PVSNESLIB_MAJOR)" -eq 4 ] && \
+	    [ "$(PVSNESLIB_MINOR)" -ge 6 ]; }; } && echo yes)
+ifeq ($(PVSNESLIB_VERSION_OK),)
+$(error PVSnesLib 4.6+ is required (found '$(PVSNESLIB_VERSION)' at $(PVSNESLIB_VERSION_FILE)); 4.5's libc can freeze at the fight intro)
+endif
+
+export ROMNAME := kof98-snes
+export ROMTITLE := KOF SNESFEST
+export AUTOHDR := 0                       ; hand-written hdr.asm (ExHiROM)
+export HIROM := 1
+export FASTROM := 1
+export ROMSIZE := 0D
+export ROMBANKS := 128
+
+SRC := src/snes
+
+FIGHT_GEN := build/gen_fight/iori.chr build/gen_fight/iori_pal.bin \
+	build/gen_fight/runtime_abi.inc \
+	build/gen_fight/iori_spr.inc build/gen_fight/iori_chr.inc \
+	build/gen_fight/kyo.chr \
+	build/gen_fight/kyo_pal.bin build/gen_fight/kyo_spr.inc \
+	build/gen_fight/kyo_chr.inc \
+	build/gen_fight/hud.inc \
+	build/gen_fight/portraits.chr build/gen_fight/portraits.inc \
+	build/gen_fight/portrait_pal.bin \
+	build/gen_fight/spark.chr build/gen_fight/spark_pal.bin \
+	build/gen_fight/spark.inc \
+	build/gen_fight/stage_anim.inc build/gen_fight/stage_anim.chr \
+	build/gen_fight/stages.inc build/gen_fight/stages_tab.inc \
+	build/gen_fight/stgmods.inc \
+	build/gen_fight/voices.inc \
+	build/gen_fight/survival_msu.inc build/gen_fight/survival_msu_defs.inc \
+	build/gen_fight/quote_strings_en.inc build/gen_fight/quote_strings_pt.inc \
+	build/gen_fight/quote_strings_es.inc build/gen_fight/quote_strings_fr.inc \
+	build/gen_fight/quote_tables.inc build/gen_fight/char_names.inc \
+	build/gen_fight/hud.chr build/gen_fight/hud_pal.bin \
+	build/gen_fight/$(ROMNAME).msu
+
+AUDIO_SRC := assets/characters/_excluded/kfm/kfm.snd assets/data/common.snd \
+	assets/data/fight.snd assets/characters/Kyo-KOF98/Kyo.snd
+ANNOUNCER_WAVS := assets/audio/announcer/common_00052.wav \
+	assets/audio/announcer/common_00062.wav \
+	assets/audio/announcer/common_00063.wav \
+	assets/audio/announcer/common_00064.wav \
+	assets/audio/announcer/common_00112.wav \
+	assets/audio/announcer/common_00113.wav \
+	assets/audio/announcer/common_00114.wav
+# module order: sfx.it first, then one module per stage (see
+# tools/build_stages.py:STAGE_SONGS + tools/build_stage_music.py)
+STG_ITS := $(patsubst %,build/gen_audio/it/stg%.it,0 1 2 3 4 5 6 7 8 9)
+# frontend songs (module 11..17): intro, title-idle, menu, select, endings,
+# and winner.  The select module is rebuilt from its MIDI below; the other
+# modules are prebuilt from the sibling kof98snesfest tree.
+MENU_ITS := assets/audio/menu/cipher.it assets/audio/menu/cipher_beta.it \
+	assets/audio/menu/kof.it \
+	assets/audio/menu/lastdance.it assets/audio/menu/sunset.it \
+	assets/audio/menu/winner.it assets/audio/menu/crystal.it
+AUDIOFILES := assets/audio/esaka/sfx.it $(STG_ITS) $(MENU_ITS)
+export SOUNDBANK := build/gen_audio/soundbank
+AUDIO_GEN := build/gen_audio/spc_ids.inc build/gen_audio/spc_sfxmap.inc
+
+# Rebuild the select track from the repository MIDI through the same SNESMOD
+# conversion path used for stage songs.
+assets/audio/menu/kof.it: music/The_King_of_Fighters.mid \
+		tools/build_menu_music.py tools/build_stage_music.py \
+		tools/it_reduce.py \
+		$(wildcard assets/audio/esaka/instruments/*.iti)
+	UV_CACHE_DIR=/tmp/kof98-uv-cache python3 tools/build_menu_music.py
+
+assets/audio/menu/crystal.it: assets/survival_ending/kof00_crystal.mid \
+		tools/build_survival_ending.py tools/build_stage_music.py \
+		tools/mid2it.py tools/it_reduce.py \
+		$(wildcard assets/audio/esaka/instruments/*.iti)
+	UV_CACHE_DIR=/tmp/kof98-uv-cache python3 tools/build_survival_ending.py
+
+include $(PVSNESLIB_HOME)/devkitsnes/snes_rules
+
+.PHONY: all assets audio validate-snesmod verify clean cleanSpcAudio
+
+all: assets audio $(ROMNAME).sfc $(ROMNAME).msu
+
+# The ROM embeds the MSU slice indices; keep the data file next to it in
+# sync or streamed fighters (Chang, Choi, ...) draw stale/garbled tiles.
+# Depend on the linked ROM as well: with `make -j` this target used to run
+# before the link, so a failed/incomplete link still installed a fresh .msu
+# and left the previous ROM reading the wrong slices (Lucky/Chang/... drew
+# garbage boxes for the whole match).
+#
+# Install with a temp file + rename, never `cp` straight onto $@.  An
+# emulator running during a rebuild keeps the .msu open and caches its size
+# at boot; an in-place truncate makes every sprite CHR read past the new EOF
+# return $FF, so the fighters render as solid palette-15 "hitbox" blocks
+# (Brian/Brian's beige, Geese's yellow, ...).  The rename swaps the inode:
+# a running emulator keeps reading the old complete file, and the next
+# launch opens the new one.
+$(ROMNAME).msu: $(ROMNAME).sfc build/gen_fight/$(ROMNAME).msu
+	cp -f build/gen_fight/$(ROMNAME).msu $@.tmp
+	mv -f $@.tmp $@
+
+assets: $(FIGHT_GEN)
+
+audio: $(SOUNDBANK).asm $(AUDIO_GEN) validate-snesmod
+
+src/snes/fight_bridge.obj: src/engine/fight.asm src/engine/voice_queue.asm
+
+# The SDK's snes_rules recipe replaces the local soundbank recipe below, so
+# validate every module explicitly before an oversized IT can freeze spcLoad.
+validate-snesmod: $(AUDIOFILES) tools/validate_snesmod.py
+	python3 tools/validate_snesmod.py $(SMCONV) $(AUDIOFILES)
+
+$(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json assets/characters/*/*_SNES.cns assets/characters/*/*_SNES.cmd assets/characters/*/*.air assets/data/quotes/*.json) \
+	tools/build_fight.py tools/runtime_abi.py assets/runtime_abi.json tools/newroster.py tools/build_spc_neogeo.py \
+	tools/build_stages.py tools/sff.py tools/build_endings.py \
+	$(wildcard assets/survival_ending/*.png) \
+	$(wildcard assets/characters/*/*.snd) \
+	$(wildcard assets/stages/stages_png_snes/*.png) \
+	assets/stages/stages_png_snes/animations/stage_animations.json \
+	assets/characters/Iori-KOF98/Iori.sff assets/characters/Iori-KOF98/Iori.air \
+	assets/characters/Iori-KOF98/Iori_SNES.cns assets/characters/Iori-KOF98/Iori_SNES.cmd \
+	assets/characters/Kyo-KOF98/Kyo.sff assets/characters/Kyo-KOF98/Kyo.air \
+	assets/characters/Kyo-KOF98/Kyo_SNES.cns assets/characters/Kyo-KOF98/Kyo_SNES.cmd \
+	assets/stages/stage0.sff assets/stages/stage0.def \
+	assets/data/fightfx.sff assets/data/fightfx.air \
+	assets/kof98data/Lifebar/fight.def assets/kof98data/Lifebar/fight.sff \
+	assets/kof98data/Lifebar/Lifebar_Font/Life\ Names.fnt \
+	assets/kof98data/Lifebar/Lifebar_Font/Life\ Names\ Simul.fnt \
+	$(wildcard assets/kof98data/Lifebar/Lifebar_Font/*.def \
+	           assets/kof98data/Lifebar/Lifebar_Font/*.sff)
+	python3 tools/build_fight.py
+
+$(AUDIO_GEN) &: tools/build_audio.py tools/build_sfx_it.py \
+	tools/build_spc_neogeo.py $(AUDIO_SRC) $(ANNOUNCER_WAVS)
+	python3 tools/build_audio.py
+	python3 tools/build_sfx_it.py
+
+assets/audio/esaka/sfx.it: tools/build_sfx_it.py tools/build_spc_neogeo.py \
+	assets/characters/Kyo-KOF98/Kyo.snd $(ANNOUNCER_WAVS) \
+	$(wildcard assets/ui/*.wav)
+	python3 tools/build_sfx_it.py
+
+$(STG_ITS): build/gen_audio/stage_music.stamp
+
+
+build/gen_audio/stage_music.stamp: tools/build_stage_music.py \
+		tools/build_stages.py tools/it_reduce.py \
+		tools/mid2it.py assets/audio/menu/cipher_beta.it \
+		$(filter-out %\ %,$(wildcard music/*.mid)) \
+		$(wildcard assets/audio/esaka/instruments/*.iti) \
+		assets/audio/esaka/esaka.it
+	UV_CACHE_DIR=/tmp/kof98-uv-cache python3 tools/build_stage_music.py
+	touch $@
+
+$(SOUNDBANK).asm: $(AUDIOFILES)
+	@mkdir -p build/gen_audio
+	@$(PVSNESLIB_HOME)/devkitsnes/tools/smconv -s -o $(SOUNDBANK) -i -b 51 \
+		$(AUDIOFILES) 2>&1 | tee /tmp/smconv.log; \
+		! grep -qiE "too big|error" /tmp/smconv.log || \
+		{ echo "smconv: a module exceeds the SPC RAM budget"; exit 1; }
+	@if ! grep -q '^SOUNDBANK__:' $@; then \
+		sed -i 's/^SOUNDBANK__0:/SOUNDBANK__:\nSOUNDBANK__0:/' $@; fi
+	@sed -i -E 's/^\.SECTION ("SOUNDBANK[0-9]+") .*/.SECTION \1 FORCE/' $@
+	@sed -i '/^\.SECTION "SOUNDBANK[0-9]*"/i .ORGA $$0000' $@
+	@{ echo "; auto-generated soundbank chunk refs (keeps sections alive)"; \
+	  grep -o '^SOUNDBANK__[0-9]*:' $@ | tr -d ':' | sed 's/^/	.DL /'; } > build/gen_audio/sbkeep.inc
+
+src/snes/fight_bridge.obj: src/snes/fight_bridge.asm src/engine/fight.asm \
+	src/engine/menucore.asm src/engine/menus.asm src/engine/options.asm \
+	src/engine/cancel_gate.asm \
+	$(wildcard src/gen_menu/*) $(wildcard src/gen_menu/intro/*) \
+	$(FIGHT_GEN) $(AUDIO_GEN) $(SOUNDBANK).asm
+	$(AS) -d -s -x $(if $(filter 1,$(BIGROM)),-D BIGROM -D FULL12) $(if $(filter 1,$(BASE4)),-D BASE4) -I src -I build -o $@ $<
+
+verify: $(ROMNAME).sfc
+	python3 tools/fix_checksum.py $<
+	python3 tools/verify_pvsnes_rom.py $<
+	cp -f build/gen_fight/$(ROMNAME).msu $(ROMNAME).msu.tmp
+	mv -f $(ROMNAME).msu.tmp $(ROMNAME).msu
+
+cleanSpcAudio:
+	rm -f build/spc.o build/spc_raw.bin build/link-spc \
+		build/gen_audio/spc_boot.bin build/gen_audio/spc_size.inc
+
+clean: cleanBuildRes cleanRom cleanGfx cleanAudio cleanSpcAudio
+
+# hdr.asm include for the generated soundbank.asm / engine includes
+# ROM profiles:
+#   make BASE4=1   -> 8 MiB, original 4-char roster
+#   make           -> 8 MiB, 42-char roster: Kyo/Iori/Shingo/Rugal/Benimaru/
+#                    Daimon in ROM, the rest streamed from
+#                    kof98-snes.msu (MSU-1 data file, keep next to the .sfc)
+BASE4 ?= 0
+BIGROM ?= 0
+ASFLAGS += -I. -Ibuild

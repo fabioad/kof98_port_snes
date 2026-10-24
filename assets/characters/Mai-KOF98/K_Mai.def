@@ -1,0 +1,30 @@
+; Player information
+[Info]
+name ="Mai Shiranui"        
+displayname ="Mai" 
+versiondate =05,05,2008    
+mugenversion =06,14,2003 
+author ="KoopaKoot"         
+pal.defaults =4,5,6,1,2,3
+
+; Files for the player
+[Files]
+cmd     =Mai.cmd
+cns     =Mai.cns
+st      =Mai.cns
+st1     =config.txt
+stcommon =common1.cns
+sprite  =Mai.sff
+anim    =Mai.air
+sound   = sounds.snd   
+pal1=maiblue.act
+pal2=maiblack.act
+pal3=Maipink.act
+pal4=MaiPal.act
+pal5=Maigreen.act
+pal6=Maipurple.act
+
+
+
+
+

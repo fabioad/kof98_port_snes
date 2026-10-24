@@ -1,0 +1,35 @@
+[Info]
+name = "Yuri Sakazaki"
+displayname = "Yuri Sakazaki"
+versiondate = 04,26,2011
+mugenversion = 04,14,2002
+author = "ohgaki"
+pal.defaults = 1,2,3,4,5,6,7,8,9,10,11,12
+
+[Files]
+cmd     = yuri.cmd
+cns     = yuri.cns
+st      = yuri.cns
+st1     = yuri_I.cns
+st2     = yuri_helper.cns
+st3     = yuri-2.cns
+st4     = yarare.cns
+st5     = yuri_S.cns
+st6     = yuri_H.cns
+st7     = member.cns
+stcommon = yuri_common.cns
+sprite  = yuri.sff
+anim    = yuri.air
+sound   = yuri.snd
+pal1  = yuri01.act
+pal2  = yuri02.act
+pal3  = yuri03.act
+pal4  = yuri04.act
+pal5  = yuri05.act
+pal6  = yuri06.act
+pal7  = yuri07.act
+pal8  = yuri08.act
+pal9  = yuri09.act
+pal10 = yuri10.act
+pal11 = yuri11.act
+pal12 = yuri12.act

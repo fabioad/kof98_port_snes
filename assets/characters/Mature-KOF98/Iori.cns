@@ -1,0 +1,923 @@
+;---------------------------------------------------------------------------
+; Iori Alpha 1
+[Statedef 6103]
+type = A
+movetype = A
+physics = N
+anim = 6103
+sprpriority = 2
+poweradd = 63
+ctrl = 0
+
+[State 6103, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 6103, Width]
+type = Width
+trigger1 = 1
+value = 30,-15
+
+[State 6103, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 6103, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 6103, ParentVarAdd]
+type = ParentVarAdd
+trigger1 = !Time
+var(55) = -25
+
+[State 6103, VelSet]
+type = VelSet
+trigger1 = AnimElem = 2
+x = 7
+y = -5
+
+[State 6103, Gravity]
+type = Gravity
+trigger1 = Pos Y < 0
+
+[State 6103, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 2
+value = 22,0
+
+[State 6103, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 7, = 1
+attr = A, SA
+animtype = Medium
+sprpriority = 2
+damage = 0
+getpower = 0
+givepower = 21,21
+hitflag = MAF
+guardflag = MA
+pausetime = 0,0
+sparkno = 3
+sparkxy = 0,-60
+hitsound = S0,2
+guardsound = S2,1
+p2facing = 1
+ground.type = High
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = -4
+air.velocity = -4,-4
+fall = 1
+fall.recover = 0
+p1stateno = 36103
+p2stateno = 26103
+kill = 0
+
+[State 6103, Explod]
+type = Explod
+trigger1 = AnimElem = 7
+anim = 6122
+sprpriority = 4
+postype = p1
+pos = 74,-73
+vel = 2.75,.5
+bindtime = 1
+id = 6522
+
+[State 6103, VelSet]
+type = VelSet
+trigger1 = Pos Y > 0
+x = 0
+y = 0
+
+[State 6103, PosSet]
+type = PosSet
+trigger1 = Pos Y > 0
+y = 0
+
+[State 6103, ChangeState]
+type = ChangeState
+trigger1 = AnimElem = 2, > 0 && !Vel X && !Vel Y && !Pos Y
+value = 16103
+
+;---------------------------------------------------------------------------
+; Iori Alpha 2
+[Statedef 16103]
+type = A
+movetype = A
+physics = S
+anim = 16103
+sprpriority = 2
+velset = 0,0
+ctrl = 0
+
+[State 16103, PlayerPush]
+type = PlayerPush
+trigger1 = AnimElem = 1
+value = 1
+
+[State 16103, Width]
+type = Width
+trigger1 = 1
+value = 20,-20
+
+[State 16103, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 16103, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 16103, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+value = 6120
+
+;---------------------------------------------------------------------------
+; Iori Alpha GotHit 1
+[Statedef 26103]
+type = A
+movetype = H
+physics = N
+sprpriority = 1
+velset = -10,0
+ctrl = 0
+
+[State 26103, ChangeAnim2]
+type = ChangeAnim2
+trigger1 = 1
+value = 26103
+
+[State 26103, PalFX]
+type = PalFX
+trigger1 = !(GameTime%5)
+time = 1
+color = 0
+invertall = 1
+
+[State 26103, VelAdd]
+type = VelAdd
+trigger1 = Vel X < 0
+x = .5
+
+[State 26103, LifeAdd]
+type = LifeAdd
+trigger1 = !Life
+trigger1 = Time = 120
+value = -1
+
+[State 26103, SelfState]
+type = SelfState
+trigger1 = Time = 120
+value = 5050
+
+;---------------------------------------------------------------------------
+; Iori Alpha Contact
+[Statedef 36103]
+type = A
+movetype = A
+physics = N
+sprpriority = 2
+ctrl = 0
+
+[State 36103, VarSet]
+type = VarSet
+trigger1 = 1
+var(0) = 1
+
+[State 36103, Gravity]
+type = Gravity
+trigger1 = Pos Y < 0 && Time > 6
+
+[State 36103, PosFreeze]
+type = PosFreeze
+trigger1 = Time < 7
+time = 1
+
+[State 36103, VelSet]
+type = VelSet
+trigger1 = Pos Y > 0
+x = 0
+y = 0
+
+[State 36103, PosSet]
+type = PosSet
+trigger1 = Pos Y > 0
+y = 0
+
+[State 36103, ChangeState]
+type = ChangeState
+trigger1 = AnimElem = 2, > 0 && !Vel X && !Vel Y && !Pos Y
+value = 16103
+
+;---------------------------------------------------------------------------
+; Iori Alpha GotHit 2
+[Statedef 46103]
+type = A
+movetype = H
+physics = N
+velset = 0,0
+ctrl = 0
+
+[State 46103, ChangeAnim2]
+type = ChangeAnim2
+trigger1 = !Time
+value = 36103
+elem = 31
+
+[State 46103, PalFX]
+type = PalFX
+trigger1 = !Time
+time = 84
+add = -50,-140,-20
+sinadd = 30,0,90,30
+color = 0
+invertall = 1
+
+[State 46103, VelSet]
+type = VelSet
+trigger1 = !Time
+y = -16
+
+[State 46103, VelAdd]
+type = VelAdd
+trigger1 = Pos Y <= 20
+y = .57
+
+[State 46103, ChangeState]
+type = ChangeState
+trigger1 = Pos Y > 20
+value = 56103
+
+[Statedef 56103]
+type = L
+movetype = H
+physics = N
+velset = 0,0
+anim = IfElse(SelfAnimExist(5112),5112,5110)
+ctrl = 0
+
+[State 56103, PalFX]
+type = PalFX
+trigger1 = !Time
+time = 1
+add = 0,0,0
+
+[State 56103, EnvShake]
+type = EnvShake
+trigger1 = !Time
+time = 10
+ampl = -5
+
+[State 56103, PosSet]
+type = PosSet
+trigger1 = 1
+y = 0
+
+[State 56103, SelfState]
+type = SelfState
+trigger1 = !Alive
+trigger1 = Time = 60
+value = 5150
+
+[State 56103, ChangeAnim]
+type = ChangeAnim
+trigger1 = Alive
+trigger1 = Time = 60
+value = IfElse(SelfAnimExist(5122),5122,5120)
+
+[State 56103, SelfState]
+type = SelfState
+trigger1 = Anim = [5120,5122]
+trigger1 = !AnimTime
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; Iori Sakazuki Type II
+[Statedef 6121]
+type = S
+movetype = A
+physics = N
+anim = 6124
+sprpriority = 3
+velset = 0,0
+ctrl = 0
+
+[State 6121, AssertSpecial]
+type = AssertSpecial
+trigger1 = 1
+flag = NoShadow
+
+[State 6121, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = SCA, AA, AT, AP
+
+[State 6121, EnvShake]
+type = EnvShake
+trigger1 = AnimElem = 1
+time = 15
+ampl = -6
+
+[State 6121, Explod]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6121
+sprpriority = 4
+postype = p1
+pos = 0,0
+bindtime = -1
+id = 6121
+
+[State 6121, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = 7,3
+
+[State 6121, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 1, = 1
+attr = S, SP
+sprpriority = 3
+animtype = Hard
+damage = 157,29
+getpower = 0
+givepower = 21,21
+hitflag = MAFD
+guardflag = MA
+pausetime = 0,0
+sparkno = -1
+hitsound = S7,0
+guardsound = S2,1
+ground.type = Low
+ground.slidetime = 21
+ground.hittime = 21
+ground.velocity = -10
+air.velocity = -5.5,-6
+p2stateno = 46103
+
+[State 6121, Explod]
+type = Explod
+trigger1 = MoveHit
+anim = 6123
+sprpriority = 4
+postype = p2
+pos = 0,-60
+random = 50,120
+bindtime = 1
+pausemovetime = 999999999999999999999999999999999999999999999999999
+supermovetime = 999999999999999999999999999999999999999999999999999
+id = 6123
+persistent = 4
+
+[State 6121, DestroySelf]
+type = DestroySelf
+trigger1 = !AnimTime
+
+;---------------------------------------------------------------------------
+; Iori Beta 1
+[Statedef 6104]
+type = A
+movetype = A
+physics = N
+anim = 6104
+poweradd = 63
+velset = 16,5
+ctrl = 0
+
+[State 6104, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 6104, Width]
+type = Width
+trigger1 = 1
+value = 35,-15
+
+[State 6104, VarSet]
+type = VarSet
+trigger1 = !Time && parent, var(55) > 20
+var(4) = 1
+
+[State 6104, ParentVarAdd]
+type = ParentVarAdd
+trigger1 = !Time && parent, var(55) = (20,40]
+var(55) = -15
+
+[State 6104, ParentVarAdd]
+type = ParentVarAdd
+trigger1 = !Time && parent, var(55) <= 20
+var(55) = -10
+
+[State 6104, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 6104, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 6104, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 1
+attr = A, SA
+animtype = DiagUp
+sprpriority = 2
+damage = 49,20
+getpower = 0
+givepower = 21,21
+hitflag = MAFD
+guardflag = MA
+pausetime = 0,12
+sparkno = 2
+sparkxy = 0,-60
+hitsound = S0,3
+guardsound = S2,1
+ground.type = High
+ground.slidetime = 26
+ground.hittime = 26
+ground.velocity = -5,-6
+air.velocity = -5,-6
+envshake.time = 5
+envshake.ampl = -4
+fall = 1
+fall.recover = 0
+
+[State 6104, VarAdd]
+type = VarAdd
+trigger1 = MoveContact
+var(1) = 1
+
+[State 6104, VarAdd]
+type = VarAdd
+trigger1 = MoveHit
+var(10) = 1
+
+[State 6104, VelSet]
+type = VelSet
+trigger1 = var(1) = (0,13)
+x = 0
+y = 0
+
+[State 6104, VelSet]
+type = VelSet
+trigger1 = var(1) > 12
+x = 14
+y = 6
+
+[State 6104, VelSet]
+type = VelSet
+trigger1 = Pos Y > 30
+x = 0
+y = 0
+
+[State 6104, PosSet]
+type = PosSet
+trigger1 = Pos Y > 30
+y = 0
+
+[State 6104, Pause]
+type = Pause
+trigger1 = !(GameTime%2) &&var(10) = (0,20)
+time = 1
+ignorehitpause = 1
+
+[State 6104, ChangeState]
+type = ChangeState
+trigger1 = !Vel X && !Vel Y && !Pos Y
+value = IfElse(var(4),16104,6105)
+
+;---------------------------------------------------------------------------
+; Iori Beta 2
+[Statedef 16104]
+type = A
+movetype = A
+physics = N
+anim = 6103
+sprpriority = 2
+poweradd = 63
+ctrl = 0
+
+[State 16104, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 16104, Width]
+type = Width
+trigger1 = 1
+value = 30,-15
+
+[State 16104, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 16104, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 16104, VarAdd]
+type = VarAdd
+trigger1 = var(10)
+var(10) = 1
+
+[State 16104, Pause]
+type = Pause
+trigger1 = !(GameTime%2) && var(10) = (0,20)
+time = 1
+ignorehitpause = 1
+
+[State 16104, VelSet]
+type = VelSet
+trigger1 = AnimElem = 2
+x = 7
+y = -5
+
+[State 16104, Gravity]
+type = Gravity
+triggerall = Pos Y < 0
+trigger1 = !var(2) || var(2) > 8
+
+[State 16104, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 2
+value = 22,0
+
+[State 16104, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 7, = 1
+attr = A, SA
+animtype = Medium
+sprpriority = 2
+damage = 98,29
+getpower = 0
+givepower = 21,21
+hitflag = MAFD
+guardflag = MA
+pausetime = 8,8
+sparkno = 2
+sparkxy = 0,-60
+hitsound = S5,2
+guardsound = S2,1
+ground.type = High
+ground.slidetime = 26
+ground.hittime = 26
+ground.velocity = -6,-9
+air.velocity = -6,-9
+down.hittime = 26
+down.velocity = 0,0
+fall = 1
+fall.recover = 0
+palfx.time = 45
+palfx.add = -50,-140,-20
+palfx.sinadd = 30,0,90,30
+palfx.color = 0
+palfx.invertall = 1
+
+[State 16104, Explod]
+type = Explod
+trigger1 = AnimElem = 7
+anim = 6122
+sprpriority = 4
+postype = p1
+pos = 74,-73
+vel = 2.75,.5
+bindtime = 1
+id = 6522
+
+[State 16104, Explod]
+type = Explod
+trigger1 = MoveHit
+anim = 6123
+sprpriority = 4
+postype = p2
+pos = 0,-60
+random = 50,120
+bindtime = 1
+pausemovetime = 999999999999999999999999999999999999999999999999999
+supermovetime = 999999999999999999999999999999999999999999999999999
+id = 6123
+persistent = 0
+[State 16104, Explod]
+type = Explod
+trigger1 = MoveHit
+anim = 6123
+sprpriority = 4
+postype = p2
+pos = 0,-60
+random = 50,120
+bindtime = 1
+pausemovetime = 999999999999999999999999999999999999999999999999999
+supermovetime = 999999999999999999999999999999999999999999999999999
+id = 6123
+persistent = 0
+[State 16104, Explod]
+type = Explod
+trigger1 = MoveHit
+anim = 6123
+sprpriority = 4
+postype = p2
+pos = 0,-60
+random = 50,120
+bindtime = 1
+pausemovetime = 999999999999999999999999999999999999999999999999999
+supermovetime = 999999999999999999999999999999999999999999999999999
+id = 6123
+persistent = 0
+[State 16104, Explod]
+type = Explod
+trigger1 = MoveHit
+anim = 6123
+sprpriority = 4
+postype = p2
+pos = 0,-60
+random = 50,120
+bindtime = 1
+pausemovetime = 999999999999999999999999999999999999999999999999999
+supermovetime = 999999999999999999999999999999999999999999999999999
+id = 6123
+persistent = 0
+
+[State 16104, VelSet]
+type = VelSet
+trigger1 = Pos Y > 0
+x = 0
+y = 0
+
+[State 16104, PosSet]
+type = PosSet
+trigger1 = Pos Y > 0
+y = 0
+
+[State 16104, ChangeState]
+type = ChangeState
+trigger1 = AnimElem = 2, > 0 && !Vel X && !Vel Y && !Pos Y
+value = 16103
+
+;---------------------------------------------------------------------------
+; Iori Gamma
+[Statedef 6105]
+type = A
+movetype = A
+physics = N
+anim = 6103
+sprpriority = 2
+poweradd = 63
+ctrl = 0
+
+[State 6105, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 6105, Width]
+type = Width
+trigger1 = 1
+value = 30,-15
+
+[State 6105, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 6105, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 6105, VarAdd]
+type = VarAdd
+trigger1 = var(10)
+var(10) = 1
+
+[State 6105, Pause]
+type = Pause
+trigger1 = !(GameTime%2) && var(10) = (0,20)
+time = 1
+ignorehitpause = 1
+
+[State 6105, VelSet]
+type = VelSet
+trigger1 = AnimElem = 2
+x = 7
+y = -5
+
+[State 6105, Gravity]
+type = Gravity
+triggerall = Pos Y < 0
+trigger1 = !var(2) || var(2) > 8
+
+[State 6105, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 6
+value = 22,1
+
+[State 6105, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 7, = 1
+attr = A, SA
+animtype = Back
+sprpriority = 2
+damage = 98,29
+getpower = 0
+givepower = 21,21
+hitflag = MAFD
+guardflag = MA
+pausetime = 8,8
+sparkno = 2
+sparkxy = 0,-60
+hitsound = S5,2
+guardsound = S2,1
+ground.type = High
+ground.slidetime = 26
+ground.hittime = 26
+ground.velocity = -10,12
+air.velocity = -10,12
+down.hittime = 26
+down.velocity = 0,0
+fall = 1
+fall.recover = 0
+palfx.time = 45
+palfx.add = -50,-140,-20
+palfx.sinadd = 30,0,90,30
+palfx.color = 0
+palfx.invertall = 1
+envshake.time = 15
+envshake.ampl = -6
+
+[State 6105, Explod]
+type = Explod
+trigger1 = AnimElem = 7
+anim = 6122
+sprpriority = 4
+postype = p1
+pos = 74,-73
+vel = 2.75,.5
+bindtime = 1
+id = 6522
+
+[State 6105, Explod]
+type = Explod
+trigger1 = MoveHit
+anim = 6123
+sprpriority = 4
+postype = p2
+pos = 0,-60
+random = 50,120
+bindtime = 1
+pausemovetime = 999999999999999999999999999999999999999999999999999
+supermovetime = 999999999999999999999999999999999999999999999999999
+id = 6123
+persistent = 0
+[State 6105, Explod]
+type = Explod
+trigger1 = MoveHit
+anim = 6123
+sprpriority = 4
+postype = p2
+pos = 0,-60
+random = 50,120
+bindtime = 1
+pausemovetime = 999999999999999999999999999999999999999999999999999
+supermovetime = 999999999999999999999999999999999999999999999999999
+id = 6123
+persistent = 0
+[State 6105, Explod]
+type = Explod
+trigger1 = MoveHit
+anim = 6123
+sprpriority = 4
+postype = p2
+pos = 0,-60
+random = 50,120
+bindtime = 1
+pausemovetime = 999999999999999999999999999999999999999999999999999
+supermovetime = 999999999999999999999999999999999999999999999999999
+id = 6123
+persistent = 0
+[State 6105, Explod]
+type = Explod
+trigger1 = MoveHit
+anim = 6123
+sprpriority = 4
+postype = p2
+pos = 0,-60
+random = 50,120
+bindtime = 1
+pausemovetime = 999999999999999999999999999999999999999999999999999
+supermovetime = 999999999999999999999999999999999999999999999999999
+id = 6123
+persistent = 0
+[State 6105, Explod]
+type = Explod
+trigger1 = MoveHit
+anim = 6123
+sprpriority = 4
+postype = p2
+pos = 0,-60
+random = 50,120
+bindtime = 1
+pausemovetime = 999999999999999999999999999999999999999999999999999
+supermovetime = 999999999999999999999999999999999999999999999999999
+id = 6123
+persistent = 0
+[State 6105, Explod]
+type = Explod
+trigger1 = MoveHit
+anim = 6123
+sprpriority = 4
+postype = p2
+pos = 0,-60
+random = 50,120
+bindtime = 1
+pausemovetime = 999999999999999999999999999999999999999999999999999
+supermovetime = 999999999999999999999999999999999999999999999999999
+id = 6123
+persistent = 0
+
+[State 6105, VelSet]
+type = VelSet
+trigger1 = Pos Y > 0
+x = 0
+y = 0
+
+[State 6105, PosSet]
+type = PosSet
+trigger1 = Pos Y > 0
+y = 0
+
+[State 6105, ChangeState]
+type = ChangeState
+trigger1 = AnimElem = 2, > 0 && !Vel X && !Vel Y && !Pos Y
+value = 16103
+
+;---------------------------------------------------------------------------
+; Iori Taunt
+[Statedef 6120]
+type = S
+movetype = A
+physics = S
+anim = 6120
+sprpriority = 2
+facep2 = 1
+ctrl = 0
+
+[State 6120, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 2
+value = 22,2
+
+[State 6120, Helper]
+type = Helper
+trigger1 = AnimElem = 8 && var(0)
+stateno = 6121
+postype = p2
+pos = 0,-floor(enemyNear, Pos Y)
+bindtime = 1
+name = "Sakazuki"
+id = 6120
+ownpal = 1
+
+[State 6120, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+value = 6030

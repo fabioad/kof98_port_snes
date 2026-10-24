@@ -1,0 +1,82 @@
+[
+  {
+    "file": "KOF98-ChinaStage.png",
+    "originalTiles": 627,
+    "finalTiles": 512,
+    "originalPngBytes": 2996,
+    "finalPngBytes": 16593,
+    "losslessConverterRoundTrip": true
+  },
+  {
+    "file": "KOF98-JpnStreetStage.png",
+    "originalTiles": 808,
+    "finalTiles": 512,
+    "originalPngBytes": 3293,
+    "finalPngBytes": 17511,
+    "losslessConverterRoundTrip": true
+  },
+  {
+    "file": "KOF98-JpnTempleStage.png",
+    "originalTiles": 884,
+    "finalTiles": 512,
+    "originalPngBytes": 3597,
+    "finalPngBytes": 20387,
+    "losslessConverterRoundTrip": true
+  },
+  {
+    "file": "KOF98-KoreaStage.png",
+    "originalTiles": 706,
+    "finalTiles": 512,
+    "originalPngBytes": 3121,
+    "finalPngBytes": 18694,
+    "losslessConverterRoundTrip": true
+  },
+  {
+    "file": "KOF98-Mid.EastStage.png",
+    "originalTiles": 569,
+    "finalTiles": 512,
+    "originalPngBytes": 3136,
+    "finalPngBytes": 24987,
+    "losslessConverterRoundTrip": true
+  },
+  {
+    "file": "KOF98-RugalStage.png",
+    "originalTiles": 132,
+    "finalTiles": 512,
+    "originalPngBytes": 2014,
+    "finalPngBytes": 26205,
+    "losslessConverterRoundTrip": true
+  },
+  {
+    "file": "KOF98-SpainStage.png",
+    "originalTiles": 158,
+    "finalTiles": 512,
+    "originalPngBytes": 1765,
+    "finalPngBytes": 15815,
+    "losslessConverterRoundTrip": true
+  },
+  {
+    "file": "KOF98-USAWharfStage-B.png",
+    "originalTiles": 557,
+    "finalTiles": 512,
+    "originalPngBytes": 3034,
+    "finalPngBytes": 18245,
+    "losslessConverterRoundTrip": true
+  },
+  {
+    "file": "KOF98-USAWharfStage.png",
+    "originalTiles": 765,
+    "finalTiles": 512,
+    "originalPngBytes": 3443,
+    "finalPngBytes": 15259,
+    "losslessConverterRoundTrip": true
+  },
+  {
+    "file": "KOF98-USAYardStage.png",
+    "originalTiles": 727,
+    "finalTiles": 512,
+    "originalPngBytes": 3412,
+    "finalPngBytes": 24195,
+    "losslessConverterRoundTrip": true
+  }
+]

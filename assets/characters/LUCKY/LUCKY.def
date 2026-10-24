@@ -1,0 +1,49 @@
+;-----------------------------------
+; Lucky Glauber X Version 2
+;      - SANDER 71113 -
+;-----------------------------------
+
+;General Information
+
+[Info] 
+Name         ="Lucky Glauber"
+DisplayName  ="LUCKY"
+Author       ="Sander71113"
+VersionDate  =07,19,2004
+MugenVersion =04,14,2001
+Pal.Defaults = 1,2,3,4,5
+
+;Files for the player
+
+[Files]
+;cmd      =lucky.cmd
+cmd     = mediumai.cmd   ; Medium ai
+;cmd     = noai.cmd       ; no ai
+cns      =lucky.cns
+stcommon =common1.cns
+st       =lucky.cns
+sprite   =lucky.sff
+anim     =lucky.air
+sound    =glauber.snd
+pal1=lucky.act
+pal2=abo.act
+pal3=dilaw.act
+pal4=berde.act
+pal5=pula.act
+pal6=asul.act
+pal7=itim.act
+st1=lspecials.cns
+st2=lshoots.cns
+st3=lfinger.cns
+st4=lakers.cns
+st5=ldm1.cns
+st6=ldm2.cns
+st7=ldm3.cns
+st8=brian.cns
+st9=heavyd.cns
+
+
+;Arcade mode
+[Arcade]
+intro.storyboard=
+ending.storyboard=

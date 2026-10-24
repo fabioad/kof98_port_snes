@@ -1,0 +1,85 @@
+[Data]
+Life = 1500
+Power = 3000
+attack = 100
+defence = 100
+fall.defence_up = 50
+liedown.time = 9
+airjuggle = 15
+sparkno = 2
+guard.sparkno = 40
+KO.echo = 0
+volume = 0
+IntPersistIndex = 60
+FloatPersistIndex = 40
+
+[Size]
+xscale = 1
+yscale = 1
+ground.back = 15
+ground.front = 16
+air.back = 12
+air.front = 12
+height = 45
+attack.dist = 220
+proj.attack.dist = 160
+proj.doscale = 0
+head.pos = 24, -92
+mid.pos = -5, -60
+shadowoffset = 0
+draw.offset = 0,0
+
+[Velocity]
+walk.fwd  = 2.15517234802246 ;2.25
+walk.back = -2.15517234802246 ;-2.25
+run.fwd  = 4.5, 0 ;4,85333333
+run.back = -4.5,-3.8
+jump.neu = 0,-8.25411771774292 ;-8.2
+jump.fwd = 2.1538462638855,-8.25411771774292 ;-8.2
+jump.back = -2.1538462638855,-8.25411771774292 ;-8.2
+runjump.fwd = 4,-8.2
+runjump.back = -2.55,-8.2
+airjump.neu = 0,-6.17230749130249
+airjump.fwd = 2.5
+airjump.back = -2.55
+
+[Movement]
+airjump.num = 0
+airjump.height = 35
+yaccel = 0.478176474094391  ;0.4625
+stand.friction = .85
+crouch.friction = .82
+
+;---------------------------------------
+;======================================
+;Var List:
+;Var(0)  = Combo Var 1(CMD File)
+;Var(1)  = Combo Var 2(CMD File)
+;Var(2)  = Combo Var 3(CMD File)
+;Var(3)  = Jump Var
+;Var(6)  = Slow Motion
+;Var(8)  = Juggle Fix
+;Var(10) = MoveSet In Brian Hammer
+;Var(15) = Counter Code Main Var
+;Var(16) = Counter Code Full Var
+;Var(20) = Big Bang Tackle limiter
+;Var(40) = Max Mode (In Cancel-Mode has autoset)
+;Var(41) = Max Mode PowerSet (Only Single Mode)
+;Var(42) = Max Mode White Flash (When Cancel)
+;Var(59) = AI on/off
+;---------------------------------------
+;Float Var List:
+;FVar(10) = Screw Body Press VelSet X
+;FVar(11) = Screw Body Press VelSet Y
+;FVar(17) = Corner Push code by Yong Ming
+;---------------------------------------
+;Channel List
+;1: Intro & Winner main Voice
+;2: Jump sound
+;3: Run sound
+;4: Taunt
+;5: HSDM Voice
+;======================================
+;---------------------------------------
+
+;--------------------------------|End Brian.cns|--------------------------------

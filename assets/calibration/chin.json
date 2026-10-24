@@ -1,0 +1,46 @@
+{
+  "character": "chin",
+  "config_hash": "3a319d97d132e39de774e285813363416f126227003985aecda84e7e8c1e5c88",
+  "corrections": [
+    {
+      "after": 0,
+      "before": 512,
+      "confidence": "ALTA",
+      "controller": 4,
+      "expression": "0,0",
+      "key": "avx",
+      "kind": "combat",
+      "property": "air.velocity",
+      "runtime_scope": "native_scalar",
+      "sid": 48,
+      "source": {
+        "file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/chin-kofa/Chin-KOFM-H.cns",
+        "line": 1602
+      },
+      "state": 1950,
+      "status": "correctable"
+    }
+  ],
+  "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/chin-kofa/chin-kofa.def",
+  "inputs": {
+    "assets/characters/chin-kofa/Chin-KOFM-2-3.cns": "f46e6d678f7d12a5f426c9f3555e05e0ea64cd150a43699142f0d6d17ccf9661",
+    "assets/characters/chin-kofa/Chin-KOFM-H.cns": "29972bd7c64f1ea1375e917d2f299882c53354876bfe4c4893505d9ff36f20de",
+    "assets/characters/chin-kofa/Chin-KOFM-N.cns": "733cbe787b9d7f49ccb92e5fa520075564a1ae1c09c5ffae9ffb5cc914bf2eca",
+    "assets/characters/chin-kofa/Chin-KOFM-S.cns": "eca6af89023e016ac3d55e1794a3c1aa6d290f40783c5f77ee0237c115662c99",
+    "assets/characters/chin-kofa/Chin-KOFM.air": "60195491991d5f4dcaf2e2ea8ca825dc1b9ace2ef23a0f4c10a562cfa1c692f7",
+    "assets/characters/chin-kofa/Chin-KOFM.cmd": "fd38812962fb7d79336579ada58916ea4bb1b68b9a6bbf2a83e3cf0170b0c949",
+    "assets/characters/chin-kofa/Chin-KOFM.cns": "ea36b3e317e984362fcdd9270be580e75afd114268e5752b0d7a47cb2fea3d8b",
+    "assets/characters/chin-kofa/Chin-KOFM.sff": "4db88ea6997943773032c32641f298d430aa257669a886d763567d27d6fe9a79",
+    "assets/characters/chin-kofa/Chin-KOFM.snd": "bbcde015f220b6225dce466d50cac86266c604c30c37be0cd3e510d175657da1",
+    "assets/characters/chin-kofa/Chin_SNES.cmd": "c2e71ba554caba5d91c5c6d1f6c8524365d4082cd2e70f357c9086806d9876f7",
+    "assets/characters/chin-kofa/Chin_SNES.cns": "3523d5d3e2934c65190fe1ce5db5185d9361d507fccbe0de867d1e11e2f937ac",
+    "assets/characters/chin-kofa/Paletas/Chin-KOFM-1.act": "f0389cab6e11320a1957083382139e3ea42bf84bd69be8f79ad4af6917a3a401",
+    "assets/characters/chin-kofa/Paletas/Chin-KOFM-2.act": "2e91ffa89468bbae4081e4b53bac9ce60c2693211fd1e5c432d4020053244960",
+    "assets/characters/chin-kofa/Paletas/Chin-KOFM-3.act": "65de6ae8c63487f7b0455a07830d187bac863a2f244446b270f2dcf86b7b4aa3",
+    "assets/characters/chin-kofa/Paletas/Chin-KOFM-5.act": "cd5f917ecc3550a9b19dba4edb2145123f6daca916dff18849796ba6d6d3caa3",
+    "assets/characters/chin-kofa/Paletas/Chin-KOFM-Original.act": "1b97c19fba7ed6490ed988ee5b93395ebfddcbdf982c1a05207f180374431328",
+    "assets/characters/chin-kofa/chin-kofa.def": "33a33d196b810de17146b1cfcce145b188a0a652bc5aba6bd9942fe38014eb10",
+    "assets/characters/chin-kofa/paletas/Chin-KOFM-6.act": "6f9437b51888a0e6a2da81a44b4897e5ff5e4592e78c932055a1c1108edf8509"
+  },
+  "schema": 1
+}

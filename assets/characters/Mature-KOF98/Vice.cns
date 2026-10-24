@@ -1,0 +1,582 @@
+;---------------------------------------------------------------------------
+; Vice Alpha
+[Statedef 6003]
+type = S
+movetype = A
+physics = S
+anim = 6003
+poweradd = 63
+ctrl = 0
+
+[State 6003, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 6003, Width]
+type = Width
+trigger1 = 1
+value = 0,-15
+
+[State 6003, ParentVarAdd]
+type = ParentVarAdd
+trigger1 = !Time
+var(55) = -25
+
+[State 6003, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 6003, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 6003, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 2
+value = 21,0
+
+[State 6003, HitDef]
+type = HitDef
+trigger1 = enemyNear, StateNo != 26104
+trigger1 = !MoveContact
+attr = S, ST
+damage = 0
+getpower = 0
+givepower = 0
+hitsound = S1,1
+hitflag = M
+guardflag = 
+pausetime = 0,0
+sparkno = -1
+p2facing = 1
+fall = 1
+fall.recover = 0
+p1stateno = 16003
+p2stateno = 26003
+
+[State 6003, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+value = 6030
+
+;---------------------------------------------------------------------------
+; Vice Alpha 2
+[Statedef 16003]
+type = S
+movetype = A
+physics = S
+anim = 16003
+sprpriority = 3
+ctrl = 0
+
+[State 16003, TargetBind]
+type = TargetBind
+trigger1 = AnimElem = 1, >= 0 && AnimElem = 2, < 0
+time = 1
+pos = 22,0
+
+[State 16003, TargetBind]
+type = TargetBind
+trigger1 = AnimElem = 2, >= 0 && AnimElem = 3, < 0
+time = 1
+pos = 25,-85
+
+[State 16003, TargetBind]
+type = TargetBind
+trigger1 = AnimElem = 3, >= 0 && AnimElem = 4, < 0
+time = 1
+pos = 8,-111
+
+[State 16003, TargetBind]
+type = TargetBind
+trigger1 = AnimElem = 4, >= 0 && AnimElem = 5, < 0
+time = 1
+pos = -10,-115
+
+[State 16003, TargetBind]
+type = TargetBind
+trigger1 = AnimElem = 5, >= 0 && AnimElem = 6, < 0
+time = 1
+pos = 22,-100
+
+[State 16003, TargetBind]
+type = TargetBind
+trigger1 = AnimElem = 6, >= 0 && AnimElem = 7, < 0
+time = 1
+pos = 32,-75
+
+[State 16003, TargetBind]
+type = TargetBind
+trigger1 = AnimElem = 7
+time = 1
+pos = 76,0
+
+[State 16003, TargetLifeAdd]
+type = TargetLifeAdd
+trigger1 = AnimElem = 7
+value = -106
+
+[State 16003, EnvShake]
+type = EnvShake
+trigger1 = AnimElem = 7
+time = 15
+ampl = -6
+
+[State 16003, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 7
+value = 0,4
+
+[State 16003, Explod]
+type = Explod
+trigger1 = AnimElem = 7
+anim = F61
+sprpriority = -2
+postype = p1
+pos = 87,0
+bindtime = 1
+pausemovetime = 999999999999999999999999999999999999999999999999999
+supermovetime = 999999999999999999999999999999999999999999999999999
+ownpal = 1
+
+[State 16003, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+value = 6030
+
+;---------------------------------------------------------------------------
+; Vice Alpha GotHit
+[Statedef 26003]
+type = A
+movetype = H
+physics = N
+sprpriority = 2
+ctrl = 0
+
+[State 26003, ChangeAnim2]
+type = ChangeAnim2
+trigger1 = !Time
+value = 26003
+
+[State 26003, VelSet]
+type = VelSet
+trigger1 = !AnimTime
+x = -2
+y = -5
+
+[State 26003, SelfState]
+type = SelfState
+trigger1 = !AnimTime
+value = 5050
+
+;---------------------------------------------------------------------------
+; Vice Beta
+[Statedef 6004]
+type = S
+movetype = A
+physics = S
+anim = 6004
+poweradd = 63
+ctrl = 0
+
+[State 6004, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 6004, ParentVarAdd]
+type = ParentVarAdd
+trigger1 = !Time
+var(55) = -15
+
+[State 6004, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 6004, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 6004, ChangeState]
+type = ChangeState
+trigger1 = AnimElem = 2
+value = 16004
+
+;---------------------------------------------------------------------------
+; Vice Beta 2
+[Statedef 16004]
+type = A
+movetype = A
+physics = N
+ctrl = 0
+
+[State 16004, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 16004, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 16004, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 16004, PlaySnd]
+type = PlaySnd
+trigger1 = !Time
+value = 21,0
+
+[State 16004, VelSet]
+type = VelSet
+trigger1 = !Time
+x = 4
+y = -3
+
+[State 16004, VelAdd]
+type = VelAdd
+trigger1 = Pos Y < 0
+y = .5
+
+[State 16004, ChangeState]
+type = ChangeState
+trigger1 = AnimElem = 5
+value = 26004
+
+;---------------------------------------------------------------------------
+; Vice Beta 3
+[Statedef 26004]
+type = S
+movetype = A
+physics = S
+velset = 0,0
+ctrl = 0
+
+[State 26004, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 26004, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 26004, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 26004, PosSet]
+type = PosSet
+trigger1 = !Time
+y = 0
+
+[State 26004, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 6 || AnimElem = 7 || AnimElem = 8
+x = 8
+
+[State 26004, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 10 || AnimElem = 16 || AnimElem = 22
+value = 21,1
+
+[State 26004, Explod]
+type = Explod
+trigger1 = AnimElem = 9
+anim = 16004
+sprpriority = 2
+postype = p1
+pos = 0,0
+bindtime = 1
+ownpal = 1
+
+[State 26004, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 10 || AnimElem = 14 || AnimElem = 18 || AnimElem = 22
+attr = S, SA
+animtype = Hard
+damage = 10,5
+getpower = 0
+givepower = 21,21
+hitflag = MA
+guardflag = MA
+pausetime = 0,4
+sparkno = 2
+sparkxy = 0,-85
+hitsound = S1,3
+guardsound = S2,1
+ground.type = High
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = -11
+air.velocity = -4,-6
+air.fall = 1
+fall.recover = 0
+fall.xvelocity = -3
+fall.yvelocity = -2
+ground.cornerpush.veloff = 0
+guard.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+airguard.cornerpush.veloff = 0
+
+[State 26004, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 12 || AnimElem = 16 || AnimElem = 20 || AnimElem = 24
+attr = S, SA
+animtype = Hard
+damage = 10,5
+getpower = 0
+givepower = 21,21
+hitflag = MA
+guardflag = MA
+pausetime = 0,4
+sparkno = 2
+sparkxy = 0,-45
+hitsound = S1,3
+guardsound = S2,1
+ground.type = High
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = -11
+air.velocity = -4,-6
+air.fall = 1
+fall.recover = 0
+fall.xvelocity = -3
+fall.yvelocity = -2
+ground.cornerpush.veloff = 0
+guard.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+airguard.cornerpush.veloff = 0
+
+[State 26004, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+value = 6030
+
+;---------------------------------------------------------------------------
+; Vice Gamma
+[Statedef 6005]
+type = S
+movetype = A
+physics = S
+anim = 6005
+poweradd = 63
+ctrl = 0
+
+[State 6005, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 6005, Width]
+type = Width
+trigger1 = 1
+value = 20,-15
+
+[State 6005, ParentVarAdd]
+type = ParentVarAdd
+trigger1 = !Time
+var(55) = -10
+
+[State 6005, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 6005, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 6005, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 2
+value = 21,2
+
+[State 6005, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 2 || AnimElem = 2, = 1 || AnimElem = 2, = 2 || AnimElem = 2, = 3 || AnimElem = 3
+x = 8
+
+[State 6005, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 3, = 1
+x = 15
+
+[State 6005, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 3, = 2
+x = 6
+
+[State 6005, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 4
+x = 5
+
+[State 6005, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 4, = 1 || AnimElem = 4, = 2
+x = 4
+
+[State 6005, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 4, = 3 || AnimElem = 5
+x = 3
+
+[State 6005, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 5, = 1 || AnimElem = 5, = 2 || AnimElem = 5, = 3 || AnimElem = 5, = 4
+x = 2
+
+[State 6005, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 5, = 5 || AnimElem = 6
+x = 1
+
+[State 6005, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 4
+attr = S, SA
+animtype = Back
+damage = 48,10
+getpower = 0
+givepower = 21,21
+hitflag = MAF
+guardflag = MA
+pausetime = 8,8
+sparkno = 2
+sparkxy = 0,-60
+hitsound = S0,4
+guardsound = S2,1
+ground.type = High
+ground.slidetime = 17
+ground.hittime = 17
+air.velocity = -3.15,-4.75
+ground.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+envshake.time = 5
+envshake.ampl = -4
+p2facing = 1
+p2stateno = 16005
+
+[State 6005, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+value = 6030
+
+;-------------------------------------------------------------------------------
+; Vice Gamma GotHit
+[Statedef 16005]
+type = A
+movetype = H
+physics = N
+velset = 0,0
+ctrl = 0
+
+[State 16005, ChangeAnim]
+type = ChangeAnim
+trigger1 = Time < 12
+value = 5050
+
+[State 16005, VelSet]
+type = VelSet
+trigger1 = Time = 12
+x = -15
+y = -4
+
+[State 16005, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 0
+
+[State 16005, ChangeState]
+type = ChangeState
+trigger1 = BackEdgeBodyDist < 24
+value = 26005
+
+[Statedef 26005]
+type = A
+movetype = H
+physics = N
+anim = IfElse(SelfAnimExist(5070),5070,5050)
+velset = 0,0
+ctrl = 0
+
+[State 26005, EnvShake]
+type = EnvShake
+trigger1 = !Time
+time = 5
+ampl = -4
+
+[State 26005, Turn]
+type = Turn
+trigger1 = !Time
+
+[State 26005, PosAdd]
+type = PosAdd
+trigger1 = !Time
+x = -5
+y = -2
+
+[State 26005, VelSet]
+type = VelSet
+trigger1 = !Time
+x = -2
+y = -10
+
+[State 26005, VelAdd]
+type = VelAdd
+trigger1 = Vel Y < 0
+y = .5
+
+[State 26005, VelAdd]
+type = VelAdd
+trigger1 = Vel Y >= 0
+y = .45
+
+[State 26005, PosSet]
+type = PosSet
+trigger1 = Pos Y >= 0
+y = 0
+
+[State 26005, VelSet]
+type = VelSet
+trigger1 = Pos Y >= 0
+x = -2
+y = -3
+
+[State 26005, SelfState]
+type = SelfState
+trigger1 = Pos Y >= 0
+value = 5100

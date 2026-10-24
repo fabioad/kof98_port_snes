@@ -1,0 +1,519 @@
+;[待機メンバーコンフィグ]--------------------------------------------------------------
+[Statedef 9900]
+type = S
+physics = N
+anim = 9999
+sprpriority = -7
+
+[State 0, 1];メンバーランダム機能を使う 1以上でON
+type = varset
+trigger1 = var(33)=0
+var(30) = 0 ;←ここに入力
+persistent=0
+[State 0, 1];状態ランダム機能を使う 1以上でON
+type = varset
+trigger1 = var(33)=0
+var(31) = 0 ;←ここに入力
+persistent=0
+
+;[キャラ一覧表]
+;0/京　1/紅丸　2/大門　3/テリー　4/アンディ　5/ジョー　6/リョウ　7/ロバート　8/ユリ　9/レオナ　10/ラルフ
+;11/クラーク　12/アテナ　13/拳崇　14/鎮　15/ちづる　16/舞　17/キング　18/キム　19/チャン　20/チョイ
+;21/社　22/シェルミー　23/クリス　24/裏社　25/裏シェルミー　26/裏クリス　27/山崎　28/マリー　29/ビリー　30/庵
+;31/マチュア　32/バイス　33/ハイデルン　34/タクマ　35/柴舟　36/ヘビィD　37/ラッキー　38/ブライアン　39/ルガール　40/オメガルガール
+;41/信吾　42/影二　43/香澄　44/ギース　45/クラウザー　46/BIG　47/ゲーニッツ　48/暴走庵　49/覚醒レオナ　50/97オロチ　51/98オロチ
+
+[State 0, 1];1P側時 一人目キャラ指定
+type = varset
+trigger1 = var(33)=0
+var(1) = 9 ;←ここに入力
+persistent=0
+[State 0, 1];1P側時 一人目状態 0で未試合 1で敗北状態
+type = varset
+trigger1 = var(33)=0
+var(2) = 0 ;←ここに入力
+persistent=0
+
+[State 0, 1];1P側時 二人目キャラ指定
+type = varset
+trigger1 = var(33)=0
+var(3) = 10 ;←ここに入力
+persistent=0
+[State 0, 1];1P側時 二人目状態 0で未試合 1で敗北状態
+type = varset
+trigger1 = var(33)=0
+var(4) = 0 ;←ここに入力
+persistent=0
+
+[State 0, 1];2P側時 一人目キャラ指定
+type = varset
+trigger1 = var(33)=0
+var(5) = 3 ;←ここに入力
+persistent=0
+[State 0, 1];2P側時 一人目状態 0で未試合 1で敗北状態
+type = varset
+trigger1 = var(33)=0
+var(6) = 0 ;←ここに入力
+persistent=0
+
+[State 0, 1];2P側時 二人目キャラ指定
+type = varset
+trigger1 = var(33)=0
+var(7) = 37 ;←ここに入力
+persistent=0
+[State 0, 1];2P側時 二人目状態 0で未試合 1で敗北状態
+type = varset
+trigger1 = var(33)=0
+var(8) = 0 ;←ここに入力
+persistent=0
+
+[State -2, reset]
+type = VarSet ;待機メンバーの高さ座標　数値が多い程上に移動 0でプレイヤーと同じ位置　デフォルト10
+trigger1 = var(33)=0
+var(20) = 10 ;←ここに入力
+persistent=0
+[State -2, reset]
+type = VarSet ;待機メンバーの横座標　数値が多い程開始位置から離れる 0で外側のキャラがプレイヤーと同じ位置　180でほぼ原作の位置
+trigger1 = var(33)=0
+var(21) = 180 ;←ここに入力
+persistent=0
+
+;[↑コンフィグはここまで]--------------------------------------------------------------
+
+[State 0, 1]
+type = varrandom
+trigger1 = var(33)=0&&var(30)
+v = 1
+range = ifelse(parent,fvar(38)=0,0,floor(parent,fvar(30))),ifelse(parent,fvar(38)=0,51,floor(parent,fvar(30)))
+persistent=0
+[State 0, 1]
+type = varrandom
+trigger1 = var(33)=0&&var(31)
+v = 2
+range = ifelse(parent,fvar(39)=0.0,0,floor(parent,fvar(31))),ifelse(parent,fvar(39)=0.0,1,floor(parent,fvar(31)))
+persistent=0
+[State 0, 1]
+type = varrandom
+trigger1 = var(33)=0&&var(30)
+v = 3
+range = ifelse(parent,fvar(38)=0.0,0,floor(parent,fvar(32))),ifelse(parent,fvar(38)=0.0,51,floor(parent,fvar(32)))
+persistent=0
+[State 0, 1]
+type = varrandom
+trigger1 = var(33)=0&&var(31)
+v = 4
+range = ifelse(parent,fvar(39)=0.0,0,floor(parent,fvar(33))),ifelse(parent,fvar(39)=0.0,1,floor(parent,fvar(33)))
+persistent=0
+[State 0, 1]
+type = varrandom
+trigger1 = var(33)=0&&var(30)
+v = 5
+range = ifelse(parent,fvar(38)=0.0,0,floor(parent,fvar(34))),ifelse(parent,fvar(38)=0.0,51,floor(parent,fvar(34)))
+persistent=0
+[State 0, 1]
+type = varrandom
+trigger1 = var(33)=0&&var(31)
+v = 6
+range = ifelse(parent,fvar(39)=0.0,0,floor(parent,fvar(35))),ifelse(parent,fvar(39)=0.0,1,floor(parent,fvar(35)))
+persistent=0
+[State 0, 1]
+type = varrandom
+trigger1 = var(33)=0&&var(30)
+v = 7
+range = ifelse(parent,fvar(38)=0.0,0,floor(parent,fvar(36))),ifelse(parent,fvar(38)=0.0,51,floor(parent,fvar(36)))
+persistent=0
+[State 0, 1]
+type = varrandom
+trigger1 = var(33)=0&&var(31)
+v = 8
+range = ifelse(parent,fvar(39)=0.0,0,floor(parent,fvar(37))),ifelse(parent,fvar(39)=0.0,1,floor(parent,fvar(37)))
+persistent=0
+
+[State 0, 1]
+type = varset
+trigger1 = var(33)=0&&var(2)=0
+var(4) = 0
+[State 0, 1]
+type = varset
+trigger1 = var(33)=0&&var(6)=0
+var(8) = 0
+
+[State 0, 1]
+type = parentvarset
+trigger1 = var(33)=0&&var(30)
+fvar(30) = floor(var(1))
+[State 0, 1]
+type = parentvarset
+trigger1 = var(33)=0&&var(30)
+fvar(32) = floor(var(3))
+[State 0, 1]
+type = parentvarset
+trigger1 = var(33)=0&&var(30)
+fvar(34) = floor(var(5))
+[State 0, 1]
+type = parentvarset
+trigger1 = var(33)=0&&var(30)
+fvar(36) = floor(var(7))
+[State 0, 1]
+type = parentvarset
+trigger1 = var(33)=0&&var(31)
+fvar(31) = floor(var(2))
+[State 0, 1]
+type = parentvarset
+trigger1 = var(33)=0&&var(31)
+fvar(33) = floor(var(4))
+[State 0, 1]
+type = parentvarset
+trigger1 = var(33)=0&&var(31)
+fvar(35) = floor(var(6))
+[State 0, 1]
+type = parentvarset
+trigger1 = var(33)=0&&var(31)
+fvar(37) = floor(var(8))
+[State 0, 1]
+type = parentvarset
+trigger1 = var(33)=0
+fvar(38) = 1.0
+[State 0, 1]
+type = parentvarset
+trigger1 = var(33)=0
+fvar(39) = 1.0
+
+
+[State 0, 1]
+type = varset
+trigger1 = var(33)=0
+var(41) = ifelse(parent,teamside=1,var(1),var(5))
+[State 0, 1]
+type = varset
+trigger1 = var(33)=0
+var(42) = ifelse(parent,teamside=1,var(2),var(6))
+[State 0, 1]
+type = varset
+trigger1 = var(33)=0
+var(43) = ifelse(parent,teamside=1,var(3),var(7))
+[State 0, 1]
+type = varset
+trigger1 = var(33)=0
+var(44) = ifelse(parent,teamside=1,var(4),var(8))
+[State 0, 1]
+type = varset
+trigger1 = var(33)=0
+var(33) = 1
+persistent=0
+
+[State 0, 1]
+type = varset
+trigger1 = enemy,life < var(10)
+var(12) = 1
+[State 0, 1]
+type = varset
+trigger1 = parent,life < var(11)
+var(13) = 1
+[State 0, 1]
+type = varset
+trigger1 = numenemy = 2
+trigger1 = enemy(1),life < var(9)
+var(15) = 1
+
+[State 0, 1]
+type = posadd
+trigger1 = var(22) = 0
+x = var(21)*-1
+[State 0, 1]
+type = turn
+trigger1 = var(22) = 0&&parent,teamside=1
+
+[State 0, 1]
+type = varset
+triggerall = roundstate>=4
+trigger1 = parent,alive&&((parent,stateno=[170,189])&&parent,anim!=0&&parent,win)
+trigger2 = parent,alive&&((parent,stateno=[170,189])&&parent,anim!=0&&!parent,win)
+trigger3 = !parent,alive&&(roundstate=4&&enemy,anim!=0&&parent,lose)
+trigger4 = !parent,alive&&parent,drawgame
+trigger5 = parent,teammode = simul &&!parent,alive
+var(14) = 1
+
+[State 0, 1]
+type = varset
+trigger1 = parent,alive&&parent,win
+var(16) = 1
+
+[State 0, 1]
+type = removeexplod
+trigger1 = time = 0
+id = 30000
+[State 0, 1]
+type = explod
+trigger1 = time = 0
+anim = 30000+(var(43)*10)+(var(44)*5)
+pos = ifelse(parent,teamside=2,70,-70),0
+id = 30000
+sprpriority = -700000
+removetime = -1
+ownpal = 1
+bindtime = -1
+[State 0, 1]
+type = explod
+trigger1 = time = 0
+anim = 30000+(var(41)*10)+(var(42)*5)
+pos = 0,0
+id = 30000
+sprpriority = -700000
+removetime = -1
+ownpal = 1
+bindtime = -1
+
+[State 0, 1]
+type = posset
+trigger1 = 1
+y = var(20)*-1
+[State 0, 1]
+type = varset
+trigger1 = 1
+var(22) = 1
+
+[State 0, 1]
+type = removeexplod
+trigger1 = roundstate>=4&&var(14)=1
+id = 30000
+persistent = 0
+[State 0, 1]
+type = explod
+trigger1 = var(44)=0&&var(14)=1
+anim = ifelse((var(16)=1),30003+var(43)*10,30004+var(43)*10)
+pos = ifelse(parent,teamside=2,70,-70),0
+id = 30000
+sprpriority = -700000
+removetime = -1
+ownpal = 1
+bindtime = -1
+persistent = 0
+[State 0, 1]
+type = explod
+trigger1 = var(44)!=0&&var(14)=1
+anim = ifelse((var(16)=1),30006+var(43)*10,30005+var(43)*10)
+pos = ifelse(parent,teamside=2,70,-70),0
+id = 30000
+sprpriority = -700000
+removetime = -1
+ownpal = 1
+bindtime = -1
+persistent = 0
+[State 0, 1]
+type = explod
+trigger1 = var(42)=0&&var(14)=1
+anim = ifelse((var(16)=1),30003+var(41)*10,30004+var(41)*10)
+pos = 0,0
+id = 30000
+sprpriority = -700000
+removetime = -1
+ownpal = 1
+bindtime = -1
+persistent = 0
+[State 0, 1]
+type = explod
+trigger1 = var(42)!=0&&var(14)=1
+anim = ifelse((var(16)=1),30006+var(41)*10,30005+var(41)*10)
+pos = 0,0
+id = 30000
+sprpriority = -700000
+removetime = -1
+ownpal = 1
+bindtime = -1
+persistent = 0
+
+[State 0, 1]
+type = changestate
+trigger1 = var(12)=1||var(15)=1
+value = 9901
+[State 0, 1]
+type = changestate
+trigger1 = var(13)=1
+value = 9902
+
+[State 0, 1];自分ライフ
+type = varset
+trigger1 = enemy,life!=var(10)
+var(10) = enemy,life
+[State 0, 1];相手ライフ
+type = varset
+trigger1 = parent,life!=var(11)
+var(11) = parent,life
+[State 0, 1];自分ライフ
+type = varset
+trigger1 = numenemy = 2
+trigger1 = enemy(1),life!=var(9)
+var(9) = enemy(1),life
+
+;---------------------------------------------------------------------------
+; 待機1優勢
+[Statedef 9901]
+
+[State 0, 1]
+type = removeexplod
+trigger1 = time = 0
+id = 30000
+[State 0, 1]
+type = explod
+trigger1 = time = 0
+anim = ifelse(var(44)!=0,30005+(var(43)*10),30001+(var(43)*10))
+pos = ifelse(parent,teamside=2,70,-70),0
+id = 30000
+sprpriority = -700000
+removetime = -1
+bindtime = -1
+ownpal = 1
+[State 0, 1]
+type = explod
+trigger1 = time = 0
+anim = ifelse(var(42)!=0,30005+(var(41)*10),30001+(var(41)*10))
+pos = 0,0
+id = 30000
+sprpriority = -700000
+removetime = -1
+bindtime = -1
+ownpal = 1
+
+[State 0, 1]
+type = varset
+trigger1 = time = 0
+var(12) = 0
+[State 0, 1]
+type = varset
+trigger1 = time = 0
+var(13) = 0
+[State 0, 1]
+type = varset
+trigger1 = time = 0
+var(15) = 0
+[State 0, 1]
+type = varset
+trigger1 = time >= 40
+trigger1 = enemy,life < var(10)
+var(12) = 1
+[State 0, 1]
+type = varset
+trigger1 = time >= 40
+trigger1 = parent,life < var(11)
+var(13) = 1
+[State 0, 1]
+type = varset
+trigger1 = time >= 40
+trigger1 = numenemy = 2
+trigger1 = enemy(1),life < var(9)
+var(15) = 1
+[State 0, 1];自分ライフ
+type = varset
+trigger1 = enemy,life!=var(10)
+var(10) = enemy,life
+[State 0, 1];相手ライフ
+type = varset
+trigger1 = parent,life!=var(11)
+var(11) = parent,life
+[State 0, 1];自分ライフ
+type = varset
+trigger1 = numenemy=2
+trigger1 = enemy(1),life!=var(9)
+var(9) = enemy(1),life
+
+[State 0, 1]
+type = changestate
+trigger1 = var(12)=1||var(15)=1
+value = 9901
+[State 0, 1]
+type = changestate
+trigger1 = var(13)=1
+value = 9902
+
+[State 0, 1]
+type = changestate
+trigger1 = time>50
+value = 9900
+
+;---------------------------------------------------------------------------
+; 待機1不利
+[Statedef 9902]
+
+[State 0, 1]
+type = removeexplod
+trigger1 = time = 0
+id = 30000
+[State 0, 1]
+type = explod
+trigger1 = time = 0
+anim = ifelse(var(44)!=0,30005+(var(43)*10),30002+(var(43)*10))
+pos = ifelse(parent,teamside=2,70,-70),0
+id = 30000
+sprpriority = -700000
+removetime = -1
+bindtime = -1
+ownpal = 1
+[State 0, 1]
+type = explod
+trigger1 = time = 0
+anim = ifelse(var(42)!=0,30005+(var(41)*10),30002+(var(41)*10))
+pos = 0,0
+id = 30000
+sprpriority = -700000
+removetime = -1
+bindtime = -1
+ownpal = 1
+
+[State 0, 1]
+type = varset
+trigger1 = time = 0
+var(12) = 0
+[State 0, 1]
+type = varset
+trigger1 = time = 0
+var(13) = 0
+[State 0, 1]
+type = varset
+trigger1 = time = 0
+var(15) = 0
+[State 0, 1]
+type = varset
+trigger1 = time >= 40
+trigger1 = enemy,life < var(10)
+var(12) = 1
+[State 0, 1]
+type = varset
+trigger1 = time >= 40
+trigger1 = parent,life < var(11)
+var(13) = 1
+[State 0, 1]
+type = varset
+trigger1 = time >= 40
+trigger1 = numenemy = 2
+trigger1 = enemy(1),life < var(9)
+var(15) = 1
+[State 0, 1];自分ライフ
+type = varset
+trigger1 = enemy,life!=var(10)
+var(10) = enemy,life
+[State 0, 1];相手ライフ
+type = varset
+trigger1 = parent,life!=var(11)
+var(11) = parent,life
+[State 0, 1];自分ライフ
+type = varset
+trigger1 = numenemy=2
+trigger1 = enemy(1),life!=var(9)
+var(9) = enemy(1),life
+
+[State 0, 1]
+type = changestate
+trigger1 = var(12)=1||var(15)=1
+value = 9901
+[State 0, 1]
+type = changestate
+trigger1 = var(13)=1
+value = 9902
+
+[State 0, 1]
+type = changestate
+trigger1 = time>50
+value = 9900
+
+;この下、一行以上空ける事。

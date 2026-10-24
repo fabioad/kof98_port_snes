@@ -1,0 +1,31 @@
+{
+  "character": "king",
+  "config_hash": "b2f83ca293bec7bf421758ca7e3ba673674fdaf60e0ada5ddd276a2697b5a4e5",
+  "corrections": [],
+  "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/KING/KING.def",
+  "inputs": {
+    "assets/characters/KING/KING.def": "315308289e1dc209f810481ad7b2fd7966bff0cccfd3d243236084c6e52152f2",
+    "assets/characters/KING/King-H.cns": "c8df016214b4c528b08d01e2cfd7482206dc653cafbbcd2f4217742b6ab74ae0",
+    "assets/characters/KING/King-N.cns": "26676b5adcf23f9aaf0e54f0285dfa6901df09a338228039761de6bae78f66c2",
+    "assets/characters/KING/King-S.cns": "997cb18a41d978da26763bc31c2ff2ab5c367041cf67fd79359ab00c69420bbb",
+    "assets/characters/KING/King.air": "738bfd11f8fce6f25d09ad37e96f6132b62eaf1cda71a672c99cdc68e2c68d0e",
+    "assets/characters/KING/King.cmd": "72a1408f921ed52094b6247d41886ea820a1fd575b1570b8d3c8694beb4264a5",
+    "assets/characters/KING/King.sff": "b8dff1d8c6aa384515a2c349a2c06bb3a7ef9344fec871997ab6d8ce895400e3",
+    "assets/characters/KING/King.snd": "961d39602a1680d6eb157cb55d8ca8dbb84bc7de5cc0e22397edef80e36cb9eb",
+    "assets/characters/KING/King_SNES.cmd": "40717336b93a437dbb251587783776b480ab3fda9735f1d2ae9fa6e88e00ce1d",
+    "assets/characters/KING/King_SNES.cns": "fada3b49192855afbbbbc9c93d9c1f8decb0a7eee1135717e41d3ccdc1174a2d",
+    "assets/characters/KING/palette/King01.act": "305790cc800fd76165a9ce8e24eec72a336ae2a5530f6d30d015a2357dd43bda",
+    "assets/characters/KING/palette/King02.act": "a635a29561b24156f2ba291e001defd0d40daa81cf0574b5fbe79081f597d133",
+    "assets/characters/KING/palette/King03.act": "237e7f0bbfddbe2920d340e0caae21147eb2405192d3a0fc7530a244fd572a72",
+    "assets/characters/KING/palette/King04.act": "b3ab779b3c1a6f0636f5632e49a100d2d5743f8ef69bc3877ba778415dade35b",
+    "assets/characters/KING/palette/King05.act": "bbfbd1db368e773c944a89ee145f457c87fd5d6b5767e034668051b28043822a",
+    "assets/characters/KING/palette/King06.act": "a47374aae5ff7f418f020bf353cc1d7e017dd9bb47c35263bd6eada398f60f8b",
+    "assets/characters/KING/palette/King07.act": "1c1fb3a55f32e31186a774a8d14933cc1560550e4b996fce2585452933657a09",
+    "assets/characters/KING/palette/King08.act": "578a2b2b9d4fb01b38509c4e9f8a09eb1b57c003098d6933fe8d132a727db734",
+    "assets/characters/KING/palette/King09.act": "483504a5c4efa1655809cf23c4dea2d4d616ac22e8c04e9be2b2bd56edbeb43d",
+    "assets/characters/KING/palette/King10.act": "db71c8faff7433c1a12498fce4905db818fa8dfc1c077d07fa68e3767ec7fcd2",
+    "assets/characters/KING/palette/King11.act": "1af54b02e7d510b0cd57a7af8dea23e39fe2d0a7c971ef0d404d04aa53aa6831",
+    "assets/characters/KING/palette/King12.act": "1e6a8a110f40fed6c97cc698ed0009b996ce15c1a4b1ab1a7e0d34fd6dcb9134"
+  },
+  "schema": 1
+}

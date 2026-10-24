@@ -1,0 +1,7341 @@
+;---------------------------------------------------------------------------
+; Superdunk Attempt
+[Statedef 3000]
+type    = S
+movetype= A
+physics = S
+juggle  = 0
+velset = 0,0
+ctrl = 0
+anim = 3000
+sprpriority = 2
+
+
+
+[State 3000, Pos]
+type = PosSet
+trigger1 = Time = 0
+y = 0
+
+[State 3000, 1.1]
+type = PosAdd
+trigger1 = AnimElem = 4
+x = 12
+
+[State 3000, Super.1A]
+type = Explod
+trigger1 = Time = 0
+anim = 17000
+pos = 15,-65
+postype = p1
+sprpriority = -2
+supermove = 1
+bindtime = 1
+ownpal = 1
+scale = .5,.5
+
+[State 3000, Super.1B]
+type = Explod
+trigger1 = Time = 0
+anim = 17010
+pos = 15,-65
+postype = p1
+sprpriority = 2
+supermove = 1
+bindtime = 1
+ontop = 1
+ownpal = 1
+scale = .5,.5
+
+[State 3000, Super.1]
+type = SuperPause
+trigger1 = Time = 0
+anim = -1
+time = 28
+
+[State 6000,黑色底色]
+type = Envcolor
+trigger1 = Time = 0
+persistent = 0
+ignorehitpause = 1
+value = 0, 0, 0
+time = 28
+under = 1
+supermove = 1
+darken = 0
+
+[State 3000, 1.3]
+type = PlaySnd
+trigger1 = Time = 0
+value = 17000,0
+
+[State 3000, 1.4]
+type = PowerAdd
+trigger1 = Time = 0
+value = -1000
+
+[State 3000, 1.5]
+type = NotHitBy
+Trigger1 = Time = 0
+value = SCA
+time = 1
+
+[State 3000, 2]
+type = AfterImage
+trigger1 = Time = 0
+time = 25
+;length = 20
+;PalBright   =   0,  0,  0
+;PalContrast = 120,120,220
+;PalAdd      =  10, 10, 25
+;PalMul      = .45,.45,.75
+TimeGap  = 1
+FrameGap = 4
+Trans = Add1
+PalColor = 0
+PalBright = 0,0,0
+PalContrast = 96,128,192
+PalPostBright = 32,32,48
+
+[State 3000, 1]
+type = HitDef
+Trigger1 = Time = 0
+attr = S, HT
+hitflag = MAF
+priority = 2, Miss    ;Throw has low priority, should be miss or dodge type.
+sprpriority = -2      ;Behind opponent
+sparkno = -1
+p2facing = 1
+p1stateno = 3005
+p2stateno = 3010
+fall = 1
+
+[State 3000, 2]
+type = PosAdd
+trigger1 = AnimElem = 4
+x = 12
+
+[State 3000, 5]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; Superdunk Success
+[Statedef 3005]
+type    = S
+movetype= A
+physics = N
+anim = 3005
+
+[State 3005, 2]
+type = AfterImage
+trigger1 = Time = 0
+time = 130
+Trans = Add1
+PalColor = 0
+PalBright = 0,0,0
+PalContrast = 96,128,192
+PalPostBright = 32,32,48
+
+[State 3005, 1]
+type = PlaySnd
+trigger1 = Time = 1
+value = 1,6 ;"goodnight"
+channel = 0
+
+[State 3005, 2.1]
+type = PlaySnd
+trigger1 = AnimElem = 4
+value = 4,0
+
+[State 3005, 2.2]
+type = Explod
+trigger1 = AnimElem = 4
+anim = f9
+pos = -30,-60
+postype = p1
+sprpriority = 1
+
+[State 3005, 3]
+type = PlayerPush
+trigger1 = 1
+value = 0
+
+[State 3005, 4]
+type = VelSet
+trigger1 = 1
+x = 0
+
+[State 3005, 5.1]
+type = PosAdd
+trigger1 = Time = 0
+x = 30
+
+[State 3005, 5.2]
+type = TargetBind
+trigger1 = 1
+trigger1 = AnimElem = 2, < 0
+pos = -1, 0
+
+[State 3005, 6.1]
+type = PosAdd
+trigger1 = AnimElem = 2
+x = 30
+
+[State 3005, 6.2]
+type = TargetBind
+trigger1 = AnimElem = 2, >= 0
+trigger1 = AnimElem = 3, < 0
+pos = -31, 0
+
+[State 3005, 7.1]
+type = PosAdd
+trigger1 = AnimElem = 3
+x = 20
+
+[State 3005, 7.2]
+type = TargetBind
+trigger1 = AnimElem = 3, >= 0
+trigger1 = AnimElem = 4, < 0
+pos = -51, 0
+
+[State 3005, 7.3] ;Be drawn in front
+type = SprPriority
+trigger1 = AnimElem = 3
+value = 2
+
+[State 3005, 8.2]
+type = TargetBind
+trigger1 = AnimElem = 4, >= 0
+trigger1 = AnimElem = 5, < 0
+pos = -45, 0
+
+[State 3005, 9]
+type = TargetBind
+trigger1 = AnimElem = 5, >= 0
+trigger1 = AnimElem = 6, < 0
+pos = -30, -58
+
+[State 3005, 10]
+type = TargetBind
+trigger1 = AnimElem = 6, >= 0
+trigger1 = AnimElem = 7, < 0
+pos = -25, -66
+
+[State 3005, 11]
+type = TargetBind
+trigger1 = AnimElem = 7, >= 0
+trigger1 = AnimElem = 8, < 0
+pos = -25, -68
+
+[State 3005, 12]
+type = TargetBind
+trigger1 = AnimElem = 8, >= 0
+trigger1 = AnimElem = 9, < 0
+pos = -24, -83
+
+[State 3005, 12]
+type = TargetBind
+trigger1 = AnimElem = 9, >= 0
+trigger1 = AnimElem = 10, < 0
+pos = -15, -88
+
+[State 3005, 12.1]
+type = Width
+trigger1 = AnimElem = 9, >= 0
+trigger1 = AnimElem = 10, < 0
+edge = 10
+
+[State 3005, 13]
+type = TargetBind
+trigger1 = AnimElem = 10, >= 0
+trigger1 = AnimElem = 11, < 0
+pos = 0, -88
+
+[State 3005, 13.1]
+type = Width
+trigger1 = AnimElem = 10, >= 0
+trigger1 = AnimElem = 11, < 0
+edge = 20
+
+[State 3005, 14]
+type = TargetBind
+trigger1 = AnimElem = 11, >= 0
+trigger1 = AnimElem = 12, < 0
+pos = 8, -77
+
+[State 3005, 14.1]
+type = Width
+trigger1 = AnimElem = 11, >= 0
+trigger1 = AnimElem = 12, < 0
+edge = 30
+
+[State 3005, 15]
+type = TargetBind
+trigger1 = AnimElem = 12, >= 0
+trigger1 = AnimElem = 13, < 0
+pos = 15, -67
+
+[State 3005, 16]
+type = TargetBind
+trigger1 = AnimElem = 13, >= 0
+trigger1 = AnimElem = 14, < 0
+pos = 38, -49
+
+[State 3005, 17.1]
+type = TargetBind
+trigger1 = AnimElem = 14, >= 0
+trigger1 = AnimElem = 16, < 0
+pos = 45, 0
+
+[State 3005, 17.2] ;Ground wave (behind)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = AnimElem = 14
+anim = f66
+pos = 35,0
+postype = p1
+sprpriority = -2
+supermove = 1
+bindtime = -1
+ownpal = 1
+
+[State 3005, 17.2] ;Ground wave (in front)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = AnimElem = 14
+anim = f67
+pos = 35,0
+postype = p1
+sprpriority = 2
+supermove = 1
+bindtime = -1
+ownpal = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 14
+anim = f24
+pos = 15,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 14
+anim = f24
+facing = -1
+pos = 40,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 3005, 17.3] ;Shake
+type = EnvShake
+Trigger1 = AnimElem = 14
+time = 18
+ampl = 10
+
+[State 3005, 17.4] ;Crunch
+type = PlaySnd
+Trigger1 = AnimElem = 14
+value = s4,5
+
+[State 3005, 17.5]
+type = TargetLifeAdd
+trigger1 = AnimElem = 14
+value = -105
+kill = 0
+
+[State 3005, 19]
+type = ChangeState
+Trigger1 = AnimElem = 16
+value = 3006
+
+;---------------------------------------------------------------------------
+; Superdunk Success (dunk2)
+[Statedef 3006]
+type    = S
+movetype= A
+physics = N
+anim = 3006
+sprpriority = -1
+
+[State 3006, 1]
+type = Turn
+trigger1 = Time = 0
+
+[State 3006, 1]
+type = TargetState
+trigger1 = Time = 0
+value = 3011
+
+[State 3006, 2]
+type = AfterImage
+trigger1 = Time = 0
+time = 65
+Trans = Add1
+PalColor = 0
+PalBright = 0,0,0
+PalContrast = 96,128,192
+PalPostBright = 32,32,48
+
+[State 3006, 2.1]
+type = PlaySnd
+trigger1 = AnimElem = 4
+value = 2,2 ;"finish!"
+channel = 0
+
+[State 3006, 2.1]
+type = PlaySnd
+trigger1 = AnimElem = 4
+value = 4,0
+
+[State 3006, 2.2]
+type = Explod
+trigger1 = AnimElem = 4
+anim = f9
+pos = -30,-60
+postype = p1
+sprpriority = 1
+
+[State 3006, 3]
+type = PlayerPush
+trigger1 = 1
+value = 0
+
+[State 3006, 4]
+type = VelSet
+trigger1 = 1
+x = 0
+
+[State 3006, 5.2]
+type = TargetBind
+trigger1 = 1
+trigger1 = AnimElem = 2, < 0
+pos = -31, 0
+
+[State 3006, 6.2]
+type = TargetBind
+trigger1 = AnimElem = 2, >= 0
+trigger1 = AnimElem = 3, < 0
+pos = -31, 0
+
+[State 3006, 7.1]
+type = PosAdd
+trigger1 = AnimElem = 3
+x = 20
+
+[State 3006, 7.2]
+type = TargetBind
+trigger1 = AnimElem = 3, >= 0
+trigger1 = AnimElem = 4, < 0
+pos = -51, 0
+
+[State 3006, 7.3] ;Be drawn in front
+type = SprPriority
+trigger1 = AnimElem = 3
+value = 2
+
+[State 3006, 8.2]
+type = TargetBind
+trigger1 = AnimElem = 4, >= 0
+trigger1 = AnimElem = 5, < 0
+pos = -45, 0
+
+[State 3006, 9]
+type = TargetBind
+trigger1 = AnimElem = 5, >= 0
+trigger1 = AnimElem = 6, < 0
+pos = -30, -58
+
+[State 3006, 10]
+type = TargetBind
+trigger1 = AnimElem = 6, >= 0
+trigger1 = AnimElem = 7, < 0
+pos = -25, -66
+
+[State 3006, 11]
+type = TargetBind
+trigger1 = AnimElem = 7, >= 0
+trigger1 = AnimElem = 8, < 0
+pos = -25, -68
+
+[State 3006, 12]
+type = TargetBind
+trigger1 = AnimElem = 8, >= 0
+trigger1 = AnimElem = 9, < 0
+pos = -24, -83
+
+[State 3006, 12]
+type = TargetBind
+trigger1 = AnimElem = 9, >= 0
+trigger1 = AnimElem = 10, < 0
+pos = -15, -88
+
+[State 3006, 12.1]
+type = Width
+trigger1 = AnimElem = 9, >= 0
+trigger1 = AnimElem = 10, < 0
+edge = 10
+
+[State 3006, 13]
+type = TargetBind
+trigger1 = AnimElem = 10, >= 0
+trigger1 = AnimElem = 11, < 0
+pos = 0, -88
+
+[State 3006, 13.1]
+type = Width
+trigger1 = AnimElem = 10, >= 0
+trigger1 = AnimElem = 11, < 0
+edge = 20
+
+[State 3006, 14]
+type = TargetBind
+trigger1 = AnimElem = 11, >= 0
+trigger1 = AnimElem = 12, < 0
+pos = 8, -77
+
+[State 3006, 14.1]
+type = Width
+trigger1 = AnimElem = 11, >= 0
+trigger1 = AnimElem = 12, < 0
+edge = 30
+
+[State 3006, 15]
+type = TargetBind
+trigger1 = AnimElem = 12, >= 0
+trigger1 = AnimElem = 13, < 0
+pos = 15, -67
+
+[State 3006, 16]
+type = TargetBind
+trigger1 = AnimElem = 13, >= 0
+trigger1 = AnimElem = 14, < 0
+pos = 38, -49
+
+[State 3006, 17.1]
+type = TargetBind
+trigger1 = AnimElem = 14, >= 0
+trigger1 = AnimElem = 16, < 0
+pos = 45, 0
+
+[State 3006, 17.2] ;Ground wave (behind)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = AnimElem = 14
+anim = f66
+pos = 35,0
+postype = p1
+sprpriority = -2
+supermove = 1
+bindtime = -1
+ownpal = 1
+
+[State 3006, 17.2] ;Ground wave (in front)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = AnimElem = 14
+anim = f67
+pos = 35,0
+postype = p1
+sprpriority = 2
+supermove = 1
+bindtime = -1
+ownpal = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 14
+anim = f24
+pos = 15,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 14
+anim = f24
+facing = -1
+pos = 40,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 3000, Flash]
+type = explod
+trigger1 = AnimElem = 14
+anim = 3504
+pos = 20,80
+sprpriority = 1
+ownpal = 1
+bindtime = 1
+supermove = 1
+removetime = 33
+
+[State 3006, 17.3] ;Shake
+type = EnvShake
+Trigger1 = AnimElem = 14
+time = 18
+ampl = 10
+
+[State 3006, 17.4] ;Crunch
+type = PlaySnd
+Trigger1 = AnimElem = 14
+value = s4,5
+
+[State 3006, 17.5]
+type = TargetLifeAdd
+trigger1 = AnimElem = 14
+value = -160
+
+[State 3006, 18.1]
+type = TargetState
+trigger1 = AnimElem = 16
+value = 3012
+
+[State 3006, 18.2]
+type = PosAdd
+trigger1 = AnimElem = 16
+x = -20
+
+[State 3006, 18.2]
+type = PosAdd
+trigger1 = AnimTime = 0
+x = 20
+
+[State 3006, 19]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; Superdunk (hit by, on ground)
+[Statedef 3010]
+type    = A
+movetype= H ;Get hit
+physics = N
+velset = 0,0
+ctrl = 0
+
+[State 3010, 2]
+type = AfterImage
+trigger1 = Time = 0
+time = 130
+Trans = Add1
+PalColor = 0
+PalBright = 0,0,0
+PalContrast = 96,128,192
+PalPostBright = 32,32,48
+
+[State 3010, 1]
+type = ChangeAnim2
+Trigger1 = Time = 0
+value = 3010
+
+[State 3010, 2]
+type = HitBy
+Trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------------------------------------------------------------
+; Superdunk (hit by, on ground2)
+[Statedef 3011]
+type    = A
+movetype= H ;Get hit
+physics = N
+velset = 0,0
+ctrl = 0
+
+[State 3011, 1]
+type = Turn
+Trigger1 = Time = 0
+
+[State 3011, 1]
+type = ChangeAnim2
+Trigger1 = Time = 0
+value = 3011
+
+[State 3011, 2]
+type = HitBy
+Trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------------------------------------------------------------
+; Superdunk (hit by, into air)
+[Statedef 3012]
+type    = A
+movetype= H ;Get hit
+physics = N
+velset = -2.5, -5
+
+[State 3012, 2] ;Gravity
+type = VelAdd
+Trigger1 = 1
+y = .4
+
+[State 3012, 3] ;Hit ground
+type = SelfState
+trigger1 = Vel Y > 0
+trigger1 = Pos Y >= 0
+value = 5100 ;Hit ground
+
+;----------------------------------------
+; Mary's Dynamite Swing (level 1)
+[Statedef 3100]
+type    = S
+movetype= A
+physics = S
+juggle  = 5
+velset = 0,0
+ctrl = 0
+anim = 3100
+sprpriority = 2
+
+
+
+[State 3100, 1]
+type = PlaySnd
+trigger1 = Time = 5
+value = 0,1
+channel = 0
+
+
+[State 863, 4]
+type = Explod
+trigger1 = Time = 7
+anim = 17000
+pos = 35,-45
+postype = p1
+sprpriority = -2
+supermove = 1
+bindtime = 1
+scale = .5,.5
+
+[State 3100, Super.1B]
+type = Explod
+trigger1 = Time = 7
+anim = 17010
+pos = 35,-45
+postype = p1
+sprpriority = 2
+supermove = 1
+bindtime = 1
+ontop = 1
+ownpal = 1
+scale = .5,.5
+
+[State 3100, Super.1]
+type = SuperPause
+trigger1 = Time = 7
+anim = -1
+movetime = 3
+time = 28
+
+[State 6000,黑色底色]
+type = Envcolor
+trigger1 = Time = 7
+persistent = 0
+ignorehitpause = 1
+value = 0, 0, 0
+time = 28
+under = 1
+supermove = 1
+darken = 0
+
+[State 3100, Super.2]
+type = PlaySnd
+trigger1 = Time = 7
+value = 17000,0
+
+[State 3000, Super.3]
+type = PowerAdd
+trigger1 = Time = 7
+value = -1000
+
+[State 3100, Super.4]
+type = NotHitBy
+trigger1 = Time >= 7
+trigger1 = Animelem = 4, <= 0
+value = SCA
+time = 1
+
+[State 3100, Super.5]
+type = AfterImage
+trigger1 = Animelem = 4
+time = 25
+TimeGap  = 1
+FrameGap = 4
+Trans = Add1
+PalColor = 0
+PalBright = 0,0,0
+PalContrast = 96,128,192
+PalPostBright = 32,32,48
+
+[State 3100, 10]
+type = PosAdd
+Trigger1 = AnimElem = 5
+x = 8
+
+[State 3100, 10]
+type = ChangeState
+Trigger1 = AnimElem = 5
+value = 3101
+
+;---------------------------------------------------------------------------
+;Dynamite1 (going up)
+[Statedef 3101]
+type    = A
+movetype= A
+physics = N
+
+[State 3101, 1]
+type = VelSet
+trigger1 = Time = [0,5]
+x = 4.9
+y = -7.5
+
+[State 3101, 1.2]
+type = PlaySnd
+trigger1 = Time = 0
+value = f40,1;30,0 ;Need proper sound
+
+[State 3101, 2]
+type = VelMul
+trigger1 = Time >= 5
+x = .92
+
+[State 3101, 3]
+type = VelAdd
+trigger1 = 1
+y = .52
+
+[State 3101, 4]
+type = ChangeAnim
+trigger1 = Vel Y > 0
+persistent = 0
+value = 3101
+
+[State 3101, 5]
+type = HitDef
+trigger1 = Time = 0
+attr = A, HA
+damage    = 52,8
+guardflag = MA
+getpower = 0
+priority = 6, Dodge
+pausetime = 11,12
+sparkno = S30002
+guard.sparkno = s30040
+sparkxy = -10,-75
+hitsound   = S5,8
+guardsound = S6,2
+ground.type = High
+ground.slidetime = 18
+ground.hittime  = 23
+ground.velocity = -2.5,-7
+guard.velocity = -7
+air.velocity = -3,-5
+airguard.velocity = -3,-3
+fall = 1
+fall.recover = 0
+p1stateno = 3103
+ID = 3100 ;For chaining into level 1 dynamite swing
+
+[State 3101, 7] ;Chain animation
+type = ChangeAnim
+trigger1 = MoveHit
+trigger1 = Vel Y < 0
+value = 3103
+
+[State 3101, 8]
+type = AfterImageTime
+trigger1 = 1
+time = 2
+
+[State 3101, 9]
+type = ChangeState
+trigger1 = Vel Y > 0
+trigger1 = Pos Y >= 0
+value = 3102
+
+;---------------------------------------------------------------------------
+;Dynamite1 (land)
+[Statedef 3102]
+type    = S
+movetype= I
+physics = S
+anim = 3102
+velset = 0,0
+
+[State 3102, 1]
+type = PosSet
+trigger1 = Time = 0
+y = 0
+
+[State 3102, 3]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+
+;---------------------------------------------------------------------------
+;Dynamite1 (going up, try to catch)
+[Statedef 3103]
+type    = A
+movetype= A
+physics = N
+anim = 3103
+
+[State 3103, 1]
+type = VelMul
+trigger1 = 1
+x = .92
+
+[State 3103, 2]
+type = VelAdd
+trigger1 = 1
+y = .52
+
+[State 3103, 3]
+type = AfterImageTime
+trigger1 = 1
+time = 2
+
+[State 3103, 6] ;Chain into rest of move
+type = HitDef
+trigger1 = Time = 0
+givepower = 70
+attr = A, HT
+hitflag = AF+
+priority = 8, Miss
+sprpriority = 1 ;In front
+pausetime = 0,0
+sparkno = -1
+;sparkxy = -10,-95
+hitsound   = S4,1
+p1stateno = 3110
+p2stateno = 3120
+p2facing = -1
+fall = 1
+chainID = 3100 ;Can only chain from level 1
+ID = 3110      ;To keep the opponent on the target list (See state 3110,5)
+
+[State 3103, 7] ;Chain animation
+type = ChangeAnim
+trigger1 = MoveHit
+trigger1 = Vel Y < 0
+value = 3103
+
+[State 3103, 7]
+type = ChangeState
+trigger1 = Vel Y > 0
+trigger1 = Pos Y >= 0
+value = 3102
+
+;---------------------------------------------------------------------------
+;Dynamite1 (catch, coming down)
+[Statedef 3110]
+type    = A
+movetype= A
+physics = N
+anim = 3110
+
+[State 4027, GameMakeAnim]
+type = GameMakeAnim
+trigger1 = Time = 0
+value = 9
+pos = -10,-101
+
+[State 3110, 1.3]
+type = Width
+trigger1 = Time = 0
+edge = 40
+
+[State 3110, 2]
+type = PosFreeze
+trigger1 = 1
+trigger1 = AnimElem = 2, < 0
+
+[State 3110, 3]
+type = VelSet
+trigger1 = AnimElem = 2, < 0
+x = 0
+y = 0
+
+[State 1120, 4]
+type = VelAdd
+trigger1 = AnimElem = 2, > 0
+y = .5
+
+; Drop all targets that don't have hitID 3110 (hit by dynamite1)
+; Important, in case of team battle, where one guy is guarding
+; and one is being hit. You don't want to grab _both_ of them.
+[State 3110, 5]
+type = TargetDrop
+trigger1 = Time = 0
+excludeID = 3110
+
+[State 3110, 6]
+type = TargetBind
+trigger1 = 1
+trigger1 = AnimElem = 2, < 0
+pos = -15, -104
+
+[State 3110, 7]
+type = TargetBind
+trigger1 = AnimElem = 2, >= 0
+trigger1 = AnimElem = 3, < 0
+pos = 13, -74
+
+[State 3110, 8]
+type = TargetBind
+trigger1 = AnimElem = 3, >= 0
+pos = 13, -74
+
+[State 3110, 7]
+type = ChangeState
+trigger1 = Vel Y > 0
+trigger1 = Pos Y >= 0
+value = 3111
+
+;---------------------------------------------------------------------------
+;Dynamite1 (catch, land)
+[Statedef 3111]
+type    = S
+movetype= A
+physics = S
+anim = 3111
+velset = 0,0
+
+[State 3111, 1]
+type = PosSet
+trigger1 = Time = 0
+y = 0
+
+[State 3111, 2]
+type = TargetLifeAdd
+trigger1 = Time = 0
+value = -35
+kill = 0
+
+;[State 3111, 7]
+;type = ChangeAnim
+;triggerall = MoveHit
+;triggerall = Vel X < 10
+;trigger1 = Command = "dynamite_d"
+;value = 3100
+
+[State 3111, 3]
+type = TargetState
+trigger1 = Time = 0
+value = 3121
+
+[State 3111, 3.2]
+type = PlaySnd
+trigger1 = Time = 0
+value = 4,4
+
+[State 3111, 3.3]
+type = PlaySnd
+trigger1 = Time = 0
+value = 35,4
+
+[State 3111, 3.3]
+type = PlaySnd
+trigger1 = Time = 0
+value = 4,2
+
+
+[State 3111, 3.4] ;Ground wave (behind)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = Time = 0
+anim = f66
+pos = 5,0
+postype = p1
+sprpriority = -2
+supermove = 1
+ownpal = 1
+
+[State 3111, 3.4] ;Ground wave (in front)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = Time = 0
+anim = f67
+pos = 5,0
+postype = p1
+sprpriority = 2
+supermove = 1
+ownpal = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 1
+anim = f24
+pos = -10,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 1
+anim = f24
+facing = -1
+pos = 10,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 3111, 3.5] ;Shake
+type = EnvShake
+Trigger1 = Time = 0
+time = 18
+ampl = 10
+freq = 175
+
+[State 3111, 4]
+type = TargetBind
+trigger1 = 1
+trigger1 = AnimElem = 3, < 0
+pos = 5,0
+
+[State 3111, 5]
+type = TargetBind
+trigger1 = AnimElem = 3, >= 0
+trigger1 = Time < 25
+pos = 45,0
+
+[State 3111, 6]
+type = TargetBind
+trigger1 = Time >= 25
+trigger1 = AnimElem = 15, < 0
+pos = 35,0
+
+[State 3111, 7]
+type = SprPriority
+trigger1 = AnimElem = 11
+value = 1
+
+[State 3111, 7]
+type = PlaySnd
+trigger1 = AnimElem = 12
+value = 2,0 ;"Mary's"
+channel = 0
+
+[State 3111, 8.1]
+type = TargetState
+trigger1 = AnimElem = 15
+value = 3123
+
+[State 3111, 8.2]
+type = Width
+trigger1 = AnimElem = 15
+edge = 70
+
+[State 3111, 8.3]
+type = TargetBind
+trigger1 = AnimElem = 15
+trigger1 = AnimElem = 17, < 0
+pos = 24,-87
+
+[State 3111, 9.1]
+type = SprPriority
+trigger1 = AnimElem = 16
+value = -1
+
+[State 3111, 9.2]
+type = PlaySnd
+trigger1 = AnimElem = 16
+value = 4,0
+
+[State 3005, 2.2]
+type = Explod
+trigger1 = AnimElem = 16
+anim = f9
+pos = 24,-82
+postype = p1
+sprpriority = 1
+
+[State 3111, 9.4] ;Piece of arm
+type = Explod
+trigger1 = AnimElem = 16
+anim = 3116
+pos = 0,0
+postype = p1
+bindtime = -1
+sprpriority = 2
+removeongethit = 1
+
+[State 3111, 10]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 3112
+
+
+;Dynamite1 (catch, swing start)
+[Statedef 3112]
+type    = S
+movetype= A
+physics = S
+anim = 3112
+
+[State 3112, 1]
+type = Width
+trigger1 = 1
+edge = 65, 15
+
+[State 3112, 1]
+type = TargetState
+trigger1 = Time = 0
+value = 3124
+
+[State 3112, 2]
+type = PlaySnd
+trigger1 = AnimElem = 2
+value = 2,1 ;"Dynamite Swing!"
+channel = 0
+
+[State 3112, 3]
+type = AfterImage
+trigger1 = Time = 0
+time = 2
+Trans = Add1
+PalColor = 0
+PalBright = 0,0,0
+PalContrast = 96,128,192
+PalPostBright = 32,32,48
+
+[State 3112, 4]
+type = AfterImageTime
+trigger1 = 1
+time = 40
+
+[State 3111, 4.1] ;Piece of arm
+type = Explod
+trigger1 = Time = 0
+anim = 3117
+pos = 0,0
+postype = p1
+bindtime = -1
+sprpriority = 2
+removeongethit = 1
+
+[State 3112, 4]
+type = PlaySnd
+trigger1 = Time = 0
+trigger2 = AnimElem = 4
+trigger3 = AnimElem = 8
+trigger4 = AnimElem = 12
+trigger5 = AnimElem = 16
+trigger6 = AnimElem = 20
+trigger7 = AnimElem = 24
+trigger8 = AnimElem = 28
+trigger9 = AnimElem = 32
+value = 3,3 ;Whoosh noise
+
+[State 3112, 4]
+type = TargetBind
+trigger1 = 1
+trigger1 = AnimElem = 2, < 0
+trigger2 = AnimElem = 9, >= 0
+trigger2 = AnimElem = 10, < 0
+trigger3 = AnimElem = 17, >= 0
+trigger3 = AnimElem = 18, < 0
+trigger4 = AnimElem = 25, >= 0
+trigger4 = AnimElem = 26, < 0
+trigger5 = AnimElem = 33, >= 0
+trigger5 = AnimElem = 34, < 0
+pos = 12,-81
+
+[State 3112, 5]
+type = TargetBind
+trigger1 = AnimElem = 2, >= 0
+trigger1 = AnimElem = 3, < 0
+trigger2 = AnimElem = 10, >= 0
+trigger2 = AnimElem = 11, < 0
+trigger3 = AnimElem = 18, >= 0
+trigger3 = AnimElem = 19, < 0
+trigger4 = AnimElem = 26, >= 0
+trigger4 = AnimElem = 27, < 0
+trigger5 = AnimElem = 34, >= 0
+pos = 40,-75
+
+[State 3112, 6]
+type = TargetBind
+trigger1 = AnimElem = 3, >= 0
+trigger1 = AnimElem = 4, < 0
+trigger2 = AnimElem = 11, >= 0
+trigger2 = AnimElem = 12, < 0
+trigger3 = AnimElem = 19, >= 0
+trigger3 = AnimElem = 20, < 0
+trigger4 = AnimElem = 27, >= 0
+trigger4 = AnimElem = 28, < 0
+pos = 50,-75
+
+[State 3112, 7.1]
+type = TargetBind
+trigger1 = AnimElem = 4, >= 0
+trigger1 = AnimElem = 5, < 0
+trigger2 = AnimElem = 12, >= 0
+trigger2 = AnimElem = 13, < 0
+trigger3 = AnimElem = 20, >= 0
+trigger3 = AnimElem = 21, < 0
+trigger4 = AnimElem = 28, >= 0
+trigger4 = AnimElem = 29, < 0
+pos = 58,-80
+
+[State 3112, 7.2]
+type = SprPriority
+trigger1 = AnimElem = 4
+trigger2 = AnimElem = 12
+trigger3 = AnimElem = 20
+trigger4 = AnimElem = 28
+value = 1
+
+[State 3112, 8]
+type = TargetBind
+trigger1 = AnimElem = 5, >= 0
+trigger1 = AnimElem = 6, < 0
+trigger2 = AnimElem = 13, >= 0
+trigger2 = AnimElem = 14, < 0
+trigger3 = AnimElem = 21, >= 0
+trigger3 = AnimElem = 22, < 0
+trigger4 = AnimElem = 29, >= 0
+trigger4 = AnimElem = 30, < 0
+pos = 55,-97
+
+[State 3112, 9]
+type = TargetBind
+trigger1 = AnimElem = 6, >= 0
+trigger1 = AnimElem = 7, < 0
+trigger2 = AnimElem = 14, >= 0
+trigger2 = AnimElem = 15, < 0
+trigger3 = AnimElem = 22, >= 0
+trigger3 = AnimElem = 23, < 0
+trigger4 = AnimElem = 30, >= 0
+trigger4 = AnimElem = 31, < 0
+pos = 11,-93
+
+[State 3112, 10]
+type = TargetBind
+trigger1 = AnimElem = 7, >= 0
+trigger1 = AnimElem = 8, < 0
+trigger2 = AnimElem = 15, >= 0
+trigger2 = AnimElem = 16, < 0
+trigger3 = AnimElem = 23, >= 0
+trigger3 = AnimElem = 24, < 0
+trigger4 = AnimElem = 31, >= 0
+trigger4 = AnimElem = 32, < 0
+pos = 3,-75
+
+[State 3112, 11.1]
+type = TargetBind
+trigger1 = AnimElem = 8, >= 0
+trigger1 = AnimElem = 9, < 0
+trigger2 = AnimElem = 16, >= 0
+trigger2 = AnimElem = 17, < 0
+trigger3 = AnimElem = 24, >= 0
+trigger3 = AnimElem = 25, < 0
+trigger4 = AnimElem = 32, >= 0
+trigger4 = AnimElem = 33, < 0
+pos = -10,-72
+
+[State 3112, 11.2]
+type = SprPriority
+trigger1 = AnimElem = 8
+trigger2 = AnimElem = 16
+trigger3 = AnimElem = 24
+trigger4 = AnimElem = 32
+value = -1
+
+[State 3112, 11.3]
+type = TargetLifeAdd
+trigger1 = AnimElem = 8
+trigger2 = AnimElem = 16
+trigger3 = AnimElem = 24
+trigger4 = AnimElem = 32
+value = -27
+kill = 0
+
+[State 3111, 12.1] ;Done
+type = TargetState
+trigger1 = AnimTime = 0
+value = 3125
+
+[State 3111, 12.2]
+type = PlaySnd
+trigger1 = AnimTime = 0
+value = 3,4
+
+[State 3111, 12.2]
+type = PlaySnd
+trigger1 = AnimTime = 0
+value = 3,3
+
+[State 3112, 12.3]
+type = TargetBind
+trigger1 = AnimTime = 0
+pos = -40, -50
+
+[State 3112, 12.4]
+type = TargetLifeAdd
+trigger1 = AnimTime = 0
+value = -29
+
+[State 3112, 12.4] ;Done
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 3113
+
+;---------------------------------------------------------------------------
+;Dynamite1 (catch, swing end, on ground)
+[Statedef 3113]
+type    = S
+movetype= A
+physics = S
+anim = 3113
+
+[State 3113, 1] ;Done
+type = ChangeState
+trigger1 = AnimElem = 3
+value = 3114
+
+;---------------------------------------------------------------------------
+;Dynamite1 (catch, swing end, into air)
+[Statedef 3114]
+type    = A
+movetype= A
+physics = N
+velset = 0,-8
+
+[State 3114, 1]
+type = PosAdd
+trigger1 = Time = 0
+x = 18
+
+[State 3114, 2]
+type = VelAdd
+trigger1 = 1
+y = .43
+
+[State 3114, 3]
+type = Turn
+trigger1 = AnimElem = 6
+
+[State 3114, 1] ;Done
+type = ChangeState
+trigger1 = Vel Y > 0
+trigger1 = Pos Y >= 0
+value = 3115
+ctrl = 1
+
+;---------------------------------------------------------------------------
+;Dynamite1 (swing, land)
+[Statedef 3115]
+type    = S
+movetype= I
+physics = S
+anim = 3115
+velset = 0,0
+
+[State 3115, 1]
+type = PosSet
+trigger1 = Time = 0
+y = 0
+
+[State 3115, 2]
+type = PlaySnd
+trigger1 = Time = 0
+value = 30,2
+
+[State 3115, 3]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+
+;---------------------------------------------------------------------------
+; Dynamite1 (hit by, in air)
+[Statedef 3120]
+type    = A
+movetype= H ;Get hit
+physics = N
+velset = 0,0
+ctrl = 0
+
+[State 3120, 1]
+type = ChangeAnim2
+Trigger1 = Time = 0
+value = 3120
+
+[State 3120, 2]
+type = HitBy
+Trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------------------------------------------------------------
+; Dynamite1 (hit by, slammed down and get up)
+[Statedef 3121]
+type    = L
+movetype= H ;Get hit
+physics = N
+velset = 0,0
+
+[State 3121, 1]
+type = ChangeAnim2
+Trigger1 = Time = 0
+value = 3121
+
+[State 3121, 2] ;Change to get up
+type = ChangeAnim
+Trigger1 = Anim = 3121  ;If in action 3121
+Trigger1 = AnimTime = 0
+value = 5120
+
+[State 3121, 3] ;Change to dizzy (if have)
+type = ChangeAnim
+Trigger1 = Anim = 5120  ;If in action 5120 (get up)
+Trigger1 = AnimTime = 0
+Trigger1 = AnimExist(5300)
+Trigger2 = Anim = 5120  ;If in action 5120 (get up)
+Trigger2 = Time = 50
+Trigger2 = AnimExist(5300)
+value = 5300
+
+[State 3121, 4] ;Change to hurt (if no dizzy animation)
+type = ChangeAnim2
+Trigger1 = Anim = 5120  ;If in action 5120 (get up)
+Trigger1 = AnimTime = 0
+Trigger1 = !AnimExist(5300)
+Trigger2 = Anim = 5120  ;If in action 5120 (get up)
+Trigger2 = Time = 50
+Trigger2 = !AnimExist(5300)
+value = 3122
+
+[State 3121, 5]
+type = HitBy
+Trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------------------------------------------------------------
+; Dynamite1 (hit by swing, grabbed at neck)
+[Statedef 3123]
+type    = L
+movetype= H ;Get hit
+physics = N
+velset = 0,0
+
+[State 3123, 1]
+type = ChangeAnim2
+Trigger1 = Time = 0
+value = 3123
+
+;---------------------------------------------------------------------------
+; Dynamite1 (hit by swing, start)
+[Statedef 3124]
+type    = L
+movetype= H ;Get hit
+physics = N
+velset = 0,0
+
+[State 3124, 1]
+type = ChangeAnim2
+Trigger1 = Time = 0
+value = 3124
+
+;---------------------------------------------------------------------------
+; Dynamite1 (hit by swing, through the air)
+[Statedef 3125]
+type    = L
+movetype= H ;Get hit
+physics = N
+velset = -5,-8
+
+[State 3125, 2] ;Acceleration
+type = VelAdd
+Trigger1 = 1
+y = .45
+
+[State 3125, 3] ;Self's falling anim
+type = ChangeAnim
+Trigger1 = Time = 0
+value = 5050
+
+[State 3125, 3] ;Self's falling anim
+type = ChangeAnim
+Trigger1 = Time = 0
+Trigger1 = AnimExist(5052)
+value = 5052
+
+[State 3125, 2] ;Coming down anim (normal fall type)
+type = ChangeAnim
+triggerall = anim != 5052 ;Not if in hit up anim
+trigger1 = vel y >= 1
+trigger1 = animexist(5060)
+value = 5060
+persistent = 0
+
+[State 3125, 2] ;Coming down anim (hit up type)
+type = ChangeAnim
+triggerall = anim = 5052 ;Not if in hit up anim
+trigger1 = vel y >= -2
+trigger1 = animexist(5062)
+value = 5062
+persistent = 0
+
+[State 3125, 4.1] ;Shake
+type = EnvShake
+trigger1 = vel y > 0
+trigger1 = pos y >= 0
+time = 18
+ampl = 10
+
+[State 3125, 4.2]
+type = LifeAdd
+trigger1 = vel y > 0
+trigger1 = pos y >= 0
+value = -40
+
+[State 3125, 4.3] ;Hit ground
+trigger1 = vel y > 0
+trigger1 = pos y >= 0
+type = SelfState
+value = 5100
+
+;---------------------------------------------------------------------------
+; Mary's Dynamite Swing (level 2)
+[Statedef 3200]
+type    = S
+movetype= A
+physics = S
+juggle  = 5
+velset = 0,0
+ctrl = 0
+anim = 3100
+sprpriority = 2
+
+
+
+[State 3200, 1]
+type = PlaySnd
+trigger1 = Time = 5
+value = 0,1
+channel = 0
+
+[State 3200, Super.1A] 
+type = Explod
+trigger1 = Time = 7
+anim = 17100
+pos = 35,-45
+postype = p1
+sprpriority = -2
+supermove = 1
+bindtime = 1
+ownpal = 1
+pos = 35,-45
+
+[State 3200, Super.1B]
+type = Explod
+trigger1 = Time = 7
+anim = 17110
+pos = 35,-45
+postype = p1
+sprpriority = 2
+supermove = 1
+bindtime = 1
+ontop = 1
+ownpal = 1
+pos = 35,-45
+
+[State 3200, Super.1]
+type = SuperPause
+trigger1 = Time = 7
+anim = -1
+movetime = 3
+time = 28
+
+[State 6000,黑色底色]
+type = Envcolor
+trigger1 = Time = 7
+persistent = 0
+ignorehitpause = 1
+value = 0, 0, 0
+time = 28
+under = 1
+supermove = 1
+darken = 0
+
+[State 3200, Super.2]
+type = PlaySnd
+trigger1 = Time = 7
+value = 17000,0
+
+[State 3000, Super.3]
+type = PowerAdd
+trigger1 = Time = 7
+value = -2000
+
+[State 3200, Super.4]
+type = NotHitBy
+trigger1 = Time >= 7
+trigger1 = Animelem = 4, <= 0
+value = SCA
+time = 1
+
+[State 3200, Super.5]
+type = AfterImage
+trigger1 = Animelem = 4
+time = 25
+;length = 20
+;PalBright   =   0,  0,  0
+;PalContrast = 120,120,220
+;PalAdd      =  10, 10, 25
+;PalMul      = .45,.45,.75
+TimeGap  = 1
+FrameGap = 4
+Trans = Add1
+PalColor = 0
+PalBright = 0,0,0
+PalContrast = 96,128,192
+PalPostBright = 32,32,48
+
+[State 3200, 10]
+type = PosAdd
+Trigger1 = AnimElem = 5
+x = 8
+
+[State 3200, 10]
+type = ChangeState
+Trigger1 = AnimElem = 5
+value = 3201
+
+;---------------------------------------------------------------------------
+;Dynamite2 (going up)
+[Statedef 3201]
+type    = A
+movetype= A
+physics = N
+
+[State 3201, 1]
+type = VelSet
+trigger1 = Time = [0,5]
+x = 4.9
+y = -7.5
+
+[State 3201, 1.2]
+type = PlaySnd
+trigger1 = Time = 0
+value = f40,1;30,0 ;Need proper sound
+
+[State 3201, 2]
+type = VelMul
+trigger1 = Time >= 5
+x = .92
+
+[State 3201, 3]
+type = VelAdd
+trigger1 = 1
+y = .52
+
+[State 3201, 4]
+type = ChangeAnim
+trigger1 = Vel Y > 0
+persistent = 0
+value = 3101
+
+[State 3201, 5]
+type = HitDef
+trigger1 = Time = 0
+attr = A, HA
+damage    = 62,4
+getpower = 0
+guardflag = MA
+priority = 6, Dodge
+pausetime = 11,12
+sparkno = S30002
+guard.sparkno = s30040
+sparkxy = -10,-75
+hitsound   = S5,8
+guardsound = S6,2
+ground.type = High
+ground.slidetime = 18
+ground.hittime  = 23
+ground.velocity = -2.5,-7
+guard.velocity = -7
+air.velocity = -3,-5
+airguard.velocity = -3,-3
+fall = 1
+fall.recover = 0
+p1stateno = 3203
+ID = 3200 ;For chaining into level 2 dynamite swing
+
+[State 3201, 7] ;Chain animation
+type = ChangeAnim
+trigger1 = MoveHit
+trigger1 = Vel Y < 0
+value = 3103
+
+[State 3201, 8]
+type = AfterImageTime
+trigger1 = 1
+time = 2
+
+[State 3201, 9] ;Land
+type = ChangeState
+trigger1 = Vel Y > 0
+trigger1 = Pos Y >= 0
+value = 3102
+
+;---------------------------------------------------------------------------
+;Dynamite2 (going up, try to catch)
+[Statedef 3203]
+type    = A
+movetype= A
+physics = N
+anim = 3103
+
+[State 3203, 1]
+type = VelMul
+trigger1 = 1
+x = .92
+
+[State 3203, 2]
+type = VelAdd
+trigger1 = 1
+y = .52
+
+[State 3203, 3]
+type = AfterImageTime
+trigger1 = 1
+time = 2
+
+[State 3203, 6] ;Chain into rest of move
+type = HitDef
+trigger1 = Time = 0
+givepower = 70
+attr = A, HT
+hitflag = AF+
+priority = 8, Miss
+sprpriority = 1 ;In front
+pausetime = 0,0
+sparkno = -1
+hitsound   = S4,1
+p1stateno = 3210
+p2stateno = 3120
+p2facing = -1
+fall = 1
+chainID = 3200 ;Can only chain from level 2
+ID = 3210      ;To keep the opponent on the target list (See state 3210)
+
+[State 3203, 7] ;Chain animation
+type = ChangeAnim
+trigger1 = MoveHit
+trigger1 = Vel Y < 0
+value = 3103
+
+[State 3203, 7] ;Land
+type = ChangeState
+trigger1 = Vel Y > 0
+trigger1 = Pos Y >= 0
+value = 3102
+
+;---------------------------------------------------------------------------
+;Dynamite2 (catch, coming down)
+[Statedef 3210]
+type    = A
+movetype= A
+physics = N
+anim = 3110
+
+[State 3005, 2.2]
+type = Explod
+trigger1 = Time = 0
+anim = f9
+pos = -25,-101
+postype = p1
+sprpriority = 1
+
+[State 3210, 1.3]
+type = Width
+trigger1 = Time = 0
+edge = 40
+
+[State 3210, 2]
+type = PosFreeze
+trigger1 = 1
+trigger1 = AnimElem = 2, < 0
+
+[State 3210, 3]
+type = VelSet
+trigger1 = AnimElem = 2, < 0
+x = 0
+y = 0
+
+[State 1120, 4]
+type = VelAdd
+trigger1 = AnimElem = 2, > 0
+y = .5
+
+; Drop all targets that don't have hitID 3210 (hit by dynamite1)
+; Important, in case of team battle, where one guy is guarding
+; and one is being hit. You don't want to grab _both_ of them.
+[State 3210, 5] 
+type = TargetDrop
+trigger1 = Time = 0
+excludeID = 3210
+
+[State 3210, 6]
+type = TargetBind
+trigger1 = 1
+trigger1 = AnimElem = 2, < 0
+pos = -15, -104
+
+[State 3210, 7]
+type = TargetBind
+trigger1 = AnimElem = 2, >= 0
+trigger1 = AnimElem = 3, < 0
+pos = 13, -74
+
+[State 3210, 8]
+type = TargetBind
+trigger1 = AnimElem = 3, >= 0
+pos = 13, -74
+
+[State 3210, 7]
+type = ChangeState
+trigger1 = Vel Y > 0
+trigger1 = Pos Y >= 0
+value = 3211
+
+;---------------------------------------------------------------------------
+;Dynamite2 (catch, land)
+[Statedef 3211]
+type    = S
+movetype= A
+physics = S
+anim = 3211
+velset = 0,0
+
+[State 3211, 1]
+type = PosSet
+trigger1 = Time = 0
+y = 0
+
+[State 3211, 2]
+type = TargetLifeAdd
+trigger1 = Time = 0
+value = -35
+kill = 0
+
+[State 3211, 3]
+type = TargetState
+trigger1 = Time = 0
+value = 3121
+
+[State 3211, 3.2]
+type = PlaySnd
+trigger1 = Time = 0
+value = 4,4
+
+[State 3211, 3.2]
+type = PlaySnd
+trigger1 = Time = 0
+value = 35,4
+
+[State 3211, 3.3]
+type = PlaySnd
+trigger1 = Time = 0
+value = 4,2
+
+[State 3211, 3.4] ;Ground wave (behind)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = Time = 0
+anim = f66
+pos = 5,0
+postype = p1
+sprpriority = -2
+supermove = 1
+ownpal = 1
+
+[State 3211, 3.4] ;Ground wave (in front)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = Time = 0
+anim = f67
+pos = 5,0
+postype = p1
+sprpriority = 2
+supermove = 1
+ownpal = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 1
+anim = f24
+pos = -10,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 1
+anim = f24
+facing = -1
+pos = 10,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 3211, 3.5] ;Shake
+type = EnvShake
+Trigger1 = Time = 0
+time = 18
+ampl = 10
+freq = 175
+
+[State 3211, 4]
+type = TargetBind
+trigger1 = 1
+trigger1 = AnimElem = 3, < 0
+pos = 5,0
+
+[State 3211, 5]
+type = TargetBind
+trigger1 = AnimElem = 3, >= 0
+trigger1 = Time < 25
+pos = 45,0
+
+[State 3211, 6]
+type = TargetBind
+trigger1 = Time >= 25
+trigger1 = AnimElem = 15, < 0
+pos = 35,0
+
+[State 3211, 7]
+type = SprPriority
+trigger1 = AnimElem = 11
+value = 1
+
+[State 3211, 7]
+type = PlaySnd
+trigger1 = AnimElem = 12
+value = 2,0 ;"Mary's"
+channel = 0
+
+[State 3211, 8.1]
+type = TargetState
+trigger1 = AnimElem = 15
+value = 3223
+
+[State 3211, 8.2]
+type = Width
+trigger1 = AnimElem = 15
+edge = 70
+
+[State 3211, 8.3]
+type = TargetBind
+trigger1 = AnimElem = 15
+trigger1 = AnimElem = 17, < 0
+pos = 24,-87
+
+[State 3211, 9.1]
+type = SprPriority
+trigger1 = AnimElem = 16
+value = -1
+
+[State 3211, 9.2]
+type = PlaySnd
+trigger1 = AnimElem = 16
+value = 4,0
+
+[State 3005, 2.2]
+type = Explod
+trigger1 = AnimElem = 16
+anim = f9
+pos = 24,-82
+postype = p1
+sprpriority = 1
+
+[State 3211, 9]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 3216
+
+;---------------------------------------------------------------------------
+;Dynamite2 (catch, first dunk)
+[Statedef 3216]
+type    = S
+movetype= A
+physics = N
+anim = 3216
+
+[State 3216, 1.1]
+type = Turn
+trigger1 = Time = 0
+
+[State 3216, 1.2]
+type = AfterImage
+trigger1 = Time = 0
+time = 2
+Trans = Add1
+PalColor = 0
+PalBright = 0,0,0
+PalContrast = 96,128,192
+PalPostBright = 32,32,48
+
+[State 3216, 1.3]
+type = AfterImageTime
+trigger1 = 1
+time = 2
+
+[State 3216, 1]
+type = TargetState
+trigger1 = Time = 0
+value = 3222
+
+[State 3216, 2.1]
+type = PlaySnd
+trigger1 = AnimElem = 2
+value = 4,0
+
+[State 3005, 2.2]
+type = Explod
+trigger1 = AnimElem = 2
+anim = f9
+pos = -30,-60
+postype = p1
+sprpriority = 1
+
+[State 3216, 3]
+type = PlayerPush
+trigger1 = 1
+value = 0
+
+[State 3216, 4]
+type = VelSet
+trigger1 = 1
+x = 0
+
+[State 3216, 5.1]
+type = Width
+trigger1 = AnimElem = 7, >= 0
+trigger1 = AnimElem = 27, < 0
+edge = 35
+
+[State 3216, 5.2]
+type = Width
+trigger1 = AnimElem = 27, >= 0
+edge = 45
+
+[State 3216, 7.2]
+type = TargetBind
+trigger1 = AnimElem = 1, >= 0
+trigger1 = AnimElem = 2, < 0
+pos = -51, 0
+
+[State 3216, 7.?]
+type = PosAdd
+trigger1 = AnimElem = 20
+x = 5
+
+[State 3216, 7.3] ;Be drawn in front
+type = SprPriority
+trigger1 = AnimElem = 1
+trigger2 = AnimElem = 20
+value = 1
+
+[State 3216, 8.2]
+type = TargetBind
+trigger1 = AnimElem = 2, >= 0
+trigger1 = AnimElem = 3, < 0
+trigger2 = AnimElem = 20, >= 0
+trigger2 = AnimElem = 21, < 0
+pos = -45, 0
+
+[State 3216, 9]
+type = TargetBind
+trigger1 = AnimElem = 3, >= 0
+trigger1 = AnimElem = 4, < 0
+trigger2 = AnimElem = 21, >= 0
+trigger2 = AnimElem = 22, < 0
+pos = -30, -58
+
+[State 3216, 10]
+type = TargetBind
+trigger1 = AnimElem = 4, >= 0
+trigger1 = AnimElem = 5, < 0
+trigger2 = AnimElem = 22, >= 0
+trigger2 = AnimElem = 23, < 0
+pos = -25, -66
+
+[State 3216, 11]
+type = TargetBind
+trigger1 = AnimElem = 5, >= 0
+trigger1 = AnimElem = 6, < 0
+trigger2 = AnimElem = 23, >= 0
+trigger2 = AnimElem = 24, < 0
+pos = -25, -68
+
+[State 3216, 12]
+type = TargetBind
+trigger1 = AnimElem = 6, >= 0
+trigger1 = AnimElem = 7, < 0
+trigger2 = AnimElem = 24, >= 0
+trigger2 = AnimElem = 25, < 0
+pos = -24, -83
+
+[State 3216, 12]
+type = TargetBind
+trigger1 = AnimElem = 7, >= 0
+trigger1 = AnimElem = 8, < 0
+trigger2 = AnimElem = 25, >= 0
+trigger2 = AnimElem = 26, < 0
+pos = -15, -88
+
+[State 3216, 13]
+type = TargetBind
+trigger1 = AnimElem = 8, >= 0
+trigger1 = AnimElem = 9, < 0
+trigger2 = AnimElem = 26, >= 0
+trigger2 = AnimElem = 27, < 0
+pos = 0, -88
+
+[State 3216, 14]
+type = TargetBind
+trigger1 = AnimElem = 9, >= 0
+trigger1 = AnimElem = 10, < 0
+trigger2 = AnimElem = 27, >= 0
+trigger2 = AnimElem = 28, < 0
+pos = 8, -77
+
+[State 3216, 15]
+type = TargetBind
+trigger1 = AnimElem = 10, >= 0
+trigger1 = AnimElem = 11, < 0
+trigger2 = AnimElem = 28, >= 0
+trigger2 = AnimElem = 29, < 0
+pos = 15, -67
+
+[State 3216, 16]
+type = TargetBind
+trigger1 = AnimElem = 11, >= 0
+trigger1 = AnimElem = 12, < 0
+trigger2 = AnimElem = 29, >= 0
+trigger2 = AnimElem = 30, < 0
+pos = 38, -49
+
+[State 3216, 17.1]
+type = TargetBind
+trigger1 = AnimElem = 12, >= 0
+trigger1 = AnimElem = 13, < 0
+trigger2 = AnimElem = 30, >= 0
+trigger2 = AnimElem = 31, < 0
+pos = 45, 0
+
+[State 3216, 17.2] ;Ground wave (behind)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = AnimElem = 12
+trigger2 = AnimElem = 30
+anim = f66
+pos = 35,0
+postype = p1
+sprpriority = -2
+supermove = 1
+ownpal = 1
+
+[State 3216, 17.2] ;Ground wave (in front)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = AnimElem = 12
+trigger2 = AnimElem = 30
+anim = f67
+pos = 35,0
+postype = p1
+sprpriority = 2
+supermove = 1
+ownpal = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 12
+trigger2 = AnimElem = 30
+anim = f24
+pos = 20,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 12
+trigger2 = AnimElem = 30
+anim = f24
+facing = -1
+pos = 40,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 3216, 17.3] ;Shake
+type = EnvShake
+Trigger1 = AnimElem = 12
+trigger2 = AnimElem = 30
+time = 18
+ampl = 8
+freq = 175
+
+[State 3216, 17.4a] ;Crunch
+type = PlaySnd
+Trigger1 = AnimElem = 12
+trigger2 = AnimElem = 30
+value = 4,4
+
+[State 3216, 17.4b] ;Crunch
+type = PlaySnd
+Trigger1 = AnimElem = 12
+trigger2 = AnimElem = 30
+value = 3,3
+
+[State 3216, 17.4c] ;Crunch
+type = PlaySnd
+Trigger1 = AnimElem = 12
+trigger2 = AnimElem = 30
+value = 35,4
+
+[State 3216, 17.5]
+type = TargetLifeAdd
+trigger1 = AnimElem = 12
+trigger2 = AnimElem = 30
+value = -50
+kill = 0
+
+[State 3216, 18]
+type = TargetBind
+trigger1 = AnimElem = 13, >= 0
+trigger1 = AnimElem = 14, < 0
+pos = 45, 0
+
+[State 3216, 18]
+type = PosAdd
+trigger1 = AnimElem = 14
+x = 25
+
+[State 3216, 18]
+type = TargetBind
+trigger1 = AnimElem = 14, >= 0
+trigger1 = AnimElem = 15, < 0
+pos = 20, 0
+
+[State 3216, 19]
+type = TargetBind
+trigger1 = AnimElem = 15, >= 0
+trigger1 = AnimElem = 16, < 0
+pos = 12, 0
+
+[State 3216, 20]
+type = TargetBind
+trigger1 = AnimElem = 16, >= 0
+trigger1 = AnimElem = 17, < 0
+pos = 3, 0
+
+[State 3216, 21]
+type = TargetBind
+trigger1 = AnimElem = 17, >= 0
+trigger1 = AnimElem = 18, < 0
+pos = -5, 0
+
+[State 3216, 22]
+type = TargetBind
+trigger1 = AnimElem = 18, >= 0
+trigger1 = AnimElem = 20, < 0
+pos = -14, 0
+
+[State 3216, 23]
+type = TargetBind
+trigger1 = AnimElem = 34, >= 0
+trigger1 = AnimElem = 35, < 0
+pos = 20, -24
+
+[State 3216, 23]
+type = TargetBind
+trigger1 = AnimElem = 35, >= 0
+trigger1 = AnimTime <= 0
+pos = 40, 0
+
+[State 3216, 15]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 3217
+
+;---------------------------------------------------------------------------
+;Dynamite2 (catch, neck break)
+[Statedef 3217]
+type    = S
+movetype= A
+physics = N
+anim = 3217
+
+[State 3217, 1]
+type = Width
+trigger1 = 1
+edge = 65, 15
+
+[State 3217, 2]
+type = TargetBind
+trigger1 = AnimElem = 1, >= 0
+trigger1 = AnimElem = 2, < 0
+pos = 51, 0
+
+[State 3217, 3]
+type = TargetBind
+trigger1 = AnimElem = 2
+trigger1 = AnimElem = 4, < 0
+pos = 24,-87
+
+[State 3217, 4.1]
+type = SprPriority
+trigger1 = AnimElem = 3
+value = -1
+
+[State 3217, 4.2]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = 4,0
+
+[State 3005, 2.2]
+type = Explod
+trigger1 = AnimElem = 3
+anim = f9
+pos = 24,-82
+postype = p1
+sprpriority = 1
+
+[State 3217, 4.4] ;Piece of arm
+type = Explod
+trigger1 = AnimElem = 3
+anim = 3116
+pos = 0,0
+postype = p1
+bindtime = -1
+sprpriority = 2
+removeongethit = 1
+
+[State 3217, 15]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 3212
+
+;---------------------------------------------------------------------------
+;Dynamite2 (catch, swing start)
+[Statedef 3212]
+type    = S
+movetype= A
+physics = S
+anim = 3212
+
+[State 3212, 1]
+type = Width
+trigger1 = 1
+edge = 65, 15
+
+[State 3212, 1]
+type = TargetState
+trigger1 = Time = 0
+value = 3224
+
+[State 3212, 2]
+type = PlaySnd
+trigger1 = AnimElem = 2
+value = 2,1 ;"Dynamite Swing!"
+channel = 0
+
+[State 3212, 3]
+type = AfterImage
+trigger1 = Time = 0
+time = 2
+Trans = Add1
+PalColor = 0
+PalBright = 0,0,0
+PalContrast = 96,128,192
+PalPostBright = 32,32,48
+
+[State 3212, 4]
+type = AfterImageTime
+trigger1 = 1
+time = 40
+
+[State 3212, 4.1] ;Piece of arm
+type = Explod
+trigger1 = Time = 0
+anim = 3218
+pos = 0,0
+postype = p1
+bindtime = -1
+sprpriority = 2
+removeongethit = 1
+
+[State 3212, 4]
+type = PlaySnd
+trigger1 = Time = 0
+trigger2 = AnimElem = 4
+trigger3 = AnimElem = 8
+trigger4 = AnimElem = 12
+trigger5 = AnimElem = 16
+trigger6 = AnimElem = 20
+trigger7 = AnimElem = 24
+trigger8 = AnimElem = 28
+trigger9 = AnimElem = 32
+trigger10 = AnimElem = 36
+trigger11 = AnimElem = 40
+trigger12 = AnimElem = 44
+trigger13 = AnimElem = 48
+trigger14 = AnimElem = 52
+trigger15 = AnimElem = 56
+trigger16 = AnimElem = 60
+trigger17 = AnimElem = 64
+value = 3,3 ;Whoosh noise
+
+[State 3212, 4]
+type = TargetBind
+trigger1 = 1
+trigger1 = AnimElem = 2, < 0
+trigger2 = AnimElem = 9, >= 0
+trigger2 = AnimElem = 10, < 0
+trigger3 = AnimElem = 17, >= 0
+trigger3 = AnimElem = 18, < 0
+trigger4 = AnimElem = 25, >= 0
+trigger4 = AnimElem = 26, < 0
+trigger5 = AnimElem = 33, >= 0
+trigger5 = AnimElem = 34, < 0
+trigger6 = AnimElem = 41, >= 0
+trigger6 = AnimElem = 42, < 0
+trigger7 = AnimElem = 49, >= 0
+trigger7 = AnimElem = 50, < 0
+trigger8 = AnimElem = 57, >= 0
+trigger8 = AnimElem = 58, < 0
+trigger9 = AnimElem = 63, >= 0
+trigger9 = AnimElem = 64, < 0
+pos = 12,-81
+
+[State 3212, 5]
+type = TargetBind
+trigger1 = AnimElem = 2, >= 0
+trigger1 = AnimElem = 3, < 0
+trigger2 = AnimElem = 10, >= 0
+trigger2 = AnimElem = 11, < 0
+trigger3 = AnimElem = 18, >= 0
+trigger3 = AnimElem = 19, < 0
+trigger4 = AnimElem = 26, >= 0
+trigger4 = AnimElem = 27, < 0
+trigger5 = AnimElem = 34, >= 0
+trigger5 = AnimElem = 35, < 0
+trigger6 = AnimElem = 42, >= 0
+trigger6 = AnimElem = 43, < 0
+trigger7 = AnimElem = 50, >= 0
+trigger7 = AnimElem = 51, < 0
+trigger8 = AnimElem = 58, >= 0
+trigger8 = AnimElem = 59, < 0
+trigger9 = AnimElem = 64, >= 0
+pos = 40,-75
+
+[State 3212, 6]
+type = TargetBind
+trigger1 = AnimElem = 3, >= 0
+trigger1 = AnimElem = 4, < 0
+trigger2 = AnimElem = 11, >= 0
+trigger2 = AnimElem = 12, < 0
+trigger3 = AnimElem = 19, >= 0
+trigger3 = AnimElem = 20, < 0
+trigger4 = AnimElem = 27, >= 0
+trigger4 = AnimElem = 28, < 0
+trigger5 = AnimElem = 35, >= 0
+trigger5 = AnimElem = 36, < 0
+trigger6 = AnimElem = 43, >= 0
+trigger6 = AnimElem = 44, < 0
+trigger7 = AnimElem = 51, >= 0
+trigger7 = AnimElem = 52, < 0
+trigger8 = AnimElem = 59, >= 0
+trigger8 = AnimElem = 60, < 0
+pos = 50,-75
+
+[State 3212, 7.1]
+type = TargetBind
+trigger1 = AnimElem = 4, >= 0
+trigger1 = AnimElem = 5, < 0
+trigger2 = AnimElem = 12, >= 0
+trigger2 = AnimElem = 13, < 0
+trigger3 = AnimElem = 20, >= 0
+trigger3 = AnimElem = 21, < 0
+trigger4 = AnimElem = 28, >= 0
+trigger4 = AnimElem = 29, < 0
+trigger5 = AnimElem = 36, >= 0
+trigger5 = AnimElem = 37, < 0
+trigger6 = AnimElem = 44, >= 0
+trigger6 = AnimElem = 45, < 0
+trigger7 = AnimElem = 52, >= 0
+trigger7 = AnimElem = 53, < 0
+trigger8 = AnimElem = 60, >= 0
+trigger8 = AnimElem = 61, < 0
+pos = 58,-80
+
+[State 3212, 7.2]
+type = SprPriority
+trigger1 = AnimElem = 4
+trigger2 = AnimElem = 12
+trigger3 = AnimElem = 20
+trigger4 = AnimElem = 28
+trigger5 = AnimElem = 36
+trigger6 = AnimElem = 44
+trigger7 = AnimElem = 52
+trigger8 = AnimElem = 60
+value = 1
+
+[State 3212, 8]
+type = TargetBind
+trigger1 = AnimElem = 5, >= 0
+trigger1 = AnimElem = 6, < 0
+trigger2 = AnimElem = 13, >= 0
+trigger2 = AnimElem = 14, < 0
+trigger3 = AnimElem = 21, >= 0
+trigger3 = AnimElem = 22, < 0
+trigger4 = AnimElem = 29, >= 0
+trigger4 = AnimElem = 30, < 0
+trigger5 = AnimElem = 37, >= 0
+trigger5 = AnimElem = 38, < 0
+trigger6 = AnimElem = 45, >= 0
+trigger6 = AnimElem = 46, < 0
+trigger7 = AnimElem = 53, >= 0
+trigger7 = AnimElem = 54, < 0
+trigger8 = AnimElem = 61, >= 0
+trigger8 = AnimElem = 62, < 0
+pos = 55,-97
+
+[State 3212, 9]
+type = TargetBind
+trigger1 = AnimElem = 6, >= 0
+trigger1 = AnimElem = 7, < 0
+trigger2 = AnimElem = 14, >= 0
+trigger2 = AnimElem = 15, < 0
+trigger3 = AnimElem = 22, >= 0
+trigger3 = AnimElem = 23, < 0
+trigger4 = AnimElem = 30, >= 0
+trigger4 = AnimElem = 31, < 0
+trigger5 = AnimElem = 38, >= 0
+trigger5 = AnimElem = 39, < 0
+trigger6 = AnimElem = 46, >= 0
+trigger6 = AnimElem = 47, < 0
+trigger7 = AnimElem = 54, >= 0
+trigger7 = AnimElem = 55, < 0
+trigger8 = AnimElem = 62, >= 0
+trigger8 = AnimElem = 63, < 0
+pos = 11,-93
+
+[State 3212, 10]
+type = TargetBind
+trigger1 = AnimElem = 7, >= 0
+trigger1 = AnimElem = 8, < 0
+trigger2 = AnimElem = 15, >= 0
+trigger2 = AnimElem = 16, < 0
+trigger3 = AnimElem = 23, >= 0
+trigger3 = AnimElem = 24, < 0
+trigger4 = AnimElem = 31, >= 0
+trigger4 = AnimElem = 32, < 0
+trigger5 = AnimElem = 39, >= 0
+trigger5 = AnimElem = 40, < 0
+trigger6 = AnimElem = 47, >= 0
+trigger6 = AnimElem = 48, < 0
+trigger7 = AnimElem = 55, >= 0
+trigger7 = AnimElem = 56, < 0
+trigger8 = AnimElem = 63, >= 0
+trigger8 = AnimElem = 64, < 0
+pos = 3,-75
+
+[State 3212, 11.1]
+type = TargetBind
+trigger1 = AnimElem = 8, >= 0
+trigger1 = AnimElem = 9, < 0
+trigger2 = AnimElem = 16, >= 0
+trigger2 = AnimElem = 17, < 0
+trigger3 = AnimElem = 24, >= 0
+trigger3 = AnimElem = 25, < 0
+trigger4 = AnimElem = 32, >= 0
+trigger4 = AnimElem = 33, < 0
+trigger5 = AnimElem = 40, >= 0
+trigger5 = AnimElem = 41, < 0
+trigger6 = AnimElem = 48, >= 0
+trigger6 = AnimElem = 49, < 0
+trigger7 = AnimElem = 56, >= 0
+trigger7 = AnimElem = 57, < 0
+trigger8 = AnimElem = 64, >= 0
+pos = -10,-72
+
+[State 3212, 11.2]
+type = SprPriority
+trigger1 = AnimElem = 8
+trigger2 = AnimElem = 16
+trigger3 = AnimElem = 24
+trigger4 = AnimElem = 32
+trigger5 = AnimElem = 40
+trigger6 = AnimElem = 48
+trigger7 = AnimElem = 56
+trigger8 = AnimElem = 64
+value = -1
+
+[State 3212, 11.3]
+type = TargetLifeAdd
+trigger1 = AnimElem = 8
+trigger2 = AnimElem = 16
+trigger3 = AnimElem = 24
+trigger4 = AnimElem = 32
+trigger5 = AnimElem = 40
+trigger6 = AnimElem = 48
+trigger7 = AnimElem = 56
+trigger8 = AnimElem = 64
+value = -20
+kill = 0
+
+[State 3212, 12.1] ;Done
+type = TargetState
+trigger1 = AnimTime = 0
+value = 3225
+
+[State 3212, 12.2]
+type = PlaySnd
+trigger1 = AnimTime = 0
+value = 3,4
+
+[State 3212, 12.2]
+type = PlaySnd
+trigger1 = AnimTime = 0
+value = 3,3
+
+[State 3212, 12.3]
+type = TargetBind
+trigger1 = AnimTime = 0
+pos = -40, -50
+
+[State 3212, 12.4]
+type = TargetLifeAdd
+trigger1 = AnimTime = 0
+value = -21
+
+[State 3212, 12.4] ;Done
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 3213
+
+;---------------------------------------------------------------------------
+;Dynamite2 (catch, swing end, on ground)
+[Statedef 3213]
+type    = S
+movetype= A
+physics = S
+anim = 3213
+
+[State 3213, 1] ;Done
+type = ChangeState
+trigger1 = AnimElem = 3
+value = 3214
+
+;---------------------------------------------------------------------------
+;Dynamite2 (catch, swing end, into air)
+[Statedef 3214]
+type    = A
+movetype= A
+physics = N
+velset = 0,-8
+
+[State 3214, 1]
+type = PosAdd
+trigger1 = Time = 0
+x = 18
+
+[State 3214, 2] 
+type = VelAdd
+trigger1 = 1
+y = .43
+
+[State 3214, 3]
+type = Turn
+trigger1 = AnimElem = 6
+
+[State 3214, 1] ;Done
+type = ChangeState
+trigger1 = Vel Y > 0
+trigger1 = Pos Y >= 0
+value = 3215
+ctrl = 1
+
+;---------------------------------------------------------------------------
+;Dynamite2 (swing, land)
+[Statedef 3215]
+type    = S
+movetype= I
+physics = S
+anim = 3115
+velset = 0,0
+
+[State 3215, 1]
+type = PosSet
+trigger1 = Time = 0
+y = 0
+
+[State 3215, 2]
+type = PlaySnd
+trigger1 = Time = 0
+value = 30,2
+
+[State 3215, 3]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+
+;---------------------------------------------------------------------------
+; Dynamite2 (hit by swing, dunked on)
+[Statedef 3222]
+type    = L
+movetype= H ;Get hit
+physics = N
+velset = 0,0
+
+[State 3222, 1]
+type = ChangeAnim2
+Trigger1 = Time = 0
+value = 3222
+
+[State 3222, 2]
+type = Turn
+trigger1 = AnimElem = 37
+
+;---------------------------------------------------------------------------
+; Dynamite2 (hit by swing, grabbed at neck)
+[Statedef 3223]
+type    = L
+movetype= H ;Get hit
+physics = N
+velset = 0,0
+
+[State 3223, 1]
+type = ChangeAnim2
+Trigger1 = Time = 0
+value = 3223
+
+;---------------------------------------------------------------------------
+; Dynamite2 (hit by swing, start)
+[Statedef 3224]
+type    = L
+movetype= H ;Get hit
+physics = N
+velset = 0,0
+
+[State 3224, 1]
+type = ChangeAnim2
+Trigger1 = Time = 0
+value = 3224
+
+;---------------------------------------------------------------------------
+; Dynamite1 (hit by swing, through the air)
+[Statedef 3225]
+type    = L
+movetype= H ;Get hit
+physics = N
+velset = -5,-8
+
+[State 3225, 2] ;Acceleration
+type = VelAdd
+Trigger1 = 1
+y = .45
+
+[State 3225, 3] ;Self's falling anim
+type = ChangeAnim
+Trigger1 = Time = 0
+value = 5050
+
+[State 3225, 3] ;Self's falling anim
+type = ChangeAnim
+Trigger1 = Time = 0
+Trigger1 = AnimExist(5052)
+value = 5052
+
+[State 3225, 2] ;Coming down anim (normal fall type)
+type = ChangeAnim
+triggerall = anim != 5052 ;Not if in hit up anim
+trigger1 = vel y >= 1
+trigger1 = animexist(5060)
+value = 5060
+persistent = 0
+
+[State 3225, 2] ;Coming down anim (hit up type)
+type = ChangeAnim
+triggerall = anim = 5052 ;Not if in hit up anim
+trigger1 = vel y >= -2
+trigger1 = animexist(5062)
+value = 5062
+persistent = 0
+
+[State 3225, 4.1] ;Shake
+type = EnvShake
+trigger1 = vel y > 0
+trigger1 = pos y >= 0
+time = 18
+ampl = 10
+
+[State 3225, 4.2]
+type = LifeAdd
+trigger1 = vel y > 0
+trigger1 = pos y >= 0
+value = -50
+
+[State 3225, 4.3] ;Hit ground
+trigger1 = vel y > 0
+trigger1 = pos y >= 0
+type = SelfState
+value = 5100
+
+;---------------------------------------------------------------------------
+; Splash Rose (before run)
+[Statedef 3300]
+type    = S
+movetype= A
+physics = S
+juggle  = 4
+velset = 0,0
+ctrl = 0
+anim = 3300
+sprpriority = 2
+
+
+
+[State 3300, 1]
+type = PlaySnd
+trigger1 = Time = 1
+value = 0,1 ;"Hey"
+channel = 0
+
+[State 6000, color]
+type = envcolor
+;trigger1 = AnimElem = 1
+trigger1 = Time = 0
+persistent = 0
+ignorehitpause = 1
+value = 0,0,0
+time = 30
+under = 1
+supermove = 1
+
+[State 3300, Super.1C]
+type = SuperPause
+trigger1 = AnimElem = 2
+anim = -1
+time = 28
+
+[State 6000,黑色底色]
+type = Envcolor
+trigger1 = AnimElem = 2
+persistent = 0
+ignorehitpause = 1
+value = 0, 0, 0
+time = 28
+under = 1
+supermove = 1
+darken = 0
+
+[State 3300, Super.1A] 
+type = Explod
+trigger1 = AnimElem = 2
+anim = 17000
+pos = -26,-100
+postype = p1
+sprpriority = -2
+supermove = 1
+ownpal = 1
+pos = 35,-45
+scale = .5,.5
+
+[State 3300, Super.1B]
+type = Explod
+trigger1 = AnimElem = 2
+anim = 17010
+pos = -26,-100
+postype = p1
+sprpriority = 7
+supermove = 1
+ontop = 1
+ownpal = 1
+pos = 35,-45
+scale = .5,.5
+
+[State 3300, Super.1D]
+type = PlaySnd
+trigger1 = AnimElem = 2
+value = 17000,0
+
+[State 3300, Super.1E]
+type = PowerAdd
+trigger1 = AnimElem = 2
+value = -1000
+
+[State 3300, Super.1F]
+type = NotHitBy
+Trigger1 = AnimElem = 2
+value = SCA
+time = 1
+
+;transparencia
+[State 3400, Super.1G]
+type = AfterImage
+trigger1 = AnimElem = 2
+time = 5
+length = 20
+FrameGap = 5
+Trans = Add1
+PalColor = 0
+PalBright = 0,0,0
+PalContrast = 96,128,192
+PalPostBright = 32,32,48
+
+[State 3300, 2]
+type = VarSet
+Trigger1 = Time = 0
+var(2) = 4 ;Use v2 to mean number of hits
+
+[State 3300, 2]
+type = VarSet
+Trigger1 = Time = 0
+var(3) = 0 ;Use v3 to count time Mary has been pushing opponent
+
+[State 3301, 3]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3301
+
+;---------------------------------------------------------------------------
+; Splash Rose (running)
+[Statedef 3301]
+type    = S
+movetype= A
+physics = N
+anim = 3301
+
+[State 3301, 1]
+type = VelSet
+Trigger1 = 1
+x = 8
+
+[State 3301, 2]
+type = AfterImageTime
+Trigger1 = 1
+time = 2
+
+[State 3301, 4]
+type = HitDef
+trigger1 = Time = 0
+attr = S, HA
+damage    = 24,8
+getpower = 0
+guardflag = MA
+priority = 6, Dodge
+pausetime = 1,12
+sparkxy = -15,-42
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = S5,9;35,4
+guardsound = S6,2
+ground.type = High
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = 6
+guard.velocity = -7
+air.velocity = 6
+airguard.velocity = -3.5,-3
+mindist = 60
+maxdist = 65
+p2stateno = 3320
+ID = 3300 ;For chaining into level 1 Splash Rose success
+kill = 0
+
+[State 3301, 4.2] ;Flash
+type = EnvColor
+Trigger1 = MoveHit
+ignorehitpause = 1
+persistent = 0
+value = 255,255,255
+under = 1
+
+[State 3301, 4.3]
+type = ChangeState
+Trigger1 = MoveHit
+value = 3310
+
+[State 3301, 5]
+type = VarAdd
+Trigger1 = P2BodyDist X < 2
+var(3) = 1
+
+[State 3301, 6]
+type = ChangeState
+Trigger1 = AnimTime = 0
+Trigger2 = MoveGuarded = 1
+Trigger3 = var(3) > 5
+value = 3302
+
+;---------------------------------------------------------------------------
+; Splash Rose (miss, stop)
+[Statedef 3302]
+type    = S
+movetype= A
+physics = N
+anim = 3302
+
+[State 3301, 2]
+type = AfterImageTime
+Trigger1 = 1
+time = 2
+
+[State 3302, 2] ;Friction
+type = VelMul
+Trigger1 = 1
+x = .9
+
+[State 3301, 3]
+type = AfterImageTime
+Trigger1 = 1
+Trigger1 = AnimTime < -1
+time = 2
+
+[State 3302, 4]
+type = VelSet
+Trigger1 = AnimTime = 0
+x = 0
+
+[State 3302, 3]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; Splash Rose (success, turn)
+[Statedef 3310]
+type    = S
+movetype= A
+physics = N
+anim = 3310
+
+[State 3310, 2]
+type = AfterImageTime
+Trigger1 = 1
+time = 2
+
+[State 3310, 3]
+type = PlayerPush
+Trigger1 = 1
+value = 0
+
+[State 3310, 4.1]
+type = Turn
+Trigger1 = AnimElem = 6
+
+[State 3310, 4.2]
+type = VelSet
+Trigger1 = AnimElem = 6, > 0
+x = 8
+
+[State 3310, 4.3]
+type = PlaySnd
+trigger1 = AnimElem = 6
+value = 0,1 ;"Hey"
+channel = 0
+
+[State 3310, 5.1]
+type = PosAdd
+Trigger1 = AnimElem = 7
+x = -20
+
+[State 3101, 5.2]
+type = HitDef
+trigger1 = AnimElem = 7
+attr = S, HA
+damage    = 33
+getpower = 0
+guardflag = MA
+priority = 6, Dodge
+pausetime = 1,12
+sparkxy = -10,-48
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = S5,9;S35,4
+guardsound = S6,2
+ground.type = High
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = 6
+guard.velocity = -7
+air.velocity = 6
+airguard.velocity = -3.5,-3
+mindist = 60
+maxdist = 65
+p2stateno = 3320
+ID = 3300 ;For chaining into level 1 Splash Rose success
+chainID = 3300 ;Chaining from level 1 Splash Rose success
+kill = 0
+
+[State 3310, 5.3] ;Flash
+type = EnvColor
+Trigger1 = Animelem = 7, >= 0
+Trigger1 = MoveHit
+ignorehitpause = 1
+persistent = 0
+value = 255,255,255
+under = 1
+time = 1
+
+[State 3101, 5.4]
+type = ChangeState
+Trigger1 = Animelem = 7, >= 0
+Trigger1 = MoveHit
+value = 3310
+
+[State 3310, 5]
+type = VarAdd
+trigger1 = Time = 0
+var(2) = -1
+
+[State 3310, 5] ;Quit
+type = ChangeState
+Trigger1 = AnimTime = 0
+Trigger2 = Var(2) = 0
+value = 3311
+
+[State 3310, 5]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3310
+
+;---------------------------------------------------------------------------
+; Splash Rose (success, last ground hit)
+[Statedef 3311]
+type    = S
+movetype= A
+physics = N
+anim = 3311
+
+[State 3311, 1]
+type = EnvColor
+Trigger1 = Time = 0
+Trigger2 = AnimElem = 10
+Trigger3 = AnimElem = 17
+value = 255,255,255
+under = 1
+
+[State 3311, 2]
+type = AfterImageTime
+Trigger1 = 1
+time = 2
+
+[State 3311, 4.1]
+type = Turn
+Trigger1 = AnimElem = 6
+
+[State 3311, 4.2]
+type = VelSet
+Trigger1 = AnimElem = 6, > 0
+Trigger1 = AnimElem = 13, < 0
+x = 8
+
+[State 3311, 4.3]
+type = PlaySnd
+trigger1 = AnimElem = 6
+value = 0,1 ;"Hey"
+channel = 0
+
+[State 3311, 5]
+type = PosAdd
+Trigger1 = AnimElem = 7
+x = -20
+
+[State 3311, 6.1] ;Friction
+type = VelMul
+Trigger1 = AnimElem = 13, >= 0
+x = .8
+
+[State 3311, 6.2] ;Friction
+type = VelMul
+Trigger1 = AnimElem = 13
+x = .5
+
+[State 3311, 7] ;Kick
+type = HitDef
+triggerall = var(0) = 0
+trigger1 = AnimElem = 10
+attr = S, HA
+damage    = 31
+getpower = 0
+guardflag = MA
+priority = 6
+pausetime = 8,8
+sparkxy = -10,-48
+hitsound   = S5,9;S35,4
+sparkno = S30002
+guard.sparkno = s30040
+guardsound = S6,2
+ground.type = High
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = -9
+guard.velocity = -7
+air.velocity = -6
+airguard.velocity = -3.5,-3
+mindist = 60
+maxdist = 65
+p2stateno = 3320
+ID = 3300 ;For chaining into level 1 Splash Rose success
+chainID = 3300 ;Chaining from level 1 Splash Rose success
+kill = 0
+
+[State 3311, 8]
+type = HitDef
+trigger1 = AnimElem = 17
+attr = S, HA
+damage    = 32
+getpower = 0
+guardflag = MA
+priority = 6
+pausetime = 10,10
+sparkxy = -10,-60
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = S5,9;S35,4
+guardsound = S6,2
+ground.type = Low
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = -7,-8
+guard.velocity = -7
+air.type = Low
+air.velocity = -7,-8
+airguard.velocity = -3.5,-3
+mindist = 60
+maxdist = 65
+ID = 3300 ;For chaining into level 1 Splash Rose success
+chainID = 3300 ;Chaining from level 1 Splash Rose success
+kill = 0
+fall = 1
+fall.animtype = Hard
+
+[State 3311, 9] ;Circle
+type = Explod
+trigger1 = AnimElem = 16
+anim = 7200
+pos = -5,-60
+postype = p1
+bindtime = -1
+sprpriority = 2
+ownpal = 1
+
+[State 3311, 8]
+type = HitDef
+triggerall = var(0) = 1
+trigger1 = AnimElem = 10
+attr = S, HA
+damage    = 32
+getpower = 0
+guardflag = MA
+priority = 6
+pausetime = 10,10
+sparkxy = -10,-60
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = S5,9;S35,4
+guardsound = S6,2
+ground.type = Low
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = -2,-4
+guard.velocity = -7
+air.type = Low
+air.velocity = -2,-4
+airguard.velocity = -3.5,-3
+mindist = 60
+maxdist = 65
+ID = 3300 ;For chaining into level 1 Splash Rose success
+chainID = 3300 ;Chaining from level 1 Splash Rose success
+kill = 0
+fall = 1
+fall.animtype = Hard
+p2stateno = 1650
+
+[State 3311, 10]
+type = ChangeState
+triggerall = var(0) = 1
+trigger1 = AnimElem = 12
+value = 3313
+
+[State 3311, 10]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3312
+
+;---------------------------------------------------------------------------
+[Statedef 3313]
+type    = S
+movetype= A
+physics = N
+anim = 1645
+poweradd = 0
+
+[State 905, 8.1]
+type = Width
+trigger1 = 1
+edge = 50,0
+
+[State 3311, 2]
+type = AfterImageTime
+Trigger1 = 1
+time = 2
+
+[State 181, 1]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+[State 1620, 16.1]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = 1640,1
+
+[State 1004, Explod]
+type = Explod
+trigger1 = animelem = 5
+trigger2 = animelem = 6
+trigger3 = animelem = 7
+anim = 1642
+ID = 1642
+bindtime = -1
+postype = p1
+removetime = 20
+sprpriority = 2
+pos = 60,-45
+ignorehitpause = 1
+removeongethit = 1
+trans = AddAlpha
+alpha = 256,256
+scale = 1.2,1.2
+
+[State 1631, 3]
+type = VelSet
+Trigger1 = time = 0
+x = 10
+y = 0
+
+[State 1631, 3]
+type = PosSet
+Trigger1 = Time = 0
+y = 0
+
+[State 1631, 3]
+type = Veladd
+Trigger1 = Vel X > 0
+x = -0.4
+
+[State 1631, 3]
+type = VelSet
+Trigger1 = Vel X < 0
+x = 0
+
+[State 210, 2]
+type = HitDef
+trigger1 = time >= 0 && timemod = 5,0
+attr = C, NA
+animtype  = hard
+damage    = 45
+priority = 5, Hit
+getpower = 63,63
+pausetime = 20,20
+sparkno = S30002
+sparkxy = -10,-40
+hitsound   = s1640,2
+guardsound = S6,2
+guard.sparkno = s30040
+ground.type = high
+ground.slidetime = 18
+ground.hittime  = 23
+ground.velocity = -2.5,-4
+air.velocity = -3.5,-3
+ground.cornerpush.veloff = 0
+palfx.time = 65
+palfx.mul = 200,200,256
+palfx.add = 130,130,220
+palfx.sinadd = 100,120,256,4
+palfx.invertall = 1
+fall.envshake.time = 10
+fall.envshake.freq = 60
+fall.envshake.ampl = -4
+fall.envshake.phase = 0
+
+[State a]
+type = EnvColor
+trigger1 = movehit
+persistent = 0
+ignorehitpause = 1
+time = 1
+value = 125,255,125
+under = 2
+
+[State 1004, Explod]
+type = Explod
+trigger1 = MoveHit
+persistent = 0
+anim = 1641
+ID = 1641
+bindtime = -1
+postype = p2
+removetime = 50
+sprpriority = 2
+pos = -20,-60
+ignorehitpause = 1
+trans = AddAlpha
+alpha = 256,256
+
+[State 1620, 10]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+;---------------------------------------------------------------------------
+; Splash Rose (success, into air)
+[Statedef 3312]
+type    = A
+movetype= A
+physics = N
+anim = 3312
+velset = 7,-8
+
+[State 3301, 2]
+type = AfterImageTime
+Trigger1 = 1
+time = 2
+
+[State 3312, 1]
+type = EnvColor
+Trigger1 = Time = 0
+Trigger2 = AnimElem = 4
+Trigger3 = AnimElem = 6
+value = 255,255,255
+under = 1
+
+[State 3312, 1]
+type = PlaySnd
+Trigger1 = Time = 0
+value = 2,2 ;"Finish!"
+channel = 0
+
+[State 3312, 2]
+type = VelAdd
+Trigger1 = 1
+y = .42
+
+[State 3312, 3]
+type = VelMul
+Trigger1 = Time >= 1
+x = .9
+
+[State 3312, 4]
+type = HitDef
+trigger1 = Time = 0
+attr = A, HA
+damage    = 19
+getpower = 0
+guardflag = MA
+priority = 6
+pausetime = 4,4
+sparkxy = -10,-60
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = S5,6;S35,4
+guardsound = S6,0
+ground.type = High
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = -7,-8
+guard.velocity = -7
+air.velocity = -1,-12
+airguard.velocity = -3.5,-3
+mindist = 60
+maxdist = 65
+ID = 3300 ;For chaining into level 1 Splash Rose success
+chainID = 3300 ;Chaining from level 1 Splash Rose success
+kill = 0
+fall = 1
+fall.recover = 0
+
+[State 3312, 5]
+type = HitDef
+trigger1 = AnimElem = 4
+attr = A, HA
+damage    = 19
+getpower = 0
+guardflag = MA
+priority = 6
+pausetime = 4,4
+sparkxy = -10,-80
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = S5,6;S35,4
+guardsound = S6,2
+ground.type = High
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = -1,-8
+guard.velocity = -7
+air.velocity = -1,-12
+airguard.velocity = -3.5,-3
+ID = 3300 ;For chaining into level 1 Splash Rose success
+chainID = 3300 ;Chaining from level 1 Splash Rose success
+kill = 0
+fall = 1
+fall.recover = 0
+
+[State 3312, 6]
+type = HitDef
+trigger1 = AnimElem = 6
+attr = A, HA
+damage = 19
+getpower = 0
+guardflag = MA
+priority = 6
+pausetime = 2,2
+sparkxy = -10,-100
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = S5,6;S35,4
+guardsound = S6,2
+animtype = DiagUp
+ground.type = High
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = -1,-13
+guard.velocity = -7
+air.velocity = -1.5,-13
+airguard.velocity = -4,-3.5
+chainID = 3300 ;Chaining from level 1 Splash Rose success
+fall = 1
+fall.recover = 0
+yaccel = .47
+
+[State 3312, 5]
+type = PosAdd
+Trigger1 = AnimElem = 9
+y = -10
+
+[State 3312, 6.1] ;Circle
+type = Explod
+trigger1 = AnimElem = 2
+anim = 7200
+pos = 16,-75
+postype = p1
+bindtime = -1
+sprpriority = 2
+ownpal = 1
+
+[State 3312, 6.2] ;Circle
+type = Explod
+trigger1 = AnimElem = 5
+anim = 7200
+pos = 10,-73
+postype = p1
+bindtime = -1
+sprpriority = 2
+ownpal = 1
+
+[State 3312, 5]
+type = ChangeState
+Trigger1 = Vel Y > 0
+Trigger1 = Pos Y >= 0
+value = 3315
+
+;---------------------------------------------------------------------------
+; Splash Rose (land)
+[Statedef 3315]
+type    = S
+movetype= A
+physics = S
+anim = 3315
+velset = 0,0
+
+[State 3315, 1]
+type = PosSet
+Trigger1 = Time = 0
+y = 0
+
+[State 3315, 3]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; Splash Rose (hit by - no push check)
+[Statedef 3320]
+type    = S
+movetype= H ;Get hit
+physics = N
+velset = 0,0
+
+[State 3320, 1]
+type = ChangeAnim2
+trigger1 = 1
+value = 3320
+
+[State 3320, 2]
+type = PlayerPush
+trigger1 = 1
+value = 0
+
+[State 3320, 2.2]
+type = NotHitBy
+trigger1 = 1
+value = CA, AT, NA, SA, AP
+
+[State 3320, 3]
+type = PosSet
+trigger1 = Time = 0
+y = 0
+
+[State 3320, 4]
+type = ChangeState
+trigger1 = HitShakeOver
+;trigger1 = HitVel Y = 0
+value = 3321 ;Slide
+
+[State 3320, 3]
+type = ForceFeedback
+trigger1 = Time = 0
+time = 15
+waveform = sinesquare
+ampl = 130
+
+;---------------------------------------------------------------------------
+; Splash Rose (hit by, slide - no push check)
+[Statedef 3321]
+type    = S
+movetype= H
+physics = N
+
+[State 3321, 1]
+type = HitVelSet
+trigger1 = Time = 0
+x = 1
+
+[State 3321, 2]
+type = VelMul
+trigger1 = 1
+x = .85
+
+[State 3320, 2.2]
+type = NotHitBy
+trigger1 = 1
+value = CA, AT, NA, SA, AP
+
+[State 3320, 3]
+type = PlayerPush
+trigger1 = 1
+value = 0
+
+[State 3321, 4]
+type = SelfState
+trigger1 = HitOver = 1
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; Splash Rose (hit by - push check)
+[Statedef 3325]
+type    = S
+movetype= H ;Get hit
+physics = N
+velset = 0,0
+
+[State 3325, 1]
+type = ChangeAnim2
+trigger1 = 1
+value = 3320
+
+[State 3325, 2.2]
+type = NotHitBy
+trigger1 = 1
+value = CA, AT, NA, SA, AP
+
+[State 3325, 3]
+type = PosSet
+trigger1 = Time = 0
+y = 0
+
+[State 3325, 4]
+type = ChangeState
+trigger1 = HitShakeOver
+;trigger1 = HitVel Y = 0
+value = 3326 ;Slide
+
+[State 3325, 3]
+type = ForceFeedback
+trigger1 = Time = 0
+time = 15
+waveform = sinesquare
+ampl = 130
+
+;---------------------------------------------------------------------------
+; Splash Rose (hit by, slide - push check)
+[Statedef 3326]
+type    = S
+movetype= H
+physics = N
+
+[State 3326, 1]
+type = HitVelSet
+trigger1 = Time = 0
+x = 1
+
+[State 3326, 2]
+type = VelMul
+trigger1 = 1
+x = .85
+
+[State 3326, 2.2]
+type = NotHitBy
+trigger1 = 1
+value = CA, AT, NA, SA, AP
+
+[State 3326, 4]
+type = SelfState
+trigger1 = HitOver = 1
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; Splash Rose Level 2 (before run)
+[Statedef 3400]
+type    = S
+movetype= A
+physics = S
+juggle  = 4
+velset = 0,0
+ctrl = 0
+anim = 3300
+sprpriority = 2
+
+
+
+[State 3400, 1]
+type = PlaySnd
+trigger1 = Time = 1
+value = 0,1 ;"Hey"
+channel = 0
+
+[State 3400, Super.1A] 
+type = Explod
+trigger1 = AnimElem = 2
+anim = 17100
+pos = -26,-100
+postype = p1
+sprpriority = -2
+supermove = 1
+ownpal = 1
+pos = 35,-45
+scale = .5,.5
+
+[State 3400, Super.1B]
+type = Explod
+trigger1 = AnimElem = 2
+anim = 17110
+pos = -26,-100
+postype = p1
+sprpriority = 2
+supermove = 1
+ontop = 1
+ownpal = 1
+pos = 35,-45
+scale = .5,.5
+
+[State 3400, Super.1C]
+type = SuperPause
+trigger1 = AnimElem = 2
+anim = -1
+time = 28
+
+[State 6000,黑色底色]
+type = Envcolor
+trigger1 = AnimElem = 2
+persistent = 0
+ignorehitpause = 1
+value = 0, 0, 0
+time = 28
+under = 1
+supermove = 1
+darken = 0
+
+[State 3400, Super.spark]
+type = PlaySnd
+trigger1 = AnimElem = 2
+value = 17000,0
+
+[State 3400, Super.1E]
+type = PowerAdd
+trigger1 = AnimElem = 2
+value = -2000
+
+[State 3400, Super.1F]
+type = NotHitBy
+Trigger1 = AnimElem = 2
+value = SCA
+time = 1
+
+[State 3400, Super.1G]
+type = AfterImage
+trigger1 = AnimElem = 2
+time = 5
+length = 20
+FrameGap = 5
+Trans = Add1
+PalColor = 0
+PalBright = 0,0,0
+PalContrast = 96,128,192
+PalPostBright = 32,32,48
+
+[State 3400, 2]
+type = VarSet
+Trigger1 = Time = 0
+var(2) = 6 ;Use v2 to mean number of hits
+
+[State 3400, 2]
+type = VarSet
+Trigger1 = Time = 0
+var(3) = 0 ;Use v3 to count time Mary has been pushing opponent
+
+[State 3400, 3]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3401
+
+;---------------------------------------------------------------------------
+; Splash Rose Level 2 (running)
+[Statedef 3401]
+type    = S
+movetype= A
+physics = N
+anim = 3301
+juggle = 10
+
+[State 3401, 1]
+type = VelSet
+Trigger1 = 1
+x = 8
+
+[State 3401, 2]
+type = AfterImageTime
+Trigger1 = 1
+time = 2
+
+[State 3401, 4]
+type = HitDef
+trigger1 = Time = 0
+attr = S, HA
+damage    = 24,8
+getpower = 0
+guardflag = MA
+priority = 6, Dodge
+pausetime = 1,12
+sparkxy = -15,-42
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = S5,9
+guardsound = S6,2
+ground.type = High
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = 6
+guard.velocity = -7
+air.velocity = 6
+airguard.velocity = -3.5,-3
+mindist = 60
+maxdist = 65
+;p1stateno = 3410
+p2stateno = 3320
+ID = 3400 ;For chaining into level 2 Splash Rose success
+kill = 0
+
+[State 3401, 4.2] ;Flash
+type = EnvColor
+Trigger1 = MoveHit
+ignorehitpause = 1
+persistent = 0
+value = 255,255,255
+under = 1
+
+[State 4032, Explod] ;Small Rose
+type = Explod
+Trigger1 = MoveHit
+ignorehitpause = 1
+persistent = 0
+anim = 3505
+pos = 0,-55
+postype = p2
+ontop = 1
+ownpal = 1
+sprpriority = 5
+
+[State 3401, 4.3]
+type = ChangeState
+Trigger1 = MoveHit
+value = 3410
+
+[State 3401, 5]
+type = VarAdd
+Trigger1 = P2BodyDist X < 2
+var(3) = 1
+
+[State 3401, 6]
+type = ChangeState
+Trigger1 = AnimTime = 0
+Trigger2 = MoveGuarded = 1
+Trigger3 = var(3) > 5
+value = 3302
+
+;---------------------------------------------------------------------------
+; Splash Rose Level 2(success, turn)
+[Statedef 3410]
+type    = S
+movetype= A
+physics = N
+anim = 3410
+
+[State 3410, 1]
+type = EnvColor
+Trigger1 = Time = 0
+Trigger2 = Time = 2
+Trigger3 = Time = 4
+value = 255,255,255
+under = 1
+
+[State 3410, 2]
+type = AfterImageTime
+Trigger1 = 1
+time = 2
+
+[State 3410, 3]
+type = PlayerPush
+Trigger1 = 1
+value = 0
+
+[State 3410, 4.1]
+type = Turn
+Trigger1 = AnimElem = 6
+
+[State 3410, 4.2]
+type = VelSet
+Trigger1 = AnimElem = 6, > 0
+x = 8
+
+[State 3410, 4.3]
+type = PlaySnd
+trigger1 = AnimElem = 6
+value = 0,1 ;"Hey"
+channel = 0
+
+[State 3410, 5.1]
+type = PosAdd
+Trigger1 = AnimElem = 7
+x = -20
+
+[State 3410, 5.2]
+type = HitDef
+trigger1 = Time = 2
+attr = S, HA
+damage   = 11
+getpower = 0
+pausetime = 2,13
+sparkxy = -10,-68
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = -1
+ground.type = High
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = 6
+p2stateno = 3320
+ID = 3400 ;For chaining into level 2 Splash Rose success
+chainID = 3400 ;Chaining from level 2 Splash Rose success
+kill = 0
+
+[State 3410, 5.3]
+type = HitDef
+trigger1 = Time = 4
+attr = S, HA
+damage   = 11
+getpower = 0
+pausetime = 2,13
+sparkxy = -10,-48
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = S5,9
+ground.type = High
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = 6
+p2stateno = 3320
+ID = 3400 ;For chaining into level 2 Splash Rose success
+chainID = 3400 ;Chaining from level 2 Splash Rose success
+kill = 0
+
+[State 3410, 5.4]
+type = HitDef
+trigger1 = AnimElem = 7
+attr = S, HA
+damage   = 11
+getpower = 0
+pausetime = 2,13
+sparkxy = -10,-58
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = S5,9
+guardsound = S6,2
+ground.type = High
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = 6
+mindist = 60
+maxdist = 65
+p1stateno = 3410
+p2stateno = 3320
+ID = 3400 ;For chaining into level 2 Splash Rose success
+chainID = 3400 ;Chaining from level 2 Splash Rose success
+kill = 0
+
+[State 4032, Explod] ;Small Rose
+type = Explod
+Trigger1 = MoveHit
+ignorehitpause = 1
+persistent = 0
+anim = 3505
+pos = 0,-55
+postype = p2
+ontop = 1
+ownpal = 1
+sprpriority = 5
+
+[State 3410, 5]
+type = VarAdd
+trigger1 = Time = 0
+var(2) = -1
+
+[State 3410, 5] ;Quit
+type = ChangeState
+Trigger1 = AnimTime = 0
+Trigger2 = Var(2) = 0
+value = 3411
+
+[State 3410, 5]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3410
+
+;---------------------------------------------------------------------------
+; Splash Rose Level 2 (success, first ground hit)
+[Statedef 3411]
+type    = S
+movetype= A
+physics = N
+anim = 3411
+
+[State 3411, 2]
+type = AfterImageTime
+Trigger1 = 1
+time = 2
+
+[State 3410, 5.2]
+type = HitDef
+trigger1 = Time = 2
+attr = S, HA
+damage   = 11
+getpower = 0
+pausetime = 2,13
+sparkxy = -10,-68
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = -1
+ground.type = High
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = 6
+p2stateno = 3325
+ID = 3400 ;For chaining into level 2 Splash Rose success
+chainID = 3400 ;Chaining from level 2 Splash Rose success
+kill = 0
+
+[State 4032, Explod] ;Small Rose
+type = Explod
+Trigger1 = MoveHit
+ignorehitpause = 1
+persistent = 0
+anim = 3505
+pos = 0,-55
+postype = p2
+ontop = 1
+ownpal = 1
+sprpriority = 5
+
+[State 3410, 5.3]
+type = HitDef
+trigger1 = Time = 4
+attr = S, HA
+damage   = 11
+getpower = 0
+pausetime = 2,13
+sparkxy = -10,-48
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = S5,9
+ground.type = High
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = 6
+p2stateno = 3325
+ID = 3400 ;For chaining into level 2 Splash Rose success
+chainID = 3400 ;Chaining from level 2 Splash Rose success
+kill = 0
+
+[State 3411, 1]
+type = EnvColor
+Trigger1 = Time = 0
+Trigger2 = Time = 2
+Trigger3 = Time = 4
+Trigger4 = AnimElem = 10
+Trigger5 = AnimElem = 11
+Trigger6 = AnimElem = 18
+Trigger7 = AnimElem = 19
+Trigger8 = AnimElem = 23
+value = 255,255,255
+under = 1
+
+[State 3411, 4.1]
+type = Turn
+Trigger1 = AnimElem = 6
+
+[State 3411, 4.2]
+type = VelSet
+Trigger1 = AnimElem = 6, > 0
+;Trigger1 = AnimElem = 13, < 0
+x = 8
+
+[State 3411, 4.3]
+type = PlaySnd
+trigger1 = AnimElem = 6
+value = 0,1 ;"Hey"
+channel = 0
+
+[State 3411, 5]
+type = PosAdd
+Trigger1 = AnimElem = 7
+x = -20
+
+[State 3411, 6.1] ;Friction
+type = VelMul
+Trigger1 = AnimElem = 13, >= 0
+x = .8
+
+[State 3411, 6.2] ;Friction
+type = VelMul
+Trigger1 = AnimElem = 13
+x = .5
+
+;[State 1000, 6]
+;type = MoveHitReset
+;trigger1 = 1
+
+;[State 1000, 6]
+;type = AssertSpecial
+;trigger1 = 1
+;flag = nojugglecheck
+
+[State 3411, 7] ;Hits
+type = HitDef
+trigger1 = AnimElem = 10
+trigger2 = AnimElem = 11
+trigger3 = AnimElem = 18
+trigger4 = AnimElem = 19
+attr = S, HA
+damage    = 17
+getpower = 0
+guardflag = MAF
+priority = 6
+pausetime = 7,7
+sparkxy = -10,-58
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = S5,9
+guardsound = S6,0
+ground.type = High
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = -9
+guard.velocity = -7
+air.velocity = -6
+airguard.velocity = -3.5,-3
+mindist = 35
+maxdist = 55
+p2stateno = 3325
+ID = 3400 ;For chaining into level 2 Splash Rose success
+chainID = 3400 ;Chaining from level 2 Splash Rose success
+kill = 0
+
+[State 3411, 8]
+type = HitDef
+trigger1 = AnimElem = 23
+attr = S, HA
+damage  = 19
+getpower = 0
+guardflag = MA
+priority = 6
+pausetime = 7,7
+sparkxy = -10,-60
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = S5,9
+guardsound = S6,2
+ground.type = Low
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = -7,-8
+guard.velocity = -7
+air.type = Low
+air.velocity = -7,-8
+airguard.velocity = -3.5,-3
+mindist = 30
+maxdist = 45
+ID = 3400 ;For chaining into level 1 Splash Rose success
+chainID = 3400 ;Chaining from level 1 Splash Rose success
+kill = 0
+fall = 1
+fall.animtype = Hard
+
+[State 3411, 9] ;Circle
+type = Explod
+trigger1 = AnimElem = 22
+anim = 7200
+pos = -5,-60
+postype = p1
+bindtime = -1
+sprpriority = 2
+ownpal = 1
+
+[State 3411, 10]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3412
+
+;---------------------------------------------------------------------------
+; Splash Rose Level 2 (success, into air)
+[Statedef 3412]
+type    = A
+movetype= A
+physics = N
+anim = 3412
+velset = 7,-6
+
+[State 3301, 2]
+type = AfterImageTime
+Trigger1 = 1
+time = 2
+
+[State 3412, 1]
+type = EnvColor
+Trigger1 = Time = 0
+value = 255,255,255
+under = 1
+
+[State 3412, 2]
+type = VelAdd
+Trigger1 = 1
+y = .5
+
+[State 3412, 3]
+type = VelMul
+Trigger1 = Time >= 1
+x = .9
+
+[State 3412, 4]
+type = HitDef
+trigger1 = Time = 0
+attr = A, HA
+damage    = 19
+getpower = 0
+guardflag = MA
+priority = 6
+pausetime = 4,3
+sparkxy = -10,-60
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = S5,6
+guardsound = S6,0
+animtype = DiagUp
+ground.type = High
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = -7,-7.5
+guard.velocity = -7
+air.velocity = -1,-11.5
+airguard.velocity = -3.5,-3
+mindist = 60
+maxdist = 65
+ID = 3400 ;For chaining into level 2 Splash Rose success
+chainID = 3400 ;Chaining from level 2 Splash Rose success
+fall = 1
+fall.recover = 0
+yaccel = .47
+
+[State 3412, 5]
+type = PosAdd
+Trigger1 = AnimElem = 9
+y = -10
+
+[State 3412, 6.1] ;Circle
+type = Explod
+trigger1 = AnimElem = 3
+anim = 7200
+pos = 16,-75
+postype = p1
+bindtime = -1
+sprpriority = 2
+ownpal = 1
+
+[State 3412, 5]
+type = ChangeState
+Trigger1 = Vel Y > 0
+Trigger1 = Pos Y >= 0
+value = 3413
+
+;---------------------------------------------------------------------------
+; Splash Rose Level 2 (land from air first time)
+[Statedef 3413]
+type    = S
+movetype= A
+physics = S
+anim = 3413
+velset = 0,0
+
+[State 3301, 2]
+type = AfterImageTime
+Trigger1 = 1
+time = 2
+
+[State 3413, 1]
+type = PosSet
+Trigger1 = Time = 0
+y = 0
+
+[State 3413, 1]
+type = Width
+Trigger1 = 1
+edge = 20
+
+[State 3413, 2] ;Circle
+type = Explod
+trigger1 = AnimElem = 6
+anim = 7200
+pos = -5,-60
+postype = p1
+bindtime = -1
+sprpriority = 2
+ownpal = 1
+
+[State 3413, 3]
+type = HitDef
+trigger1 = AnimTime = -1
+attr = S, HA
+damage  = 17
+getpower = 0
+guardflag = MA
+priority = 6
+pausetime = 3,3
+sparkxy = -10,-60
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = S5,6
+guardsound = S6,2
+ground.type = Low
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = -7,-8
+guard.velocity = -7
+air.type = Low
+air.velocity = -7,-8
+airguard.velocity = -3.5,-3
+mindist = 30
+maxdist = 45
+ID = 3400 ;For chaining into level 1 Splash Rose success
+chainID = 3400 ;Chaining from level 1 Splash Rose success
+kill = 0
+fall = 1
+fall.animtype = Hard
+
+[State 3413, 4]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 3415
+
+;---------------------------------------------------------------------------
+; Splash Rose Level 2 (success, into air 2nd time)
+[Statedef 3415]
+type    = A
+movetype= A
+physics = N
+anim = 3415
+velset = 7,-8
+
+[State 3301, 2]
+type = AfterImageTime
+Trigger1 = 1
+time = 2
+
+[State 3415, 1]
+type = EnvColor
+Trigger1 = Time = 0
+Trigger2 = AnimElem = 4
+Trigger3 = AnimElem = 6
+value = 255,255,255
+under = 1
+
+[State 3415, 1]
+type = EnvShake
+Trigger1 = AnimElem = 6
+time = 15
+ampl = 5
+freq = 178
+
+[State 3415, 1]
+type = PlaySnd
+Trigger1 = AnimElem = 2
+value = 2,2 ;"Finish!"
+channel = 0
+
+[State 3415, 2]
+type = VelAdd
+Trigger1 = 1
+y = .42
+
+[State 3415, 3]
+type = VelMul
+Trigger1 = Time >= 1
+x = .9
+
+[State 3415, 4]
+type = HitDef
+trigger1 = Time = 0
+attr = A, HA
+damage    = 17
+getpower = 0
+guardflag = MA
+priority = 6
+pausetime = 4,4
+sparkxy = -10,-60
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = S5,6
+guardsound = S6,2
+ground.type = High
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = -7,-8
+guard.velocity = -7
+air.velocity = -1,-12
+airguard.velocity = -3.5,-3
+mindist = 60
+maxdist = 65
+ID = 3400 ;For chaining into level 2 Splash Rose success
+chainID = 3400 ;Chaining from level 2 Splash Rose success
+kill = 0
+fall = 1
+fall.recover = 0
+
+[State 3415, 5]
+type = HitDef
+trigger1 = AnimElem = 4
+attr = A, HA
+damage    = 17
+getpower = 0
+guardflag = MA
+priority = 6
+pausetime = 4,4
+sparkxy = -10,-80
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = S5,6
+guardsound = S6,2
+ground.type = High
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = -1,-8
+guard.velocity = -7
+air.velocity = -1,-12
+airguard.velocity = -3.5,-3
+ID = 3400 ;For chaining into level 2 Splash Rose success
+chainID = 3400 ;Chaining from level 2 Splash Rose success
+kill = 0
+fall = 1
+fall.recover = 0
+
+[State 3415, 6]
+type = HitDef
+trigger1 = AnimElem = 6
+attr = A, HA
+damage    = 17
+getpower = 0
+guardflag = MA
+priority = 6
+pausetime = 25,25
+sparkxy = -10,-100
+sparkno = S30002
+guard.sparkno = s30040
+hitsound   = S5,6
+guardsound = S6,2
+animtype = DiagUp
+ground.type = High
+ground.slidetime = 30
+ground.hittime  = 30
+ground.velocity = -1,-13
+guard.velocity = -7
+air.velocity = -1.5,-13
+airguard.velocity = -4,-3.5
+ID = 3400 ;For chaining into level 2 Splash Rose success
+chainID = 3400 ;Chaining from level 2 Splash Rose success
+fall = 1
+fall.recover = 0
+yaccel = .47
+
+[State 3415, 5]
+type = PosAdd
+Trigger1 = AnimElem = 9
+y = -10
+
+[State 3415, 6.1] ;Circle
+type = Explod
+trigger1 = AnimElem = 2
+anim = 7200
+pos = 16,-75
+postype = p1
+bindtime = -1
+sprpriority = 2
+ownpal = 1
+
+[State 3415, 6.2] ;Circle
+type = Explod
+trigger1 = AnimElem = 5
+anim = 7200
+pos = 10,-73
+postype = p1
+bindtime = -1
+sprpriority = 2
+ownpal = 1
+
+[State 3415, 5]
+type = ChangeState
+Trigger1 = Vel Y > 0
+Trigger1 = Pos Y >= 0
+value = 3315
+
+;---------------------------------------------------------------------------
+; Mary's Typhoon (level 1)
+[Statedef 3800]
+type    = S
+movetype= A
+physics = S
+juggle  = 0
+velset = 0,0
+ctrl = 0
+anim = 3800
+
+[State 3800, Var 2] ; Var 2 = (level 1) ? 0 : 1
+type = VarSet
+triggerall = command = "typhoon_d" && power >= 2000
+trigger1 = Time = 0
+var(2) = 1
+
+[State 3800, Var 2] ; Var 2 = (level 1) ? 0 : 1
+type = VarSet
+triggerall = command = "typhoon_b" && power >= 1000
+trigger1 = Time = 0
+var(2) = 0
+
+[State 3800, Var 3] ; Var 3 = comboing
+type = VarSet
+trigger1 = Time = 0
+var(3) = numtarget != 0
+
+
+
+[State 3800, 1]
+type = HitDef
+Trigger1 = p2stateno != [120,159];150 && 151 && 152 && 153 && 130 && 131 && 140
+Trigger1 = Time = 0
+attr = S, HT
+hitflag = M
+priority = 2, Miss    ;Throw has low priority, should be miss or dodge type.
+sprpriority = 1
+sparkno = -1
+p2facing = 1
+p1stateno = 3810
+p2stateno = 3820
+fall = 1
+fall.yvelocity = -3.5
+
+[State 3800, Super.1A] 
+type = Explod
+trigger1 = Time = 1
+anim = 17000
+pos = 35,-45
+postype = p1
+sprpriority = -2
+bindtime = 1
+supermove = 1
+ownpal = 1
+scale = .5,.5
+
+[State 3800, Super.1B]
+type = Explod
+trigger1 = Time = 1
+anim = 17010
+pos = 35,-45
+postype = p1
+sprpriority = 2
+bindtime = 1
+ontop = 1
+supermove = 1
+ownpal = 1
+scale = .5,.5
+
+[State 3800, Super.1]
+type = SuperPause
+trigger1 = Time = 1
+anim = -1
+time = 28
+
+[State 6000,黑色底色]
+type = Envcolor
+trigger1 = Time = 1
+persistent = 0
+ignorehitpause = 1
+value = 0, 0, 0
+time = 28
+under = 1
+supermove = 1
+darken = 0
+
+[State 3800, Super.2]
+type = PlaySnd
+trigger1 = Time = 1
+value = 17000,0
+
+[State 3800, Super.3]
+type = PowerAdd
+trigger1 = Time = 1
+value = -1000 * (var(2) + 1)
+
+[State 3800, Super.4]
+type = NotHitBy
+trigger1 = Time = 1
+value = SCA
+time = 2
+
+[State 3800, Super.5]
+type = AfterImage
+trigger1 = Time = 0
+time = 2
+TimeGap  = 1
+FrameGap = 4
+Length = 15
+Trans = Add1
+
+[State 3800, Super.5]
+type = AfterImageTime
+trigger1 = Time >= 1
+time = 2
+
+[State 3800, 1]
+type = ChangeState
+Trigger1 = AnimElem = 3
+value = 3801
+
+;--------------------------
+; Mary's Typhoon (level 1, miss, into air)
+[Statedef 3801]
+type    = A
+movetype= I
+physics = N
+velset = 2,-4.5
+
+[State 3801, 1]
+type = AfterImageTime
+trigger1 = 1
+time = 2
+
+[State 3801, 2]
+type = VelAdd
+Trigger1 = 1
+y = .3
+
+[State 3801, 3]
+type = ChangeState
+Trigger1 = (Vel y > 0) && (Pos y >= -10)
+value = 3802
+
+;--------------------------
+; Mary's Typhoon (level 1, miss, land)
+[Statedef 3802]
+type    = A
+movetype= I
+physics = N
+velset = 0,0
+anim = 3802
+
+[State 3802, 1]
+type = PosSet
+trigger1 = Time = 0
+y = 0
+
+[State 3802, 2]
+type = PosAdd
+trigger1 = Time = 0
+x = 7
+
+[State 3802, 3]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;------------------------
+; Typhoon1 Success (grab)
+[Statedef 3810]
+type    = A
+movetype= A
+physics = N
+anim = 3810
+sprpriority = 2
+
+[State 3800, Var 2] ; Var 2 = (level 1) ? 0 : 1
+type = VarSet
+triggerall = command = "typhoon_d" && power >= 2000
+trigger1 = Time = 0
+var(2) = 1
+
+[State 3800, Var 2] ; Var 2 = (level 1) ? 0 : 1
+type = VarSet
+triggerall = command = "typhoon_b" && power >= 1000
+trigger1 = Time = 0
+var(2) = 0
+
+
+
+[State 3810, Super.1A]
+type = Explod
+trigger1 = Time = 0
+anim = fifelse(!var(2),7000,7100);7000 + (!var(2))*10
+pos = 35,-45
+postype = p1
+sprpriority = -2
+bindtime = 1
+supermove = 1
+ownpal = 1
+
+[State 3810, Super.1B]
+type = Explod
+trigger1 = Time = 0
+anim = fifelse(!var(2),7010,7110);7001 + (!var(2))*10
+pos = 35,-45
+postype = p1
+sprpriority = 2
+bindtime = 1
+ontop = 1
+supermove = 1
+ownpal = 1
+
+[State 3810, Super.1]
+type = SuperPause
+trigger1 = Time = 0
+anim = -1
+time = 28
+p2defmul = !var(3)
+poweradd = -1000 * (var(2) + 1)
+
+[State 6000,黑色底色]
+type = Envcolor
+trigger1 = Time = 0
+persistent = 0
+ignorehitpause = 1
+value = 0, 0, 0
+time = 28
+under = 1
+supermove = 1
+darken = 0
+
+[State 3810, 1]
+type = targetstate
+trigger1 = time = 0
+value = 3820
+
+[State 3810, Super.2]
+type = PlaySnd
+trigger1 = Time = 0
+value = 17000,0+var(2) ;Super chime
+
+[State 3800, Super.5]
+type = AfterImage
+trigger1 = Time = 0
+time = 2
+TimeGap  = 1
+FrameGap = 4
+Length = 15
+Trans = Add1
+
+[State 3810, 1]
+type = AfterImageTime
+trigger1 = 1
+time = 2
+
+[State 3810, 2]
+type = PlaySnd
+trigger1 = Time = 0
+value = 2,0 ;"Mary's"
+channel = 0
+
+[State 3800, 3]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3810, Grab 1]
+type = BindToTarget
+trigger1 = AnimElemTime (2) >= 0
+trigger1 = AnimElemTime (3) < 0
+pos = 35, -10, foot
+
+[State 3810, Grab 3]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = 1,3 ;"Typhoon!"
+channel = 0
+
+[State 3810, Grab 3]
+type = BindToTarget
+trigger1 = AnimElemTime (3) >= 0
+trigger1 = AnimElemTime (4) < 0
+pos = 15, -30, foot
+
+[State 3810, Grab 4]
+type = BindToTarget
+trigger1 = AnimElemTime (4) >= 0
+trigger1 = AnimElemTime (5) < 0
+pos = 7, 2, mid
+
+[State 3810, Grab 5]
+type = BindToTarget
+trigger1 = AnimElemTime (5) >= 0
+trigger1 = AnimElemTime (6) < 0
+pos = 0, -2, mid
+
+[State 3810, Grab 6]
+type = BindToTarget
+trigger1 = AnimElemTime (6) >= 0
+trigger1 = AnimElemTime (7) < 0
+pos = 0, 20, head
+
+[State 3810, Grab 7.1]
+type = PlaySnd
+trigger1 = AnimElem = 7
+value = 4,0
+
+[State 3810, Grab 7.2]
+type = Explod
+trigger1 = AnimElem = 7
+anim = f9
+pos = -10,-20
+postype = p1
+sprpriority = 1
+
+[State 3810, Grab 7.3]
+type = TargetBind
+trigger1 = AnimElemTime (7) >= 0
+trigger1 = AnimElemTime (8) < 0
+pos = -10,-23
+
+[State 3810, Grab 8]
+type = TargetBind
+trigger1 = AnimElemTime (8) >= 0
+trigger1 = AnimElemTime (9) < 0
+pos = -42,-25
+
+[State 3810, Grab 9]
+type = TargetBind
+trigger1 = AnimElemTime (9) >= 0
+trigger1 = AnimElemTime (10) < 0
+pos = -44,-67
+
+[State 3810, Grab 10]
+type = TargetBind
+trigger1 = AnimElemTime (10) >= 0
+trigger1 = AnimElemTime (11) < 0
+pos = -45,-85
+
+[State 3810, Grab 11]
+type = TargetBind
+trigger1 = AnimElemTime (11) >= 0
+trigger1 = AnimElemTime (12) < 0
+pos = 10,-100
+
+[State 3810, Grab 12.1]
+type = Width
+trigger1 = AnimElemTime (12) >= 0
+edge = 60
+
+[State 3810, Grab 12.2]
+type = TargetBind
+trigger1 = AnimElemTime (12) >= 0
+trigger1 = AnimElemTime (13) < 0
+pos = 53,-45
+
+[State 3810, Grab 13.1]
+type = PosSet
+trigger1 = AnimElem = 13
+y = 0
+
+[State 3810, Grab 13.2]
+type = TargetBind
+trigger1 = AnimElemTime (13) >= 0
+pos = 53,-26
+
+[State 3810, 22]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 3811
+
+[State 3810, 23]
+type = ChangeState
+trigger1 = AnimElem = 8
+trigger1 = var(2)
+value = 3910
+
+;------------------------
+; Typhoon1 Success (slam on ground)
+[Statedef 3811]
+type    = C
+movetype= A
+physics = N
+anim = 3811
+
+[State 3811, 1]
+type = AfterImageTime
+trigger1 = AnimElemTime(7) < 0
+time = 2
+
+[State 3811, 2]
+type = NotHitBy
+trigger1 = AnimElemTime(7) < 0
+value = SCA
+
+[State 3811, Width]
+type = Width
+trigger1 = AnimElemTime (2) < 0
+edge = 60
+
+[State 3811, Grab 14.1] ;Ground wave (behind)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = AnimElem = 1
+anim = f66
+pos = 55,0
+postype = p1
+sprpriority = -2
+supermove = 1
+bindtime = -1
+ownpal = 1
+
+[State 3811, Grab 14.2] ;Ground wave (in front)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = AnimElem = 1
+anim = f67
+pos = 55,0
+postype = p1
+sprpriority = 2
+supermove = 1
+bindtime = -1
+ownpal = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 1
+anim = f24
+pos = 40,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 1
+anim = f24
+facing = -1
+pos = 60,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 3811, Grab 14.8] ;Rose
+type = Explod
+trigger1 = AnimElem = 1
+anim = 4040
+;pos = 0,0
+pos = 56,0
+postype = p1
+ontop = 1
+ownpal = 1
+
+[State 3811, Grab 14.3] ;Shake
+type = EnvShake
+Trigger1 = AnimElem = 1
+time = 24
+ampl = 10
+freq = 179
+
+[State 3811, Grab 14.4]
+type = PlaySnd
+Trigger1 = AnimElem = 1
+value = 35,4 ;Hit sound
+
+[State 3811, Grab 14.4]
+type = PlaySnd
+Trigger1 = AnimElem = 1
+value = 4,5;5,7 ;Hit sound
+
+[State 3811, Grab 14.5]
+type = TargetLifeAdd
+Trigger1 = AnimElem = 1
+value = -295 - 177 * var(2)
+
+[State 3811, Grab 14.6]
+type = TargetBind
+trigger1 = AnimElemTime (1) >= 0
+trigger1 = AnimElemTime (1) < 5
+pos = 53,0
+
+[State 3811, Grab 14.7]
+type = TargetState
+trigger1 = AnimElemTime (1) = 5
+value = 3821
+
+[State 3811, 16]
+type = PosAdd
+trigger1 = AnimElem = 3
+trigger2 = AnimElem = 4
+trigger3 = AnimElem = 6
+x = -15
+
+[State 3811, 20]
+type = PosAdd
+trigger1 = AnimElem = 7
+x = -20
+
+[State 3811, 21]
+type = PosAdd
+trigger1 = AnimElem = 8
+x = -5
+
+[State 3811, 22]
+type = ChangeState
+trigger1 = AnimElem = 7
+trigger1 = var(2)
+value = 3912
+
+[State 3811, 23]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;----------------------------
+; Typhoon1 (hit by)
+[Statedef 3820]
+type    = A
+movetype= H ;Get hit
+physics = N
+velset = 0,0
+ctrl = 0
+facep2 = 1
+
+[State 3820, 1]
+type = Width
+trigger1 = 1
+edge = 0,10
+
+[State 3820, 2]
+type = PosSet
+Trigger1 = Time = 0
+y = 0
+
+[State 3820, 3]
+type = ChangeAnim2
+Trigger1 = Time = 0
+Trigger1 = p1name != "Blue Mary"
+value = 3820
+
+[State 3820, 3.Mary]
+type = ChangeAnim2
+Trigger1 = Time = 0
+Trigger1 = p1name = "Blue Mary"
+value = 3830
+
+[State 3820, 3.Yuri C-Type]
+type = ChangeAnim2
+Trigger1 = Time = 0
+Trigger1 = p1name = "Yuri C-Type"
+value = 3831
+
+[State 3820, 4]
+type = HitBy
+Trigger1 = 1
+value = SCA
+time = 1
+
+;-----------------------
+; Typhoon1 (hit by, into air)
+[Statedef 3821]
+type    = A
+movetype= H ;Get hit
+physics = N
+velset = -4,-5
+
+[State 3821, 1]
+type = ChangeAnim
+Trigger1 = Time = 0
+value = 5160
+
+[State 3821, 2]
+type = ChangeAnim2
+Trigger1 = Time = 0
+Trigger1 = p1name = "Blue Mary"
+value = 3840
+
+[State 3821, 2]
+type = ChangeAnim2
+Trigger1 = Time = 0
+Trigger1 = p1name = "Yuri C-Type"
+value = 3841
+
+[State 3821, 3] ;Gravity
+type = VelAdd
+Trigger1 = 1
+y = .4
+
+[State 3821, 4] ;Mary only
+type = ChangeState
+triggerall = (Vel Y > 0) && (Pos Y >= 0)
+trigger1 = p1name = "Blue Mary"
+trigger2 = p1name = "Yuri C-Type"
+value = 3822
+
+[State 3821, 5] ;Hit ground
+type = SelfState
+trigger1 = (Vel Y > 0) && (Pos Y >= 0)
+value = 5100 ;Hit ground
+
+;------------------------
+; Typhoon1 (hit by, hit ground - Mary only)
+[Statedef 3822]
+type    = L
+movetype= H
+physics = N
+
+[State 3822, 1]
+type = ChangeAnim2
+Trigger1 = Time = 0
+Trigger1 = p1name = "Blue Mary"
+value = 3850
+
+[State 3822, 1]
+type = ChangeAnim2
+Trigger1 = Time = 0
+Trigger1 = p1name = "Yuri C-Type"
+value = 3851
+
+[State 3822, 1]
+type = PosSet
+trigger1 = Time = 0
+y = 0
+
+[State 3822, 2]
+type = VelSet
+trigger1 = Time = 0
+y = 0
+
+[State 3822, 3] ;Reduce speed
+type = VelMul
+trigger1 = Time = 0
+x = 0.75
+
+[State 3005, 2.2]
+type = Explod
+trigger1 = Time = 1
+anim = f61
+pos = 0, 0
+postype = p1
+sprpriority = -2
+
+[State 3822, 5]
+type = PlaySnd
+trigger1 = Time = 1
+value = S4,5;F7, 1 ;Hit ground
+
+[State 3822, 6]
+type = PosFreeze
+trigger1 = 1
+
+[State 3822, 7]
+type = ChangeState
+trigger1 = Time = 4
+value = 3823
+
+[State 3822, 8]
+type = ForceFeedback
+trigger1 = Time = 0
+waveform = sinesquare
+ampl = 100,-3,-.2,.005
+time = 15
+
+;------------------------
+; Typhoon1 (hit by, bounce into air - Mary only)
+[Statedef 3823]
+type    = L
+movetype= H
+physics = N
+
+[State 3823, 0]
+type = HitFallVel
+trigger1 = Time = 0
+
+[State 3823, 0]
+type = VelSet
+trigger1 = Time = 0
+y = -2.6
+
+[State 3823, 1]
+type = PosSet
+trigger1 = Time = 0
+y = 20
+
+[State 3823, 3] ;Acceleration
+type = VelAdd
+trigger1 = 1
+y = .4
+
+[State 3823, 4] ;Hit ground
+type = SelfState
+trigger1 = vel y > 0
+trigger1 = pos y >= 18
+value = 5110
+anim = 5161
+
+;------------------------
+; Typhoon2 Success (through air)
+[Statedef 3910]
+type    = A
+movetype= A
+physics = N
+anim = 3910
+velset = 1,-13
+
+[State 3910, 1]
+type = AfterImageTime
+trigger1 = 1
+time = 2
+
+[State 3910, Snd]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = 3,6 ;Whoosh noise
+
+[State 3910, Gravity]
+type = VelAdd
+trigger1 = 1
+y = .6
+
+[State 3910, Pos]
+type = PosAdd
+trigger1 = Time = 0
+y = -10
+
+[State 3910, Grab 1.1]
+type = TargetState
+trigger1 = AnimElemTime (1) = 0
+value = 3920
+
+[State 3910, Grab 1.2]
+type = TargetBind
+trigger1 = AnimElemTime (1) >= 0
+trigger1 = AnimElemTime (2) < 0
+pos = -42,-25
+
+[State 3910, Grab 2]
+type = TargetBind
+trigger1 = AnimElemTime (2) >= 0
+trigger1 = AnimElemTime (3) < 0
+pos = -44,-67
+
+[State 3910, Grab 3]
+type = TargetBind
+trigger1 = AnimElemTime (3) >= 0
+trigger1 = AnimElemTime (4) < 0
+pos = -45,-85
+
+[State 3910, Grab 4]
+type = TargetBind
+trigger1 = AnimElemTime (4) >= 0
+trigger1 = AnimElemTime (5) < 0
+pos = 10,-100
+
+[State 3910, Grab 5.1]
+type = Width
+trigger1 = AnimElemTime (5) >= 0
+edge = 60
+
+[State 3910, Grab 5.2]
+type = TargetBind
+trigger1 = AnimElemTime (5) >= 0
+pos = 53,-45
+
+[State 3910, Slam]
+type = ChangeState
+trigger1 = vel y > 0 && pos y > 0
+value = 3911
+
+;----------------------------
+; Typhoon2 (success, slam onto ground)
+[Statedef 3911]
+type    = A
+movetype= H ;Get hit
+physics = N
+velset = 0,0
+
+[State 3911, 1]
+type = PosSet
+trigger1 = 1
+y = 0
+
+[State 3911, 2]
+type = TargetBind
+trigger1 = 1
+pos = 53,-26
+
+[State 3911, 3]
+type = ChangeState
+trigger1 = 1
+value = 3811
+
+;----------------------------
+; Typhoon2 (success, finish)
+[Statedef 3912]
+type    = C
+movetype= H ;Get hit
+physics = N
+anim = 3912
+
+[State 3912, 1]
+type = AfterImageTime
+trigger1 = 1
+time = 2
+
+[State 3912, 2]
+type = PlaySnd
+trigger1 = AnimElem = 6
+value = 9,0 ;"Come on"
+channel = 0
+
+[State 3912, 3]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;----------------------------
+; Typhoon2 (hit by)
+[Statedef 3920]
+type    = A
+movetype= H ;Get hit
+physics = N
+
+[State 3920, 3]
+type = ChangeAnim2
+Trigger1 = Time = 0
+Trigger1 = p1name != "Blue Mary"
+value = 3920
+
+[State 3920, 3.Mary]
+type = ChangeAnim2
+Trigger1 = Time = 0
+Trigger1 = p1name = "Blue Mary"
+value = 3930
+
+[State 3920, 3.Yuri C-Type]
+type = ChangeAnim2
+Trigger1 = Time = 0
+Trigger1 = p1name = "Yuri C-Type"
+value = 3931
+
+[State 3920, 4]
+type = HitBy
+Trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------------------------------------------------------------
+; Dynamite Dunk
+[Statedef 4000]
+type    = A
+movetype= A
+physics = N
+juggle  = 0
+ctrl = 0
+anim = 4000
+sprpriority = 2
+
+
+
+[State 4000, 1]
+type = HitDef
+Trigger1 = Time = 1
+attr = A, HT
+hitflag = MAF;A
+priority = 2, Miss    ;Throw has low priority, should be miss or dodge type.
+sprpriority = -1
+sparkno = -1
+p2facing = 1
+p1stateno = 4010
+p2stateno = 4020
+fall = 1
+ID = 4010
+
+[State 4000, Super.1A] 
+type = Explod
+trigger1 = Time = 1
+anim = 17000
+pos = 15,-75
+postype = p1
+sprpriority = -2
+bindtime = 1
+supermove = 1
+ownpal = 1
+pos = 35,-45
+scale = .5,.5
+
+
+[State 4000, Super.1B]
+type = Explod
+trigger1 = Time = 1
+anim = 17010
+pos = 15,-75
+postype = p1
+sprpriority = 2
+bindtime = 1
+ontop = 1
+supermove = 1
+ownpal = 1
+pos = 35,-45
+scale = .5,.5
+
+
+[State 4000, Super.1]
+type = SuperPause
+trigger1 = Time = 1
+anim = -1
+time = 28
+
+[State 6000,黑色底色]
+type = Envcolor
+trigger1 = Time = 1
+persistent = 0
+ignorehitpause = 1
+value = 0, 0, 0
+time = 28
+under = 1
+supermove = 1
+darken = 0
+
+[State 4000, Super.2]
+type = PlaySnd
+trigger1 = Time = 1
+value = 17000,0
+
+[State 4000, Super.3]
+type = PowerAdd
+trigger1 = Time = 1
+value = -1000
+
+[State 4000, Super.4]
+type = NotHitBy
+trigger1 = Time = 1
+value = SCA
+time = 2
+
+[State 4000, Super.5]
+type = AfterImage
+trigger1 = Time = 0
+time = 2
+TimeGap  = 1
+FrameGap = 4
+Length = 15
+Trans = Add1
+PalColor = 0
+PalBright = 0,0,0
+PalContrast = 96,128,192
+PalPostBright = 32,32,48
+
+[State 4000, Super.5]
+type = AfterImageTime
+trigger1 = Time >= 1
+time = 2
+
+[State 4000, 1]
+type = VelMul
+Trigger1 = Time = 0
+x = .5
+y = 0
+
+[State 4000, 2]
+type = VelAdd
+Trigger1 = Time > 1
+y = .4
+
+[State 4000, 3]
+type = ChangeState
+Trigger1 = Pos Y > 0 && Vel Y > 0
+value = 3102
+
+;------------------------
+; Dynamite Dunk Success (grab)
+[Statedef 4010]
+type    = A
+movetype= A
+physics = N
+anim = 4010
+velset = 0,0
+
+[State 4010, Drop Excess Targets]
+type = TargetDrop
+trigger1 = Time = 0
+excludeID = 4010
+
+[State 4010, 1]
+type = PlaySnd
+trigger1 = Time = 0
+;value = 0,1
+value = 8,3 ;"Let's fight"
+channel = 0
+
+[State 4010, 2]
+type = AfterImageTime
+trigger1 = 1
+time = 2
+
+[State 4010, Grab 1]
+type = BindToTarget
+trigger1 = 1
+trigger1 = AnimElemTime (2) < 0
+pos = 0, -10, foot
+
+[State 4010, Grab 2]
+type = BindToTarget
+trigger1 = AnimElemTime (2) >= 0
+trigger1 = AnimElemTime (3) < 0
+pos = -10, -10, foot
+
+[State 4010, Grab 3]
+type = PosAdd
+trigger1 = AnimElem = 3
+x = 20
+
+[State 4010, Grab 3]
+type = TargetBind
+trigger1 = AnimElemTime (3) >= 0
+trigger1 = AnimElemTime (4) < 0
+pos = -10, -50
+
+[State 4010, Grab 4]
+type = PosAdd
+trigger1 = AnimElem = 4
+x = 10
+
+[State 4010, Grab 4]
+type = TargetBind
+trigger1 = AnimElemTime (4) >= 0
+trigger1 = AnimElemTime (5) < 0
+pos = -10, -60
+
+[State 4010, Grab 5]
+type = PosAdd
+trigger1 = AnimElem = 5
+x = 20
+
+[State 4010, Grab 5]
+type = TargetBind
+trigger1 = AnimElemTime (5) >= 0
+pos = -20, -50
+
+[State 4010, Grab 6]
+type = VelSet
+trigger1 = AnimElem = 6
+x = 2
+
+[State 4010, Grab 6]
+type = VelAdd
+trigger1 = AnimElemTime (6) >= 0
+y = .5
+
+[State 4010, Grab 14.7]
+type = TargetState
+trigger1 = Pos Y > 20 && Vel Y > 0
+value = 4021
+
+[State 4010, Grab 14.7]
+type = ChangeState
+trigger1 = Pos Y > 20 && Vel Y > 0
+value = 4011
+
+;------------------------
+; Dynamite Dunk Success (hit ground)
+[Statedef 4011]
+type    = A
+movetype= A
+physics = N
+anim = 4011
+velset = 0,0
+
+[State 4011, 1] ;Shake
+type = EnvShake
+Trigger1 = Time = 0
+time = 18
+ampl = 10
+freq = 175
+
+[State 4011, 2] ;Ground wave (behind)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = Time = 0
+anim = f66
+pos = -50,0
+postype = p1
+sprpriority = -2
+supermove = 1
+bindtime = -1
+ownpal = 1
+
+[State 4011, 3] ;Ground wave (in front)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = Time = 0
+anim = f67
+pos = -50,0
+postype = p1
+sprpriority = 2
+supermove = 1
+bindtime = -1
+ownpal = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 1
+anim = f24
+pos = -50,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 1
+anim = f24
+facing = -1
+pos = -30,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 4011, 4]
+type = PlaySnd
+Trigger1 = Time = 0
+value = s35,4 ;Hit sound
+
+[State 4011, 5]
+type = PosSet
+trigger1 = time = 0
+y = 0
+
+[State 4011, 6]
+type = PosAdd
+Trigger1 = Time = 0
+x = 5
+
+[State 4011, 7]
+type = TargetLifeAdd
+trigger1 = Time = 0
+value = -80
+kill = 0
+
+[State 4011, 8]
+type = TargetBind
+trigger1 = 1
+pos = -60, 0
+
+[State 4011, 9]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 4012
+
+;---------------------------------------------------------------------------
+; Dynamite Dunk (first dunk)
+[Statedef 4012]
+type    = S
+movetype= A
+physics = N
+anim = 4012
+
+[State 4012, 1.2]
+type = AfterImage
+trigger1 = Time = 0
+time = 2
+Trans = Add1
+PalColor = 0
+PalBright = 0,0,0
+PalContrast = 96,128,192
+PalPostBright = 32,32,48
+
+[State 4012, 1.3]
+type = AfterImageTime
+trigger1 = 1
+time = 2
+
+[State 4012, 1]
+type = TargetState
+trigger1 = Time = 0
+value = 4022
+
+[State 4012, 2.1]
+type = PlaySnd
+trigger1 = AnimElem = 2
+value = 4,0
+
+[State 3005, 2.2]
+type = Explod
+trigger1 = AnimElem = 2;4
+anim = f9
+pos = -30,-60
+postype = p1
+sprpriority = 1
+
+[State 4012, 3]
+type = PlayerPush
+trigger1 = 1
+value = 0
+
+[State 4012, 4]
+type = VelSet
+trigger1 = 1
+x = 0
+
+[State 4012, 5.1]
+type = Width
+trigger1 = AnimElem = 7, >= 0
+edge = 35
+
+[State 4012, 7.2]
+type = TargetBind
+trigger1 = AnimElem = 1, >= 0
+trigger1 = AnimElem = 2, < 0
+pos = -51, 0
+
+[State 4012, 7.?]
+type = PosAdd
+trigger1 = AnimElem = 20
+x = 5
+
+[State 4012, 7.3] ;Be drawn in front
+type = SprPriority
+trigger1 = AnimElem = 1
+trigger2 = AnimElem = 20
+value = 1
+
+[State 4012, 8.2]
+type = TargetBind
+trigger1 = AnimElem = 2, >= 0
+trigger1 = AnimElem = 3, < 0
+trigger2 = AnimElem = 20, >= 0
+pos = -45, 0
+
+[State 4012, 9]
+type = TargetBind
+trigger1 = AnimElem = 3, >= 0
+trigger1 = AnimElem = 4, < 0
+pos = -30, -58
+
+[State 4012, 10]
+type = TargetBind
+trigger1 = AnimElem = 4, >= 0
+trigger1 = AnimElem = 5, < 0
+pos = -25, -66
+
+[State 4012, 11]
+type = TargetBind
+trigger1 = AnimElem = 5, >= 0
+trigger1 = AnimElem = 6, < 0
+pos = -25, -68
+
+[State 4012, 12]
+type = TargetBind
+trigger1 = AnimElem = 6, >= 0
+trigger1 = AnimElem = 7, < 0
+pos = -24, -83
+
+[State 4012, 12]
+type = TargetBind
+trigger1 = AnimElem = 7, >= 0
+trigger1 = AnimElem = 8, < 0
+pos = -15, -88
+
+[State 4012, 13]
+type = TargetBind
+trigger1 = AnimElem = 8, >= 0
+trigger1 = AnimElem = 9, < 0
+pos = 0, -88
+
+[State 4012, 14]
+type = TargetBind
+trigger1 = AnimElem = 9, >= 0
+trigger1 = AnimElem = 10, < 0
+pos = 8, -77
+
+[State 4012, 15]
+type = TargetBind
+trigger1 = AnimElem = 10, >= 0
+trigger1 = AnimElem = 11, < 0
+pos = 15, -67
+
+[State 4012, 16]
+type = TargetBind
+trigger1 = AnimElem = 11, >= 0
+trigger1 = AnimElem = 12, < 0
+pos = 38, -49
+
+[State 4012, 17.1]
+type = TargetBind
+trigger1 = AnimElem = 12, >= 0
+trigger1 = AnimElem = 13, < 0
+pos = 45, 0
+
+[State 4012, 17.2] ;Ground wave (behind)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = AnimElem = 12
+anim = f66
+pos = 35,0
+postype = p1
+sprpriority = -2
+supermove = 1
+ownpal = 1
+
+[State 4012, 17.2] ;Ground wave (in front)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = AnimElem = 12
+anim = f67
+pos = 35,0
+postype = p1
+sprpriority = 2
+supermove = 1
+ownpal = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 12
+anim = f24
+pos = 30,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 12
+anim = f24
+facing = -1
+pos = 50,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 4012, 17.3] ;Shake
+type = EnvShake
+Trigger1 = AnimElem = 12
+time = 18
+ampl = 8
+freq = 175
+
+[State 4012, 17.4a] ;Crunch
+type = PlaySnd
+Trigger1 = AnimElem = 12
+value = 4,4
+
+[State 4012, 17.4b] ;Crunch
+type = PlaySnd
+Trigger1 = AnimElem = 12
+value = 3,3
+
+[State 4012, 17.4c] ;Crunch
+type = PlaySnd
+Trigger1 = AnimElem = 12
+value = 35,4;30,1
+
+[State 4012, 17.5]
+type = TargetLifeAdd
+trigger1 = AnimElem = 12
+value = -80
+kill = 0
+
+[State 4012, 18]
+type = TargetBind
+trigger1 = AnimElem = 13, >= 0
+trigger1 = AnimElem = 14, < 0
+pos = 45, 0
+
+[State 4012, 18]
+type = PosAdd
+trigger1 = AnimElem = 14
+x = 60
+
+[State 4012, 18]
+type = TargetBind
+trigger1 = AnimElem = 14, >= 0
+trigger1 = AnimElem = 15, < 0
+pos = 20, 0
+
+[State 4012, 19.1]
+type = PosAdd
+trigger1 = AnimElem = 15
+x = 8
+
+[State 4012, 19]
+type = TargetBind
+trigger1 = AnimElem = 15, >= 0
+trigger1 = AnimElem = 16, < 0
+pos = 12, 0
+
+[State 4012, 20.1]
+type = PosAdd
+trigger1 = AnimElem = 16
+x = 9
+
+[State 4012, 20]
+type = TargetBind
+trigger1 = AnimElem = 16, >= 0
+trigger1 = AnimElem = 17, < 0
+pos = 3, 0
+
+[State 4012, 21.1]
+type = PosAdd
+trigger1 = AnimElem = 17
+x = 8
+
+[State 4012, 21]
+type = TargetBind
+trigger1 = AnimElem = 17, >= 0
+trigger1 = AnimElem = 18, < 0
+pos = -5, 0
+
+[State 4012, 22.1]
+type = PosAdd
+trigger1 = AnimElem = 18
+x = 9
+
+[State 4012, 22]
+type = TargetBind
+trigger1 = AnimElem = 18, >= 0
+trigger1 = AnimElem = 20, < 0
+pos = -14, 0
+
+[State 4012, 15]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 4013
+
+;------------------------
+; Dynamite Dunk (catch, neck break)
+[Statedef 4013]
+type    = S
+movetype= A
+physics = N
+anim = 4013
+
+[State 4013, 1]
+type = Turn
+trigger1 = Time = 0
+
+[State 4013, 1]
+type = TargetState
+trigger1 = Time = 0
+value = 4023
+
+[State 4013, 1]
+type = Width
+trigger1 = 1
+edge = 65, 15
+
+[State 4013, 2]
+type = TargetBind
+trigger1 = AnimElem = 1, >= 0
+trigger1 = AnimElem = 2, < 0
+pos = 51, 0
+
+[State 4013, 3]
+type = TargetBind
+trigger1 = AnimElem = 2
+trigger1 = AnimElem = 4, < 0
+pos = 24,-87
+
+[State 4013, 4.1]
+type = SprPriority
+trigger1 = AnimElem = 3
+value = -1
+
+[State 4013, 4.2]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = 4,0
+
+[State 4013, 4.4] ;Piece of arm
+type = null;Explod
+trigger1 = AnimElem = 3
+anim = 3116
+pos = 0,0
+postype = p1
+bindtime = -1
+sprpriority = 2
+removeongethit = 1
+
+[State 4013, 15]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 4014
+
+;---------------------------------------------------------------------------
+; Dynamite Dunk (swing)
+[Statedef 4014]
+type    = S
+movetype= A
+physics = S
+anim = 4014
+
+[State 4014, 1]
+type = Width
+trigger1 = 1
+edge = 65, 15
+
+[State 4014, 1]
+type = Turn
+trigger1 = AnimElem = 2
+
+[State 4014, 1]
+type = TargetState
+trigger1 = Time = 0
+value = 4024
+
+[State 4014, 4]
+type = AfterImageTime
+trigger1 = 1
+time = 40
+
+[State 4014, 4.1] ;Piece of arm
+type = null;Explod
+trigger1 = Time = 0
+anim = 4019
+pos = 0,0
+postype = p1
+bindtime = -1
+sprpriority = 2
+removeongethit = 1
+
+[State 4014, 4]
+type = PlaySnd
+trigger1 = AnimElem = 4
+value = 3,3 ;Whoosh noise
+
+[State 4014, 4]
+type = TargetBind
+trigger1 = 1
+trigger1 = AnimElem = 2, < 0
+trigger2 = AnimElem = 9, >= 0
+pos = 12,-81
+
+[State 4014, 5]
+type = TargetBind
+trigger1 = AnimElem = 2, >= 0
+trigger1 = AnimElem = 3, < 0
+pos = 40,-75
+
+[State 4014, 6]
+type = TargetBind
+trigger1 = AnimElem = 3, >= 0
+trigger1 = AnimElem = 4, < 0
+pos = 50,-75
+
+[State 4014, 7.1]
+type = TargetBind
+trigger1 = AnimElem = 4, >= 0
+trigger1 = AnimElem = 5, < 0
+pos = 58,-80
+
+[State 4014, 7.2]
+type = SprPriority
+trigger1 = AnimElem = 4
+value = 1
+
+[State 4014, 8]
+type = TargetBind
+trigger1 = AnimElem = 5, >= 0
+trigger1 = AnimElem = 6, < 0
+pos = 55,-97
+
+[State 4014, 9]
+type = TargetBind
+trigger1 = AnimElem = 6, >= 0
+trigger1 = AnimElem = 7, < 0
+pos = 11,-93
+
+[State 4014, 10]
+type = TargetBind
+trigger1 = AnimElem = 7, >= 0
+trigger1 = AnimElem = 8, < 0
+pos = 3,-75
+
+[State 4014, 11.1]
+type = TargetBind
+trigger1 = AnimElem = 8, >= 0
+trigger1 = AnimElem = 9, < 0
+pos = -10,-72
+
+[State 4014, 11.2]
+type = SprPriority
+trigger1 = AnimElem = 8
+value = -1
+
+[State 4014, 12.1] ;Done
+type = TargetState
+trigger1 = AnimTime = 0
+value = 4025
+
+[State 4014, 12.2]
+type = PlaySnd
+trigger1 = AnimTime = 0
+value = 3,4
+
+[State 4014, 12.2]
+type = PlaySnd
+trigger1 = AnimTime = 0
+value = 3,3
+
+[State 4014, 12.3]
+type = TargetBind
+trigger1 = AnimTime = 0
+pos = -40, -50
+
+[State 4014, 12.4]
+type = TargetLifeAdd
+trigger1 = AnimTime = 0
+value = -80
+
+[State 4014, 12.4] ;Done
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 4015
+
+;---------------------------------------------------------------------------
+; Dynamite Dunk (swing end, on ground)
+[Statedef 4015]
+type    = S
+movetype= A
+physics = S
+anim = 4015
+
+[State 4015, 1] ;Done
+type = ChangeState
+trigger1 = AnimElem = 3
+value = 4016
+
+;---------------------------------------------------------------------------
+; Dynamite Dunk (swing end, into air)
+[Statedef 4016]
+type    = A
+movetype= A
+physics = N
+velset = 0,-8
+juggle = 7
+
+;aqui
+[State 4016, Anim]
+type = ChangeAnim
+triggerall = Anim = 4015
+trigger1 = command = "a"
+trigger2 = command = "b"
+trigger3 = command = "c"
+trigger4 = command = "z"
+value = 4016
+
+[State 4016, Snd]
+type = PlaySnd
+trigger1 = Anim = 4016
+persistent = 0
+value = 0, 1
+channel = 0
+
+[State 4016, Hitshake]
+type = EnvShake
+trigger1 = movehit = 1
+ignorehitpause = 1
+persistent = 0
+ampl = 6
+freq = 178
+time = 16
+
+[State 4016, Hitflash]
+type = EnvColor
+trigger1 = movehit
+ignorehitpause = 1
+persistent = 0
+value = 255,255,255
+under = 1
+
+[State 4016, 1]
+type = PosAdd
+trigger1 = Time = 0
+x = 18
+
+[State 4016, 2] 
+type = VelAdd
+trigger1 = 1
+y = .43
+
+[State 4016, 3]
+type = HitDef
+trigger1 = Time = 0
+attr = A, HA
+damage = 115
+hitflag = AF+
+priority = 8
+pausetime = 30,30
+sparkxy = -10,-74
+hitsound   = 5,4
+guardsound = 6,0
+air.type = Low
+air.velocity = -3.5,-4.5
+fall = 1
+fall.animtype = Back
+fall.recover = 0
+p2facing = 1
+yaccel = .45
+
+[State 4016, 4] 
+type = Turn
+trigger1 = Anim = 4015
+trigger1 = AnimElem = 6
+trigger2 = Anim != 4015
+persistent = 0
+
+[State 4016, 5] ;Done
+type = ChangeState
+trigger1 = Vel Y > 0
+trigger1 = Pos Y >= 0
+value = 3215
+ctrl = 1
+
+;----------------------------
+; Dynamite Dunk Success (hit by)
+[Statedef 4020]
+type    = A
+movetype= H ;Get hit
+physics = N
+velset = 0,0
+ctrl = 0
+
+[State 4020, 1]
+type = ChangeAnim2
+Trigger1 = Time = 0
+value = 4020
+
+[State 4020, 2]
+type = PosAdd
+Trigger1 = Time = 0
+y = -20
+
+;----------------------------
+; Dynamite Dunk Success (hit by, onto ground)
+[Statedef 4021]
+type    = A
+movetype= H ;Get hit
+physics = N
+velset = 0,0
+ctrl = 0
+
+[State 4021, 1]
+type = ChangeAnim2
+Trigger1 = Time = 0
+value = 4021
+
+[State 4021, 2]
+type = PosSet
+Trigger1 = Time = 0
+y = 0
+
+[State 4021, 3] ;Change to get up
+type = ChangeAnim
+Trigger1 = Anim = 4021  ;If in action 4021
+Trigger1 = AnimTime = 0
+value = 5120
+
+[State 4021, 4] ;Change to dizzy (if have)
+type = ChangeAnim
+triggerall = Anim = 5120  ;If in action 5120 (get up)
+Trigger1 = AnimTime = 0
+Trigger2 = Time = 50
+value = 5300
+
+[State 4021, 5]
+type = HitBy
+Trigger1 = 1
+value = SCA
+time = 1
+
+[State 4021, 6]
+type = ChangeState
+Trigger1 = Time = 120
+value = 0
+ctrl = 1
+
+;-----------------------------
+; Dynamite Dunk (dunked on)
+[Statedef 4022]
+type    = L
+movetype= H ;Get hit
+physics = N
+velset = 0,0
+
+[State 4022, 1]
+type = ChangeAnim2
+Trigger1 = Time = 0
+value = 4022
+
+;-----------------------------
+; Dynamite Dunk (neck grabbed)
+[Statedef 4023]
+type    = L
+movetype= H ;Get hit
+physics = N
+velset = 0,0
+
+[State 4023, 1]
+type = ChangeAnim2
+Trigger1 = Time = 0
+value = 4023
+
+;---------------------------
+; Dynamite Dunk (swung)
+[Statedef 4024]
+type    = L
+movetype= H ;Get hit
+physics = N
+velset = 0,0
+
+[State 4024, 1]
+type = Turn
+Trigger1 = Time = 0
+
+[State 4024, 2]
+type = ChangeAnim2
+Trigger1 = Time = 0
+value = 4024
+
+;------------------------------
+; Dynamite Dunk (swung through the air)
+[Statedef 4025]
+type    = A
+movetype= H ;Get hit
+physics = N
+velset = -5,-8
+
+[State 4025, 2] ;Acceleration
+type = VelAdd
+Trigger1 = 1
+y = .45
+
+[State 4025, 3] ;Self's falling anim
+type = ChangeAnim
+Trigger1 = Time = 0
+value = 5050
+
+[State 4025, 3] ;Self's falling anim
+type = ChangeAnim
+Trigger1 = Time = 0
+Trigger1 = AnimExist(5052)
+value = 5052
+
+[State 4025, 2] ;Coming down anim (normal fall type)
+type = ChangeAnim
+triggerall = anim != 5052 ;Not if in hit up anim
+trigger1 = vel y >= 1
+trigger1 = animexist(5060)
+value = 5060
+persistent = 0
+
+[State 4025, 2] ;Coming down anim (hit up type)
+type = ChangeAnim
+triggerall = anim = 5052 ;Not if in hit up anim
+trigger1 = vel y >= -2
+trigger1 = animexist(5062)
+value = 5062
+persistent = 0
+
+[State 4025, 4.1] ;Shake
+type = EnvShake
+trigger1 = vel y > 0
+trigger1 = pos y >= 0
+time = 18
+ampl = 10
+
+[State 4025, 4.2]
+type = LifeAdd
+trigger1 = vel y > 0
+trigger1 = pos y >= 0
+value = -25
+
+[State 4025, 4.3] ;Hit ground
+trigger1 = vel y > 0
+trigger1 = pos y >= 0
+type = SelfState
+value = 5100
+
+
+;---------------------------------------------------------------------------
+; Superdunk Attempt
+[Statedef 30000]
+type    = S
+movetype= A
+physics = S
+juggle  = 0
+velset = 0,0
+ctrl = 0
+anim = 3000
+sprpriority = 2
+
+
+
+[State 3000, Pos]
+type = PosSet
+trigger1 = Time = 0
+y = 0
+
+[State 3000, 1.1]
+type = PosAdd
+trigger1 = AnimElem = 4
+x = 12
+
+[State 3000, Super.1A]
+type = Explod
+trigger1 = Time = 0
+anim = 17100
+pos = 15,-65
+postype = p1
+sprpriority = -2
+supermove = 1
+bindtime = 1
+ownpal = 1
+scale = .5,.5
+
+[State 3000, Super.1B]
+type = Explod
+trigger1 = Time = 0
+anim = 17110
+pos = 15,-65
+postype = p1
+sprpriority = 2
+supermove = 1
+bindtime = 1
+ontop = 1
+ownpal = 1
+scale = .5,.5
+
+[State 3000, Super.1]
+type = SuperPause
+trigger1 = Time = 0
+anim = -1
+time = 28
+
+[State 6000,黑色底色]
+type = Envcolor
+trigger1 = Time = 0
+persistent = 0
+ignorehitpause = 1
+value = 0, 0, 0
+time = 28
+under = 1
+supermove = 1
+darken = 0
+
+[State 3000, 1.3]
+type = PlaySnd
+trigger1 = Time = 0
+value = 17000,0
+
+[State 3000, 1.4]
+type = PowerAdd
+trigger1 = Time = 0
+value = -2000
+
+[State 3000, 1.5]
+type = NotHitBy
+Trigger1 = Time = 0
+value = SCA
+time = 1
+
+[State 3000, 2]
+type = AfterImage
+trigger1 = Time = 0
+time = 25
+;length = 20
+;PalBright   =   0,  0,  0
+;PalContrast = 120,120,220
+;PalAdd      =  10, 10, 25
+;PalMul      = .45,.45,.75
+TimeGap  = 1
+FrameGap = 4
+Trans = Add1
+PalColor = 0
+PalBright = 0,0,0
+PalContrast = 96,128,192
+PalPostBright = 32,32,48
+
+[State 3000, 1]
+type = HitDef
+Trigger1 = Time = 0
+attr = S, HT
+hitflag = MAF
+priority = 2, Miss    ;Throw has low priority, should be miss or dodge type.
+sprpriority = -2      ;Behind opponent
+sparkno = -1
+p2facing = 1
+p1stateno = 30005
+p2stateno = 3010
+fall = 1
+
+[State 3000, 2]
+type = PosAdd
+trigger1 = AnimElem = 4
+x = 12
+
+[State 3000, 5]
+type = ChangeState
+Trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; Superdunk Success
+[Statedef 30005]
+type    = S
+movetype= A
+physics = N
+anim = 3005
+
+[State 3005, 2]
+type = AfterImage
+trigger1 = Time = 0
+time = 130
+Trans = Add1
+PalColor = 0
+PalBright = 0,0,0
+PalContrast = 96,128,192
+PalPostBright = 32,32,48
+
+[State 3005, 1]
+type = PlaySnd
+trigger1 = Time = 1
+value = 1,6 ;"goodnight"
+channel = 0
+
+[State 3005, 2.1]
+type = PlaySnd
+trigger1 = AnimElem = 4
+value = 4,0
+
+[State 3005, 2.2]
+type = Explod
+trigger1 = AnimElem = 4
+anim = f9
+pos = -30,-60
+postype = p1
+sprpriority = 1
+
+[State 3005, 3]
+type = PlayerPush
+trigger1 = 1
+value = 0
+
+[State 3005, 4]
+type = VelSet
+trigger1 = 1
+x = 0
+
+[State 3005, 5.1]
+type = PosAdd
+trigger1 = Time = 0
+x = 30
+
+[State 3005, 5.2]
+type = TargetBind
+trigger1 = 1
+trigger1 = AnimElem = 2, < 0
+pos = -1, 0
+
+[State 3005, 6.1]
+type = PosAdd
+trigger1 = AnimElem = 2
+x = 30
+
+[State 3005, 6.2]
+type = TargetBind
+trigger1 = AnimElem = 2, >= 0
+trigger1 = AnimElem = 3, < 0
+pos = -31, 0
+
+[State 3005, 7.1]
+type = PosAdd
+trigger1 = AnimElem = 3
+x = 20
+
+[State 3005, 7.2]
+type = TargetBind
+trigger1 = AnimElem = 3, >= 0
+trigger1 = AnimElem = 4, < 0
+pos = -51, 0
+
+[State 3005, 7.3] ;Be drawn in front
+type = SprPriority
+trigger1 = AnimElem = 3
+value = 2
+
+[State 3005, 8.2]
+type = TargetBind
+trigger1 = AnimElem = 4, >= 0
+trigger1 = AnimElem = 5, < 0
+pos = -45, 0
+
+[State 3005, 9]
+type = TargetBind
+trigger1 = AnimElem = 5, >= 0
+trigger1 = AnimElem = 6, < 0
+pos = -30, -58
+
+[State 3005, 10]
+type = TargetBind
+trigger1 = AnimElem = 6, >= 0
+trigger1 = AnimElem = 7, < 0
+pos = -25, -66
+
+[State 3005, 11]
+type = TargetBind
+trigger1 = AnimElem = 7, >= 0
+trigger1 = AnimElem = 8, < 0
+pos = -25, -68
+
+[State 3005, 12]
+type = TargetBind
+trigger1 = AnimElem = 8, >= 0
+trigger1 = AnimElem = 9, < 0
+pos = -24, -83
+
+[State 3005, 12]
+type = TargetBind
+trigger1 = AnimElem = 9, >= 0
+trigger1 = AnimElem = 10, < 0
+pos = -15, -88
+
+[State 3005, 12.1]
+type = Width
+trigger1 = AnimElem = 9, >= 0
+trigger1 = AnimElem = 10, < 0
+edge = 10
+
+[State 3005, 13]
+type = TargetBind
+trigger1 = AnimElem = 10, >= 0
+trigger1 = AnimElem = 11, < 0
+pos = 0, -88
+
+[State 3005, 13.1]
+type = Width
+trigger1 = AnimElem = 10, >= 0
+trigger1 = AnimElem = 11, < 0
+edge = 20
+
+[State 3005, 14]
+type = TargetBind
+trigger1 = AnimElem = 11, >= 0
+trigger1 = AnimElem = 12, < 0
+pos = 8, -77
+
+[State 3005, 14.1]
+type = Width
+trigger1 = AnimElem = 11, >= 0
+trigger1 = AnimElem = 12, < 0
+edge = 30
+
+[State 3005, 15]
+type = TargetBind
+trigger1 = AnimElem = 12, >= 0
+trigger1 = AnimElem = 13, < 0
+pos = 15, -67
+
+[State 3005, 16]
+type = TargetBind
+trigger1 = AnimElem = 13, >= 0
+trigger1 = AnimElem = 14, < 0
+pos = 38, -49
+
+[State 3005, 17.1]
+type = TargetBind
+trigger1 = AnimElem = 14, >= 0
+trigger1 = AnimElem = 16, < 0
+pos = 45, 0
+
+[State 3005, 17.2] ;Ground wave (behind)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = AnimElem = 14
+anim = f66
+pos = 35,0
+postype = p1
+sprpriority = -2
+supermove = 1
+bindtime = -1
+ownpal = 1
+
+[State 3005, 17.2] ;Ground wave (in front)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = AnimElem = 14
+anim = f67
+pos = 35,0
+postype = p1
+sprpriority = 2
+supermove = 1
+bindtime = -1
+ownpal = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 14
+anim = f24
+pos = 15,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 14
+anim = f24
+facing = -1
+pos = 40,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 3005, 17.3] ;Shake
+type = EnvShake
+Trigger1 = AnimElem = 14
+time = 18
+ampl = 10
+
+[State 3005, 17.4] ;Crunch
+type = PlaySnd
+Trigger1 = AnimElem = 14
+value = s4,5
+
+[State 3005, 17.5]
+type = TargetLifeAdd
+trigger1 = AnimElem = 14
+value = -100
+kill = 0
+
+[State 3005, 19]
+type = ChangeState
+Trigger1 = AnimElem = 16
+value = 30006
+
+;---------------------------------------------------------------------------
+; Superdunk Success (dunk2)
+[Statedef 30006]
+type    = S
+movetype= A
+physics = N
+anim = 3006
+sprpriority = -1
+
+[State 3006, 1]
+type = Turn
+trigger1 = Time = 0
+
+[State 3006, 1]
+type = TargetState
+trigger1 = Time = 0
+value = 3011
+
+[State 3006, 2]
+type = AfterImage
+trigger1 = Time = 0
+time = 65
+Trans = Add1
+PalColor = 0
+PalBright = 0,0,0
+PalContrast = 96,128,192
+PalPostBright = 32,32,48
+
+[State 3006, 2.1]
+type = PlaySnd
+trigger1 = AnimElem = 4
+value = 2,2 ;"finish!"
+channel = 0
+
+[State 3006, 2.1]
+type = PlaySnd
+trigger1 = AnimElem = 4
+value = 4,0
+
+[State 3006, 2.2]
+type = Explod
+trigger1 = AnimElem = 4
+anim = f9
+pos = -30,-60
+postype = p1
+sprpriority = 1
+
+[State 3006, 3]
+type = PlayerPush
+trigger1 = 1
+value = 0
+
+[State 3006, 4]
+type = VelSet
+trigger1 = 1
+x = 0
+
+[State 3006, 5.2]
+type = TargetBind
+trigger1 = 1
+trigger1 = AnimElem = 2, < 0
+pos = -31, 0
+
+[State 3006, 6.2]
+type = TargetBind
+trigger1 = AnimElem = 2, >= 0
+trigger1 = AnimElem = 3, < 0
+pos = -31, 0
+
+[State 3006, 7.1]
+type = PosAdd
+trigger1 = AnimElem = 3
+x = 20
+
+[State 3006, 7.2]
+type = TargetBind
+trigger1 = AnimElem = 3, >= 0
+trigger1 = AnimElem = 4, < 0
+pos = -51, 0
+
+[State 3006, 7.3] ;Be drawn in front
+type = SprPriority
+trigger1 = AnimElem = 3
+value = 2
+
+[State 3006, 8.2]
+type = TargetBind
+trigger1 = AnimElem = 4, >= 0
+trigger1 = AnimElem = 5, < 0
+pos = -45, 0
+
+[State 3006, 9]
+type = TargetBind
+trigger1 = AnimElem = 5, >= 0
+trigger1 = AnimElem = 6, < 0
+pos = -30, -58
+
+[State 3006, 10]
+type = TargetBind
+trigger1 = AnimElem = 6, >= 0
+trigger1 = AnimElem = 7, < 0
+pos = -25, -66
+
+[State 3006, 11]
+type = TargetBind
+trigger1 = AnimElem = 7, >= 0
+trigger1 = AnimElem = 8, < 0
+pos = -25, -68
+
+[State 3006, 12]
+type = TargetBind
+trigger1 = AnimElem = 8, >= 0
+trigger1 = AnimElem = 9, < 0
+pos = -24, -83
+
+[State 3006, 12]
+type = TargetBind
+trigger1 = AnimElem = 9, >= 0
+trigger1 = AnimElem = 10, < 0
+pos = -15, -88
+
+[State 3006, 12.1]
+type = Width
+trigger1 = AnimElem = 9, >= 0
+trigger1 = AnimElem = 10, < 0
+edge = 10
+
+[State 3006, 13]
+type = TargetBind
+trigger1 = AnimElem = 10, >= 0
+trigger1 = AnimElem = 11, < 0
+pos = 0, -88
+
+[State 3006, 13.1]
+type = Width
+trigger1 = AnimElem = 10, >= 0
+trigger1 = AnimElem = 11, < 0
+edge = 20
+
+[State 3006, 14]
+type = TargetBind
+trigger1 = AnimElem = 11, >= 0
+trigger1 = AnimElem = 12, < 0
+pos = 8, -77
+
+[State 3006, 14.1]
+type = Width
+trigger1 = AnimElem = 11, >= 0
+trigger1 = AnimElem = 12, < 0
+edge = 30
+
+[State 3006, 15]
+type = TargetBind
+trigger1 = AnimElem = 12, >= 0
+trigger1 = AnimElem = 13, < 0
+pos = 15, -67
+
+[State 3006, 16]
+type = TargetBind
+trigger1 = AnimElem = 13, >= 0
+trigger1 = AnimElem = 14, < 0
+pos = 38, -49
+
+[State 3006, 17.1]
+type = TargetBind
+trigger1 = AnimElem = 14, >= 0
+trigger1 = AnimElem = 16, < 0
+pos = 45, 0
+
+[State 3006, 17.2] ;Ground wave (behind)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = AnimElem = 14
+anim = f66
+pos = 35,0
+postype = p1
+sprpriority = -2
+supermove = 1
+bindtime = -1
+ownpal = 1
+
+[State 3006, 17.2] ;Ground wave (in front)
+type = Explod
+triggerall = StageVar(info.author) != "water"
+trigger1 = AnimElem = 14
+anim = f67
+pos = 35,0
+postype = p1
+sprpriority = 2
+supermove = 1
+bindtime = -1
+ownpal = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 14
+anim = f24
+pos = 15,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 1200, 0]
+type = explod
+triggerall = StageVar(info.author) = "water"
+trigger1 = AnimElem = 14
+anim = f24
+facing = -1
+pos = 40,0
+postype = p1
+sprpriority = 5
+supermove = 1
+bindtime = 1
+
+[State 3000, Flash]
+type = explod
+trigger1 = AnimElem = 14
+anim = 3504
+pos = 20,80
+sprpriority = 1
+ownpal = 1
+bindtime = 1
+supermove = 1
+removetime = 33
+
+[State 3006, 17.3] ;Shake
+type = EnvShake
+Trigger1 = AnimElem = 14
+time = 18
+ampl = 10
+
+[State 3006, 17.4] ;Crunch
+type = PlaySnd
+Trigger1 = AnimElem = 14
+value = s4,5
+
+[State 3006, 17.5]
+type = TargetLifeAdd
+trigger1 = AnimElem = 14
+value = -100
+kill = 0
+
+[State 3006, 18.2]
+type = PosAdd
+trigger1 = AnimElem = 16
+x = -20
+
+[State 4012, 15]
+type = ChangeState
+trigger1 = AnimElem = 16
+value = 30007
+ctrl = 0
+;-------------------------------------------------------
+; Typhoon1 Success (grab)
+[Statedef 30007]
+type    = A
+movetype= A
+physics = N
+anim = 3810
+sprpriority = 2
+
+[State 3810, 1]
+type = targetstate
+trigger1 = time = 0
+value = 3820
+
+[State 3800, Super.5]
+type = AfterImage
+trigger1 = Time = 0
+time = 2
+TimeGap  = 1
+FrameGap = 4
+Length = 15
+Trans = Add1
+
+[State 3810, 1]
+type = AfterImageTime
+trigger1 = 1
+time = 2
+
+[State 3810, 2]
+type = PlaySnd
+trigger1 = Time = 0
+value = 2,0 ;"Mary's"
+channel = 0
+
+[State 3800, 3]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3810, Grab 1]
+type = BindToTarget
+trigger1 = AnimElemTime (2) >= 0
+trigger1 = AnimElemTime (3) < 0
+pos = 35, -10, foot
+
+[State 3810, Grab 3]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = 1,3 ;"Typhoon!"
+channel = 0
+
+[State 3810, Grab 3]
+type = BindToTarget
+trigger1 = AnimElemTime (3) >= 0
+trigger1 = AnimElemTime (4) < 0
+pos = 15, -30, foot
+
+[State 3810, Grab 4]
+type = BindToTarget
+trigger1 = AnimElemTime (4) >= 0
+trigger1 = AnimElemTime (5) < 0
+pos = 7, 2, mid
+
+[State 3810, Grab 5]
+type = BindToTarget
+trigger1 = AnimElemTime (5) >= 0
+trigger1 = AnimElemTime (6) < 0
+pos = 0, -2, mid
+
+[State 3810, Grab 6]
+type = BindToTarget
+trigger1 = AnimElemTime (6) >= 0
+trigger1 = AnimElemTime (7) < 0
+pos = 0, 20, head
+
+[State 3810, Grab 7.1]
+type = PlaySnd
+trigger1 = AnimElem = 7
+value = 4,0
+
+[State 3810, Grab 7.2]
+type = Explod
+trigger1 = AnimElem = 7
+anim = f9
+pos = -10,-20
+postype = p1
+sprpriority = 1
+
+[State 3810, Grab 7.3]
+type = TargetBind
+trigger1 = AnimElemTime (7) >= 0
+trigger1 = AnimElemTime (8) < 0
+pos = -10,-23
+
+[State 3810, Grab 8]
+type = TargetBind
+trigger1 = AnimElemTime (8) >= 0
+trigger1 = AnimElemTime (9) < 0
+pos = -42,-25
+
+[State 3810, Grab 9]
+type = TargetBind
+trigger1 = AnimElemTime (9) >= 0
+trigger1 = AnimElemTime (10) < 0
+pos = -44,-67
+
+[State 3810, Grab 10]
+type = TargetBind
+trigger1 = AnimElemTime (10) >= 0
+trigger1 = AnimElemTime (11) < 0
+pos = -45,-85
+
+[State 3810, Grab 11]
+type = TargetBind
+trigger1 = AnimElemTime (11) >= 0
+trigger1 = AnimElemTime (12) < 0
+pos = 10,-100
+
+[State 3810, Grab 12.1]
+type = Width
+trigger1 = AnimElemTime (12) >= 0
+edge = 60
+
+[State 3810, Grab 12.2]
+type = TargetBind
+trigger1 = AnimElemTime (12) >= 0
+trigger1 = AnimElemTime (13) < 0
+pos = 53,-45
+
+[State 3810, Grab 13.1]
+type = PosSet
+trigger1 = AnimElem = 13
+y = 0
+
+[State 3810, Grab 13.2]
+type = TargetBind
+trigger1 = AnimElemTime (13) >= 0
+pos = 53,-26
+
+[State 3810, 22]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 3811

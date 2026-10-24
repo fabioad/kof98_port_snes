@@ -1,0 +1,1068 @@
+[Statedef -2]
+
+
+[State 0, DefenceMulSet]
+type=DefenceMulSet
+trigger1=1
+value=IfElse(life<300,.6,life*.001)
+ignorehitpause=1
+
+[State -2, Spray Anim P1];地面水花
+type = Explod
+triggerall = StageVar(info.author) = "water"
+triggerall = pos Y = 0
+trigger1 = time >= 0 && timemod = 16,0
+persistent = 0
+ID = 20
+anim = F20
+postype = p1
+pos = 0,-5
+ownpal = 1
+ontop = 1
+bindtime = ifelse(pos Y != 0,0,-1)
+removetime = 16
+pausemovetime = 999999
+supermovetime = 999999
+
+[State -2, 1];地面水花移除
+type = removeexplod
+trigger1 = pos Y != 0
+ID = 20
+
+[State -3, 落地水花]
+type = Explod
+triggerall = StageVar(info.author) = "water"
+triggerall = Time = 1
+trigger1 = StateNo=5201
+ID = 22
+anim = F22
+postype = p1
+pos = 10,0
+ownpal = 1
+ontop = 1
+bindtime = 1
+removetime = -2
+pausemovetime = 999999
+supermovetime = 999999
+
+[State -3 , 落地声效]
+type = PlaySnd
+triggerall = Time = 1
+trigger1 = StateNo=5201
+value = F47,(0+(StageVar(info.author) = "water"))
+
+;-------------------------------------------------------------------------------
+;Output
+[State -2, Output]
+type = DisplayToClipboard
+trigger1 =1
+text = "AI_Lv:%d DistX:%d DisY:%d X:%d Y:%d"
+params = Var(59),Floor(P2bodydist X),Floor(P2bodydist Y),Floor(P2Dist X),Floor(P2Dist Y)
+ignorehitpause =1
+persistent = -1
+
+;-------------------------------------------------------------------------------
+;Hidden Move Triggers
+[State 0, VarSet]
+type = VarSet
+triggerall = !Numpartner
+trigger1 = Var(30) = 432
+var(35) = Power
+ignorehitpause =1
+
+[State 0, PowerSet]
+type = PowerSet
+triggerall = !Numpartner
+triggerall = Var(30) > 1 || Var(33)
+trigger1 = Power != Var(35)
+value = Var(35)
+ignorehitpause =1
+
+[State 0, VarAdd]
+type = VarAdd
+triggerall = Var(30)>=1
+triggerall = Numtarget && Numenemy = 1
+trigger1 = Target,GetHitVar(damage)!= 0
+var(34) = Target,GetHitVar(damage)
+ignorehitpause =1
+persistent =1
+
+[State 0, VarRangeSet]
+type = VarRangeSet
+trigger1 = Movetype = H
+trigger2 = Numtarget
+trigger2 = !Target,Alive
+value = 0
+first = 30
+last = 34
+ignorehitpause =1
+
+[State 0, VarSet]
+type = VarSet
+trigger1 = Roundstate != 2
+var(30) = 0
+ignorehitpause =1
+persistent =1
+
+[State 0, VarAdd]
+type = VarAdd
+triggerall = Stateno != [3500,3600)
+trigger1 = Var(30)>1
+var(30) = -1
+ignorehitpause =1
+persistent =1
+
+[State 0, AssertSpecial]
+type = AssertSpecial
+triggerall = Var(30)
+trigger1 = !Numprojid(1200)
+flag = nojugglecheck
+
+[State 0, VarAdd]
+type = Varset
+triggerall = Var(30)
+trigger1 = Target,Gethitvar(Hitcount)-1>=2
+var(31) = Target,Gethitvar(Hitcount)-1
+ignorehitpause =1
+persistent =1
+
+[State 0, VarSet]
+type = VarSet
+trigger1 = Var(30)
+fvar(3) = .70-(Target,Gethitvar(Hitcount)-1>=5)*0.3
+ignorehitpause =1
+
+[State 0, AttackMulSet]
+type = AttackMulSet
+triggerall = Var(30)
+trigger1 = 1
+value = fvar(3)
+ignorehitpause =1
+persistent =1
+
+[State 0, AttackMulSet]
+type = AttackMulSet
+trigger1 = Stateno = 3520 && !Animtime
+trigger2 = Movetype = H && (Var(30) || Var(33))
+value = 1
+ignorehitpause =1
+persistent =1
+
+[State 0, EnvColor]
+type = null;EnvColor
+triggerall = Var(30)
+trigger1 = Movehit
+trigger2 = projhit(0) = 1
+value = 248,248,248
+time = 1
+under = 0
+ignorehitpause =1
+persistent =1
+
+[State 0, Explod]
+type = Explod
+triggerall = Var(30)
+trigger1 = Movehit
+trigger2 = projhit(0) = 1
+anim = 99998
+ID = 99998
+postype = left
+bindtime = -1
+scale = 9999999,999999
+sprpriority = -16
+shadow = 0
+ownpal = 1
+ignorehitpause =1
+persistent = 1
+
+[State 0, MoveHitReset]
+type = MoveHitReset
+triggerall = Var(30)
+trigger1 = Movehit >= 1
+ignorehitpause =1
+persistent =1
+
+[State 0, VarSet]
+type = VarSet
+triggerall = Numenemy = 1
+trigger1 = Numtarget(3500) || Var(30) = 432;600
+var(32) = Target(3500),Life
+ignorehitpause =1
+
+[State 0, TargetLifeAdd]
+type = TargetLifeAdd
+triggerall = Numenemy = 1
+triggerall = Var(30)>=1
+trigger1 = Numtarget && Stateno != [1000,1001]
+trigger1 = Target,Life < Var(32)
+value = (Var(32)-Target,Life)
+ID = -1
+kill = 0
+ignorehitpause =1
+
+[State 0, TargetLifeAdd]
+type = TargetLifeAdd
+triggerall = Numenemy = 1
+triggerall = Var(30)>=1
+trigger1 = Numtarget && Stateno != [1000,1001]
+trigger1 = Target,Life > Var(32)
+value = (Target,Life-Var(32))
+ID = -1
+kill = 0
+ignorehitpause =1
+
+[State 0, VarSet]
+type = VarSet
+trigger1 = Var(30) = 1
+var(33) = 1
+ignorehitpause =1
+
+[State 0, TargetState]
+type = TargetState
+triggerall = Stateno != [3500,3520)
+trigger1 = Var(30)>=1 || Var(33) = 1
+value = 3555
+ignorehitpause =1
+
+[State 0, CtrlSet]
+type = CtrlSet
+trigger1 = Var(33) = 1
+trigger1 = Statetype = A
+value = 0
+ignorehitpause =1
+
+[State 0, ChangeState]
+type = ChangeState
+triggerall = Movetype != H
+triggerall = (Statetype = S ||Statetype = C) && (Ctrl || !Animtime)
+trigger1 = Var(33) = 1
+trigger2 = !Numtarget
+trigger2 = Var(30)
+;|Extra for Helpers(Mugen Bug)|-----------------------------
+trigger3 = Numhelper(1005)
+trigger3 = !Helper(1005),Numtarget
+trigger3 = Var(30)
+trigger4 = Numhelper(1405)
+trigger4 = !Helper(1405),Numtarget
+trigger4 = Var(30)
+trigger5 = Numhelper(1410)
+trigger5 = !Helper(1410),Numtarget
+trigger5 = Var(30)
+value = 3520
+Ctrl = 0
+
+;-------------------------------------------------------------------------------
+;Special Stuff
+[State -2, JumpPush]
+type = PlayerPush
+Triggerall = (P2statetype != A && P2Stateno != 50) && Enemynear,Const(size.height)<85
+triggerall = P2statetype != L || P2stateno != [5120,5122]
+trigger1 = Stateno = 50 && Time = [10,25]
+trigger2 = Stateno = 41 && ((Var(3)=-2 ||Var(3)= 2) && Anim!= 51) && Time = [10,25]
+Value = 0
+ignorehitpause =1
+persistent =1
+
+[State -2, JumpPush]
+type = PlayerPush
+trigger1 = Stateno = [600,699]
+value = 1
+ignorehitpause =1
+persistent =1
+
+[State -2]
+type = Width
+trigger1 = StateType = A
+trigger1 = Enemy,StateNo = 5120
+edge = 15-Floor(Const(size.air.front)/2),15-Floor(Const(size.air.back)/2)
+
+;-------------------------------------------------------------------------------
+;System Extra Options (Kof Style)
+[State -2]
+type = CtrlSet
+trigger1 = Anim = 100
+value = 0
+ignorehitpause =1
+
+[State -2]
+type = CtrlSet
+triggerall = Stateno = 52 || Stateno = 10
+trigger1 = Time = 1
+value = 1
+ignorehitpause =1
+persistent = 1
+
+;----------------------------------------------------------
+;Sistema Kof de guardia, no se puede cubrir en el aire
+;----------------------------------------------------------
+[state -3,noairguard]
+type = AssertSpecial
+trigger1 = 1
+flag = noairguard
+ignorehitpause = 1
+
+;----------------------------------------------------------
+;No Bars Si no esta en la pelea
+;----------------------------------------------------------
+[state -3, nolifebar]
+type = assertspecial
+trigger1 = roundstate != 2
+flag = NoBarDisplay
+ignorehitpause = 1
+
+;----------------------------------------------------------
+;No girar Para chars "Anchos"
+;----------------------------------------------------------
+[State -3, noautoturn]
+type = AssertSpecial
+trigger1 = BackEdgeBodyDist < 23
+flag = noautoturn
+
+;----------------------------------------------------------
+;No Mover la Camara si el char esta muy arriba
+;----------------------------------------------------------
+[State -3, LockCamera]
+type = ScreenBound
+triggerall = movetype = H
+trigger1 = Pos y <-20
+value = 1
+movecamera = 1,0
+
+[State 0, VarSet]
+type = VarSet
+trigger1 = Var(9)
+var(9) = 0
+
+;-------------------------------------------------------------------------------
+[State -2, No sound in Guanding KO]
+type = AssertSpecial
+triggerall = prevstateno = [120,152]
+trigger1 = stateno = 5000 || stateno = 5010
+trigger1 = statetype != A
+flag = Nokosnd
+ignorehitpause = 1
+
+[State -2, Intros]
+type = ChangeState
+value = 190
+triggerall = TeamMode = Turns
+trigger1 = stateno = 5900
+
+[State -3, Lin's Lifeadd]
+Type = Lifeadd
+Triggerall = Life >50 && Time%5 =0
+Trigger1 = Enemy,Name = "lin"
+Trigger1 = Enemy,Var(18) = 1
+Value = -1
+;----------------------------------------------------------------------------
+;Correccion de errores
+[State -2]
+type = AfterImage
+trigger1 = Movetype = H
+time = 1
+ignorehitpause = 1
+
+[State -2, AssertSpecial]
+type = AssertSpecial
+trigger1 = gametime%2 = 0
+trigger2 = statetype = A
+flag = noshadow
+ignorehitpause = 1
+
+;-------------------------------------------------------------------------------
+;Slow Motion
+[State 0, Pause]
+type = Pause
+triggerall = Var(6) && Gametime%2=0
+trigger1 = Roundstate = 2
+time = 1
+movetime = 0
+
+[State 0, VarAdd]
+type = VarAdd
+trigger1 = Var(6)
+var(6) = -1
+ignorehitpause =1
+
+[State 0, VarSet]
+type = VarSet
+trigger1 = Var(6)<=0
+trigger2 = Roundstate != 2
+var(6) = 0
+ignorehitpause =1
+persistent =1
+
+[State -2, Juggle Fix]
+type = VarSet
+trigger1 = !Numhelper(1005) && P2movetype != H
+trigger2 = Var(30) || Var(33)
+trigger3 = Var(15) || Var(16)
+var(8) = 0
+ignorehitpause =1
+
+;-------------------------------------------------------------------------------
+;Corner Push code by Yong Ming
+[State -2, Corner Push]
+type = Varset
+triggerall = (enemy(0), BackEdgeBodyDist <= 0) || (enemy(0), FrontEdgeBodyDist <= 0)
+triggerall = enemy(0), movetype = H
+triggerall = enemy(0), vel y = 0
+triggerall = ProjContact = 0, < 50
+trigger1 = enemy(0), statetype = S
+trigger2 = enemy(0), statetype = C
+fvar(17) = ifelse(enemy(0), BackEdgeBodyDist <= 0,enemy(0), vel x,-enemy(0), vel x)
+ignorehitpause = 1
+
+[State -2, Corner Push]
+type = Varset
+triggerall = fvar(17) = 0
+triggerall = (enemy(0), BackEdgeBodyDist <= 0) || (enemy(0), FrontEdgeBodyDist <= 0)
+triggerall = enemy(0), GetHitVar(yvel) = 0
+triggerall = ProjContact = 0, < 50
+trigger1 = enemy(0), gethitvar(hitshaketime) = 0
+trigger1 = enemy(0), stateno = 5000
+trigger2 = enemy(0), gethitvar(hitshaketime) = 0
+trigger2 = enemy(0), stateno = 5010
+trigger3 = enemy(0), gethitvar(hitshaketime) = 2
+trigger3 = enemy(0), stateno = [150,153]
+fvar(17) = ifelse(facing = -1 && enemy(0), BackEdgeBodyDist <= 0,enemy(0), gethitvar(xvel),-enemy(0), gethitvar(xvel));left right inbalance bugs cause by mugen!!!!
+ignorehitpause = 1
+
+[State -2, Corner Push]
+type = posadd
+;No Simulmode
+triggerall = !Numpartner & Numenemy = 1
+;No P2 Recovery
+triggerall = P2stateno != [5200,5210]
+;No In SDM Start
+triggerall = Stateno != 3000 && Stateno != 3050 && (Stateno != [3100,3101]) && Stateno != 3200 && Stateno != 3300 && Stateno != 3400 && Stateno != 3500
+;No In Special Moves
+triggerall = (Stateno != [1000,1020])
+;No In Guard Cancel
+triggerall = Stateno != 920
+trigger1 = fvar(17) != 0
+trigger1 = vel y = 0
+;Cartel de Guardcrush
+trigger1 = !Numexplod(3000)
+x = fvar(17)
+
+[State -2, Corner Push]
+type = posadd
+; Guard Cancel
+triggerall = Stateno = 920 && Time >= 12
+trigger1 = fvar(17) != 0
+trigger1 = vel y = 0
+;Cartel de Guardcrush
+trigger1 = !Numexplod(3000)
+x = fvar(17)
+
+[State -2, Corner Push]
+type = Varset
+trigger1 = 1
+fvar(17) = 0
+
+;-------------------------------------------------------------------------------
+;KO in Guard y correccion del KO Sound
+[State -2, ChangeState]
+type = ChangeState
+triggerall = Alive && GetHitVar(Hitcount)=1
+triggerall = Statetype != A
+triggerall = GetHitVar(Damage) >= Life
+triggerall = Stateno = 5000 &&  (PrevStateNo = [120,159])
+trigger1 = Enemy,Movetype = A && Enemy,Stateno >= 1000
+trigger2 = Enemy(1),Movetype = A && Enemy(1),Stateno >= 1000
+value = 5800
+ignorehitpause = 1
+
+[State 0, AssertSpecial]
+type = AssertSpecial
+trigger1 = Gethitvar(Guarded)
+flag = nokosnd
+
+[State -2, PlaySnd]
+type = PlaySnd
+triggerall = Stateno != 5800 && Prevstateno != 5800
+trigger1 = LoseKO && Roundstate = 3 && Numexplod(5800)
+value = S11,1
+volume = 255
+ignorehitpause =1
+
+[State -2, RemoveExplod]
+type = RemoveExplod
+trigger1 = Roundstate > 2
+id = 5800
+ignorehitpause =1
+
+;-------------------------------------------------------------------------------
+;No se puede golpear si se esta en el HitAir Recover
+[State -2, NotHitBy]
+type = NotHitBy
+triggerall = 1
+trigger1 = !HitFall && Stateno = [5030,5040]
+trigger2 = (!Life || !Alive) && (Stateno = 5050 || Stateno = [5100,5150])
+trigger3 = Roundstate != [2,3]
+value = SCA
+time = 1
+ignorehitpause = 1
+
+;-------------------------------------------------------------------------------
+;Bug Para Hitear cuando esta en el Liedown y en el Fall Trip
+[State -2, HitBy]
+type = HitBy
+triggerall = 1
+triggerall = Const(data.liedown.time) <= 10
+triggerall = Alive
+trigger1 = Stateno = [5100,5110]
+trigger2 = Stateno = [5070,5075]
+value = SCA,AA,AP,AT
+time = 1
+ignorehitpause =1
+
+;-------------------------------------------------------------------------------
+[State -2, Running Sound]
+type = PlaySnd
+triggerall = anim = 100 || Anim = 3105
+trigger1 = Time = 1
+value = F100,0+(StageVar(info.author) = "water")
+volume = 255
+Loop = 1
+channel = 3
+
+[State 191, Spray Anim P1]
+type = Explod
+triggerall = anim = 100 || Anim = 3105
+trigger1 = time >= 0 && timemod = 10,0
+trigger1 = StageVar(info.author) = "water"
+ID = 20
+anim = F21
+postype = p1
+pos = -10,0
+ownpal = 1
+ontop = 1
+bindtime = 1
+removetime = -2
+
+[State -2, Running Stop]
+type = StopSnd
+trigger1 = Anim != 100 && Anim != 3105 && Anim != 3050
+channel = 3
+ignorehitpause =1
+persistent =1
+
+[State -2, Taunt Stop]
+type = StopSnd
+trigger1 = Anim != 195
+channel = 4
+ignorehitpause =1
+persistent =1
+
+[State -2, Taunt Stop]
+type = StopSnd
+triggerall = Stateno != 1010
+trigger1 = Stateno = 1000 && Time> 9
+trigger1 = !Numhelper(1000)  || Stateno = 1000 && Time>= 100
+trigger2 = Movetype = H || Anim != 1000 || Stateno = 1020
+channel = 5
+ignorehitpause =1
+
+[State -2, Taunt Stop]
+type = StopSnd
+triggerall = Stateno = 1010
+trigger1 = Stateno = 1010 && Time> 9
+trigger1 = !Numhelper(1000)  || Stateno = 1010 && Time>= 204
+trigger2 = Movetype = H || Anim != 1010 || Stateno = 1020
+channel = 5
+ignorehitpause =1
+persistent =1
+
+[State -2, Taunt Stop]
+type = StopSnd
+trigger1 = Movetype = H
+trigger2 = Stateno != 1150
+channel = 6
+ignorehitpause =1
+persistent =1
+
+;-------------------------------------------------------------------------------
+;Reproducir Sonidos
+;GetHit Sounds
+[State -2]
+type = PlaySnd
+triggerall = Time = 1
+triggerall = alive
+triggerall = Random <= 600
+trigger1 = stateno = 5001
+trigger1 = anim = 5000
+trigger2 = stateno = 5001
+trigger2 = anim = 5010
+trigger3 = stateno = 5011
+trigger3 = anim = 5020
+value = s5000,0
+channel = 0
+volume = 80
+
+[State -2]
+type = PlaySnd
+triggerall = Time = 1
+triggerall = alive
+triggerall = Random <= 400
+trigger1 = stateno = 5001
+trigger1 = anim = 5001
+trigger2 = stateno = 5001
+trigger2 = anim = 5011
+trigger3 = stateno = 5011
+trigger3 = anim = 5021
+value = s5000,1
+channel = 0
+volume = 80
+
+[State -2]
+type = PlaySnd
+triggerall = Time = 1
+triggerall = alive
+triggerall = Random <= 400
+trigger1 = stateno = 5001
+trigger1 = anim = 5002
+trigger2 = stateno = 5001
+trigger2 = anim = 5012
+trigger3 = stateno = 5011
+trigger3 = anim = 5022
+value = s5000,2+Random%2
+channel = 0
+volume = 80
+
+[State -2]
+type = PlaySnd
+triggerall = Time = 1
+triggerall = Random <= 400
+triggerall = alive
+trigger1 = stateno = 5100
+trigger2 = Stateno = 5000
+trigger2 = Anim = 5030 && Random%10 = [3,5]
+value = s5000,3
+channel = 0
+volume = 80
+
+;-------------------------------------------------------------------------------
+;Normal Hit Voice
+[State -2]
+type = PlaySnd
+triggerall = (Time = 1) && (random < 500)
+trigger1 = stateno=200 ||stateno =210 ||stateno=400||stateno=410||stateno=600||stateno=610
+trigger2 = stateno=205 ||stateno =215 ||stateno=605||stateno=615
+value = s200,0
+
+[State -2]
+type = PlaySnd
+triggerall = (Time = 1) && (random < 500)
+trigger1 = stateno=220 ||stateno =230 ||stateno=420||stateno=430||stateno=620||stateno=630
+trigger2 = stateno=225 ||stateno =235 ||stateno=625||stateno=635
+trigger3 = Stateno = 3130
+value = s210,0
+
+[State -2]
+type = PlaySnd
+triggerall = (Time = 1)
+trigger1 = Stateno = 3120
+value = s200,0
+ignorehitpause = 1
+
+[State -2]
+type = PlaySnd
+triggerall = (Time = 1)
+trigger1 = Stateno = 3130
+value = s210,0
+ignorehitpause = 1
+
+[State -2]
+type = PlaySnd
+triggerall = (Time = 1)
+trigger1 = stateno=3142
+value = s3000,1
+
+[State -2]
+type = PlaySnd
+triggerall = (Time = 1) && (random < 500)
+trigger1 = stateno=240
+trigger2 = stateno=640
+value = s240,0
+
+;-------------------------------------------------------------------------------
+;Normal Hit Sound
+[State -2];Light Punch
+type = PlaySnd
+triggerall = (Time = 1)
+trigger1 = stateno=200 ||stateno =205
+trigger2 = stateno=400
+trigger3 = stateno=600 ||stateno =605
+value = s0,0
+
+;Normal Hit Sound
+[State -2];Strong Punch
+type = PlaySnd
+triggerall = (Time = 1)
+trigger1 = stateno=220 ||stateno =225
+trigger2 = stateno=420
+trigger3 = stateno=620 || Stateno = 625
+value = s0,1
+
+[State -2];Light Kick
+type = PlaySnd
+triggerall = (Time = 1)
+trigger1 = stateno=210 ||stateno =215
+trigger2 = stateno=410
+trigger3 = stateno=610 ||stateno =615
+value = s0,2
+
+[State -2];Strong Kick
+type = PlaySnd
+triggerall = (Time = 1)
+trigger1 = stateno=230 ||stateno =235
+trigger2 = stateno=430
+trigger3 = stateno=630 ||stateno =635
+value = s0,3
+
+;-------------------------------------------------------------------------------
+;Detener Sonidos
+[State -2]
+type = StopSnd
+trigger1 = Stateno != [190,194]
+channel = 1
+
+[State -2]
+type = StopSnd
+trigger1 = Movetype = H
+channel = 2
+
+;-------------------------------------------------------------------------------
+;Counter Hits
+[State -2, Counter Hit1]
+type = VarSet
+;triggerall = !Enemy,MoveReversed
+triggerall = !Var(30) && !Var(33)
+trigger1 = enemy, movetype = A
+ignorehitpause = 1
+var(15) = 1
+
+[State -2, Counter Hit2]
+type = VarSet
+;triggerall = !Enemy,MoveReversed
+triggerall = !Var(30) && !Var(33)
+trigger1 = enemy, movetype = I || var(16) >= 1
+ignorehitpause = 1
+var(15) = 0
+
+[State -2, Counter Hit3]
+type = VarSet
+;triggerall = !Enemy,MoveReversed
+triggerall = !Var(30) && !Var(33)
+trigger1 = var(16) > 10 && enemy, movetype = H
+ignorehitpause = 1
+var(15) = 0
+
+[State -2, Counter Hit4]
+type = VarSet
+triggerall = !Var(30) && !Var(33)
+trigger1 = var(15) = 1 && movehit
+ignorehitpause = 1
+var(16) = 1
+
+[State -2, Counter Hit5]
+type = Varadd
+triggerall = !Var(30) && !Var(33)
+trigger1 = var(16) >= 1
+ignorehitpause = 1
+var(16) = 1
+
+[State -2, Counter Hit6]
+type = VarSet
+triggerall = !Var(30) && !Var(33)
+trigger1 = p2movetype != H
+trigger2 = var(16) > 22 && (p2stateno = 5030 || p2stateno = 1300)
+trigger3 = p2statetype = L
+trigger4 = var(16) > 30 && movehit
+ignorehitpause = 1
+var(16) = 0
+
+[State -2, Counter Hit7]
+type = Assertspecial
+triggerall = !Var(30) && !Var(33)
+trigger1 = var(15) = 1 && numexplod(4150) <= 1
+flag = Nojugglecheck
+
+[State -2, EnvColor]
+type = EnvColor
+triggerall = !Var(30) && !Var(33)
+trigger1 = var(16) = [1,2]
+value = 255,255,255
+time = 1
+ignorehitpause = 1
+under = 1
+
+;-------------------------------------------------------------------------------
+;Aumento de Ataque en counter Hit
+[State 0, AttackMulSet]
+type = AttackMulSet
+triggerall = !Var(30) && !Var(33)
+triggerall = MoveType = A
+trigger1 = Numenemy = 1
+trigger1 = Enemynear,Movetype = A
+trigger2 = Numenemy = 2
+trigger2 = (Enemynear(0),Movetype = A ||Enemynear(1),Movetype = A)
+value = 1.05268
+ignorehitpause =1
+
+[State 0, AttackMulSet]
+type = AttackMulSet
+triggerall = !Var(30) && !Var(33)
+trigger1 = MoveType != A || Ctrl
+value = 1.0
+ignorehitpause =1
+
+;-------------------------------|End Chang-2.cns|-------------------------------
+
+
+
+[State -2, 4];跳跃系统相关
+type = varadd
+trigger1 = 1
+v = 25
+value = -1
+
+;---------------------------------------------------------------------------
+;===========================================================================
+[Statedef -3]
+;===========================================================================
+;---------------------------------------------------------------------------
+
+[State -3, 2];跳跃系统相关(普通跳)
+type = PlaySnd
+triggerall = time = 1
+trigger1 = stateno = 40 
+trigger1 = var(25) <= 0
+value = F40, 0
+channel = 13
+
+[State -3, 2];跳跃系统相关（大跳/小跳）
+type = PlaySnd
+triggerall = time = 1
+trigger1 = stateno = 40 
+trigger1 = var(25) > 1
+value = F40, 1
+channel = 13
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; AH大神的大跳系统
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+[State -3, 5]
+type = varset
+trigger1 = stateno = 10
+trigger1 = time = 0
+trigger2 = stateno = [100,101]
+v = 25
+value = 20
+
+[State -3, 5]
+type = varset
+trigger1 = stateno = 52
+trigger1 = time = 0
+v = 25
+value = 0
+
+[State -3, 5]
+type = varset
+trigger1 = stateno = 40
+trigger1 = command != "holdup"
+v = 26
+value = 1
+
+[State -3, 5]
+type = varset
+trigger1 = stateno = 40
+trigger1 = command = "holdup"
+v = 26
+value = 0
+
+[State -3, 5]
+type = VelAdd
+trigger1 = stateno = 50
+trigger1 = anim = 41
+trigger1 = time = 1
+trigger1 = var(25) >= 1
+y = -0.6
+
+[State -3, 5]
+type = velset
+trigger1 = stateno = 50
+trigger1 = anim = 42
+trigger1 = time = 1
+trigger1 = var(25) >= 1
+x = 5
+;y = -9
+
+[State -3, 5]
+type = velset
+trigger1 = stateno = 50
+trigger1 = anim = 43
+trigger1 = time = 1
+trigger1 = var(25) >= 1
+x = -5
+;y = -9
+
+[State -3, 5]
+type = veladd
+trigger1 = stateno = 50
+trigger1 = time = 1
+trigger1 = var(26) = 1
+y = 3
+
+[State -3, 5]
+type = AfterImage
+trigger1 = stateno = 50
+trigger1 = time = 1
+trigger1 = var(25) >= 1
+time = 10
+trans = add1
+timegap = 1
+framegap = 2
+length = 8
+palbright = 12,12,12
+palcontrast = 225,225,225
+palpostbright = 0,0,0
+paladd = 0,0,0
+palmul = 1,1,1
+;--------------------------------------------
+
+;--------------------------------------------------------------
+;光效代码开始
+;--------------------------------------------------------------
+[State -2]
+type = Helper
+triggerall = !NumHelper(23680)
+trigger1 = StageVar(info.author) = "light"
+pos = 0,0
+stateno = 23680
+id = 23680
+ownpal = 1
+persistent = 0
+ignorehitpause = 1
+postype = p1
+
+[State -2]
+type = Helper
+triggerall = !NumHelper(23681)
+trigger1 = StageVar(info.author) = "light"
+pos = 134,0
+stateno = 23681
+id = 23681
+ownpal = 1
+persistent = 0
+ignorehitpause = 1
+postype = left
+
+[State -2]
+type = Helper
+triggerall = !NumHelper(23682)
+trigger1 = StageVar(info.author) = "light"
+pos = -134,0
+stateno = 23682
+id = 23682
+ownpal = 1
+persistent = 0
+ignorehitpause = 1
+postype = right
+;--------------------------------------------------------------
+;光效初始位置
+;--------------------------------------------------------------
+[Statedef 23680]
+type    = S
+movetype= H
+physics = N
+velset = 0,0
+sprpriority = -10
+
+[State 3680, 4]
+type = changeanim
+trigger1 = time%2 = 0
+value = 99999
+
+[State 3680, 4]
+type = ChangeAnim
+triggerall = time%2 = 1
+trigger1 = ((root,anim = [0,99999]) && root,movetype != H)
+trigger2 = (root,anim = [5000,9999])
+value = root,anim
+elem = root,animelemno(0)
+ignorehitpause = 1
+persistent = 1
+
+[State 3680, 0]
+type = PalFX
+trigger1 = time = 0
+time = -1
+add = 224,88,0
+sinadd = 48,50,32,16
+;add = 248,232,192
+
+[State 3680,0]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 3680, 4]
+type=BindToParent
+trigger1 = 1
+time = -1
+facing = 1
+pos = (1+ifelse(Parent,fvar(36) = 1,-1,0)+ifelse(Parent,fvar(36) = 2,-2,0))*ifelse(Facing = -1,-1,1),0
+;--------------------------------------------------------------
+;光效左
+;--------------------------------------------------------------
+[Statedef 23681]
+type    = S
+movetype= H
+physics = N
+velset = 0,0
+anim = 99999
+sprpriority = -10
+
+[State 3680,1]
+type = ParentVarSet
+trigger1 = RootDist X > 0 && RootDist X < 52
+fvar(36) = 1
+
+[State 3680,1]
+type = ParentVarSet
+trigger1 = RootDist X < 0
+fvar(36) = 0
+
+[State 3680,1]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+;--------------------------------------------------------------
+;光效右
+;--------------------------------------------------------------
+[Statedef 23682]
+type    = S
+movetype= H
+physics = N
+velset = 0,0
+anim = 99999
+sprpriority = -10
+
+[State 3680,1]
+type = ParentVarSet
+trigger1 = RootDist X < 0 && RootDist X > 52
+fvar(36) = 1
+
+[State 3680,1]
+type = ParentVarSet
+trigger1 = RootDist X > 0
+fvar(36) = 2
+
+[State 3680,1]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+;--------------------------------------------------------------

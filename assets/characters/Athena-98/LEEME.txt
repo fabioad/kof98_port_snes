@@ -1,0 +1,38 @@
+;----------------------------;
+;MUGEN MEMORIAL by ZELGADIS  ;
+;                            ;
+;        Play KOF            ;
+;----------------------------;
+
+;======================================================================================
+
+Este personaje fue creado por zelgadis con ayuda de JIN
+el cual me paso la base de sus chars (Eso explica por que algunos
+de los archivos están en idioma oriental) Además no deseo retirar
+el idioma japonés del char ya que eso significaría sacarle parte del crédito a mi amigo JIN.
+
+
+Actualizaciones:
+
+Reparación de Bugs
+
+Este personaje esta realizado tal cuan es en su juego original.
+
+
+;======================================================================================
+
+Agradecimientos:
+Bueno aquí paso a agradecer a todos los que me ayudaron a aprender a fondo sobre mugen
+gracias por la base de chas JIN, y sobre todas las cosas gracias a SNK (PLAYMORE)
+ya que todos los personajes son de su propiedad.
+Tambien muchas gracias especiales a satoshi en cual creo la web memorialmugen y me ayudo
+a que este proyecto kof sea uno de los mejores en su tipo.
+
+
+;======================================================================================
+
+PD: ya sabes, si tienes alguna duda o quieres modificar alguno
+de mis chars no dudes en comunicarte con migo(Tengo mail sabes).
+
+
+;======================================================================================

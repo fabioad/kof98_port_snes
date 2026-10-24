@@ -1,0 +1,29 @@
+[Info]
+name = "Ralf"
+displayname = "Ralf"
+versiondate = 04,26,2011
+mugenversion = 04,14,2002
+author = "ohgaki"
+pal.defaults = 1,2,3,4,5,6,7,8,9,10,11,12
+
+[Files]
+cmd     = ralf.cmd
+cns     = ralf.cns
+st      = ralf.cns
+st1     = ralf_I.cns
+st2     = ralf_helper.cns
+st3     = ralf-2.cns
+st4     = yarare.cns
+st5     = ralf_S.cns
+st6     = ralf_H.cns
+st7     = member.cns
+stcommon = ralf_common.cns
+sprite  = ralf.sff
+anim    = ralf.air
+sound   = ralf.snd
+pal1  = ralf01.act
+pal2  = ralf02.act
+pal3  = ralf03.act
+pal4  = ralf04.act
+pal5  = ralf05.act
+pal6  = ralf06.act

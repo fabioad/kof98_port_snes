@@ -1,0 +1,75 @@
+{
+  "character": "robert",
+  "config_hash": "55a7d689d8a51562d179342581a3a52bd278a659e7ffb066b39016d04f585556",
+  "corrections": [
+    {
+      "after": 0,
+      "before": 1152,
+      "confidence": "ALTA",
+      "controller": 12,
+      "expression": "0",
+      "key": "grvx",
+      "kind": "combat",
+      "property": "guard.velocity",
+      "runtime_scope": "native_scalar",
+      "sid": 85,
+      "source": {
+        "file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Robert-KOF98/Robert-H.cns",
+        "line": 852
+      },
+      "state": 3100,
+      "status": "correctable"
+    },
+    {
+      "after": 0,
+      "before": 1152,
+      "confidence": "ALTA",
+      "controller": 12,
+      "expression": "0",
+      "key": "grvx",
+      "kind": "combat",
+      "property": "guard.velocity",
+      "runtime_scope": "native_scalar",
+      "sid": 86,
+      "source": {
+        "file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Robert-KOF98/Robert-H.cns",
+        "line": 1064
+      },
+      "state": 3110,
+      "status": "correctable"
+    }
+  ],
+  "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Robert-KOF98/Robert-KOF98.def",
+  "inputs": {
+    "assets/characters/Robert-KOF98/Config.cns": "c5fad60a80039d31bf3d62abe24fcf8cd8a3d1109c65620223d38c92efdd50ad",
+    "assets/characters/Robert-KOF98/Constants.cns": "13f762faf7fb3ec12cad6008a69ff4cdd798ee98353b9231ee933bfaa74f9806",
+    "assets/characters/Robert-KOF98/Helper.cns": "25632bc919cd4290c202a1eb8b649e1c51cf79493ad752ffa358c23470444e40",
+    "assets/characters/Robert-KOF98/Member.cns": "86fffcdb98b2db2456e55aa28a4a2018d2349f6b9b51de1f061b94faf09025c5",
+    "assets/characters/Robert-KOF98/Robert-2-3.cns": "136aae89cdf89d9c569af0bdc2f1d72575f7ebf7da3e9e5ccb1ffe522f1521f3",
+    "assets/characters/Robert-KOF98/Robert-H.cns": "3d77bd5d95ba39e4602ae879ffe6a8cefac91e73d3b764dd21dd496c46d79baa",
+    "assets/characters/Robert-KOF98/Robert-KOF98.def": "b6495be0cf420a62894f10ad659eef029262150f667f906b186fed533a4c9751",
+    "assets/characters/Robert-KOF98/Robert-N.cns": "2cc80ce152c50993794981b09640f60d204f424ab18907c22306443085cde3c2",
+    "assets/characters/Robert-KOF98/Robert-S.cns": "238e7abb31e64f2cab96664fef9c717d8ca2f7f449f88751c99c87ffa5d1dee7",
+    "assets/characters/Robert-KOF98/Robert.air": "58d3b6c0e14d0ef0da85f3c21ced114a174a34e8c68681293f841b5630715df7",
+    "assets/characters/Robert-KOF98/Robert.cmd": "ab92c5e506278f53b6595dd00a902c1933beddf3f2e034a7f2b902393543eeae",
+    "assets/characters/Robert-KOF98/Robert.cns": "d0cbc03af5998aa5bd851665c7a18489ed63774d4f7f5a05517a3fe940f25162",
+    "assets/characters/Robert-KOF98/Robert.sff": "ecce5a5248cc2f98511bc47da57b62927105d2c28b5c30701eee53b3f2864f80",
+    "assets/characters/Robert-KOF98/Robert.snd": "63af8d30297fa915f06da4bbb73b72732b0874519b3a6801acfc85798143426e",
+    "assets/characters/Robert-KOF98/Robert_SNES.cmd": "a69593c75129b95dc09a78e7decb0846ad818d0263d82ff81a9fb0a16181d481",
+    "assets/characters/Robert-KOF98/Robert_SNES.cns": "bfd90fa3f3bc84ed72800d678fa7fb510938121c9a99fe0e9940a108df257bd1",
+    "assets/characters/Robert-KOF98/act/act01.act": "83959a3d111ad4dbe9a4cb098812ff8d1a663d3fb1ce544520c54acea8b57864",
+    "assets/characters/Robert-KOF98/act/act02.act": "14bf4b3ed190051cec102f9362cd68550d6f9551a6762ea7c619fc5dc5871b12",
+    "assets/characters/Robert-KOF98/act/act03.act": "9c5876e98fa6ae1e79329ec37109c0ba3ed9a2335f785d9a66494578f07be292",
+    "assets/characters/Robert-KOF98/act/act04.act": "f93ba95947803d5df3de4f600f5ff5351b28f4e409f873553e38ce2f196f1655",
+    "assets/characters/Robert-KOF98/act/act05.act": "28a29cc6fd57db45260f89cd9abb6fe007010645eb2bb5ba00ac76cdfcd01d55",
+    "assets/characters/Robert-KOF98/act/act06.act": "89315661b1a06eaf577751f947ccf4aadb3813775cb6d5164d29498fb7fd1c30",
+    "assets/characters/Robert-KOF98/act/act07.act": "e06c4e1c434129838d0dd269cc70f93eb7b6ae543e9d2e5919be4b98a2ad71d7",
+    "assets/characters/Robert-KOF98/act/act08.act": "2e813ca2cc791693b47ec1a6367f619c62adf120f762693607f976666acf92be",
+    "assets/characters/Robert-KOF98/act/act09.act": "aa80d3a374a982a7eea0c54a8f05ac296175a95daf2d80e5308ae34827687bd0",
+    "assets/characters/Robert-KOF98/act/act10.act": "862e3f20f5c3b4d923039ad24ae209712c621b9659d408b1d29e2f36a6caa5da",
+    "assets/characters/Robert-KOF98/act/act11.act": "91cbcb65f3133ccb24ddbb15be6090355fa751f3d4e203a53a7fe1d27fc3aa61",
+    "assets/characters/Robert-KOF98/act/act12.act": "c18d239188da64599b06a46af8dc1c7ffcaf49dac8ec537b75a252ee3f492db4",
+    "assets/characters/Robert-KOF98/common_kof.cns": "94bfc3a39e9b3501f4733b887e575cca3cce2cbe9bda300f40ba9283698933eb"
+  },
+  "schema": 1
+}

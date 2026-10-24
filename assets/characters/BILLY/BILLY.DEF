@@ -1,0 +1,27 @@
+[Info]
+Name="Billy Kane"
+DisplayName="BILLY"
+VersionDate=07,27,2002
+MugenVersion=07,31,2000
+Author="Conversion Wolrd - J.Lee"
+Reeditor= "Ryosdegloria" aka "Riskbreakersiegfried"
+Pal.Defaults = 1,2,3,4
+
+[Files]
+cmd=billy.cmd
+cns=billy.cns
+st=billy.cns
+stcommon=common1.cns
+sprite=billy.sff
+anim=billy.air
+sound=billy.snd
+pal1=blue.act
+pal2=black.act
+pal3=red.act
+pal4=golden.act
+pal5=moriya.act
+st1=billy-1.cns
+st2=billy-2.cns
+[Arcade]
+intro.storyboard=
+ending.storyboard=

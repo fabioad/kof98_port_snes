@@ -1,0 +1,33 @@
+{
+  "character": "lucky",
+  "config_hash": "abc0ac43c2c7828f943ed6ee0d0cf557a324344c0e5ca49cbf02d2ef9577328f",
+  "corrections": [],
+  "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/LUCKY/LUCKY.def",
+  "inputs": {
+    "assets/characters/LUCKY/LUCKY.def": "47a5a74b4943fcc1849530291a4e561cf3f842176fea9fae364174406143aa86",
+    "assets/characters/LUCKY/Lucky_SNES.cmd": "fd93818da6301f2c6bfdb2e563487bc3cec3ccdaed16d7320220e3cc199eaec6",
+    "assets/characters/LUCKY/Lucky_SNES.cns": "edcf000b2e8a385bf90714b5fed57abdcbff5104c9076a1a77cf0d35b2976702",
+    "assets/characters/LUCKY/abo.act": "f8ac2f73762a70eb03b25339a2439f4c2554a35725ff5d84266bdce66d57b41e",
+    "assets/characters/LUCKY/asul.act": "2835af8f60ea7ab970fcc2791345567b24f0787d86211a249940c7c02425b13a",
+    "assets/characters/LUCKY/berde.act": "3978f8c83d27233d52cbe20229cb87c661e9444118121314044ec133c8bbf427",
+    "assets/characters/LUCKY/brian.cns": "bcdcc84c461260c583e940797e1a207a412fbc7f73f8e6b858cb2cf551dd89b1",
+    "assets/characters/LUCKY/dilaw.act": "1fc07828a437e884c73fe4a122d9dbf698a737c19fb6f11a03c1d9ca46fdc59c",
+    "assets/characters/LUCKY/glauber.snd": "8b2405c14b4fee16ce2bac5034ec3bf780906fa6d52519acfe5745d4824d07d0",
+    "assets/characters/LUCKY/heavyd.cns": "af7ea648d26d1f07a6992742435653383d5fc18a647099e9d5d0fb6afa2d2148",
+    "assets/characters/LUCKY/itim.act": "6c0cad769d39424fe949cb838a846f9ad9d792bf268e822494e7ec6f5ad1d4f1",
+    "assets/characters/LUCKY/lakers.cns": "adc29ec588a9ef723661e31606a813fc3c70234769a1e1ef5ca5c4d09eb7c028",
+    "assets/characters/LUCKY/ldm1.cns": "bb202fe885cdc8b26c0dd9624207041db9c620cdfbe563a7d5118bc456c5b743",
+    "assets/characters/LUCKY/ldm2.cns": "633d408600f2886e33cb3c2514d1527b962fc89dc35fcb81ad0d369251913197",
+    "assets/characters/LUCKY/ldm3.cns": "354483f021b67dd6a1c09278f8540c7a90d034f27957cf2f89b748a692991c6b",
+    "assets/characters/LUCKY/lfinger.cns": "f485ce058bd4d8d20313adbb0cdab008b5eed95926dcc601720c393ca3bee0d2",
+    "assets/characters/LUCKY/lshoots.cns": "0334f0e0261cf886314bdcd4afd898e705ff0cb56b3b75a4edced62a0128ff8d",
+    "assets/characters/LUCKY/lspecials.cns": "1413e288eee9c55d6a7c1a90a8e82f67209bb31488c25bdccce65dec2d57003b",
+    "assets/characters/LUCKY/lucky.act": "b47a6bcca675c1876369246510d86f4ce6cbf388ed87c76ab121e68b0e92a3a4",
+    "assets/characters/LUCKY/lucky.air": "61860076aa20ddbc7051d5175ce29babeaa66d65efb0f073c44e7587ebb93fd9",
+    "assets/characters/LUCKY/lucky.cns": "2ec78fcbc5098b260672173edd445a23d41dada418259b8a08aba81d89b002c7",
+    "assets/characters/LUCKY/lucky.sff": "92deba0588ff3c7c826a96148ec039082f71f8e78fe0ded1431393df7c21df16",
+    "assets/characters/LUCKY/mediumai.cmd": "db0dfbbe8e07188058139472f8ee124eb62809a6c72ff3c1fc8375e80c666d1f",
+    "assets/characters/LUCKY/pula.act": "4b9bfe5985a5e6a8ecef3e53d308e5c3d64431495c9999d4fc4d55036bd78d15"
+  },
+  "schema": 1
+}

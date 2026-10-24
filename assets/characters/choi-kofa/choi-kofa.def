@@ -1,0 +1,36 @@
+;=====================================================================
+;  DEF File For "CHOI BOUNGE"                               Made By H"        
+;=====================================================================
+; Player Information
+[Info]
+name    = "CHOI BOUNGE"
+displayname = "Choi"
+versiondate = 10,24,2004
+;mugenversion = 04,14,2001
+author = "HÅh"
+Pal.Defaults =1,2,3,4,5,6
+mugenversion = 1.0
+localcoord   = 320,240
+; Files for the Player
+[Files]
+cmd     = choi.cmd
+cns     = choi-N.cns    ;Constants
+st      = choi-N.cns    ;States (Normal)
+st1     = choi-S.cns    ;States (Special)
+st2     = choi-H.cns    ;States (Hyper)
+stcommon = common1.cns    ;Common states (in data/)
+sprite  = choi.sff      ;Sprite
+anim    = choi.air      ;Animation
+sound   = choi.snd      ;Sound
+pal1    = act/choi04.act    ;Palettes
+pal2    = act/choi05.act
+pal3    = act/choi06.act
+pal4    = act/choi01.act
+pal5    = act/choi02.act
+pal6    = act/choi03.act
+pal7    = act/choi10.act
+pal8    = act/choi11.act
+pal9    = act/choi12.act
+pal10   = act/choi07.act
+pal11   = act/choi08.act
+pal12   = act/choi09.act

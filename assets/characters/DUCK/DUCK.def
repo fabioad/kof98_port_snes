@@ -1,0 +1,30 @@
+; ‚±‚±‚ÉƒLƒƒƒ‰î•ñ‚ğ‘‚¢‚Ä‚­‚¾‚³‚¢
+[Info]
+name ="Duck King"
+displayname ="DUCK"
+versiondate =11,22,2000
+mugenversion =11,22,2000
+author ="ahuron"
+pal.defaults =1,2,3,4,5,6
+
+; Files for the player
+[Files]
+cmd     =Duck_XI.cmd
+cns     =Duck_XI.cns
+st      =Duck_XI.cns
+stcommon =common1.cns 
+sprite  =Duck_XI.sff
+anim    =Duck_XI.air
+sound   =Duck_XI.snd
+pal1=Duck_XI.act
+pal2=Duck_XI2.act
+pal3=Duck_XI3.act
+pal4=Duck_XI.act
+pal5=Duck_XI2.act
+pal6=Duck_XI3.act
+st1=Duck_XI2.cns
+st2=Pchan.cns
+st3=Pchan.cns
+[Arcade]
+intro.storyboard=
+ending.storyboard=

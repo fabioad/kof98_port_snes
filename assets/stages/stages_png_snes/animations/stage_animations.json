@@ -1,0 +1,1147 @@
+{
+  "version": 1,
+  "status": "definition_for_future_integration_no_final_chr_or_rom",
+  "tick_rate": 60,
+  "graphics": "SNES 4bpp, 32 bytes per 8x8 tile; all budget values are upper targets before art export",
+  "max_distinct_poses_per_clip": 3,
+  "dma_policy": {
+    "background_art_bytes_per_vblank_cap": 256,
+    "background_tilemap_bytes_on_commit_cap": 48,
+    "commit": "atomic_after_inactive_buffer_complete",
+    "priority": "fighters_and_HUD_first; defer_environment_if_budget_unavailable"
+  },
+  "clips": [
+    {
+      "id": "japan_publico",
+      "label": "Público atrás dos estudantes",
+      "stage": "KOF98-JpnStreetStage",
+      "source": {
+        "def_file": "KOF98-JpnStreetStage.def",
+        "sff_file": "KOF98-JpnStreetStage.sff",
+        "def_sha256": "10cad730bba1527e99e203e2a12eaa3e99397e10c829b0852b53a5f2a3d14dbd",
+        "sff_sha256": "4a968e36ab1543e6557c9c5f2001b9fd833fe282c50fd9a201cc0f597037d091",
+        "action": 30,
+        "original_action_entries": 8,
+        "original_cycle_ticks": 72,
+        "bg": [
+          {
+            "section": "BG 30",
+            "line": 265,
+            "comment": "背景・右",
+            "values": {
+              "type": "anim",
+              "actionno": "30",
+              "layerno": "0",
+              "start": "1,240",
+              "delta": "1,.8",
+              "trans": "none",
+              "mask": "1"
+            },
+            "frames": []
+          }
+        ],
+        "alignment_bounds_relative_to_axis": [
+          111,
+          -144,
+          273,
+          -54
+        ],
+        "poses": [
+          {
+            "pose": 0,
+            "group": 30,
+            "number": 0,
+            "source_axis": [
+              -71,
+              224
+            ],
+            "source_size": [
+              304,
+              224
+            ],
+            "source_air_offset": [
+              0,
+              0
+            ],
+            "source_line": 275,
+            "source_ticks": 9,
+            "source_crop": [
+              40,
+              80,
+              202,
+              170
+            ],
+            "preview": "selected/japan_publico/pose-0.png"
+          },
+          {
+            "pose": 1,
+            "group": 30,
+            "number": 4,
+            "source_axis": [
+              -71,
+              224
+            ],
+            "source_size": [
+              304,
+              224
+            ],
+            "source_air_offset": [
+              0,
+              0
+            ],
+            "source_line": 279,
+            "source_ticks": 9,
+            "source_crop": [
+              40,
+              80,
+              202,
+              170
+            ],
+            "preview": "selected/japan_publico/pose-1.png"
+          }
+        ]
+      },
+      "target": {
+        "mode": "bg1_sparse_double_buffer",
+        "frame_count": 2,
+        "palette": "stage_bg_palette",
+        "changed_tiles_per_pose_cap": 8,
+        "art_bytes_per_pose_cap": 256,
+        "all_poses_rom_bytes_cap": 512,
+        "resident_vram_bytes_cap": 512,
+        "resident_payload_bytes_cap": 512,
+        "obj_atlas_layout": null,
+        "oam_entries": 0,
+        "target_region_xywh": [
+          344,
+          104,
+          40,
+          64
+        ],
+        "placement_status": "proposed_for_redrawn_512x224_not_pixel_matched",
+        "sprite_size": null,
+        "sequence": [
+          {
+            "pose": 0,
+            "ticks60": 36
+          },
+          {
+            "pose": 1,
+            "ticks60": 36
+          }
+        ],
+        "start_phase_ticks60": 0,
+        "cycle_ticks60": 72,
+        "gesture": "Dois extremos do balanço de braços e tronco; pernas e carros estáticos."
+      }
+    },
+    {
+      "id": "japan_estudantes",
+      "label": "Estudantes",
+      "stage": "KOF98-JpnStreetStage",
+      "source": {
+        "def_file": "KOF98-JpnStreetStage.def",
+        "sff_file": "KOF98-JpnStreetStage.sff",
+        "def_sha256": "10cad730bba1527e99e203e2a12eaa3e99397e10c829b0852b53a5f2a3d14dbd",
+        "sff_sha256": "4a968e36ab1543e6557c9c5f2001b9fd833fe282c50fd9a201cc0f597037d091",
+        "action": 45,
+        "original_action_entries": 4,
+        "original_cycle_ticks": 44,
+        "bg": [
+          {
+            "section": "BG 45",
+            "line": 419,
+            "comment": "背景・学生",
+            "values": {
+              "type": "anim",
+              "actionno": "45",
+              "layerno": "0",
+              "start": "1,240",
+              "delta": "1,.8",
+              "trans": "none",
+              "mask": "1"
+            },
+            "frames": []
+          }
+        ],
+        "alignment_bounds_relative_to_axis": [
+          160,
+          -144,
+          237,
+          -56
+        ],
+        "poses": [
+          {
+            "pose": 0,
+            "group": 45,
+            "number": 0,
+            "source_axis": [
+              -145,
+              163
+            ],
+            "source_size": [
+              116,
+              126
+            ],
+            "source_air_offset": [
+              0,
+              0
+            ],
+            "source_line": 429,
+            "source_ticks": 11,
+            "source_crop": null,
+            "preview": "selected/japan_estudantes/pose-0.png"
+          },
+          {
+            "pose": 1,
+            "group": 45,
+            "number": 3,
+            "source_axis": [
+              -145,
+              163
+            ],
+            "source_size": [
+              116,
+              126
+            ],
+            "source_air_offset": [
+              0,
+              0
+            ],
+            "source_line": 432,
+            "source_ticks": 11,
+            "source_crop": null,
+            "preview": "selected/japan_estudantes/pose-1.png"
+          }
+        ]
+      },
+      "target": {
+        "mode": "bg1_sparse_double_buffer",
+        "frame_count": 2,
+        "palette": "stage_bg_palette",
+        "changed_tiles_per_pose_cap": 8,
+        "art_bytes_per_pose_cap": 256,
+        "all_poses_rom_bytes_cap": 512,
+        "resident_vram_bytes_cap": 512,
+        "resident_payload_bytes_cap": 512,
+        "obj_atlas_layout": null,
+        "oam_entries": 0,
+        "target_region_xywh": [
+          384,
+          104,
+          64,
+          64
+        ],
+        "placement_status": "proposed_for_redrawn_512x224_not_pixel_matched",
+        "sprite_size": null,
+        "sequence": [
+          {
+            "pose": 0,
+            "ticks60": 30
+          },
+          {
+            "pose": 1,
+            "ticks60": 30
+          }
+        ],
+        "start_phase_ticks60": 15,
+        "cycle_ticks60": 60,
+        "gesture": "Alternar postura dos braços/bolsa e um pequeno movimento da cabeça."
+      }
+    },
+    {
+      "id": "bazar_comerciante",
+      "label": "Comerciante da banca direita",
+      "stage": "KOF98-Mid.EastStage",
+      "source": {
+        "def_file": "KOF98-Mid.EastStage.def",
+        "sff_file": "KOF98-Mid.EastStage.sff",
+        "def_sha256": "7a28ca57d811ecc4bd50c9a3cdffe231db4c52b1813bdce7c308522fc1f0a538",
+        "sff_sha256": "cf7b7194b1d599f671efbfc656a4b1be6400e79b2d43488d992ef38a204441b6",
+        "action": 20,
+        "original_action_entries": 8,
+        "original_cycle_ticks": 80,
+        "bg": [
+          {
+            "section": "BG 20",
+            "line": 131,
+            "comment": "背景・店の親父",
+            "values": {
+              "type": "anim",
+              "actionno": "20",
+              "layerno": "0",
+              "start": "0,240",
+              "delta": "1,.8",
+              "trans": "none",
+              "mask": "1"
+            },
+            "frames": []
+          }
+        ],
+        "alignment_bounds_relative_to_axis": [
+          254,
+          -129,
+          304,
+          -75
+        ],
+        "poses": [
+          {
+            "pose": 0,
+            "group": 20,
+            "number": 0,
+            "source_axis": [
+              -226,
+              169
+            ],
+            "source_size": [
+              99,
+              128
+            ],
+            "source_air_offset": [
+              0,
+              0
+            ],
+            "source_line": 141,
+            "source_ticks": 10,
+            "source_crop": [
+              28,
+              40,
+              78,
+              94
+            ],
+            "preview": "selected/bazar_comerciante/pose-0.png"
+          },
+          {
+            "pose": 1,
+            "group": 20,
+            "number": 6,
+            "source_axis": [
+              -226,
+              169
+            ],
+            "source_size": [
+              99,
+              128
+            ],
+            "source_air_offset": [
+              0,
+              0
+            ],
+            "source_line": 147,
+            "source_ticks": 10,
+            "source_crop": [
+              28,
+              40,
+              78,
+              94
+            ],
+            "preview": "selected/bazar_comerciante/pose-1.png"
+          }
+        ]
+      },
+      "target": {
+        "mode": "bg1_sparse_double_buffer",
+        "frame_count": 2,
+        "palette": "stage_bg_palette",
+        "changed_tiles_per_pose_cap": 4,
+        "art_bytes_per_pose_cap": 128,
+        "all_poses_rom_bytes_cap": 256,
+        "resident_vram_bytes_cap": 256,
+        "resident_payload_bytes_cap": 256,
+        "obj_atlas_layout": null,
+        "oam_entries": 0,
+        "target_region_xywh": [
+          432,
+          104,
+          24,
+          48
+        ],
+        "placement_status": "proposed_for_redrawn_512x224_not_pixel_matched",
+        "sprite_size": null,
+        "sequence": [
+          {
+            "pose": 0,
+            "ticks60": 42
+          },
+          {
+            "pose": 1,
+            "ticks60": 18
+          }
+        ],
+        "start_phase_ticks60": 0,
+        "cycle_ticks60": 60,
+        "gesture": "Braço em repouso e braço levantado; preservar banca e tapetes."
+      }
+    },
+    {
+      "id": "bazar_publico_esquerda",
+      "label": "Espectador da esquerda",
+      "stage": "KOF98-Mid.EastStage",
+      "source": {
+        "def_file": "KOF98-Mid.EastStage.def",
+        "sff_file": "KOF98-Mid.EastStage.sff",
+        "def_sha256": "7a28ca57d811ecc4bd50c9a3cdffe231db4c52b1813bdce7c308522fc1f0a538",
+        "sff_sha256": "cf7b7194b1d599f671efbfc656a4b1be6400e79b2d43488d992ef38a204441b6",
+        "action": 25,
+        "original_action_entries": 8,
+        "original_cycle_ticks": 80,
+        "bg": [
+          {
+            "section": "BG 25",
+            "line": 151,
+            "comment": "背景・観客・左",
+            "values": {
+              "type": "anim",
+              "actionno": "25",
+              "layerno": "0",
+              "start": "0,240",
+              "delta": "1,.8",
+              "trans": "none",
+              "mask": "1"
+            },
+            "frames": []
+          }
+        ],
+        "alignment_bounds_relative_to_axis": [
+          -248,
+          -136,
+          -176,
+          -44
+        ],
+        "poses": [
+          {
+            "pose": 0,
+            "group": 25,
+            "number": 0,
+            "source_axis": [
+              376,
+              224
+            ],
+            "source_size": [
+              304,
+              224
+            ],
+            "source_air_offset": [
+              0,
+              0
+            ],
+            "source_line": 161,
+            "source_ticks": 10,
+            "source_crop": [
+              128,
+              88,
+              200,
+              180
+            ],
+            "preview": "selected/bazar_publico_esquerda/pose-0.png"
+          },
+          {
+            "pose": 1,
+            "group": 25,
+            "number": 5,
+            "source_axis": [
+              376,
+              224
+            ],
+            "source_size": [
+              304,
+              224
+            ],
+            "source_air_offset": [
+              0,
+              0
+            ],
+            "source_line": 166,
+            "source_ticks": 10,
+            "source_crop": [
+              128,
+              88,
+              200,
+              180
+            ],
+            "preview": "selected/bazar_publico_esquerda/pose-1.png"
+          }
+        ]
+      },
+      "target": {
+        "mode": "bg1_sparse_double_buffer",
+        "frame_count": 2,
+        "palette": "stage_bg_palette",
+        "changed_tiles_per_pose_cap": 4,
+        "art_bytes_per_pose_cap": 128,
+        "all_poses_rom_bytes_cap": 256,
+        "resident_vram_bytes_cap": 256,
+        "resident_payload_bytes_cap": 256,
+        "obj_atlas_layout": null,
+        "oam_entries": 0,
+        "target_region_xywh": [
+          128,
+          104,
+          32,
+          48
+        ],
+        "placement_status": "proposed_for_redrawn_512x224_not_pixel_matched",
+        "sprite_size": null,
+        "sequence": [
+          {
+            "pose": 0,
+            "ticks60": 40
+          },
+          {
+            "pose": 1,
+            "ticks60": 40
+          }
+        ],
+        "start_phase_ticks60": 20,
+        "cycle_ticks60": 80,
+        "gesture": "Movimento discreto da cabeça e do braço; mercadorias imóveis."
+      }
+    },
+    {
+      "id": "bazar_publico_centro",
+      "label": "Público central",
+      "stage": "KOF98-Mid.EastStage",
+      "source": {
+        "def_file": "KOF98-Mid.EastStage.def",
+        "sff_file": "KOF98-Mid.EastStage.sff",
+        "def_sha256": "7a28ca57d811ecc4bd50c9a3cdffe231db4c52b1813bdce7c308522fc1f0a538",
+        "sff_sha256": "cf7b7194b1d599f671efbfc656a4b1be6400e79b2d43488d992ef38a204441b6",
+        "action": 30,
+        "original_action_entries": 8,
+        "original_cycle_ticks": 80,
+        "bg": [
+          {
+            "section": "BG 30",
+            "line": 171,
+            "comment": "背景・観客・中央",
+            "values": {
+              "type": "anim",
+              "actionno": "30",
+              "layerno": "0",
+              "start": "0,240",
+              "delta": "1,.8",
+              "trans": "none",
+              "mask": "1"
+            },
+            "frames": []
+          }
+        ],
+        "alignment_bounds_relative_to_axis": [
+          -123,
+          -136,
+          27,
+          -44
+        ],
+        "poses": [
+          {
+            "pose": 0,
+            "group": 30,
+            "number": 0,
+            "source_axis": [
+              123,
+              224
+            ],
+            "source_size": [
+              304,
+              224
+            ],
+            "source_air_offset": [
+              0,
+              0
+            ],
+            "source_line": 181,
+            "source_ticks": 10,
+            "source_crop": [
+              0,
+              88,
+              150,
+              180
+            ],
+            "preview": "selected/bazar_publico_centro/pose-0.png"
+          },
+          {
+            "pose": 1,
+            "group": 30,
+            "number": 3,
+            "source_axis": [
+              123,
+              224
+            ],
+            "source_size": [
+              304,
+              224
+            ],
+            "source_air_offset": [
+              0,
+              0
+            ],
+            "source_line": 184,
+            "source_ticks": 10,
+            "source_crop": [
+              0,
+              88,
+              150,
+              180
+            ],
+            "preview": "selected/bazar_publico_centro/pose-1.png"
+          }
+        ]
+      },
+      "target": {
+        "mode": "bg1_sparse_double_buffer",
+        "frame_count": 2,
+        "palette": "stage_bg_palette",
+        "changed_tiles_per_pose_cap": 8,
+        "art_bytes_per_pose_cap": 256,
+        "all_poses_rom_bytes_cap": 512,
+        "resident_vram_bytes_cap": 512,
+        "resident_payload_bytes_cap": 512,
+        "obj_atlas_layout": null,
+        "oam_entries": 0,
+        "target_region_xywh": [
+          184,
+          104,
+          104,
+          48
+        ],
+        "placement_status": "proposed_for_redrawn_512x224_not_pixel_matched",
+        "sprite_size": null,
+        "sequence": [
+          {
+            "pose": 0,
+            "ticks60": 36
+          },
+          {
+            "pose": 1,
+            "ticks60": 36
+          }
+        ],
+        "start_phase_ticks60": 36,
+        "cycle_ticks60": 72,
+        "gesture": "Dois extremos dos gestos de mãos; excluir camelo e cenário da animação."
+      }
+    },
+    {
+      "id": "coreia_observador",
+      "label": "Homem atrás do parapeito",
+      "stage": "KOF98-KoreaStage",
+      "source": {
+        "def_file": "KOF98-KoreaStage.def",
+        "sff_file": "KOF98-KoreaStage.sff",
+        "def_sha256": "25fe919bf929a2517963b49dac12e13a338e29b578957168fe477de7486055f8",
+        "sff_sha256": "882593181afefdb8ed6c757f8ae0e90cd05cc24735abbc5b404a3c1290d72168",
+        "action": 35,
+        "original_action_entries": 63,
+        "original_cycle_ticks": 1578,
+        "bg": [
+          {
+            "section": "BG 35",
+            "line": 231,
+            "comment": "背景・おっさん",
+            "values": {
+              "type": "anim",
+              "actionno": "35",
+              "layerno": "0",
+              "start": "0,240",
+              "delta": "1,.8",
+              "trans": "none",
+              "mask": "1"
+            },
+            "frames": []
+          }
+        ],
+        "alignment_bounds_relative_to_axis": [
+          317,
+          -190,
+          348,
+          -154
+        ],
+        "poses": [
+          {
+            "pose": 0,
+            "group": 35,
+            "number": 13,
+            "source_axis": [
+              -297,
+              204
+            ],
+            "source_size": [
+              76,
+              77
+            ],
+            "source_air_offset": [
+              0,
+              0
+            ],
+            "source_line": 273,
+            "source_ticks": 15,
+            "source_crop": null,
+            "preview": "selected/coreia_observador/pose-0.png"
+          },
+          {
+            "pose": 1,
+            "group": 35,
+            "number": 14,
+            "source_axis": [
+              -297,
+              204
+            ],
+            "source_size": [
+              76,
+              77
+            ],
+            "source_air_offset": [
+              0,
+              0
+            ],
+            "source_line": 274,
+            "source_ticks": 10,
+            "source_crop": null,
+            "preview": "selected/coreia_observador/pose-1.png"
+          }
+        ]
+      },
+      "target": {
+        "mode": "bg1_sparse_double_buffer",
+        "frame_count": 2,
+        "palette": "stage_bg_palette",
+        "changed_tiles_per_pose_cap": 4,
+        "art_bytes_per_pose_cap": 128,
+        "all_poses_rom_bytes_cap": 256,
+        "resident_vram_bytes_cap": 256,
+        "resident_payload_bytes_cap": 256,
+        "obj_atlas_layout": null,
+        "oam_entries": 0,
+        "target_region_xywh": [
+          448,
+          112,
+          24,
+          24
+        ],
+        "placement_status": "proposed_for_redrawn_512x224_not_pixel_matched",
+        "sprite_size": null,
+        "sequence": [
+          {
+            "pose": 0,
+            "ticks60": 24
+          },
+          {
+            "pose": 1,
+            "ticks60": 24
+          }
+        ],
+        "start_phase_ticks60": 0,
+        "cycle_ticks60": 48,
+        "gesture": "Usar o pequeno gesto de mão do ciclo de observação; omitir entrada/saída."
+      }
+    },
+    {
+      "id": "china_remador",
+      "label": "Remador",
+      "stage": "KOF98-ChinaStage",
+      "source": {
+        "def_file": "KOF98-ChinaStage.def",
+        "sff_file": "KOF98-ChinaStage.sff",
+        "def_sha256": "3ea31f26de9e14954c4532a0d3745c41f43b13eac5fd077b1e5a357ea907a8a0",
+        "sff_sha256": "53e79f6120ae6bf007760120eb3053b8a6b2d5ec74011a0ef5721465b7261985",
+        "action": 15,
+        "original_action_entries": 20,
+        "original_cycle_ticks": 221,
+        "bg": [
+          {
+            "section": "BG 15",
+            "line": 122,
+            "comment": "背景・船頭",
+            "values": {
+              "type": "anim",
+              "actionno": "15",
+              "layerno": "0",
+              "start": "-300,232",
+              "delta": "1,.8",
+              "trans": "none",
+              "mask": "1",
+              "sin.y": "-3, 220"
+            },
+            "frames": []
+          }
+        ],
+        "alignment_bounds_relative_to_axis": [
+          -61,
+          -149,
+          11,
+          -73
+        ],
+        "poses": [
+          {
+            "pose": 0,
+            "group": 15,
+            "number": 0,
+            "source_axis": [
+              74,
+              165
+            ],
+            "source_size": [
+              109,
+              112
+            ],
+            "source_air_offset": [
+              0,
+              0
+            ],
+            "source_line": 133,
+            "source_ticks": 9,
+            "source_crop": null,
+            "preview": "selected/china_remador/pose-0.png"
+          },
+          {
+            "pose": 1,
+            "group": 15,
+            "number": 10,
+            "source_axis": [
+              73,
+              144
+            ],
+            "source_size": [
+              80,
+              87
+            ],
+            "source_air_offset": [
+              0,
+              0
+            ],
+            "source_line": 143,
+            "source_ticks": 20,
+            "source_crop": null,
+            "preview": "selected/china_remador/pose-1.png"
+          },
+          {
+            "pose": 2,
+            "group": 15,
+            "number": 17,
+            "source_axis": [
+              75,
+              160
+            ],
+            "source_size": [
+              101,
+              102
+            ],
+            "source_air_offset": [
+              0,
+              0
+            ],
+            "source_line": 150,
+            "source_ticks": 9,
+            "source_crop": null,
+            "preview": "selected/china_remador/pose-2.png"
+          }
+        ]
+      },
+      "target": {
+        "mode": "bg1_sparse_double_buffer",
+        "frame_count": 3,
+        "palette": "stage_bg_palette",
+        "changed_tiles_per_pose_cap": 24,
+        "art_bytes_per_pose_cap": 768,
+        "all_poses_rom_bytes_cap": 2304,
+        "resident_vram_bytes_cap": 1536,
+        "resident_payload_bytes_cap": 1536,
+        "obj_atlas_layout": null,
+        "oam_entries": 0,
+        "target_region_xywh": [
+          24,
+          120,
+          32,
+          48
+        ],
+        "placement_status": "proposed_for_redrawn_512x224_not_pixel_matched",
+        "sprite_size": null,
+        "sequence": [
+          {
+            "pose": 0,
+            "ticks60": 24
+          },
+          {
+            "pose": 1,
+            "ticks60": 30
+          },
+          {
+            "pose": 2,
+            "ticks60": 24
+          }
+        ],
+        "start_phase_ticks60": 0,
+        "cycle_ticks60": 78,
+        "gesture": "Alcance com remo à frente, puxada com tronco baixo, recuperação com remo erguido."
+      }
+    },
+    {
+      "id": "coreia_gaivota",
+      "label": "Gaivota compartilhada",
+      "stage": "KOF98-KoreaStage",
+      "source": {
+        "def_file": "KOF98-KoreaStage.def",
+        "sff_file": "KOF98-KoreaStage.sff",
+        "def_sha256": "25fe919bf929a2517963b49dac12e13a338e29b578957168fe477de7486055f8",
+        "sff_sha256": "882593181afefdb8ed6c757f8ae0e90cd05cc24735abbc5b404a3c1290d72168",
+        "action": 50,
+        "original_action_entries": 6,
+        "original_cycle_ticks": 54,
+        "bg": [
+          {
+            "section": "BG 50",
+            "line": 379,
+            "comment": "背景・鳥３",
+            "values": {
+              "type": "anim",
+              "actionno": "50",
+              "layerno": "1",
+              "start": "-500,220",
+              "delta": "1.1,.8",
+              "trans": "none",
+              "mask": "1",
+              "id": "50"
+            },
+            "frames": []
+          }
+        ],
+        "alignment_bounds_relative_to_axis": [
+          -27,
+          -45,
+          24,
+          39
+        ],
+        "poses": [
+          {
+            "pose": 0,
+            "group": 50,
+            "number": 0,
+            "source_axis": [
+              35,
+              19
+            ],
+            "source_size": [
+              67,
+              65
+            ],
+            "source_air_offset": [
+              0,
+              0
+            ],
+            "source_line": 406,
+            "source_ticks": 9,
+            "source_crop": null,
+            "preview": "selected/coreia_gaivota/pose-0.png"
+          },
+          {
+            "pose": 1,
+            "group": 50,
+            "number": 1,
+            "source_axis": [
+              35,
+              26
+            ],
+            "source_size": [
+              68,
+              62
+            ],
+            "source_air_offset": [
+              0,
+              0
+            ],
+            "source_line": 407,
+            "source_ticks": 9,
+            "source_crop": null,
+            "preview": "selected/coreia_gaivota/pose-1.png"
+          },
+          {
+            "pose": 2,
+            "group": 50,
+            "number": 2,
+            "source_axis": [
+              36,
+              55
+            ],
+            "source_size": [
+              70,
+              75
+            ],
+            "source_air_offset": [
+              0,
+              0
+            ],
+            "source_line": 408,
+            "source_ticks": 9,
+            "source_crop": null,
+            "preview": "selected/coreia_gaivota/pose-2.png"
+          }
+        ]
+      },
+      "target": {
+        "mode": "obj_resident",
+        "frame_count": 3,
+        "palette": "one_shared_obj_palette",
+        "changed_tiles_per_pose_cap": 4,
+        "art_bytes_per_pose_cap": 128,
+        "all_poses_rom_bytes_cap": 384,
+        "resident_vram_bytes_cap": 704,
+        "resident_payload_bytes_cap": 384,
+        "obj_atlas_layout": {
+          "pose_base_tiles": [
+            0,
+            2,
+            4
+          ],
+          "row_stride_tiles": 16,
+          "reserved_tile_span": 22,
+          "used_tiles": 12,
+          "unused_tiles_inside_span": 10
+        },
+        "oam_entries": 1,
+        "target_region_xywh": null,
+        "placement_status": "proposed_for_redrawn_512x224_not_pixel_matched",
+        "sprite_size": [
+          16,
+          16
+        ],
+        "sequence": [
+          {
+            "pose": 0,
+            "ticks60": 9
+          },
+          {
+            "pose": 1,
+            "ticks60": 9
+          },
+          {
+            "pose": 2,
+            "ticks60": 9
+          },
+          {
+            "pose": 1,
+            "ticks60": 9
+          }
+        ],
+        "start_phase_ticks60": 0,
+        "cycle_ticks60": 36,
+        "gesture": "Asa baixa, transição e asa alta; voltar pela transição sem armazenar uma quarta pose."
+      }
+    }
+  ],
+  "stage_budgets": [
+    {
+      "stage": "KOF98-ChinaStage",
+      "bg_total_tile_limit": 512,
+      "bg_reserved_dynamic_tiles_cap": 48,
+      "bg_static_tiles_cap": 464,
+      "animation_graphics_rom_bytes_cap": 2304,
+      "animation_vram_bytes_cap": 1536,
+      "extra_obj_palette_bytes": 0
+    },
+    {
+      "stage": "KOF98-JpnStreetStage",
+      "bg_total_tile_limit": 512,
+      "bg_reserved_dynamic_tiles_cap": 32,
+      "bg_static_tiles_cap": 480,
+      "animation_graphics_rom_bytes_cap": 1024,
+      "animation_vram_bytes_cap": 1024,
+      "extra_obj_palette_bytes": 0
+    },
+    {
+      "stage": "KOF98-KoreaStage",
+      "bg_total_tile_limit": 512,
+      "bg_reserved_dynamic_tiles_cap": 8,
+      "bg_static_tiles_cap": 504,
+      "animation_graphics_rom_bytes_cap": 640,
+      "animation_vram_bytes_cap": 960,
+      "extra_obj_palette_bytes": 32
+    },
+    {
+      "stage": "KOF98-Mid.EastStage",
+      "bg_total_tile_limit": 512,
+      "bg_reserved_dynamic_tiles_cap": 32,
+      "bg_static_tiles_cap": 480,
+      "animation_graphics_rom_bytes_cap": 1024,
+      "animation_vram_bytes_cap": 1024,
+      "extra_obj_palette_bytes": 0
+    }
+  ],
+  "gull_paths": {
+    "shared_clip": "coreia_gaivota",
+    "coordinate_space": "world_512x224_top_left",
+    "repeat_ticks60": 1440,
+    "max_simultaneous": 1,
+    "lifetime_ticks60": 352,
+    "parallax_q8": 256,
+    "source_parallax_x": 1.1,
+    "paths": [
+      {
+        "id": "passagem_0",
+        "source_action": 40,
+        "start_tick60": 0,
+        "start_xy": [
+          -16,
+          32
+        ],
+        "velocity_q4": [
+          24,
+          4
+        ],
+        "hflip": false
+      },
+      {
+        "id": "passagem_1",
+        "source_action": 45,
+        "start_tick60": 360,
+        "start_xy": [
+          512,
+          96
+        ],
+        "velocity_q4": [
+          -24,
+          -4
+        ],
+        "hflip": true
+      },
+      {
+        "id": "passagem_2",
+        "source_action": 50,
+        "start_tick60": 720,
+        "start_xy": [
+          -16,
+          96
+        ],
+        "velocity_q4": [
+          24,
+          -4
+        ],
+        "hflip": false
+      },
+      {
+        "id": "passagem_3",
+        "source_action": 55,
+        "start_tick60": 1080,
+        "start_xy": [
+          512,
+          32
+        ],
+        "velocity_q4": [
+          -24,
+          4
+        ],
+        "hflip": true
+      }
+    ]
+  },
+  "excluded": {
+    "Korea_action15": "48-frame background patch with distant birds; omitted from the minimal profile",
+    "JpnStreet_actions20_25": "Vehicles and overlapping spectators; composite static content before applying selected people patches",
+    "USAYard_action20": "Locomotive/environment, not people",
+    "Spain_action20": "Cat, not seagull",
+    "USAWharf_action45": "Rat, not seagull"
+  },
+  "docs": [
+    "https://alekmaul.github.io/pvsneslib/sprite_8h.html",
+    "https://alekmaul.github.io/pvsneslib/dma_8h.html"
+  ]
+}

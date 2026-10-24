@@ -1,0 +1,811 @@
+;---------------------------------------------------------------------------
+; Rugal Alpha
+[Statedef 6203]
+type = S
+movetype = A
+physics = S
+anim = 6203
+poweradd = 63
+ctrl = 0
+
+[State 6203, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 6203, Width]
+type = Width
+trigger1 = 1
+value = 10,0
+
+[State 6203, ParentVarAdd]
+type = ParentVarAdd
+trigger1 = !Time
+var(55) = -25
+
+[State 6203, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 6203, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 6203, Explod]
+type = Explod
+trigger1 = AnimElem = 4
+anim = 66203
+sprpriority = 4
+postype = p1
+pos = 0,0
+bindtime = -1
+ownpal = 1
+
+[State 6203, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 4
+value = 20,16
+
+[State 6203, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 6
+attr = S, SA
+animtype = Hard
+damage = 19,10
+getpower = 0
+givepower = 21,21
+hitflag = MAF
+guardflag = MA
+pausetime = 0,4
+sparkno = 2
+sparkxy = 0,-60
+hitsound = S1,3
+guardsound = S2,1
+ground.type = High
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = 0
+air.velocity = -4,-6
+air.fall = 1
+fall.recover = 0
+fall.xvelocity = -3
+fall.yvelocity = -2
+ground.cornerpush.veloff = 0
+guard.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+airguard.cornerpush.veloff = 0
+
+[State 6203, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 8
+attr = S, SA
+animtype = Hard
+damage = 19,10
+getpower = 0
+givepower = 21,21
+hitflag = MAF
+guardflag = MA
+pausetime = 0,4
+sparkno = 2
+sparkxy = 0,-10
+hitsound = S1,3
+guardsound = S2,1
+ground.type = Low
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = 0
+air.velocity = -4,-6
+air.fall = 1
+fall.recover = 0
+fall.xvelocity = -3
+fall.yvelocity = -2
+ground.cornerpush.veloff = 0
+guard.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+airguard.cornerpush.veloff = 0
+
+[State 6203, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+value = 16203
+
+[Statedef 16203]
+type = S
+movetype = A
+physics = S
+anim = 16203
+ctrl = 0
+
+[State 16203, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 16203, Width]
+type = Width
+trigger1 = 1
+value = 10,0
+
+[State 16203, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 16203, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 16203, Explod]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 66203
+sprpriority = 4
+postype = p1
+pos = 0,0
+bindtime = -1
+ownpal = 1
+
+[State 16203, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = 23,0
+
+[State 16203, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = 20,16
+
+[State 16203, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 3
+attr = S, SA
+animtype = Hard
+damage = 19,10
+getpower = 0
+givepower = 21,21
+hitflag = MAF
+guardflag = MA
+pausetime = 0,4
+sparkno = 2
+sparkxy = 0,-60
+hitsound = S1,3
+guardsound = S2,1
+ground.type = High
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = 0
+air.velocity = -4,-6
+air.fall = 1
+fall.recover = 0
+fall.xvelocity = -3
+fall.yvelocity = -2
+ground.cornerpush.veloff = 0
+guard.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+airguard.cornerpush.veloff = 0
+
+[State 16203, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 5
+attr = S, SA
+animtype = Hard
+damage = 19,10
+getpower = 0
+givepower = 21,21
+hitflag = MAF
+guardflag = MA
+pausetime = 0,4
+sparkno = 2
+sparkxy = 0,-10
+hitsound = S1,3
+guardsound = S2,1
+ground.type = Low
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = 0
+air.velocity = -4,-6
+air.fall = 1
+fall.recover = 0
+fall.xvelocity = -3
+fall.yvelocity = -2
+ground.cornerpush.veloff = 0
+guard.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+airguard.cornerpush.veloff = 0
+
+[State 16203, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+value = 26203
+
+[Statedef 26203]
+type = S
+movetype = A
+physics = S
+anim = 26203
+ctrl = 0
+
+[State 26203, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 26203, Width]
+type = Width
+trigger1 = 1
+value = 10,0
+
+[State 26203, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 26203, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 26203, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 4
+attr = S, SA
+animtype = Hard
+damage = 19,10
+getpower = 0
+givepower = 21,21
+hitflag = MAF
+guardflag = MA
+pausetime = 0,4
+sparkno = 2
+sparkxy = 0,-85
+hitsound = S1,3
+guardsound = S2,1
+ground.type = Low
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = 0
+air.velocity = -4,-6
+air.fall = 1
+fall.recover = 0
+fall.xvelocity = -3
+fall.yvelocity = -2
+ground.cornerpush.veloff = 0
+guard.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+airguard.cornerpush.veloff = 0
+
+[State 26203, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 5
+attr = S, SA
+animtype = Hard
+damage = 19,10
+getpower = 0
+givepower = 21,21
+hitflag = MAF
+guardflag = MA
+pausetime = 0,4
+sparkno = 2
+sparkxy = 0,-85
+hitsound = S1,3
+guardsound = S2,1
+ground.type = Low
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = 0,-6
+air.velocity = -4,-6
+fall = 1
+fall.recover = 0
+fall.xvelocity = -3
+fall.yvelocity = -2
+ground.cornerpush.veloff = 0
+guard.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+airguard.cornerpush.veloff = 0
+
+[State 26203, Explod]
+type = Explod
+trigger1 = AnimElem = 5
+anim = 56203
+sprpriority = 4
+postype = p1
+pos = 0,0
+bindtime = -1
+ownpal = 1
+
+[State 26203, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 5
+value = 20,16
+
+[State 26203, VelSet]
+type = VelSet
+trigger1 = !AnimTime
+y = -6.5
+
+[State 26203, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+value = 36203
+
+[Statedef 36203]
+type = A
+movetype = A
+physics = N
+anim = 36203
+ctrl = 0
+
+[State 36203, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 36203, Width]
+type = Width
+trigger1 = 1
+value = 10,0
+
+[State 36203, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 36203, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 36203, VelAdd]
+type = VelAdd
+trigger1 = Pos Y < 0
+y = .4
+
+[State 36203, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 1
+attr = A, SA
+animtype = Hard
+damage = 19,10
+getpower = 0
+givepower = 21,21
+hitflag = MAF
+guardflag = MA
+pausetime = 0,4
+sparkno = 2
+sparkxy = 0,-85
+hitsound = S1,3
+guardsound = S2,1
+ground.type = High
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = -1,-9
+air.velocity = -1,-9
+fall = 1
+fall.recover = 0
+fall.xvelocity = -1
+fall.yvelocity = -2
+ground.cornerpush.veloff = 0
+guard.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+airguard.cornerpush.veloff = 0
+yaccel = .49
+
+[State 36203, PosSet]
+type = PosSet
+trigger1 = !AnimTime
+y = 0
+
+[State 36203, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+value = 6030
+
+;---------------------------------------------------------------------------
+; Rugal Beta
+[Statedef 6204]
+type = S
+movetype = A
+physics = S
+anim = 6204
+poweradd = 63
+ctrl = 0
+
+[State 6204, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 6204, ParentVarAdd]
+type = ParentVarAdd
+trigger1 = !Time
+var(55) = -15
+
+[State 6204, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 6204, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 16205, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 4
+value = 3,2
+
+[State 6204, HitDef]
+type = HitDef
+trigger1 = !MoveContact
+attr = S, ST
+damage = 0
+getpower = 0
+givepower = 0
+hitsound = S1,1
+hitflag = M
+guardflag = 
+pausetime = 0,0
+sparkno = -1
+p2facing = 1
+fall = 1
+fall.recover = 0
+p1stateno = 16204
+p2stateno = 26204
+
+[State 6204, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+value = 6030
+
+;---------------------------------------------------------------------------
+; Rugal Beta 2
+[Statedef 16204]
+type = S
+movetype = A
+physics = S
+anim = 16204
+sprpriority = 2
+ctrl = 0
+
+[State 16204, TargetBind]
+type = TargetBind
+trigger1 = AnimElem = 1, >= 0 && AnimElem = 3, < 0
+time = 1
+pos = 74,0
+
+[State 16204, TargetBind]
+type = TargetBind
+trigger1 = AnimElem = 3, >= 0 && AnimElem = 4, < 0
+time = 1
+pos = 54,0
+
+[State 16204, TargetBind]
+type = TargetBind
+trigger1 = AnimElem = 4, >= 0 && AnimElem = 6, < 0
+time = 1
+pos = 32,0
+
+[State 16204, TargetBind]
+type = TargetBind
+trigger1 = AnimElem = 6, >= 0 && AnimElem = 7, < 0
+time = 1
+pos = 8,0
+
+[State 16204, TargetBind]
+type = TargetBind
+trigger1 = AnimElem = 7, >= 0 && AnimElem = 8, < 0
+time = 1
+pos = -20,0
+
+[State 16204, TargetBind]
+type = TargetBind
+trigger1 = AnimElem = 8, >= 0 && AnimElem = 9, < 0
+time = 1
+pos = -48,0
+
+[State 16204, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 9
+value = 23,2
+
+[State 16204, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 10, = 1
+attr = S, SA
+animtype = Hard
+damage = 87,20
+getpower = 0
+givepower = 21,21
+hitflag = MAF
+guardflag = MA
+pausetime = 0,4
+sparkno = 2
+sparkxy = 0,-45
+hitsound = S0,4
+guardsound = S2,1
+ground.type = High
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = 6,18
+air.velocity = 6,18
+p2facing = 1
+fall = 1
+fall.recover = 0
+fall.envshake.time = 10
+fall.envshake.ampl = -5
+ground.cornerpush.veloff = 0
+guard.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+airguard.cornerpush.veloff = 0
+
+[State 16204, Turn]
+type = Turn
+trigger1 = !AnimTime
+
+[State 16204, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+trigger2 = AnimElemNo(0) = 1 && enemyNear, StateNo != 26204
+value = 6030
+
+;---------------------------------------------------------------------------
+; Rugal Beta 3
+[Statedef 26204]
+type = A
+movetype = H
+physics = N
+sprpriority = 3
+ctrl = 0
+
+[State 26204, LifeAdd]
+type = LifeAdd
+trigger1 = !Time
+value = -38
+kill = 0
+
+[State 26204, ChangeAnim2]
+type = ChangeAnim2
+trigger1 = !Time
+value = 26204
+
+[State 26204, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 0
+
+[State 26204, Turn]
+type = Turn
+trigger1 = AnimElem = 4
+
+[State 26204, VelSet]
+type = VelSet
+trigger1 = AnimElem = 5
+x = -8
+
+[State 26204, SelfState]
+type = SelfState
+trigger1 = !AnimTime
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; Rugal Gamma
+[Statedef 6205]
+type = S
+movetype = A
+physics = S
+anim = 6205
+poweradd = 63
+ctrl = 0
+
+[State 6205, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 6205, Width]
+type = Width
+trigger1 = 1
+value = 20,-15
+
+[State 6205, ParentVarAdd]
+type = ParentVarAdd
+trigger1 = !Time
+var(55) = -10
+
+[State 6205, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 6205, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 6205, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = 23,1
+
+[State 6205, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 5
+value = 3,1
+
+[State 6205, HitDef]
+type = HitDef
+trigger1 = !MoveContact
+attr = S, ST
+damage = 0
+getpower = 0
+givepower = 0
+hitsound = S1,1
+hitflag = M
+guardflag = 
+pausetime = 0,0
+sparkno = -1
+p2facing = 1
+fall = 1
+fall.recover = 0
+p1stateno = 16205
+p2stateno = 26205
+
+[State 6205, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+value = 6030
+
+;---------------------------------------------------------------------------
+; Rugal Gamma 2
+[Statedef 16205]
+type = S
+movetype = A
+physics = S
+anim = 16205
+sprpriority = 3
+ctrl = 0
+
+[State 16205, TargetBind]
+type = TargetBind
+trigger1 = AnimElem = 1, >= 0 && AnimElem = 2, < 0
+time = 1
+pos = 60,-83
+
+[State 16205, TargetBind]
+type = TargetBind
+trigger1 = AnimElem = 2, >= 0 && AnimElem = 3, < 0
+time = 1
+pos = 48,-89
+
+[State 16205, TargetBind]
+type = TargetBind
+trigger1 = AnimElem = 3, >= 0 && AnimElem = 4, < 0
+time = 1
+pos = 42,-101
+
+[State 16205, TargetBind]
+type = TargetBind
+trigger1 = AnimElem = 4, >= 0 && AnimElem = 5, < 0
+time = 1
+pos = 32,-111
+
+[State 16205, TargetBind]
+type = TargetBind
+trigger1 = AnimElem = 5, >= 0 && AnimElem = 6, < 0
+time = 1
+pos = 26,-116
+
+[State 16205, TargetBind]
+type = TargetBind
+trigger1 = AnimElem = 6
+time = 1
+pos = 26,-20
+
+[State 16205, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = 23,2
+
+[State 16205, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 8, = 1
+attr = S, SA
+animtype = Up
+damage = 87,10
+getpower = 0
+givepower = 21,21
+hitflag = MAF
+guardflag = MA
+pausetime = 4,8
+sparkno = 2
+sparkxy = 0,-120
+hitsound = S0,4
+guardsound = S2,1
+ground.type = High
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = -1,-17
+air.velocity = -1,-17
+p2facing = 1
+envshake.time = 5
+envshake.ampl = -4
+fall = 1
+fall.recover = 0
+fall.envshake.time = 15
+fall.envshake.ampl = -6
+ground.cornerpush.veloff = 0
+guard.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+airguard.cornerpush.veloff = 0
+yaccel = .5
+
+[State 16205, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+trigger2 = AnimElemNo(0) = 1 && enemyNear, StateNo != 26205
+value = 6030
+
+;---------------------------------------------------------------------------
+; Rugal Gamma 3
+[Statedef 26205]
+type = A
+movetype = H
+physics = N
+sprpriority = 2
+ctrl = 0
+
+[State 26205, ChangeAnim2]
+type = ChangeAnim2
+trigger1 = !Time
+value = 26205
+
+[State 26205, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 0
+
+[State 26205, SelfState]
+type = SelfState
+trigger1 = !AnimTime
+value = 5050

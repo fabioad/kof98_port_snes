@@ -1,0 +1,212 @@
+{
+  "_source": "assets/kof98data/system.def ([Select Info], [SelectBGdef], [Begin Action 3/160/170], [Music] select.bgm)",
+  "_note": "kof98data has no standalone Select.def; the select screen is defined inside system.def. Coordinates are in the MUGEN 1.0 localcoord space 640x480.",
+  "info": {
+    "motif": "MUGEN1",
+    "author": "Elecbyte",
+    "mugenversion": "1.0",
+    "localcoord": [640, 480]
+  },
+  "files": {
+    "spr": "Select.sff",
+    "systemSpr": "system.sff",
+    "snd": "system.snd",
+    "bgm": "data\\KOF 98\\Select.mp3",
+    "bgmVolume": 255,
+    "bgmLoop": 1
+  },
+  "selectInfo": {
+    "fadein": { "time": 10 },
+    "fadeout": { "time": 25 },
+    "grid": {
+      "rows": 11,
+      "columns": 11,
+      "wrapping": 1,
+      "pos": [18, 29],
+      "showemptyboxes": 0,
+      "moveoveremptyboxes": 0
+    },
+    "cell": {
+      "size": [54, 54],
+      "spacing": 1,
+      "bgSpr": [150, 0],
+      "randomSpr": [151, 0],
+      "randomSwitchtime": 4
+    },
+    "portrait": {
+      "spr": [9000, 0],
+      "offset": [0, 0],
+      "scale": [0.5, 0.5]
+    },
+    "title": { "offset": -1, "font": -1 },
+    "p1": {
+      "cursor": {
+        "startcell": [0, 0],
+        "activeAnim": 160,
+        "doneSpr": [161, 0],
+        "moveSnd": [100, 0],
+        "doneSnd": [100, 1],
+        "randomMoveSnd": [100, 0]
+      },
+      "face": { "spr": [9000, 0], "offset": [73, 304], "scale": [0.5, 0.5], "facing": 1 },
+      "name": { "offset": [101, 380], "font": [8, 0, 0], "spacing": [0, 20] },
+      "teammenu": {
+        "pos": [0, 0],
+        "moveSnd": [100, 0],
+        "valueSnd": [100, 0],
+        "doneSnd": [100, 1],
+        "itemOffset": [0, 0],
+        "itemSpacing": [0, 0],
+        "itemActiveFont": [2, 0, 1],
+        "itemActive2Font": [2, 0, 1],
+        "valueEmptyIconOffset": [22, 346],
+        "valueEmptyIconSpr": [181, 0],
+        "valueSpacing": [40, 0]
+      }
+    },
+    "p2": {
+      "cursor": {
+        "startcell": [0, 0],
+        "activeAnim": 170,
+        "doneSpr": [171, 0],
+        "blink": 0,
+        "moveSnd": [100, 0],
+        "doneSnd": [100, 1],
+        "randomMoveSnd": [100, 0]
+      },
+      "face": { "spr": [9000, 0], "offset": [566, 304], "scale": [0.5, 0.5], "facing": -1 },
+      "name": { "offset": [541, 380], "font": [8, 0, 0], "spacing": [0, 20] },
+      "teammenu": {
+        "pos": [0, 0],
+        "moveSnd": [100, 0],
+        "valueSnd": [100, 0],
+        "doneSnd": [100, 1],
+        "itemOffset": [0, 0],
+        "itemSpacing": [0, 0],
+        "itemActiveFont": [3, 0, 1],
+        "itemActive2Font": [3, 0, 1],
+        "valueEmptyIconOffset": [582, 346],
+        "valueEmptyIconSpr": [191, 0],
+        "valueSpacing": [-40, 0]
+      }
+    },
+    "stageSelect": {
+      "pos": [320, 461],
+      "activeFont": [4, 0, 0],
+      "active2Font": [4, 0, 0],
+      "doneFont": [4, 0, 0],
+      "moveSnd": [100, 0],
+      "doneSnd": [100, 1]
+    },
+    "sounds": {
+      "cursorMove": [100, 0],
+      "cursorDone": [100, 1],
+      "cancel": [100, 2],
+      "randomMoveCancel": 0
+    },
+    "teammenuMoveWrapping": 0
+  },
+  "background": {
+    "spr": "Select.sff",
+    "layers": [
+      { "type": "normal", "spriteno": [100, 0], "layerno": 0, "start": [-320, 0], "mask": 1 },
+      { "type": "normal", "spriteno": [100, 1], "layerno": 0, "start": [-320, 0], "mask": 1, "tile": [0, 1], "velocity": [0, -1] },
+      { "type": "normal", "spriteno": [100, 2], "layerno": 0, "start": [-320, 0], "mask": 1 },
+      { "type": "normal", "spriteno": [100, 3], "layerno": 0, "start": [-320, 0], "mask": 1 },
+      { "type": "normal", "spriteno": [100, 4], "layerno": 0, "start": [-320, 0], "mask": 1 },
+      { "type": "anim", "actionno": 3, "layerno": 1, "start": [-320, 0], "mask": 1 }
+    ]
+  },
+  "actions": {
+    "3": {
+      "_comment": "SelectBG scroll/flicker strip: 44 frames x2 ticks, then alpha ramp AS256D128->AS0D256 x1 tick each, then loop end",
+      "frames": [
+        { "spr": [0, 1],  "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 2],  "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 3],  "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 4],  "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 5],  "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 6],  "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 7],  "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 8],  "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 9],  "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 10], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 11], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 12], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 13], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 14], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 15], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 16], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 17], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 18], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 19], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 20], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 21], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 22], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 23], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 24], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 25], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 26], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 27], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 28], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 29], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 30], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 31], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 32], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 33], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 34], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 35], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 36], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 37], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 38], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 39], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 40], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 41], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 42], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 43], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 2 },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS256D128" },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS246D136" },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS236D144" },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS226D152" },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS216D160" },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS206D168" },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS196D176" },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS186D184" },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS176D192" },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS166D200" },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS156D208" },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS146D216" },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS136D224" },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS126D232" },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS116D240" },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS96D248" },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS76D256" },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS56D256" },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS16D256" },
+        { "spr": [0, 44], "offset": [0, 0], "ticks": 1, "trans": "AS0D256" }
+      ],
+      "loopEnd": { "spr": [-1, -1], "offset": [0, 0], "ticks": -1 }
+    },
+    "160": {
+      "_comment": "P1 active cursor blink",
+      "frames": [
+        { "spr": [160, 0], "offset": [0, 0], "ticks": 4 },
+        { "spr": [160, 1], "offset": [0, 0], "ticks": 4 }
+      ]
+    },
+    "170": {
+      "_comment": "P2 active cursor blink",
+      "frames": [
+        { "spr": [170, 0], "offset": [0, 0], "ticks": 4 },
+        { "spr": [170, 1], "offset": [0, 0], "ticks": 4 }
+      ]
+    }
+  },
+  "snesNotes": {
+    "portraitGroup": "9000,0 = per-char cell portrait (from each char's own SFF in MUGEN); on SNES these are the small grid faces",
+    "faceGroup": "9000,0 at .5 scale = big side portraits; p1 at (73,304) facing 1, p2 at (566,304) facing -1",
+    "gridPixelSize": "11 cols x (54+1) = 605px wide in 640x480 space; scale or crop to fit 256x224",
+    "sndIndices": "system.snd group 100: 0=move, 1=done/confirm, 2=cancel"
+  }
+}

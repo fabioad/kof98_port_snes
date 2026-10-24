@@ -1,0 +1,490 @@
+;Blank For now. :P
+;
+[Statedef -2]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+; Do not modify anything below.
+[State 300, Land]
+type = PlaySnd
+triggerall = numenemy
+triggerall = enemynear, animelemtime(1) = 1
+trigger1 = P2Stateno = 1404 && P2MoveType = H
+value = 5,6
+persistent = 0
+
+[State 300, Land]
+type = PlaySnd
+triggerall = numenemy
+triggerall = enemynear, animelemtime(1) = 1
+trigger1 = P2Stateno = 2132 && P2MoveType = H
+value = 5,14
+persistent = 0
+
+[State 1000: Helper]
+type = explod
+triggerall = numenemy
+triggerall = enemynear, animelemtime(1) = 1
+trigger1 = P2Stateno = 2132 && P2MoveType = H
+anim = 12505
+pos = 10,-54
+postype = p2  ;p2,front,back,left,right
+sprpriority = 2
+ownpal = 1
+persistent = 0
+
+[State 11030, remove fx]
+type = RemoveExplod
+trigger1 = stateno != 2000
+ID = 2000
+
+[State 11030, remove fx]
+type = RemoveExplod
+trigger1 = stateno != 194
+ID = 194
+
+[State -2, Stop]
+type = StopSnd
+trigger1 = stateno != 101
+channel = 27
+
+[State -2, Width]
+type = Width
+Trigger1= Movetype != h 
+edge = 8,0
+ignorehitpause=1
+
+[State -2, Jump reset]
+type = VarSet
+trigger1 = stateno != [40,50]
+var(2) = 0
+
+[State -2, Afterimage Remover]
+type = AfterImageTime
+triggerall = 1
+trigger1 = MoveType = H
+trigger2 = StateNo = [0,40]
+trigger3 = StateNo = [52,199]
+trigger4 = (StateNo = [200,749]) && PrevstateNo != 50
+trigger5 = Stateno = [5000,5999]
+trigger6 = Stateno = [1000,1999]
+time = 0
+
+[State -2, hitby]
+type = hitby
+trigger1 = life > 0
+trigger1 = stateno = 5100 || stateno = 5110 || stateno = 5120
+trigger1 = anim != 5120
+value = SCA, NA, SA, HA, NP, SP, HP, NT, ST, HT
+time = 1
+
+[State -2, P2 Safe Fall]
+type= targetstate
+trigger1= numtarget=1
+trigger1= target,command="recovery"
+trigger1= target,pos y>=-20 && target,vel y>0
+trigger1= target,alive && target,hitfall && target,gethitvar(fall.recover)
+trigger1= target,stateno=5030 || target,stateno=5035 || target,stateno=5050 || target,stateno=5071
+value= 5205
+ignorehitpause= 1
+
+[State 13000, EnvColor]
+type = EnvColor
+trigger1 = ProjHit2010 = 1
+value = 255,255,255
+time = 1
+under = 1
+ignorehitpause = 1
+persistent = 0
+;---------------------------------------------------------------------------
+;KOF Juggle system by [E]
+;---------------------------------------------------------------------------
+[State -2, ground combos]
+type = AssertSpecial
+triggerall = NumTarget
+trigger1 = Target,StateType != A  
+flag = NoJuggleCheck
+
+[State -2, juggle decreasing]
+type = varSet
+trigger1 = var(16)>0
+var(16) = var(16)-1
+ignorehitpause = 0
+
+[State -2, juggle set basics]
+type= varSet
+triggerall= movehit = 1
+trigger1 = stateno = [200,235] 
+trigger2 = stateno = [400,635]
+var(16)= ifelse(var(56) = 1,6,0)
+
+[State -2, juggle set CD]
+type = varSet
+triggerall = movehit = 1
+trigger1 = stateno = 240
+trigger2 = stateno = 640
+var(16) = ifelse(var(56) = 1,100,0)
+
+[State -2, Launchers]
+type = varSet
+triggerall = movehit = 1 
+trigger1 = stateno = 2010 
+var(16) = 100
+
+[State -2, Launchers]
+type = varSet
+triggerall = movehit = 1 
+trigger1 = stateno = 2020 
+trigger2 = stateno = 2000 
+var(16) = 100
+
+[State -2, juggle checking regular stuff]
+type = AssertSpecial
+triggerall = var(16) > 0 
+trigger1 = stateno = [200,235] 
+trigger2 =  stateno = [400,635]
+trigger3 = stateno = [250,260] 
+trigger4 = stateno = 240
+trigger5 = stateno = [640,699]
+trigger6 = stateno = 2000
+trigger7 = stateno = 2012
+trigger8 = stateno = 2020
+trigger9 = stateno = [1080,1082]
+trigger10 = numhelper(10000)
+trigger10 = helper(10000), stateno = 10001
+trigger11 = numhelper(10010)
+trigger11 = helper(10010), stateno = 10011
+trigger12 = numhelper(10080)
+trigger12 = helper(10080), stateno = 10081
+flag = NoJuggleCheck
+
+[State -2, juggle checking always juggle]
+type = AssertSpecial
+trigger1 = stateno = 2010 && anim = 2011
+trigger2 = stateno = 2025
+trigger3 = stateno = 2070
+flag = NoJuggleCheck
+;================================================================================
+; ------- COUNTER HIT (Vans' Code, Based on Sander's Method) --------
+;===============================================================================
+[State -2, VarSet];Checks if opponent is in attack state
+type = VarSet
+triggerall = numenemy
+trigger1 = enemy, movetype = a
+var(56) = 1
+ignorehitpause = 1
+
+[State -2, VarSet];This resets the condition if counter not succesful and succesful
+type = VarSet
+triggerall = numenemy
+trigger1 = enemy, movetype = i || var(57) >= 1  ;Enemy is Idle | Counter was Succesful
+trigger2 = var(57) > 10 && enemy, movetype = h  ;10 ticks passed & enemy is on gethit state
+var(56) = 0
+ignorehitpause = 1
+
+[State -2, VarSet];Counter Hit Succesful
+type = VarSet
+trigger1 = var(56) = 1 && movehit ;Counter Check Ok, Move Hit Succesfully.
+trigger1 = stateno != [190,199] ;Does not activate during intros.
+trigger1 = stateno != [900,979] ;Does not activate during throws.
+trigger1 = stateno != [3000,3099] ;Don't activate during throws.
+trigger1 = stateno != [3700,3799] ;Don't activate during throws.
+trigger2 = var(56) = 1 && projhit = 1  ;Counter Check Ok, Projectile Hit Succesfully.
+var(57) = 1
+ignorehitpause = 1
+
+[State -2, VarAdd];Counter Hit Timer
+type = VarAdd
+trigger1 = var(57) >= 1 ;Counter was succesful
+var(57) = 1
+ignorehitpause = 1
+
+[State -2, VarSet];Counter Hit Reset
+type = VarSet
+trigger1 = var(57) >= 22 && movehit ;Reset if 22 ticks passed and move hit
+trigger2 = p2movetype != h ;Reset if P2 is no longer in gethit state
+trigger3 = movetype = h ;Reset if P1 is getting hit
+trigger4 = var(57) >= 22 && projhit = 1 ;Reset if 22 ticks passed and projectile hit
+var(57) = 0
+ignorehitpause = 1
+
+[State -2, AssertSpecial];This will award free juggles for Counter Hit.
+type = AssertSpecial
+trigger1 = var(57) > 0
+flag = nojugglecheck
+
+[State -2, EnvColor];This will produce a flash a la KOF2K2
+type = EnvColor
+triggerall = numenemy
+triggerall = stateno != [800,899] ;Does not activate during intros.
+triggerall = stateno != [2000,2999] ;Don't activate during Hyper Moves
+triggerall = enemy, movetype = h ;Enemy was indeed HIT, otherwise this'd be retarded.
+trigger1 = var(56) = 1 && movehit  ;Move hit, Ok
+trigger2 = var(56) = 1 && projhit = 1 ;Projectile hit, Ok
+value = 255,255,255
+time = 1
+under = 1
+ignorehitpause = 1
+persistent = 0
+
+[State -2, Explod];Counter Explod for P1 Side.
+type = Explod
+triggerall = numenemy
+triggerall = var(56) = 1 && numexplod(57) = 0 && teamside = 1 ;Counter Ok, Explod has not played, P1 Side
+triggerall = enemy, movetype = h ;Enemy was indeed HIT, otherwise this'd be retarded.
+triggerall = stateno != [800,899] ;Does not activate during throws.
+trigger1 = movehit ;Move hits
+trigger2 = projhit = 1 ;Projectile Hits
+anim = 13000
+pos = 160,234
+postype = left  ;p2,front,back,left,right
+removetime = -2
+supermove = 1
+scale = 0.5,0.5
+sprpriority = 0
+id = 57
+bindtime = -1
+ontop = 1
+ownpal = 1
+ignorehitpause = 1
+pausemovetime = -1
+
+[State -2, Explod];Counter Explod for P2 Side.
+type = Explod
+triggerall = numenemy
+triggerall = var(56) = 1 && numexplod(57) = 0 && teamside = 2 ;Counter Ok, Explod has not played, P2 Side
+triggerall = enemy, movetype = h ;Enemy was indeed HIT, otherwise this'd be retarded.
+triggerall = stateno != [800,899] ;Does not activate during throws.
+trigger1 = movehit ;Move hits
+trigger2 = projhit = 1 ;Projectile Hits
+anim = 13001
+pos = 160,234
+postype = left  ;p2,front,back,left,right
+removetime = -2
+supermove = 1
+scale = 0.5,0.5
+sprpriority = 0
+id = 57
+bindtime = -1
+ontop = 1
+ownpal = 1
+ignorehitpause = 1
+pausemovetime = -1
+;================================================================================
+; ------- DAMAGE SCALING (POTS' Code) --------
+;===============================================================================
+
+[State -2, Damage based on hits]
+type=varset
+trigger1= numenemy
+fvar(12)= ifelse(enemynear,gethitvar(hitcount)<3, 15, ifelse(enemynear,gethitvar(hitcount)>=15, 2, 26-enemynear,gethitvar(hitcount))) / 24.0
+ignorehitpause=1
+
+[State -2, Reset var when the opponent recovers]
+type=varset
+trigger1= numenemy
+trigger1= (enemynear,movetype!=H)
+trigger2= !numenemy
+fvar(12)=1
+
+[State -2, Dampener itself]
+type=attackmulset
+trigger1= 1
+value=fvar(12)
+ignorehitpause=1
+;================================================================================
+; ------- KOF Cornerpush System by Vans --------
+;===============================================================================
+[State -2, Superpause Check]
+type = VarAdd
+trigger1 = Var(6)
+var(6) = -1
+
+[State -2, Reset Time counter]
+type = VarSet
+trigger1 = movecontact = 1
+var(12) = 0
+
+[State -2, Accel]
+type = VarSet
+triggerall = roundstate = 2
+triggerall = Var(6) <= 0
+triggerall = numtarget >= 1
+trigger1 = target, hitshakeover
+fvar(6) = (target, gethitvar(xvel)*exp((-0.1886)*((var(12)))))
+
+[State -2, Push]
+type = PosAdd
+triggerall = roundstate = 2
+triggerall = !var(6)
+triggerall = numtarget >= 1
+triggerall = (target, BackEdgeBodyDist <= 0) || (target, FrontEdgeBodyDist <= 0)
+triggerall = ProjContact = 0, < 50
+triggerall = stateno != [900,949]
+triggerall = stateno != [956,979]
+triggerall = numhelper(10010) != 1
+triggerall = enemynear,statetype != A
+trigger1 = Statetype != A
+x = ifelse(facing = -1,fvar(6),-fvar(6))
+
+[State -2, Increase]
+type = VarSet
+triggerall = numtarget >= 1
+triggerall = target, hitshakeover
+trigger1 = Var(6) <= 0
+trigger1 = var(12)
+var(12) = var(12)+1
+
+[State -2, Time counter]
+type = VarSet
+trigger1 = !var(12)
+trigger1 = fvar(6)
+var(12) = 1
+
+[State -2, Freeze Pos During Superpause]
+type = PosFreeze
+trigger1 = Var(6)
+value = 1
+
+[State -2, Drop]
+type = VarSet
+triggerall = fvar(6)
+trigger1 = !numtarget
+trigger2 = projcontact = 1
+trigger3 = movecontact = 1
+fvar(6) = 0
+ignorehitpause = 1
+
+[State -2, Drop]
+type = VarSet
+triggerall = fvar(8)
+trigger1 = !numtarget
+trigger2 = projcontact = 1
+trigger3 = numtarget >= 1 && target, gethitvar(xvel) = 0
+var(17) = 0
+;================================================================================
+; ------- Explosion System (Vans Code)--------
+;===============================================================================
+[State 1000: Helper]
+type = Helper
+triggerall = !NumHelper(12504)
+trigger1 = numtarget(2000) && movehit
+trigger2 = numhelper(10010)
+trigger2 = helper(10010), movehit = 1 
+trigger3 = P2Stateno = 2132 
+trigger4 = numhelper(10080)
+trigger4 = helper(10080), movehit = 1 
+trigger5 = P2Stateno = 2171 
+helpertype = Normal
+name = "Small Expl"
+id = 12504
+pos = 0, 0 ;50
+postype = p2
+facing = 1
+stateno = 12504
+keyctrl = 0
+ownpal = 1
+supermovetime = 9999999999999999
+pausemovetime = 9999999999999999
+persistent = 0
+ignorehitpause = 1
+
+;================================================================================
+; ------- Slowmotion System By CCIronMugen --------
+;===============================================================================
+[State -2]
+type = varset
+trigger1 = numhelper(10010)
+trigger1 = helper(10010), movehit = 1 
+trigger2 = numhelper(10080)
+trigger2 = helper(10080), movehit = 1 
+var(18) = 18
+
+[State -2]
+type = varset
+triggerall = numtarget(2030)
+trigger1 = target(2030), stateno = 2132
+var(18) = 10
+
+[State -2]
+type = VarAdd
+trigger1 = var(18) != 0
+trigger1 = (gametime%3) = 0
+var(18) = -1
+
+[State -2]
+type = Pause
+triggerall = (gametime%3) = 0
+trigger1 = var(18) != 0
+time = 1
+movetime = 0
+;================================================================================
+; ------- Throw Limitation by OrochiKOF97 --------
+;===============================================================================
+[State -2, Guard Var]
+type = VarSet
+trigger1 = stateno = [200,505] ; Non-Air basic moves states.
+trigger1 = moveguarded > 0 ; This is the key : checks if opponent has guarded a basic attack
+trigger2 = stateno = [600,710] ; Air Basic Moves
+trigger2 = movecontact > 0 ; This includes both moveguarded & movehit as well
+v = 19
+value = 30
+persistent = 0
+ignorehitpause = 1
+
+[State -2, Guard Var 2]
+type = VarAdd
+triggerall =!var(6)
+trigger1 = var(19) > 0
+var(19) = -1
+ignorehitpause = 1
+
+[State -2, Guard Var 3]
+type = VarSet
+triggerall = !var(6)
+trigger1 = var(19) < 0
+var(19) = 0
+persistent = 0
+ignorehitpause = 1
+;--------------------------------------------------------------------------------------
+;--------------------------------------------------------------------------------------
+[Statedef 5900]
+type = S
+
+[State 5900, 1] ;Clear all int variables
+type = VarRangeSet
+trigger1 = roundsexisted = 0
+value = 0
+
+[State 5900, 2] ;Clear all float variables
+type = VarRangeSet
+trigger1 = roundsexisted = 0
+fvalue = 0
+
+[State 5900, 3] ;Intro for first round
+type = ChangeState
+trigger1 = roundsexisted = 0
+trigger2 = roundno = 1
+value = 190
+
+

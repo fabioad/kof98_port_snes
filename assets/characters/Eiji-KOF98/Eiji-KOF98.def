@@ -1,0 +1,36 @@
+[Info]
+Name         = "Eiji Kisaragi"
+DisplayName  = "Eiji"
+Author       = "ikaruga"
+VersionDate  = 05,27,2018
+MugenVersion = 1.0
+Pal.Defaults = 4
+localcoord   = 320
+
+[Files]
+Cmd      = Eiji.cmd
+Cns      = Constants.cns
+St       = Eiji.cns
+St1      = Eiji-N.cns
+St2      = Eiji-S.cns
+St3      = Eiji-H.cns
+St4      = Eiji-2-3.cns
+St5      = Helper.cns
+St6      = Config.cns
+St7      = Member.cns
+StCommon = common_kof.cns
+Sprite   = Eiji.sff
+Anim     = Eiji.air
+Sound    = Eiji.snd
+
+;---カラーパレット---
+
+Pal1 = act/act02.act
+Pal2 = act/act04.act
+Pal3 = act/act06.act
+Pal4 = act/act01.act
+Pal5 = act/act03.act
+Pal6 = act/act05.act
+
+;PalXX  = act/act07.act
+;PalXX  = act/act08.act

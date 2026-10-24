@@ -1,0 +1,1417 @@
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+;---------------------------------------------------------------------------
+;---------------------------------------------------------------------------
+;(HELPER)Ｐちゃんの動作
+;---------------------------------------------------------------------------
+;---------------------------------------------------------------------------
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+;---------------------------------------------------------------------------
+;---------------------------------------------------------------------------
+; 待機
+[Statedef 3000]
+type    = S
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3000
+sprpriority = 2
+ctrl = 0
+
+;---------------------[アニメーション関係]
+[state a]
+type = VarRandom
+trigger1 = animtime = 0
+v = 1
+range = 0,20
+
+[state a]
+type = changeanim
+trigger1 = animtime = 0
+trigger1 = anim = 3006
+value = 3000
+
+[state a]
+type = changeanim
+trigger1 = animtime = 0
+trigger1 = var(1) = 1
+value = 3006
+
+;---------------------[]
+[state a]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[state a]
+type = turn
+trigger1 = facing != root,facing
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+[state a];ヘッドスピンアタック
+type = changestate
+trigger1 = root,stateno = 1000
+trigger1 = root,animelem = 1
+value = 3010
+
+[state a];フライングスピンアタック
+type = changestate
+trigger1 = root,stateno = 1100
+trigger1 = root,animelem = 1
+value = 3015
+
+[state a];ダンシングダイブ
+type = changestate
+trigger1 = root,stateno = 1200
+trigger1 = root,animelem = 1
+value = 3020
+
+[state a];ブレイクストーム
+type = changestate
+trigger1 = root,stateno = 1300
+trigger1 = root,animelem = 1
+value = 3030
+
+[state a];ブレイクスパイラル
+type = changestate
+trigger1 = root,stateno = 2001
+trigger2 = root,stateno = 2302
+value = 3040
+
+[state a];ダックダンス
+type = changestate
+trigger1 = root,stateno = 2100
+value = 3050
+
+[state a];スーパーポンピングマシーン
+type = changestate
+trigger1 = root,stateno = 2150
+trigger1 = root,animelem = 1
+value = 3070
+
+[state a];KO
+type = changestate
+trigger1 = root,lose = 1
+value = 3110
+
+[state a];ダメージ
+type = changestate
+trigger1 = root,movetype = H
+value = 3100
+
+[state a];タイムオーバー
+type = changestate
+trigger1 = root,stateno = 170
+value = 3170
+
+[state a];勝利1
+type = changestate
+trigger1 = root,stateno = 181
+value = 3181
+
+[state a];勝利2
+type = changestate
+trigger1 = root,stateno = 182
+value = 3182
+
+[state a];登場
+type = changestate
+trigger1 = root,stateno = 190
+value = 3190
+
+[state a];挑発
+type = changestate
+trigger1 = root,stateno = 195
+value = 3195
+
+
+[state a]
+type = changestate
+trigger1 = ParentDist x <= -30 || ParentDist x >= 30
+value = 3001
+
+
+;---------------------------------------------------------------------------
+; 歩き
+[Statedef 3001]
+type    = S
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3001
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = turn
+trigger1 = time = 0
+trigger1 = ParentDist x <= -30
+
+[state a]
+type = posadd
+trigger1 = 1
+x = 1
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+[state a];ヘッドスピンアタック
+type = changestate
+trigger1 = root,stateno = 1000
+trigger1 = root,animelem = 1
+value = 3010
+
+[state a];フライングスピンアタック
+type = changestate
+trigger1 = root,stateno = 1100
+trigger1 = root,animelem = 1
+value = 3015
+
+[state a];ダンシングダイブ
+type = changestate
+trigger1 = root,stateno = 1200
+trigger1 = root,animelem = 1
+value = 3020
+
+[state a];ブレイクストーム
+type = changestate
+trigger1 = root,stateno = 1300
+trigger1 = root,animelem = 1
+value = 3030
+
+[state a];ブレイクスパイラル
+type = changestate
+trigger1 = root,stateno = 2001
+trigger2 = root,stateno = 2302
+value = 3040
+
+[state a];ダックダンス
+type = changestate
+trigger1 = root,stateno = 2100
+value = 3050
+
+[state a];スーパーポンピングマシーン
+type = changestate
+trigger1 = root,stateno = 2150
+trigger1 = root,animelem = 1
+value = 3070
+
+[state a];KO
+type = changestate
+trigger1 = root,lose = 1
+value = 3110
+
+[state a];ダメージ
+type = changestate
+trigger1 = root,movetype = H
+value = 3100
+
+[state a];タイムオーバー
+type = changestate
+trigger1 = root,stateno = 170
+value = 3170
+
+[state a];勝利1
+type = changestate
+trigger1 = root,stateno = 181
+value = 3181
+
+[state a];勝利2
+type = changestate
+trigger1 = root,stateno = 182
+value = 3182
+
+[state a];挑発
+type = changestate
+trigger1 = root,stateno = 195
+value = 3195
+
+
+[state a];奪取
+type = changestate
+trigger1 = ParentDist x <= -120 || ParentDist x >= 120
+value = 3002
+
+[state a];立ち
+type = changestate
+trigger1 = ParentDist x >= -12 && ParentDist x <= 12
+value = 3000
+
+;---------------------------------------------------------------------------
+; 奪取
+[Statedef 3002]
+type    = A
+movetype= I
+physics = N
+velset = 0,-4
+juggle = 0
+anim = 3002
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = turn
+trigger1 = time = 0
+trigger1 = ParentDist x <= -120
+
+[state a]
+type = velset
+trigger1 = time = 0
+x = 3
+
+[state a]
+type = veladd
+trigger1 = 1
+y = 0.2
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+[state a];着地
+type = changestate
+trigger1 = vel y >0 && pos y >=0
+value = 3003
+
+;---------------------------------------------------------------------------
+; ダッシュ着地
+[Statedef 3003]
+type    = S
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3003
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+[state a];立ち
+type = changestate
+trigger1 = animtime = 0
+value = 3000
+
+
+;---------------------------------------------------------------------------
+; ヘッドスピンアタック
+[Statedef 3010]
+type    = S
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3010
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = turn
+trigger1 = facing != root,facing
+
+[state a]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[速度]
+[state a]
+type = velset
+trigger1 = time = 11 && root,anim = 1000
+trigger2 = time = 15 && root,anim = 1001
+x = 8
+
+;---------------------[ステート移行]
+[state a];ダメージ
+type = changestate
+trigger1 = root,movetype = H
+trigger2 = root,stateno >= 2000
+value = 3000
+
+[state a];スライディング
+type = changestate
+trigger1 = root,stateno = 1005
+value = 3011
+
+[state a];逆スライディング
+type = changestate
+trigger1 = root,movecontact
+trigger1 = root,anim = 1000
+value = 3012
+
+[state a];回転
+type = changestate
+trigger1 = root,movecontact
+trigger1 = root,anim = 1001
+value = 3013
+
+
+;---------------------------------------------------------------------------
+; ヘッドスピンアタック・スライディング
+[Statedef 3011]
+type    = S
+movetype= I
+physics = N
+;velset = 0,0
+juggle = 0
+anim = 3011
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[速度]
+[state a]
+type = veladd
+trigger1 = vel x > 0
+x = -1
+
+[state a]
+type = velset
+trigger1 = vel x <= 0
+x = 0
+
+;---------------------[ステート移行]
+[state a];待機
+type = changestate
+trigger1 = animtime = 0
+value = 3000
+
+;---------------------------------------------------------------------------
+; ヘッドスピンアタック・逆スライディング
+[Statedef 3012]
+type    = S
+movetype= I
+physics = N
+;velset = 0,0
+juggle = 0
+anim = 3010
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[速度]
+[state a]
+type = velset
+trigger1 = time = 14
+x = -8
+
+[state a]
+type = veladd
+trigger1 = vel x < 0
+x = 1.2
+
+[state a]
+type = velset
+trigger1 = vel x >= 0
+x = 0
+
+;---------------------[ステート移行]
+[state a];待機
+type = changestate
+trigger1 = time = 30
+value = 3000
+
+
+;---------------------------------------------------------------------------
+; ヘッドスピンアタック・回転
+[Statedef 3013]
+type    = S
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3010
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[速度]
+
+;---------------------[ステート移行]
+[state a];待機
+type = changestate
+trigger1 = time = 52
+value = 3000
+
+;---------------------------------------------------------------------------
+; フライングスピンアタック
+[Statedef 3015]
+type    = A
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3015
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = turn
+trigger1 = facing != root,facing
+
+
+[state a]
+type = velset
+trigger1 = animelem = 2
+x = 4
+y = -4
+
+[state a]
+type = veladd
+trigger1 = animelem = 2,>=0
+y = 0.4
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+[state a];ヒット着地
+type = changestate
+trigger1 = vel y >0 && pos y >=0
+trigger1 = root,movecontact
+trigger2 = root,stateno >= 2000
+value = 3017
+
+[state a];着地
+type = changestate
+trigger1 = vel y >0 && pos y >=0
+value = 3016
+
+;---------------------------------------------------------------------------
+; フライングスピンアタック着地
+[Statedef 3016]
+type    = S
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3016
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+[state a];立ち
+type = changestate
+trigger1 = animtime = 0
+value = 3000
+
+;---------------------------------------------------------------------------
+; フライングスピンアタックヒット着地
+[Statedef 3017]
+type    = S
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3017
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+[state a];立ち
+type = changestate
+trigger1 = animtime = 0
+value = 3000
+
+
+;---------------------------------------------------------------------------
+; ダンシングダイブ
+[Statedef 3020]
+type    = A
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3020
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = turn
+trigger1 = facing != root,facing
+
+
+[state a]
+type = velset
+trigger1 = animelem = 2
+x = 5
+y = -6
+
+[state a]
+type = veladd
+trigger1 = animelem = 2,>=0
+y = 0.4
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+[state a];着地
+type = changestate
+trigger1 = vel y >0 && pos y >=0
+value = 3003
+
+
+;---------------------------------------------------------------------------
+; ブレイクストーム
+[Statedef 3030]
+type    = A
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3030
+sprpriority = 2
+ctrl = 0
+
+[state a]
+type = changeanim
+trigger1 = time = 0
+trigger1 = root,anim = 1301
+value = 3031
+
+;---------------------[]
+[state a]
+type = turn
+trigger1 = facing != root,facing
+
+[state a]
+type = velset
+trigger1 = animelem = 2
+trigger1 = root,anim = 1300
+x = 3
+y = -6
+
+[state a]
+type = velset
+trigger1 = animelem = 7
+trigger1 = root,anim = 1301
+x = 4
+y = -8
+
+[state a]
+type = veladd
+trigger1 = vel x > 0
+trigger1 = root,anim = 1300
+x = -0.16
+
+[state a]
+type = veladd
+trigger1 = vel x > 0
+trigger1 = root,anim = 1301
+x = -0.15
+
+[state a]
+type = velset
+trigger1 = vel x <= 0
+x = 0
+
+[state a]
+type = veladd
+trigger1 = animelem = 2,>=0 && animelem = 7,<=7
+trigger1 = root,anim = 1300
+y = 0.3
+
+[state a]
+type = veladd
+trigger1 = animelem = 7,>=0 && animelem = 12,<=11
+trigger1 = root,anim = 1301
+y = 0.35
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+[state a];着地
+type = changestate
+trigger1 = vel y >0 && pos y >=0
+value = 3003
+
+;---------------------------------------------------------------------------
+; ブレイクスパイラル
+[Statedef 3040]
+type    = S
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3040
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = turn
+trigger1 = facing != root,facing
+
+[state a]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[速度]
+[state a]
+type = null;varset
+trigger1 = time = 0
+fvar(1) = 0
+
+[state a]
+type = null;varadd
+trigger1 = 1
+fvar(1) = 0.1
+
+[state a]
+type = null;velset
+trigger1 = root,stateno = 2002
+x = -14 * sin(fvar(1))
+
+;---------------------[ステート移行]
+[state a];回転
+type = changestate
+trigger1 = root,stateno = 2003
+trigger2 = root,stateno = 2304
+value = 3041
+
+
+;---------------------------------------------------------------------------
+; ブレイクスパイラル・終了
+[Statedef 3041]
+type    = S
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3041
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[速度]
+
+;---------------------[ステート移行]
+[state a];回転
+type = changestate
+trigger1 = animtime = 0
+value = 3000
+
+
+;---------------------------------------------------------------------------
+; ダックダンス
+[Statedef 3050]
+type    = A
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3050
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = velset
+trigger1 = time = 0
+x = abs(pos x - root,pos x)/19
+y = -8
+
+[state a]
+type = veladd
+trigger1 = 1
+y = 0.22
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+[state a];着地
+type = changestate
+trigger1 = time >= 19
+value = 3051
+
+;---------------------------------------------------------------------------
+; ダックダンス2
+[Statedef 3051]
+type    = A
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3051
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = posset
+trigger1 = 1
+x = root,pos x
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+[state a];着地
+type = changestate
+trigger1 = time >= 55;65
+value = 3052
+
+;---------------------------------------------------------------------------
+; ダックダンス3
+[Statedef 3052]
+type    = A
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3052
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = posset
+trigger1 = time = 0
+x = root,pos x
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+[state a]
+type = veladd
+trigger1 = animelem = 15,>=0
+y = 0.2
+
+;---------------------[ステート移行]
+[state a];着地
+type = changestate
+trigger1 = vel y >0 && pos y >=0
+value = 3003
+
+
+;---------------------------------------------------------------------------
+; スーパーポンピングマシーン
+[Statedef 3070]
+type    = S
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3070
+sprpriority = 2
+ctrl = 0
+
+[state a]
+type = turn
+trigger1 = facing != root,facing
+
+;---------------------[]
+[state a]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[速度]
+[state a]
+type = velset
+trigger1 = time = 0
+x = 2
+
+[state a]
+type = velset
+trigger1 = root,movehit
+x = 0
+
+[state a]
+type = null;veladd
+trigger1 = vel x > 0
+x = -0.2
+
+[state a]
+type = null;velset
+trigger1 = vel x <= 0
+x = 0
+
+;---------------------[ステート移行]
+[state a];攻撃
+type = changestate
+trigger1 = root,stateno = 2151 && root,animelem = 3
+value = 3071
+
+[state a];待機
+type = changestate
+trigger1 = root,animelem = 4,>=0 && root,stateno = 2150
+trigger2 = root,movetype = H
+;trigger3 = time = 150
+value = 3000
+
+;---------------------------------------------------------------------------
+; スーパーポンピングマシーン・ヒット
+[Statedef 3071]
+type    = A
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3071
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = velset
+trigger1 = time = 0
+x = 4
+y = -6
+
+[state a]
+type = veladd
+trigger1 = 1
+y = 0.32
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+[state a];
+type = changestate
+trigger1 = vel y >0 && pos y >=0
+value = 3072
+
+;---------------------------------------------------------------------------
+; スーパーポンピングマシーン・攻撃
+[Statedef 3072]
+type    = A
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3072
+sprpriority = 4
+ctrl = 0
+
+[state a]
+type = posset
+trigger1 = time = 0
+y = 0
+
+;---------------------[]
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+[state a];ヒット着地
+type = changestate
+trigger1 = animtime = 0
+value = 3073
+
+;---------------------------------------------------------------------------
+; スーパーポンピングマシーン・ジャンプ２
+[Statedef 3073]
+type    = A
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3073
+sprpriority = 4
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = velset
+trigger1 = time = 0
+x = -1.5
+y = -6
+
+[state a]
+type = veladd
+trigger1 = 1
+y = 0.3
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+[state a];
+type = changestate
+trigger1 = vel y >0 && pos y >=0
+value = 3074
+
+;---------------------------------------------------------------------------
+; スーパーポンピングマシーン・終了
+[Statedef 3074]
+type    = A
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+sprpriority = 4
+ctrl = 0
+
+[state a]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[state a]
+type = changeanim
+trigger1 = time = 16
+value = 3074
+
+;---------------------[]
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+[state a];
+type = changestate
+trigger1 = animtime = 0
+trigger1 = anim = 3074
+value = 3000
+
+
+;---------------------------------------------------------------------------
+; ダメージ
+[Statedef 3100]
+type    = S
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3100
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+[state a];KO
+type = changestate
+trigger1 = root,lose = 1
+value = 3110
+
+[state a]
+type = changestate
+trigger1 = root,movetype != H
+value = 3000
+
+;---------------------------------------------------------------------------
+; ＫＯ
+[Statedef 3110]
+type    = S
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3110
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+
+[state a]
+type = changestate
+trigger1 = root,lose != 1
+value = 3000
+
+
+;---------------------------------------------------------------------------
+; タイムオーバー
+[Statedef 3170]
+type    = S
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3170
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+
+[state a]
+type = changestate
+trigger1 = root,stateno != 170
+value = 3000
+
+;---------------------------------------------------------------------------
+; 勝利１
+[Statedef 3181]
+type    = S
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3181
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = turn
+trigger1 = facing != root,facing
+
+[state a]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+
+[state a]
+type = changestate
+trigger1 = root,stateno != 181
+value = 3000
+
+
+;---------------------------------------------------------------------------
+; 勝利２
+[Statedef 3182]
+type    = S
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3050
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+[state a]
+type = velset
+trigger1 = time = 0
+trigger1 = ParentDist X >= 0
+x = (abs(pos x - root,pos x)+44)/44
+y = -8
+
+[state a]
+type = velset
+trigger1 = time = 0
+trigger1 = ParentDist X < 0
+x = (44 - abs(pos x - root,pos x))/44
+y = -8
+
+[state a]
+type = veladd
+trigger1 = 1
+y = 0.307
+
+;---------------------[ステート移行]
+
+[state a]
+type = changestate
+trigger1 = time = 44
+value = 3183
+
+;---------------------------------------------------------------------------
+; 勝利２
+[Statedef 3183]
+type    = S
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3183
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+
+[state a]
+type = changestate
+trigger1 = root,stateno != 182
+value = 3000
+
+
+
+;---------------------------------------------------------------------------
+; 登場
+[Statedef 3190]
+type    = S
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3190
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+[state a];登場
+type = changestate
+trigger1 = root,stateno = 191
+value = 3191
+
+;---------------------[ステート移行]
+
+[state a]
+type = changestate
+trigger1 = animtime = 0
+value = 3000
+
+;---------------------------------------------------------------------------
+; テリー専用
+[Statedef 3191]
+type    = S
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3191
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+
+[state a]
+type = changestate
+trigger1 = animtime = 0
+value = 3000
+
+
+;---------------------------------------------------------------------------
+; 挑発
+[Statedef 3195]
+type    = S
+movetype= I
+physics = N
+velset = 0,0
+juggle = 0
+anim = 3195
+sprpriority = 2
+ctrl = 0
+
+;---------------------[]
+[state a]
+type = turn
+trigger1 = facing != root,facing
+
+[State 00]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------[ステート移行]
+
+[state a]
+type = changestate
+trigger1 = root,stateno != 195
+value = 3000

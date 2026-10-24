@@ -1,0 +1,30 @@
+;---------------------------------------------------------------------------
+;----------------------------Mature.def by [Vice]---------------------------
+;---------------------------------------------------------------------------
+
+[Info]
+name         ="[Vice]'s Mature"
+displayname  ="Mature"
+versiondate  =07,21,2002
+mugenversion =04,14,2001
+author       ="[Vice], Modified by Brazombie ( kof cub 2017 )"
+pal.defaults =7,5,1,9,8,11,12,6,10,4,3,2
+
+[Files]
+cmd          =Mature.cmd
+cns          =Mature.cns
+st           =Mature.cns
+stcommon     =common1.cns
+sprite       =Mature.sff
+anim         =Mature.air
+sound        =Mature.snd
+pal1=Mature00.act
+st1=Vice.cns
+st2=Iori.cns
+st3=Rugal.cns
+st4=Yamazaki.cns
+st5=Yashiro.cns
+st6=Billy.cns
+[Arcade]
+intro.storyboard=
+ending.storyboard=

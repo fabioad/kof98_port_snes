@@ -1,0 +1,303 @@
+{
+  "_comment": "Traductions françaises des citations de victoire. Voir README.md dans ce dossier.",
+  "iori": [
+    "Un jouet cassé ne vaut rien. C'est tout ce que vous êtes.",
+    "La rose fleurit près de la mort. Tu es épanouie !",
+    "Désolé. Il n'existe aucun remède à la bêtise !",
+    "Ton dernier combat. Une sortie mémorable !"
+  ],
+  "kyo": [
+    "Tu n'as pas le niveau. Arrête de pleurer et dégage.",
+    "C'est tout ? Je ne suis pas en colère, juste déçu.",
+    "Brûle dans la fureur de mes flammes, faible.",
+    "Sens mes flammes. Agenouille-toi, Kusanagi."
+  ],
+  "shingo": [
+    "Tu m'as vu, maman ? J'ai gagné ! Roi du monde !",
+    "Je suis Shingo Yabuki ! L'honneur est pour moi !",
+    "L'ennemi de Kusanagi est mon ennemi ! Passe pas !",
+    "Père ! Regarde mon style Kusanagi !"
+  ],
+  "rugal": [
+    "Répète après moi : je ne défierai plus jamais un dieu.",
+    "Imbécile !",
+    "Trop faible !",
+    "Tu ne peux pas fuir !"
+  ],
+  "omegarugal": [
+    "Mmm... J'arrive !",
+    "Tu ne peux pas fuir !",
+    "Imbécile !",
+    "Trop faible !"
+  ],
+  "saisyu": [
+    "Une défaite est une défaite. Se battre n'est pas un jeu.",
+    "Tu crois pouvoir me battre ?",
+    "Quelle mollesse...",
+    "C'était dur."
+  ],
+  "heidern": [
+    "Tu as baissé ta garde ? Tu n'es qu'un lâche !",
+    "Situation réglée !",
+    "Mission accomplie !",
+    "Tu es le prochain !"
+  ],
+  "takuma": [
+    "Quelle honte ! Raccroche les gants, gamin.",
+    "Tu ne peux pas copier mon style !",
+    "Reste toujours sur tes gardes !",
+    "Rentre chez toi !"
+  ],
+  "clark": [
+    "Les perdants n'ont aucun droit. C'est ça, l'histoire.",
+    "Je me suis amusé. Cinq secondes environ.",
+    "Ennemi neutralisé. On rentre !",
+    "Tu n'as aucun regret. Tu es allé loin."
+  ],
+  "ralf": [
+    "Ça suffit. Ma pitié a des limites.",
+    "On a été formés à la guerre !",
+    "Être doux avec les filles ? Jamais !",
+    "Tu as combattu comme une star. Une star morte."
+  ],
+  "leona": [
+    "Assez ? Alors dégage, imbécile !",
+    "Tu ne peux pas gagner.",
+    "J'accomplirai ma mission.",
+    "Pourquoi ? Tu n'avais aucune chance."
+  ],
+  "mature": [
+    "Bonne nuit. Pour toujours. Un million de beaux rêves.",
+    "Tu me dégoûtes !",
+    "C'était amusant. Merci.",
+    "Maintenant, si vous m'excusez."
+  ],
+  "vice": [
+    "J'ai fini. Il n'y a plus d'os à briser.",
+    "Rien que te regarder m'énerve !",
+    "Tu me donnes envie de vomir...",
+    "Avale ça !"
+  ],
+  "benimaru": [
+    "Ma raison de gagner ? Je suis cool. Vraiment cool !",
+    "Les agneaux sont plus coriaces que toi. Comment ?",
+    "Quelqu'un d'aussi beau que moi doit gagner.",
+    "Si tu ne gagnes pas avec style, ne gagne pas !"
+  ],
+  "daimon": [
+    "Poids plume !",
+    "Un monde en paix, c'est le mieux !",
+    "Continue de t'entraîner !",
+    "Je déteste les imitateurs !"
+  ],
+  "terry": [
+    "Quoi ? Ce n'est pas de la chance. Je viens chaque année.",
+    "Tu as du cran, gamin. Maintenant nettoie le sol !",
+    "Si tu n'as pas de crocs, ferme-la !",
+    "Ce sera notre siècle !"
+  ],
+  "andy": [
+    "Pour être le meilleur, entraîne-toi chaque jour, ami.",
+    "On ne gagne pas qu'avec la force.",
+    "Tu bouges comme un éléphant en tutu ! À la douche !",
+    "La foi gagne. Et un crochet gauche dévastateur !"
+  ],
+  "joe": [
+    "Alors ? Je suis le Satan des arts martiaux.",
+    "Vous êtes tous trop grands !",
+    "Aucune chance contre le roi du kickboxing !",
+    "On était peut-être trop forts !"
+  ],
+  "ryo": [
+    "Karaté absolu. C'est ça, Kyokugen. N'oublie pas !",
+    "On se ressemble ? Jamais de la vie !",
+    "Rien contre le Kyokugenryu !",
+    "On gagne notre vie en combattant !"
+  ],
+  "robert": [
+    "Tu m'as sous-estimé ? Tu es plus bête que tu en as l'air !",
+    "Maintenant, on sait qui est le plus fort !",
+    "4000 ans d'histoire ? Ha !",
+    "Tu es l'un des plus forts. Mais non !"
+  ],
+  "yuri": [
+    "Je suis Kyokugen ! Avoue, Ryo. Tu ne peux pas me battre !",
+    "L'équipe de mon frère n'est pas plus forte ?",
+    "Équipe intéressante. Mais faible !",
+    "Je suis maître du Kyokugenryu !"
+  ],
+  "athena": [
+    "Désolée. Tu es blessé ? Je me suis emportée.",
+    "Tu comptes trop sur la force !",
+    "Pas de pause thé pour les héroïnes ! Allons-y !",
+    "J'ai mis tout mon cœur dans ce combat. Merci !"
+  ],
+  "kensou": [
+    "Nouvelle tenue, nouvelle attitude. Kensou est là !",
+    "T'inquiète ! On est trop forts !",
+    "Beau combat ! On remet ça !",
+    "Je ne suis pas médium, mais je suis un psychopathe !"
+  ],
+  "chin": [
+    "Je tire ma force du vin. La prochaine fois, essaie.",
+    "Je ne suis pas ivre, je suis sobre.",
+    "Les petits, entraînez-vous et devenez plus forts.",
+    "Tu as été battu par un vieil homme !"
+  ],
+  "king": [
+    "Au combat, le sexe compte peu. Le dernier debout compte.",
+    "Fort. Digne de ta réputation.",
+    "Défie-moi quand tu veux.",
+    "Mon coup de pied est sans égal !"
+  ],
+  "mai": [
+    "Avec ce corps et cette force, tu croyais avoir une chance ?",
+    "Personne ne m'appelle poupée sans payer.",
+    "Ça va ? Désolée. Je ne faisais même pas d'effort.",
+    "Je suis en feu cette année. Ce sera mon millénaire."
+  ],
+  "chizuru": [
+    "Fini de jouer. Gagner est trop facile. Ne me touche pas !",
+    "Tu ne peux pas gagner, encore moins me toucher.",
+    "Si ton cœur se brise, tu ne gagnes plus rien.",
+    "C'est fini. Tu n'as jamais eu de chance."
+  ],
+  "kim": [
+    "Alors ? On fait le truc du Tae Kwon Do !",
+    "Ne sous-estime pas le Tae Kwon Do !",
+    "On devient plus fort en s'entraînant.",
+    "La force sans justice est violence. Compris ?"
+  ],
+  "chang": [
+    "Scooby dooby doo wop. Doo wop, ah doo doo.",
+    "Ouais ! Encore une fois : ouais !",
+    "C'est tout ? Le gamin de Kim est plus coriace !",
+    "Victoire écrasante ! Hé, hé, hé."
+  ],
+  "choi": [
+    "Pas mal, juste pour avoir tenu aussi longtemps.",
+    "Gagner n'est pas tout. C'est la seule chose, loser !",
+    "Déjà fini ? Quelle arnaque !",
+    "Victoire rapide. Cette fois, je suis vraiment libre !"
+  ],
+  "yashiro": [
+    "Pas mal. C'est-à-dire, tu es deuxième.",
+    "Taille, vitesse et force. Avec ça, je ne perds pas.",
+    "Pourquoi j'ai gagné ? Demande-toi, loser.",
+    "Bye-bye !"
+  ],
+  "shermie": [
+    "Game over ! Pense à sauver. Fais de beaux rêves !",
+    "Déjà fini ? Ce n'était que l'apéritif.",
+    "Excusez-moi.",
+    "Ça ne me plaira pas si ça fait mal."
+  ],
+  "chris": [
+    "Tu me fais rire, pauvre type. Rire, rire et rire !",
+    "Soyons sérieux.",
+    "C'était amusant, oui !",
+    "Sois gentil avec moi, s'il te plaît."
+  ],
+  "yamazaki": [
+    "Ennuyeux ! Ennuyeux ! Tu es vraiment ennuyeux !",
+    "Hé. T'es mort.",
+    "Ne me fais pas rire, gamin.",
+    "Hors de ma vue !"
+  ],
+  "mary": [
+    "Ce n'est pas logique. C'est te casser la gueule !",
+    "Oh, ça va. J'ai été douce avec toi !",
+    "Un guerrier d'élite gagne sans lever le doigt.",
+    "Chacun connaît ses limites. Tu as dépassé les tiennes."
+  ],
+  "billy": [
+    "Ça fait quoi d'être bien cuit ? Tu dois avoir mauvais goût.",
+    "Tu n'es pas prêt pour la cour des grands, gamin.",
+    "Ne me fais pas perdre mon temps, faible.",
+    "Je vais te réduire en cendres !"
+  ],
+  "lucky": [
+    "Debout ! Il est bien trop tôt pour dormir.",
+    "Trop facile !",
+    "Je savais que j'y étais allé un peu fort !",
+    "On est des combattants aguerris !"
+  ],
+  "heavyd": [
+    "Lent. Ton attaque est trop lente. Je te lis.",
+    "Je m'occupe de toi !",
+    "Tes poings sont trop mous !",
+    "Quelle barbe... Tu m'ennuies."
+  ],
+  "brian": [
+    "Ta défense ne peut rien contre mon plaquage !",
+    "Je suis le numéro un !",
+    "Je suis une superstar !",
+    "Allez, viens !"
+  ],
+  "geese": [
+    "Hmph. Ce numéro de rue pouvait me battre, selon toi ?",
+    "Connais ta place, rat !",
+    "Tu n'es pas de taille contre moi.",
+    "Ne prends pas la grosse tête !"
+  ],
+  "krauser": [
+    "M'affronter avec si peu de force. Tu me fais rire.",
+    "Merci pour ce bon moment !",
+    "Je graverai ta tombe. Dors bien !",
+    "KAISER WAVE !"
+  ],
+  "mrbig": [
+    "Alors ? Maintenant tu sais où je suis grand, non ?",
+    "Je suis tout simplement génial !",
+    "Content ?",
+    "Fièvre !"
+  ],
+  "eiji": [
+    "Kisaragi-ryu invincible. Mon ninjutsu est sans égal.",
+    "Raconte ma splendeur aux générations futures !",
+    "Maudis les cieux d'être né à mon époque.",
+    "Quel fou. La bataille était mienne dès le début."
+  ],
+  "vega": [
+    "Fiche le camp ! Mon pouvoir n'a pas d'égal !",
+    "Quiconque s'oppose à moi sera détruit !",
+    "Tu ne fais pas le poids face à mon Psycho Power !",
+    "Je pleurerai quand il n'y aura plus rien à conquérir."
+  ],
+  "ryu": [
+    "J'attends notre prochain combat.",
+    "Tu as bien combattu. Ce fut un honneur.",
+    "Je vais chercher un meilleur défi !",
+    "Quoi ? Pourquoi retiens-tu ta force ?"
+  ],
+  "ken": [
+    "Ne me dis pas que tu es vraiment inconscient.",
+    "La prochaine fois, je ne serai pas si tendre !",
+    "Tu vois maintenant la différence entre nous !",
+    "Tu es meilleur que tu en as l'air. Essaie encore."
+  ],
+  "chunli": [
+    "Je n'ai pas de temps pour les amateurs !",
+    "Je m'attendais à mieux.",
+    "Si tu te bats, bats-toi pour de vrai.",
+    "Tu n'as pas le niveau pour me battre !"
+  ],
+  "sakura": [
+    "Tu as le temps de te faire battre avant les cours ?",
+    "Maintenant tu sais : la justice gagne toujours !",
+    "La victoire est à moi. Relève-toi que je te frappe !",
+    "Waouh, c'était cool. Refais-le !"
+  ],
+  "kyonests": [
+    "Tu n'as pas le niveau. Arrête de pleurer et dégage.",
+    "C'est tout ? Je ne suis pas en colère, juste déçu.",
+    "Brûle dans la fureur de mes flammes, faible.",
+    "Sens mes flammes. Agenouille-toi, Kusanagi."
+  ],
+  "kyoash": [
+    "Tu n'as pas le niveau. Arrête de pleurer et dégage.",
+    "C'est tout ? Je ne suis pas en colère, juste déçu.",
+    "Brûle dans la fureur de mes flammes, faible.",
+    "Sens mes flammes. Agenouille-toi, Kusanagi."
+  ]
+}

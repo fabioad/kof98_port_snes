@@ -1,0 +1,48 @@
+{
+  "character": "kensou",
+  "config_hash": "8a94b9c7b1d5cc1acc721fd904ae6ab93a64ddad91a263a0b897c6f54ea74c15",
+  "corrections": [
+    {
+      "after": 0,
+      "before": 384,
+      "confidence": "ALTA",
+      "controller": 9,
+      "expression": "0",
+      "key": "gvx",
+      "kind": "combat",
+      "property": "ground.velocity",
+      "runtime_scope": "native_scalar",
+      "sid": 53,
+      "source": {
+        "file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Kensou/kensou.cns",
+        "line": 5834
+      },
+      "state": 2250,
+      "status": "correctable"
+    }
+  ],
+  "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Kensou/kensou.def",
+  "inputs": {
+    "assets/characters/Kensou/Kensou_SNES.cmd": "4139764c2af928e3c37b9420fffcf12f0a6c1134d9ee700943cf479e85e73779",
+    "assets/characters/Kensou/Kensou_SNES.cns": "2569b53d4a7bc677e77f3352578ca0427b8f912183145f509bf68f751a0fc332",
+    "assets/characters/Kensou/kensou.air": "116f03829cf1b6c582ca219235dcb9fd528462e3f5882f5c9dbd2dad11db9527",
+    "assets/characters/Kensou/kensou.cmd": "75b42d0a9bbba2b117290bb7030a98de82fbcd5cf119dd919fe16807fd131303",
+    "assets/characters/Kensou/kensou.cns": "b1928d960f1f8fc111b6c6aedc7418a7e972c4caf68d31bda991c935f7c8e322",
+    "assets/characters/Kensou/kensou.def": "5608d8b3e5daaf0b2007c0884bb17552b56257bd9fec67c1879ab710a5db876d",
+    "assets/characters/Kensou/kensou.sff": "0dac78e72735eecf58d7f0b2ab598be1810b7df6eacb623c7cba059d3a37b63c",
+    "assets/characters/Kensou/kensou.snd": "2b3257e895ec1dededcef3a4b52f07ea5a58db601e65d195f78e06969b77a68f",
+    "assets/characters/Kensou/kof94a.act": "5e08eb8758529311968aad6d96a5669b52b56f1f77f83dfcee3be29f615fdf83",
+    "assets/characters/Kensou/kof94b.act": "ef579cf1b15f4aa068e32ca69c27b8ae994ca1f4041de5347d4ad481d54e5f29",
+    "assets/characters/Kensou/kof95b.act": "2701713513a276c1b0a2a9bc6fffe47c7c7dc4c13d799102fae9ba68e84909da",
+    "assets/characters/Kensou/kof96a.act": "e0d2c577a2890a83c482d0f9be86182d97d5e8447b87a29ca832b1fa78204827",
+    "assets/characters/Kensou/kof96b.act": "88d42abf57e884c1e32392a197862ae4072b4928739a028a5c8f916464d74cae",
+    "assets/characters/Kensou/kof97c.act": "cdc293a37211fde5d33737f2ef6483e5935e5013282fbead1c41f1e6debccefc",
+    "assets/characters/Kensou/kof98a.act": "d0e90ec774c0d7cc94f3dd8554830cfc33cdd0857fe2384a48f1514858ca89b7",
+    "assets/characters/Kensou/kof98b.act": "8f8c78559b90fa10e6e4cca59bd2dad9485ccf31fc89e64b1a37bf9f220248fb",
+    "assets/characters/Kensou/kof98c.act": "dc2b8861780d996e5e9a8272c7077e9307c3a8d1f91d8cc38b7b6aa1a1a150ac",
+    "assets/characters/Kensou/kof98d.act": "f69ea3540e0d954a33daf09668f6c6816d19ffc0c7e0e9ab03721772101ad0b1",
+    "assets/characters/Kensou/kof99a.act": "0853a9fd766124d57b1eedb241363d9853960740619816a77e566dc9c086a3cc",
+    "assets/characters/Kensou/kof99b.act": "9497d7dc0dd2b454fa3dffaa0330711aa10e5de2b564b23b33027817f28d83b0"
+  },
+  "schema": 1
+}

@@ -1,0 +1,242 @@
+{
+  "_source": "assets/kof98data/system.def",
+  "_note": "Complete extraction of the MUGEN1 motif. Coordinate space: localcoord 640x480. The select screen detail also lives in select.json.",
+  "info": {
+    "name": "MUGEN1",
+    "author": "Elecbyte",
+    "versiondate": "01,01,2011",
+    "mugenversion": "1.0",
+    "localcoord": [640, 480]
+  },
+  "files": {
+    "spr": "system.sff",
+    "snd": "system.snd",
+    "logoStoryboard": "logo.def",
+    "introStoryboard": "intro.def",
+    "select": "select.def",
+    "fight": "Lifebar/fight.def",
+    "fonts": {
+      "font1": "Custom_Font/Menu.def",
+      "font2": "Custom_Font/Team Menu P1.def",
+      "font3": "Custom_Font/Team Menu P2.def",
+      "font4": "Custom_Font/Stage.fnt",
+      "font5": "Custom_Font/Winner.def",
+      "font6": "infofont.def",
+      "font7": "Custom_Font/options.def",
+      "font8": "Custom_Font/Name.fnt",
+      "font9": "Custom_Font/Continue.def"
+    }
+  },
+  "music": {
+    "title":   { "bgm": "", "volume": 100, "loop": 1, "loopstart": null, "loopend": null },
+    "select":  { "bgm": "data\\KOF 98\\Select.mp3", "volume": 255, "loop": 1, "loopstart": null, "loopend": null },
+    "vs":      { "bgm": "data\\KOF 98\\Select.mp3", "volume": 255, "loop": 1, "loopstart": null, "loopend": null },
+    "victory": { "bgm": "data\\KOF 98\\Winner.mp3", "volume": null, "loop": 0, "loopstart": null, "loopend": null }
+  },
+  "titleInfo": {
+    "fadein": { "time": 10 },
+    "fadeout": { "time": 10 },
+    "menu": {
+      "pos": [0, 33],
+      "itemFont": [1, 0, -1],
+      "itemActiveFont": [1, 0, 1],
+      "itemSpacing": [0, 0],
+      "items": {
+        "arcade": "A", "versus": "B", "teamarcade": "C", "teamversus": "D",
+        "teamcoop": null, "survival": "E", "survivalcoop": null,
+        "training": "F", "watch": null, "options": "G", "exit": "H"
+      },
+      "windowMarginsY": [640, 480],
+      "windowVisibleItems": 0,
+      "boxcursor": { "visible": 0, "coords": 0 }
+    },
+    "sounds": { "cursorMove": [100, 0], "cursorDone": [100, 1], "cancel": [100, 2] }
+  },
+  "titleBG": {
+    "bgclearcolor": [0, 0, 0],
+    "spr": "Menu.sff",
+    "layers": [
+      { "type": "normal", "spriteno": [100, 0], "layerno": 0, "start": [-320, 0], "mask": 1 },
+      { "type": "normal", "spriteno": [100, 1], "layerno": 0, "start": [-320, 0], "mask": 1 }
+    ]
+  },
+  "infobox": {
+    "textFont": [6, 0, 1],
+    "textEn": "Welcome to The King of Fighters '98 1.1!|_|* This is a screenpack made by Frank_9926.|_|* Copyrights go to SNK Playmore.|_",
+    "textJa": "M.U.G.E.N 1.1\u30d9\u30fc\u30bf\u7248\u3092\u3054\u5229\u7528\u3044\u305f\u3060\u3044\u3066\u3042\u308a\u304c\u3068\u3046\u3054\u3056\u3044\u307e\u3059\uff01|_|\u3053\u306e\u30e1\u30c3\u30bb\u30fc\u30b8\u306f\u3001data/mugen1/system.def\u3067\u7de8\u96c6\u3067\u304d\u307e\u3059\u3002"
+  },
+  "selectInfo": {
+    "fadein": { "time": 10 },
+    "fadeout": { "time": 25 },
+    "grid": {
+      "rows": 11, "columns": 11, "wrapping": 1,
+      "pos": [18, 29],
+      "showemptyboxes": 0, "moveoveremptyboxes": 0
+    },
+    "cell": {
+      "size": [54, 54], "spacing": 1,
+      "bgSpr": [150, 0], "randomSpr": [151, 0], "randomSwitchtime": 4
+    },
+    "portrait": { "spr": [9000, 0], "offset": [0, 0], "scale": [0.5, 0.5] },
+    "title": { "offset": -1, "font": -1 },
+    "p1": {
+      "cursor": { "startcell": [0, 0], "activeAnim": 160, "doneSpr": [161, 0], "moveSnd": [100, 0], "doneSnd": [100, 1], "randomMoveSnd": [100, 0] },
+      "face": { "spr": [9000, 0], "offset": [73, 304], "scale": [0.5, 0.5], "facing": 1 },
+      "name": { "offset": [101, 380], "font": [8, 0, 0], "spacing": [0, 20] },
+      "teammenu": {
+        "pos": [0, 0], "moveSnd": [100, 0], "valueSnd": [100, 0], "doneSnd": [100, 1],
+        "itemOffset": [0, 0], "itemSpacing": [0, 0],
+        "itemActiveFont": [2, 0, 1], "itemActive2Font": [2, 0, 1],
+        "valueEmptyIconOffset": [22, 346], "valueEmptyIconSpr": [181, 0], "valueSpacing": [40, 0]
+      }
+    },
+    "p2": {
+      "cursor": { "startcell": [0, 0], "activeAnim": 170, "doneSpr": [171, 0], "blink": 0, "moveSnd": [100, 0], "doneSnd": [100, 1], "randomMoveSnd": [100, 0] },
+      "face": { "spr": [9000, 0], "offset": [566, 304], "scale": [0.5, 0.5], "facing": -1 },
+      "name": { "offset": [541, 380], "font": [8, 0, 0], "spacing": [0, 20] },
+      "teammenu": {
+        "pos": [0, 0], "moveSnd": [100, 0], "valueSnd": [100, 0], "doneSnd": [100, 1],
+        "itemOffset": [0, 0], "itemSpacing": [0, 0],
+        "itemActiveFont": [3, 0, 1], "itemActive2Font": [3, 0, 1],
+        "valueEmptyIconOffset": [582, 346], "valueEmptyIconSpr": [191, 0], "valueSpacing": [-40, 0]
+      }
+    },
+    "stageSelect": {
+      "pos": [320, 461],
+      "activeFont": [4, 0, 0], "active2Font": [4, 0, 0], "doneFont": [4, 0, 0],
+      "moveSnd": [100, 0], "doneSnd": [100, 1]
+    },
+    "sounds": { "cursorMove": [100, 0], "cursorDone": [100, 1], "cancel": [100, 2], "randomMoveCancel": 0 },
+    "teammenuMoveWrapping": 0
+  },
+  "selectBG": {
+    "spr": "Select.sff",
+    "layers": [
+      { "type": "normal", "spriteno": [100, 0], "layerno": 0, "start": [-320, 0], "mask": 1 },
+      { "type": "normal", "spriteno": [100, 1], "layerno": 0, "start": [-320, 0], "mask": 1, "tile": [0, 1], "velocity": [0, -1] },
+      { "type": "normal", "spriteno": [100, 2], "layerno": 0, "start": [-320, 0], "mask": 1 },
+      { "type": "normal", "spriteno": [100, 3], "layerno": 0, "start": [-320, 0], "mask": 1 },
+      { "type": "normal", "spriteno": [100, 4], "layerno": 0, "start": [-320, 0], "mask": 1 },
+      { "type": "anim", "actionno": 3, "layerno": 1, "start": [-320, 0], "mask": 1 }
+    ]
+  },
+  "vsScreen": {
+    "time": 400,
+    "fadein": { "time": 5 },
+    "fadeout": { "time": 25 },
+    "match": { "text": -1, "offset": -1, "font": -1 },
+    "p1": { "spr": [9000, 1], "offset": [0, 0], "facing": 1, "scale": [0.5, 0.5], "name": { "offset": -1, "font": -1, "spacing": -1 } },
+    "p2": { "spr": [9000, 1], "offset": [639, 0], "facing": -1, "scale": [0.5, 0.5], "name": { "offset": -1, "font": -1, "spacing": -1 } }
+  },
+  "versusBG": {
+    "spr": "Versus.sff",
+    "layers": [
+      { "type": "normal", "spriteno": [100, 0], "layerno": 0, "start": [-320, 0], "mask": 1 },
+      { "type": "normal", "spriteno": [100, 1], "layerno": 0, "start": [-320, 0], "mask": 1 },
+      { "type": "normal", "spriteno": [100, 2], "layerno": 0, "start": [-320, 0], "mask": 1 },
+      { "type": "normal", "spriteno": [100, 3], "layerno": 1, "start": [-320, 0], "mask": 1 },
+      { "type": "normal", "spriteno": [100, 4], "layerno": 1, "start": [-320, 0], "mask": 1 },
+      { "type": "normal", "spriteno": [100, 5], "layerno": 1, "start": [-320, 0], "mask": 1 },
+      { "type": "anim", "actionno": 4, "layerno": 1, "start": [-320, 0], "mask": 1 },
+      { "type": "anim", "actionno": 5, "layerno": 1, "start": [-320, 0], "mask": 1 }
+    ]
+  },
+  "demoMode": {
+    "enabled": 1,
+    "selectEnabled": 0,
+    "vsscreenEnabled": 0,
+    "titleWaittime": 600,
+    "fightEndtime": 1500,
+    "fightPlaybgm": 0,
+    "fightStopbgm": 1,
+    "fightBarsDisplay": 0,
+    "introWaitcycles": 1,
+    "debuginfo": 0
+  },
+  "continueScreen": {
+    "enabled": 1,
+    "pos": [0, 47],
+    "continue": { "text": "C", "font": [5, 0, 1] },
+    "yes": { "text": "Y", "font": -1, "activeText": "Y", "activeFont": [5, 0, 1] },
+    "no":  { "text": "N", "font": -1, "activeText": "N", "activeFont": [5, 0, 1] }
+  },
+  "gameOverScreen": { "enabled": 1, "storyboard": "game_over.def" },
+  "victoryScreen": {
+    "enabled": 1,
+    "time": 500,
+    "fadein": { "time": 8 },
+    "fadeout": { "time": 15 },
+    "p1": { "offset": [0, 0], "spr": [9000, 2], "facing": 0, "scale": [0.5, 0.5], "name": { "offset": -1, "font": -1 } },
+    "winquote": {
+      "text": "Winner!",
+      "offset": [20, 350],
+      "font": [5, 0, 1],
+      "window": [20, 328, 620, 445],
+      "textwrap": "w"
+    }
+  },
+  "victoryBG": {
+    "spr": "Winner.sff",
+    "layers": [
+      { "type": "anim", "actionno": 6, "layerno": 1, "start": [-320, 0], "mask": 1 },
+      { "type": "normal", "spriteno": [0, 34], "layerno": 0, "start": [-320, 0], "mask": 1 }
+    ]
+  },
+  "winScreen": {
+    "enabled": 1,
+    "wintext": { "text": "W", "font": [9, 0, 1], "offset": [0, 47], "displaytime": -1, "layerno": 2 },
+    "fadein": { "time": 32 },
+    "poseTime": 300,
+    "fadeout": { "time": 64 }
+  },
+  "defaultEnding": { "enabled": 0, "storyboard": "" },
+  "endCredits": { "enabled": 0, "storyboard": "" },
+  "survivalResults": {
+    "enabled": 1,
+    "winstext": { "text": "Rounds survived: %i", "font": [8, 0, 0], "offset": [320, 240], "displaytime": -1, "layerno": 2 },
+    "fadein": { "time": 32 },
+    "showTime": 300,
+    "fadeout": { "time": 64 },
+    "roundstowin": 5
+  },
+  "optionInfo": {
+    "fadein": { "time": 10 },
+    "fadeout": { "time": 10 },
+    "title": { "offset": [320, 30], "font": [7, 0, 0] },
+    "sounds": { "cursorMove": [100, 0], "cursorDone": [100, 1], "cancel": [100, 2] }
+  },
+  "optionBG": {
+    "spr": "Menu.sff",
+    "layers": [
+      { "type": "normal", "spriteno": [100, 0], "layerno": 0, "start": [-320, 0], "mask": 1 }
+    ]
+  },
+  "actions": {
+    "3": {
+      "_comment": "SelectBG anim: 44 frames x2 ticks then alpha ramp to AS0D256, loops",
+      "frames": "0,1..0,44 ticks=2 then 0,44 ticks=1 trans AS256D128..AS0D256 step10 (see select.json for the full 64-frame table)",
+      "loopEnd": { "spr": [-1, -1], "ticks": -1 }
+    },
+    "4": {
+      "_comment": "VersusBG anim: 65 frames mixed 2/3-tick, alpha ramp, loops",
+      "frames": "0,1..0,45 ticks=2; 0,46..0,49 ticks=3; 0,50..0,65 ticks=2; 0,65 ticks=1 trans AS256D128..AS0D256 step10",
+      "loopEnd": { "spr": [-1, -1], "ticks": -1 }
+    },
+    "5": {
+      "_comment": "VersusBG overlay flash",
+      "frames": [
+        { "spr": [1, 0], "offset": [0, 0], "ticks": 336 },
+        { "spr": [1, 1], "offset": [0, 0], "ticks": 2 },
+        { "spr": [1, 2], "offset": [0, 0], "ticks": 2 },
+        { "spr": [1, 3], "offset": [0, 0], "ticks": -1 }
+      ]
+    },
+    "6": {
+      "_comment": "VictoryBG anim: 34 frames mixed 2/3-tick, alpha ramp, loops",
+      "frames": "0,1..0,34 ticks=2 except 0,12/0,14/0,16/0,18/0,20/0,25/0,27/0,29/0,31/0,33 ticks=3; then 0,34 ticks=1 trans AS256D128..AS0D256 step10",
+      "loopEnd": { "spr": [-1, -1], "ticks": -1 }
+    },
+    "160": { "_comment": "P1 active cursor", "frames": [ { "spr": [160, 0], "ticks": 4 }, { "spr": [160, 1], "ticks": 4 } ] },
+    "170": { "_comment": "P2 active cursor", "frames": [ { "spr": [170, 0], "ticks": 4 }, { "spr": [170, 1], "ticks": 4 } ] }
+  }
+}

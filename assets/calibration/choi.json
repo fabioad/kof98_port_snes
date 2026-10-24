@@ -1,0 +1,31 @@
+{
+  "character": "choi",
+  "config_hash": "9a9878155d44fec467306507ad29653442de09c8af7dd7d9cf00e979d52457b9",
+  "corrections": [],
+  "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/choi-kofa/choi-kofa.def",
+  "inputs": {
+    "assets/characters/choi-kofa/Choi_SNES.cmd": "e30edcb49d8b912f8d19a9656a17d35c66bcc056466f30867948a12a3b548fc4",
+    "assets/characters/choi-kofa/Choi_SNES.cns": "d246095b259f8c0ff889fd6a8a756e33a671f141ef4f0bf13849c6cc9fff4d7c",
+    "assets/characters/choi-kofa/act/choi01.act": "a20f636104c3b9575c2b50a20fe0a60204fc1a9b2b4a7cd314c7426ee4e5739a",
+    "assets/characters/choi-kofa/act/choi02.act": "056703a4cc87d701f5f4ef3aea3d762eae19db21a2627eec41947a1fabecb2f1",
+    "assets/characters/choi-kofa/act/choi03.act": "4b012ba857d19e9880784019e37793381bbf26c31afb0ba9ed1b74e2f518a956",
+    "assets/characters/choi-kofa/act/choi04.act": "e8769fce7f843928354bcd0db456965e169b0a316baf04b6743e253b40a2f973",
+    "assets/characters/choi-kofa/act/choi05.act": "0427c3af684237ff779056e064b3bb77d447d6fd5ac67d60f3d44254da8853f4",
+    "assets/characters/choi-kofa/act/choi06.act": "dc679573f9a0f2da2f627fcbbbeb647e601d6f4010622970bc6f7f7f8ec73f2c",
+    "assets/characters/choi-kofa/act/choi07.act": "79796f05e0d749a7f35860a8fa3979b858b61bca45dd79627f7dad700ddca6f7",
+    "assets/characters/choi-kofa/act/choi08.act": "9868298e0c08e1d6f516357ebd35583fd3af8466e00a77a125ebe09818939bab",
+    "assets/characters/choi-kofa/act/choi09.act": "72a284f3efb0d21aa1f7af7c740ed1ff8bc9fc0ba043389333fa03a149aea011",
+    "assets/characters/choi-kofa/act/choi10.act": "7bb3deb11b68624c99225ced7659dd575b37b0027f3ec9bb3ac06d566420cf9a",
+    "assets/characters/choi-kofa/act/choi11.act": "544d58def07c288e7906f4af3e18a5dc38e9cf0e3c733f1ff4b82f1654a93ce5",
+    "assets/characters/choi-kofa/act/choi12.act": "8044124e2b47d4a8639cc20dfd18a153f41deeff8509b4215a3ae339e48e2ef2",
+    "assets/characters/choi-kofa/choi-H.cns": "1e825d210ba34e9150da1f970156dd7d848497a5951bcbd90ece7513cabdc808",
+    "assets/characters/choi-kofa/choi-N.cns": "45e206a7e38a0f6f64f7c99d4ad684676ddd0f969ac296d70c62a7641e227446",
+    "assets/characters/choi-kofa/choi-S.cns": "52a57849b0db815392cf73dbfa298c27a9b6a42db082facb2420148714dcdda6",
+    "assets/characters/choi-kofa/choi-kofa.def": "855cd72aada5e6b160b6b5dee728f11153bfa3c41de68a0bb3c67b41983e609a",
+    "assets/characters/choi-kofa/choi.air": "ce05b90806bade4e3bab15f76ffff302123cf11587172bb07fa56045387249bc",
+    "assets/characters/choi-kofa/choi.cmd": "3e50447a2d7492f60b6ce6754b54a03075e8115e3e4c8a867618590048bcca7e",
+    "assets/characters/choi-kofa/choi.sff": "28efd400d73796738f8385b962d1d78237d8f0fd400ed5cd0ab494b0096000c6",
+    "assets/characters/choi-kofa/choi.snd": "37e3437c9b4d622004d13f85e959ca647cef6be997cf6e334242add0a4da9bf3"
+  },
+  "schema": 1
+}

@@ -1,0 +1,40 @@
+[Info]
+Name         = "Kyo Kusanagi"
+DisplayName  = "Kyo"
+Author       = "ikaruga"
+VersionDate  = 05,27,2018
+MugenVersion = 1.0
+Pal.Defaults = 4
+localcoord   = 320
+
+[Files]
+Cmd      = Kyo.cmd
+Cns      = Constants.cns
+St       = Nests/Nests.cns
+St1      = Kyo.cns
+St2      = Kyo-N.cns
+St3      = Kyo-S.cns
+St4      = Kyo-H.cns
+St5      = Kyo-2-3.cns
+St6      = Helper.cns
+St7      = Config.cns
+St8      = Member.cns
+StCommon = common_kof.cns
+Sprite   = Nests/Kyo.sff
+Anim     = Nests/Kyo.air
+Sound    = Kyo.snd
+
+;---カラーパレット---
+
+Pal1  = Nests/act/act02.act
+Pal2  = Nests/act/act04.act
+Pal3  = Nests/act/act06.act
+Pal4  = Nests/act/act01.act
+Pal5  = Nests/act/act03.act
+Pal6  = Nests/act/act05.act
+Pal7  = Nests/act/act10.act
+Pal8  = Nests/act/act04.act
+Pal9  = Nests/act/act12.act
+Pal10 = Nests/act/act07.act
+Pal11 = Nests/act/act09.act
+Pal12 = Nests/act/act11.act

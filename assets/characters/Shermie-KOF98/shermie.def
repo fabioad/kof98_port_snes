@@ -1,0 +1,27 @@
+[Info]
+name     = "Shermie"
+versiondate = 01,17,2001
+mugenversion = 11,29,2000
+author = "NeoGouki"
+pal.defaults = 1,2,5,6
+
+[Files]
+cmd     = shermie.cmd
+cns     = shermie.cns
+st      = shermie.cns
+stcommon = common1.cns
+sprite  = shermie.sff
+anim    = shermie.air
+sound   = shermie.snd
+pal1    = kof98a.act
+pal2    = kof98b.act
+pal3    = kof98c.act
+pal4    = kof98d.act
+pal5    = kof98e.act
+pal6    = kof98f.act
+pal7    = kof98g.act
+pal8    = kof98h.act
+pal9    = kof97e.act
+pal10   = kof97f.act
+pal11   = kof97g.act
+pal12   = kof97h.act

@@ -1,0 +1,3475 @@
+;---------------------------------------------------------------------------
+; 基本行動のステート
+;---------------------------------------------------------------------------
+; 挑発
+; CNS レベル: 基本
+[Statedef 160]
+type     = S
+movetype = I
+physics  = N
+anim     = 160
+velset   = 0,0
+ctrl     = 0
+sprpriority = 2 ;ここで表示優先度を決定できます。　範囲は-5～5、大きいほど手前に表示される
+facep2 = 1      ;相手の方を向いてから挑発（結構重要）
+
+;------------------------
+; いっしょにトレーニング
+;------------------------
+[State 160, VarSet]
+type = VarSet
+triggerall = var(40) > 0
+trigger1 = var(39) = 1
+trigger1 = time = 0
+var(40) = 0
+
+[State 160, ガード弾き値・リセット]
+type = VarSet
+triggerall = fvar(10) != 0
+trigger1 = var(39) = 1
+trigger1 = Time = 0
+fvar(10) = 0
+
+[State 160, 気絶値・リセット]
+type = VarSet
+triggerall = fvar(13) != 0
+trigger1 = var(39) = 1
+trigger1 = Time = 0
+fvar(13) = 0
+
+;------------------------
+
+[State 160, コントロール可否]
+type = CtrlSet
+triggerall = Time >= 33
+triggerall = !winko
+trigger1 = var(59) != 1
+trigger2 = var(59) = 1
+trigger2 =!(EnemyNear(var(58)),stateno = 5715 && EnemyNear(var(58)),anim = 5300 && EnemyNear(var(58)),movetype = I)
+trigger2 = InGuardDist || EnemyNear(var(58)),MoveType = A || EnemyNear(var(58)),Vel X > 0
+value = 1
+
+[State 160, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s10,30
+channel = 0
+
+[State 160, PosAdd]
+type = PosAdd
+trigger1 = animelem = 2
+trigger2 = animelem = 3
+trigger3 = animelem = 4
+x = -8
+
+[State 160, PosAdd]
+type = PosAdd
+trigger1 = animelem = 10
+trigger2 = animelem = 11
+trigger3 = animelem = 12
+x = 8
+
+[State 160, ステート変更]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; 勝利ポーズ分岐
+; CNS レベル: 基本
+;
+;ここで勝利ポーズを選択する。　MatchOverは試合終了を判定するので、
+;一回目と二回目勝利を別のポーズにしたい時に便利。
+
+[Statedef 180]
+type = S
+ctrl = 0
+;anim = 180
+velset = 0,0
+
+[State 180, VarSet]
+type = VarSet
+trigger1 = command = "holdx"
+trigger2 = command != "holdx" && command != "holda" && command != "holdy" && command != "holdb"
+trigger2 = Random%4 = 0
+var(0) = 0
+
+[State 180, VarSet]
+type = VarSet
+trigger1 = command = "holda"
+trigger2 = command != "holdx" && command != "holda" && command != "holdy" && command != "holdb"
+trigger2 = Random%4 = 1
+var(0) = 1
+
+[State 180, VarSet]
+type = VarSet
+trigger1 = command = "holdy"
+trigger2 = command != "holdx" && command != "holda" && command != "holdy" && command != "holdb"
+trigger2 = Random%4 = 2
+var(0) = 2
+
+[State 180, VarSet]
+type = VarSet
+trigger1 = command = "holdb"
+trigger2 = command != "holdx" && command != "holda" && command != "holdy" && command != "holdb"
+trigger2 = Random%4 = 3
+var(0) = 3
+
+[State 180, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 180, AssertSpecial]
+type = AssertSpecial
+trigger1 = 1
+flag = roundnotover
+
+[State 180, ChangeAnim]
+type = ChangeAnim
+trigger1 = Anim != 0
+value = 0
+
+[State 180, Explod]
+type = Explod
+trigger1 = wintime = 0
+trigger1 = numhelper(8100) = 0
+trigger1 = teamside = 1
+anim = 8110
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 180, Explod]
+type = Explod
+trigger1 = wintime = 0
+trigger1 = numhelper(8100) = 0
+trigger1 = teamside = 2
+anim = 8111
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 180, VarSet]
+type = VarSet
+trigger1 = time = 0
+var(16) = 0
+
+[State 180, VarAdd]
+type = VarAdd
+trigger1 = wintime = 0
+trigger1 = numhelper(8100) = 0
+var(16) = 1
+
+[State 180, PlaySnd]
+type = PlaySnd
+trigger1 = wintime = 0
+trigger1 = var(16) > 16
+trigger1 = numhelper(8100) = 0
+value = s15,1
+volume = 255
+persistent = 0
+AbsPan = 0
+
+[State 180, ステート変更]
+type = ChangeState
+trigger1 = wintime = 0
+trigger1 = var(16) >= 32
+trigger2 = wintime
+trigger2 = time = 0
+trigger3 = time = 200
+value = 181 + var(0)
+
+;---------------------------------------------------------------------------
+; 勝利ポーズ1
+; CNS レベル: 基本
+
+[Statedef 181]
+type = S
+ctrl = 0
+anim = 181
+velset = 0,0
+
+[State 181, VarSet]
+type = VarSet
+trigger1 = 1
+var(27) = 0
+
+[State 181, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 181, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 5
+trigger1 = Alive
+value = s10,32
+
+;--------------------------------
+[State 181, ゲージ非表示]
+type = VarSet
+trigger1 = wintime
+trigger1 = time = [100,189]
+var(37) = 1
+
+[State 181, ゲージ非表示]
+type = AssertSpecial
+trigger1 = wintime
+trigger1 = time = [100,189]
+flag = nobardisplay
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 100
+anim = 8120
+ID = 180
+ownpal = 1
+pos = 103,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, Super A]
+type = PlaySnd
+trigger1 = wintime
+trigger1 = time = 100
+value = s15,2
+persistent = 0
+AbsPan = 0
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 189
+trigger1 = teamside = 1
+anim = 8110
+ID = 180
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 189
+trigger1 = teamside = 2
+anim = 8111
+ID = 180
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, 音を鳴らす]
+type = PlaySnd
+trigger1 = wintime
+trigger1 = time = 205
+value = s15,1
+persistent = 0
+AbsPan = 0
+
+;--------------------------------
+[State 181, 特殊効果]
+type = AssertSpecial
+trigger1 = wintime = 0
+trigger1 = Time = [0,220]
+trigger2 = wintime
+trigger2 = Time = [0,380]
+flag = roundnotover
+
+[State 181, エフェクト表示]
+type = explod
+triggerall = teammode = single || teammode = turns
+trigger1 = wintime = 0
+trigger1 = Time = 200
+trigger2 = wintime
+trigger2 = Time = 360
+anim = 8000
+ID = 78000
+ontop = 1
+postype = left
+scale = 500.0,10.0
+ownpal = 1
+bindtime = -1
+ignorehitpause = 1
+
+[State 181, 特殊効果]
+type = AssertSpecial
+trigger1 = numexplod(78000) = 1
+flag = nobardisplay
+
+[State 181, ChangeState]
+type = ChangeState
+triggerall = matchover
+trigger1 = wintime = 0 && Time = 216
+trigger2 = wintime && Time = 376
+value = 189
+
+;---------------------------------------------------------------------------
+; 勝利ポーズ2
+; CNS レベル: 基本
+
+[Statedef 182]
+type = S
+ctrl = 0
+anim = 182
+velset = 0,0
+
+[State 182, VarSet]
+type = VarSet
+trigger1 = 1
+var(27) = 0
+
+[State 182, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 182, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+trigger1 = Alive
+value = s10,33
+
+;--------------------------------
+[State 181, ゲージ非表示]
+type = VarSet
+trigger1 = wintime
+trigger1 = time = [100,189]
+var(37) = 1
+
+[State 181, ゲージ非表示]
+type = AssertSpecial
+trigger1 = wintime
+trigger1 = time = [100,189]
+flag = nobardisplay
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 100
+anim = 8120
+ID = 180
+ownpal = 1
+pos = 103,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, Super A]
+type = PlaySnd
+trigger1 = wintime
+trigger1 = time = 100
+value = s15,2
+persistent = 0
+AbsPan = 0
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 189
+trigger1 = teamside = 1
+anim = 8110
+ID = 180
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 189
+trigger1 = teamside = 2
+anim = 8111
+ID = 180
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, 音を鳴らす]
+type = PlaySnd
+trigger1 = wintime
+trigger1 = time = 205
+value = s15,1
+persistent = 0
+AbsPan = 0
+
+;--------------------------------
+[State 182, 特殊効果]
+type = AssertSpecial
+trigger1 = wintime = 0
+trigger1 = Time = [0,220]
+trigger2 = wintime
+trigger2 = Time = [0,380]
+flag = roundnotover
+
+[State 182, エフェクト表示]
+type = explod
+triggerall = teammode = single || teammode = turns
+trigger1 = wintime = 0
+trigger1 = Time = 200
+trigger2 = wintime
+trigger2 = Time = 360
+anim = 8000
+ID = 78000
+ontop = 1
+postype = left
+scale = 500.0,10.0
+ownpal = 1
+bindtime = -1
+ignorehitpause = 1
+
+[State 182, 特殊効果]
+type = AssertSpecial
+trigger1 = numexplod(78000) = 1
+flag = nobardisplay
+
+[State 181, ChangeState]
+type = ChangeState
+triggerall = matchover
+trigger1 = wintime = 0 && Time = 216
+trigger2 = wintime && Time = 376
+value = 189
+
+;---------------------------------------------------------------------------
+; 勝利ポーズ3
+; CNS レベル: 基本
+
+[Statedef 183]
+type = S
+ctrl = 0
+anim = 183
+velset = 0,0
+
+[State 183, VarSet]
+type = VarSet
+trigger1 = 1
+var(27) = 0
+
+[State 183, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 183, Sparks]
+type = Explod
+trigger1 = AnimElem = 12
+anim = 188
+sprpriority = -2
+postype = p1
+pos = 0,0
+bindtime = -1
+ownpal = 1
+
+[State 183, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 12
+value = s12,7
+
+[State 183, Bright]
+type = PalFX
+trigger1 = AnimElem = 12,= 0
+time = 1
+add = 96,96,96
+ignorehitpause = 1
+
+[State 183, Bright]
+type = PalFX
+trigger1 = AnimElem = 12,= 1
+time = 1
+add = -96,-96,-96
+ignorehitpause = 1
+
+;--------------------------------
+[State 181, ゲージ非表示]
+type = VarSet
+trigger1 = wintime
+trigger1 = time = [100,189]
+var(37) = 1
+
+[State 181, ゲージ非表示]
+type = AssertSpecial
+trigger1 = wintime
+trigger1 = time = [100,189]
+flag = nobardisplay
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 100
+anim = 8120
+ID = 180
+ownpal = 1
+pos = 103,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, Super A]
+type = PlaySnd
+trigger1 = wintime
+trigger1 = time = 100
+value = s15,2
+persistent = 0
+AbsPan = 0
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 189
+trigger1 = teamside = 1
+anim = 8110
+ID = 180
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 189
+trigger1 = teamside = 2
+anim = 8111
+ID = 180
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, 音を鳴らす]
+type = PlaySnd
+trigger1 = wintime
+trigger1 = time = 205
+value = s15,1
+persistent = 0
+AbsPan = 0
+
+;--------------------------------
+[State 183, 特殊効果]
+type = AssertSpecial
+trigger1 = wintime = 0
+trigger1 = Time = [0,220]
+trigger2 = wintime
+trigger2 = Time = [0,380]
+flag = roundnotover
+
+[State 183, エフェクト表示]
+type = explod
+triggerall = teammode = single || teammode = turns
+trigger1 = wintime = 0
+trigger1 = Time = 200
+trigger2 = wintime
+trigger2 = Time = 360
+anim = 8000
+ID = 78000
+ontop = 1
+postype = left
+scale = 500.0,10.0
+ownpal = 1
+bindtime = -1
+ignorehitpause = 1
+
+[State 183, 特殊効果]
+type = AssertSpecial
+trigger1 = numexplod(78000) = 1
+flag = nobardisplay
+
+[State 181, ChangeState]
+type = ChangeState
+triggerall = matchover
+trigger1 = wintime = 0 && Time = 216
+trigger2 = wintime && Time = 376
+value = 189
+
+;---------------------------------------------------------------------------
+; 勝利ポーズ4
+; CNS レベル: 基本
+
+[Statedef 184]
+type = S
+ctrl = 0
+anim = 184
+velset = 0,0
+
+[State 184, VarSet]
+type = VarSet
+trigger1 = 1
+var(27) = 0
+
+[State 184, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 184, Explod]
+type = Explod
+trigger1 = AnimElem = 4
+anim = 185
+sprpriority = 2
+postype = p1
+pos = 0, 0
+bindtime = -1
+ownpal = 1
+
+[State 184, Explod]
+type = Explod
+trigger1 = AnimElem = 4
+anim = 186
+sprpriority = 2
+postype = p1
+pos = 0, 0
+bindtime = -1
+ownpal = 1
+
+[State 184, Explod]
+type = Explod
+trigger1 = AnimElem = 16
+anim = 187
+sprpriority = 3
+postype = p1
+pos = 0, 0
+bindtime = -1
+ownpal = 1
+
+[State 184, Bright]
+type = PalFX
+trigger1 = AnimElem = 16,= 0
+time = 1
+add = 96,96,96
+
+[State 184, Bright]
+type = PalFX
+trigger1 = AnimElem = 16,= 1
+time = 1
+add = -96,-96,-96
+
+[State 184, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 16
+value = s12,7
+
+[State 184, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 16
+value = s10,34
+
+;--------------------------------
+[State 181, ゲージ非表示]
+type = VarSet
+trigger1 = wintime
+trigger1 = time = [100,189]
+var(37) = 1
+
+[State 181, ゲージ非表示]
+type = AssertSpecial
+trigger1 = wintime
+trigger1 = time = [100,189]
+flag = nobardisplay
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 100
+anim = 8120
+ID = 180
+ownpal = 1
+pos = 103,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, Super A]
+type = PlaySnd
+trigger1 = wintime
+trigger1 = time = 100
+value = s15,2
+persistent = 0
+AbsPan = 0
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 189
+trigger1 = teamside = 1
+anim = 8110
+ID = 180
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 189
+trigger1 = teamside = 2
+anim = 8111
+ID = 180
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, 音を鳴らす]
+type = PlaySnd
+trigger1 = wintime
+trigger1 = time = 205
+value = s15,1
+persistent = 0
+AbsPan = 0
+
+;--------------------------------
+[State 184, 特殊効果]
+type = AssertSpecial
+trigger1 = wintime = 0
+trigger1 = Time = [0,260]
+trigger2 = wintime
+trigger2 = Time = [0,420]
+flag = roundnotover
+
+[State 184, エフェクト表示]
+type = explod
+triggerall = teammode = single || teammode = turns
+trigger1 = wintime = 0
+trigger1 = Time = 240
+trigger2 = wintime
+trigger2 = Time = 400
+anim = 8000
+ID = 78000
+ontop = 1
+postype = left
+scale = 500.0,10.0
+ownpal = 1
+bindtime = -1
+ignorehitpause = 1
+
+[State 184, 特殊効果]
+type = AssertSpecial
+trigger1 = numexplod(78000) = 1
+flag = nobardisplay
+
+[State 181, ChangeState]
+type = ChangeState
+triggerall = matchover
+trigger1 = wintime = 0 && Time = 256
+trigger2 = wintime && Time = 416
+value = 189
+
+;---------------------------------------------------------------------------
+; 勝利メッセージ
+; CNS レベル: 基本
+
+[Statedef 189]
+type = S
+ctrl = 0
+anim = 9999
+velset = 0,0
+
+[State 3000, Super A]
+type = palfx
+trigger1 = time = 0
+add = 0,0,0
+time = 1
+
+[State 189, PlaySnd]
+type = PlaySnd
+trigger1 = time = 0
+value = s15,5
+AbsPan = 0
+
+[State 189, RemoveExplod]
+type = RemoveExplod
+trigger1 = time = 0
+ID = 78000
+
+[State 181, 1]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+[State 3000, Super A];背景
+type = explod
+trigger1 = time = 0
+anim = ifelse(teamside=1,8200,8201)
+postype = left
+bindtime = -1
+removetime =-1
+ownpal = 1
+ontop = 1
+
+[State 3000, Super A];一人目移動
+type = explod
+trigger1 = time=0&&NumHelper(9900)
+trigger1 = Helper(9900),var(41)<=51&&Helper(9900),var(43)<=51
+anim = 8300+Helper(9900),var(41)
+postype = left
+vel = 15,0
+pos = -3000,0
+ownpal = 1
+ontop = 1
+[State 3000, Super A];一人目停止
+type = explod
+trigger1 = time=0&&NumHelper(9900)
+trigger1 = Helper(9900),var(41)<=51&&Helper(9900),var(43)<=51
+anim = 8400+Helper(9900),var(41)
+postype = left
+bindtime = -1
+ownpal = 1
+ontop = 1
+
+[State 3000, Super A];二人目移動
+type = explod
+trigger1 = time=0&&NumHelper(9900)
+trigger1 = Helper(9900),var(43)<=51&&Helper(9900),var(43)<=51
+anim = 8300+Helper(9900),var(43)
+postype = left
+vel = 15,0
+pos = -2803,0
+ownpal = 1
+ontop = 1
+[State 3000, Super A];二人目停止
+type = explod
+trigger1 = time=0&&NumHelper(9900)
+trigger1 = Helper(9900),var(43)<=51&&Helper(9900),var(43)<=51
+anim = 8400+Helper(9900),var(43)
+postype = left
+pos = 203,0
+bindtime = -1
+ownpal = 1
+ontop = 1
+
+[State 3000, Super A];本体
+type = explod
+trigger1 = time = 0
+anim = 8240
+postype = left
+bindtime = -1
+ownpal = 1
+ontop = 1
+[State 3000, Super A];字幕
+type = explod
+trigger1 = time = 0
+anim = ifelse(var(5) = 1,8224,8220+random%4)
+postype = left
+bindtime = -1
+ownpal = 1
+ontop = 1
+[State 3000, Super A];演出
+type = explod
+trigger1 = time = 0
+anim = 8210
+postype = left
+bindtime = -1
+ownpal = 1
+ontop = 1
+[State 3000, Super A];枠
+type = explod
+trigger1 = time = 0
+anim = 8205
+postype = left
+bindtime = -1
+removetime =-1
+ownpal = 1
+ontop = 1
+
+[State 191, Snd 1]
+type = assertspecial
+trigger1 = 1
+flag = nomusic
+flag2 = noFG
+flag3 = noBG
+
+[State 3000, Super A]
+type = AssertSpecial
+trigger1 = 1
+flag = NoBarDisplay
+flag2 = globalnoshadow
+
+[State 191, Snd 1]
+type = assertspecial
+trigger1 = Time =[0,407]
+flag = roundnotover
+
+;---------------------------------------------------------------------------
+; イントロ分岐
+; CNS レベル: 基本
+;
+; ここでは変数(var)を使っていますが、詳しい説明は後ほど。
+; VarRandomはrangeで指定された範囲からひとつを選ぶので、
+; いろいろな分岐に便利です。
+
+;イントロ選択
+[Statedef 190]
+type = S
+ctrl = 0
+anim = 0
+velset = 0,0
+
+[State 190, 京]
+type = ChangeState
+triggerall = time = 1
+trigger1 = p2name = "Kyo" || p4name = "Kyo"
+trigger2 = p2name = "Kyo Kusanagi" || p4name = "Kyo Kusanagi"
+value = 192
+
+[State 190, 女性(Special Thanks：ゆーとはる氏)]
+type = ChangeState
+triggerall = time = 1
+trigger1=P2name="Sakura Kasugano"||P2name="Sakura SxP"||P2name="Sakura cc"||P2name="Sakura"||P2name="SakuraPlus"||P2name="Setsuna Sakurazaki"||P2name="SAKURA SHINGOUJI"||P2name="Sango"||P2name="Arale"||P2name="Poison MvC"||P2name="Reminya"||P2name="幻海"
+trigger2=P2name="Satsuki Yumiduka"||P2name="Satsuki_Yumiduka"||P2name="Yumiduka_Satsuki"||P2name="Yumiduka Satsuki"||P2name="MegaMari_sukima"||P2name="Saya Otonashi"||P2name="Fubuki Sakuragasaki"||P2name="Lien Neville"||P2name="Renaluigi"||P2name="OKADA"
+trigger3=P2name="goenikoD4"||P2name="Sakura Haruno"||P2name="Kagome-sama by VinceJ"||P2name="Lady_Kikyo"||P2name="Ukyo Kuonji"||P2name="Kuno Kodachi"||P2name="X-Shampoo"||P2name="Hana"||P2name="Rera_zero_by_ibukah"||P2name="FEMINOPHOBIA"||P2name="Seiren"
+trigger4=P2name="Akane Tendo"||P2name="Mariko Konjou"||P2name="SIZUKA"||P2name="Nausicaa"||P2name="Wapiko"||P2name="Onpu Segawa"||P2name="moon"||P2name="Super Sailor Moon"||P2name="Kanaria-D"||P2name="K-ko"||P2name="A_Mizuki"||P2name="Docinho por Ssonic"
+trigger5=P2name="Sailor Moon"||P2name="Eternal SailorMoon"||P2name="Sailor Venus"||P2name="Sailor Mercury"||P2name="Sailor Mars"||P2name="Sailor Jupiter"||P2name="Sailor Venus KFM"||P2name="Succubus"||P2name="KungFuGirl UZUKI"||P2name="Spiral by Iwakick"
+trigger6=P2name="Sailor Pluto"||P2name="Sailor Saturn"||P2name="Precure"||P2name="Sakura Kinomoto"||P2name="CUTIE HONEY"||P2name="BATTLE MAHORO"||P2name="YajyuImouto"||(P2name="Huuma_Kotetu"&&enemynear,authorname="tomottuxi")||P2name="Blair Dame SFEX"
+trigger7=P2name="Mahoro"||P2name="Minawa Andou"||P2name="Sachiko Ogasawara"||P2name="Yumi Fukuzawa"||P2name="Yoshino Shimazu"||P2name="Shimako Todo"||P2name="Chiyo Mihama"||P2name="Morilen"||P2name="Reisen_Ground_Type"||P2name="Remilia_M"||P2name="Shana"
+trigger8=P2name="touko"||P2name="Kagura"||P2name="Ayumu Kasuga"||P2name="Sakaki"||P2name="Tomo Takino"||P2name="Haruhi Suzumiya"||P2name="Mikuru Asahina"||P2name="asahina mikuru"||(P2name="monk"&&enemynear,authorname="kishio")||P2name="Alexia Ashford"
+trigger9=P2name="asakura ryouko"||P2name="Ryoko Asakura"||P2name="tsuruya-san"||P2name="Konata Izumi"||P2name="kagamin"||P2name="tsukasa"||P2name="Absolute_White_Len"||(P2name="Kyuketsuki"&&enemynear,authorname="eminanaya")||P2name="Sakuya_Maplestory"
+trigger10=P2name="kotonoha katsura"||P2name="Saionzi Sekai"||P2name="Vanilla H(beta)"||P2name="Vanilla H"||P2name="Di Gi Charat"||P2name="Usada Hikaru"||P2name="rena_lv5"||P2name="ryugu"||P2name="Sinclair"||P2name="Layla & Albert"||P2name="Rule 63 Tails"
+trigger11=P2name="furude_rika"||P2name="ryuuguu rena"||P2name="sonozaki mion"||P2name="hunter-A"||P2name="Hojo Satoko"||P2name="cvsyoko"||P2name="Eiko Magami"||P2name="Weiss-Arcana3"||P2name="Misaka Mikoto"||P2name="Mysterious Power"||P2name="Sash Lilac"
+trigger12=P2name="Biko Daitokuji"||P2name="chise"||P2name="Chiseex"||P2name="kino"||P2name="Nanoha"||P2name="Nanoha_Takamachi"||P2name="fate"||P2name="BMG"||P2name="Nami"||P2name="Tsubasa"||P2name="HighwayStar"||P2name="Kiyoko Mitarai"||P2name="YAKF Fan"
+trigger13=P2name="Tashigi"||P2name="MARIAH"||P2name="MIDLER"||P2name="hu-ko"||P2name="Tio&Megumi"||P2name="Paty&Ururu"||P2name="Juuhachigou"||P2name="Androide 18 by _Vision"||P2name="yakumo_ran"||P2name="Reisen Deadpool Inaba"||P2name="Ogigaya Tetsuko S"
+trigger14=P2name="Android 18"||P2name="Pan Dragonball GT por Ssonic"||P2name="Sion_Eltnam_Atlasia"||P2name="Sion Eltnam Atlasia"||P2name="Sion TATARI"||P2name="Sion Eltnam Atlasia [Vampire]"||P2name="Roza"||P2name="Pneophen's Sexy Doll"||P2name="Cthugha"
+trigger15=P2name="Sion_TATARI"||P2name="V-sion-D"||P2name="seifuku_akiha"||P2name="Youmu_Konpaku"||P2name="Akiha_Tohno"||P2name="Aya Syameimaru"||P2name="Akiha_Vermilion"||P2name="kd-alice"||P2name="Drill Asamin"||P2name="gaoru2"||P2name="Shiny Luminous"
+trigger16=P2name="Hisui"||P2name="Hisui&Kohaku"||P2name="Kohaku"||P2name="Kohaku By Toshi"||P2name="Mr.Chin"||P2name="White_Len(CPU)"||P2name="White_Len"||P2name="White Len"||P2name="S-Marisa"||P2name="Fray 2009"||P2name="Fray 2010"||P2name="Rockbouquet"
+trigger17=P2name="Miyako Arima"||P2name="Arima_Miyako"||P2name="Miyako Rock=style"||P2name="Miyako Arima HM"||P2name="2toshin Alice"||P2name="8TOUSHIN MARISA"||P2name="STGmarisa"||P2name="Fortuna_Suwako"||P2name="Magnuadioes_Utsuho"||P2name="Sendai_Miko"
+trigger18=P2name="AbaReimu"||P2name="ccreimu"||P2name="hakureimu"||P2name="MegaMari"||P2name="Alice Margatroid"||P2name="Alice_Margatroid"||P2name="Shanghai_Alice"||P2name="Ride-R"||P2name="SAKURA-LEN"||P2name="Margaretha_Solin"||P2name="Kurumi_Mirumati"
+trigger19=P2name="tosaka rin-mini"||P2name="Taiga&Buruma"||P2name="Millia_Rage"||P2name="Millia Rage Mix"||P2name="millia"||P2name="I-NO"||P2name="Ai"||P2name="JAM KURADOBERI"||P2name="Glaugan_Koa"||P2name="Barbatos Komachi"||P2name="Ryogi_Shiki_Arrange"
+trigger20=P2name="jam"||P2name="Baiken"||P2name="baiken_GGX"||P2name="May"||P2name="Dizzy"||P2name="Super Dizzy"||P2name="Athletic-Chun Li"||P2name="Chun Li"||P2name="Chun-Li"||P2name="[Rumiko]'s Angel"||P2name="[Rugal]'s Psylocke"||P2name="doxue misaka"
+trigger21=P2name="Chun Li by WhiteMagic2002"||P2name="ChunLi"||P2name="cvsmai"||P2name="Genryusai Maki"||P2name="cvsathena"||P2name="cvscammy"||P2name="cvschunli"||P2name="cvsfelicia"||P2name="ROBO-LEN"||P2name="Commode Serika"||P2name="Destroyer_gudako"
+trigger22=P2name="Hibiki Takane"||P2name="Yami_miko"||P2name="cvsjill"||P2name="cvsjuni"||P2name="cvskarin"||P2name="kasumi"||(P2name="Genkai"&&enemynear,authorname="X-Calibre Blade")||P2name="Paty&Ururu"||P2name="aselia of eternal"||P2name="ROBO-JAM"
+trigger23=P2name="Lucy Fernandez"||P2name="NGBC Kisarah Westfield"||(P2name="Haku"&&enemynear,authorname="Ryun")||(P2name="Len"&&(enemynear,authorname="⑨"||enemynear,authorname="Kn"||enemynear,authorname="Sion_Love_nameless"))||P2name="Elza"
+trigger24=P2name="Moe"||P2name="cvslilith"||P2name="nakoruru"||P2name="cvssakura"||P2name="cvsyuri"||P2name="svcathena"||P2name="Dark Chun Li"||P2name="Gokudou Pupeteer"||P2name="Hidoumajo"||P2name="Uzeusama"||P2name="Kurumi Ebisuzawa"||P2name="BikerGAL"
+trigger25=P2name="Athletic-Chun Li"||P2name="MasterChunLi"||P2name="Aya_Syameimaru"||P2name="Dark Sakura by BlackJack"||P2name="Dark Sakura"||P2name="Rosemary"||P2name="Rainbow Mika By TAMAGO"||P2name="takocham"||P2name="takolen"||P2name="KEMONO Friends"
+trigger26=P2name="darkkarin"||P2name="J_Karin"||P2name="Karin Kanzuki"||P2name="Neo Karin"||P2name="Karina"||P2name="Sakura&Karin"||P2name="Karin"||P2name="Cammy"||P2name="Juli"||P2name="J_Flan"||P2name="J_yukari"||P2name="miki sayaka"||P2name="Reisen_A"
+trigger27=P2name="cammy_nxc"||P2name="CammySFM"||P2name="Juni"||P2name="Kisarah Westfield"||P2name="Ibuki"||P2name="SF3 Ibuki"||P2name="Makoto"||P2name="Makoto Sawatari"||P2name="Syameimaru_Akari"||P2name="Mariabell Armitage"||P2name="Bulleta by Beximus"
+trigger28=P2name="SF3 Elena"||P2name="Anonym"||P2name="Chie_Rumiko"||P2name="Blair Dame"||P2name="New Nakoruru"||P2name="nakoruruss0"||P2name="felicia"||P2name="Pocket Felicia"||P2name="Noel = Vermillion"||P2name="7L|]{(L2!"||P2name="Buttercup By Ssonic"
+trigger29=P2name="Felicia MvC2 Style by MGBenz"||P2name="Bulleta SXP"||P2name="Baby Bonnie Hood"||P2name="Muranako"||P2name="mina majikina"||P2name="ANITA by CAMRAT"||P2name="Marika M Peachitree"||P2name="Tin's Linn_Kurosawa"||P2name="Kakusei Mary (AvS)"
+trigger30=P2name="Lilith"||P2name="Mi_Lilith"||P2name="Jill Valentine"||P2name="Roll"||P2name="Tron Bonne SxP"||P2name="Tron Bonne"||P2name="Ruby Heart"||P2name="Ruby Heart SXP"||P2name="assiette"||P2name="sanae_X"||P2name="satuzinki_S"||P2name="Thundra"
+trigger31=P2name="Hinata Wakaba"||P2name="Mina"||P2name="IROHA"||P2name="Rogue"||P2name="Rogue by Splode"||P2name="Rera"||P2name="cham cham"||P2name="Mai Kawasumi from Sougetu"||P2name="Dr.Minerva"||P2name="Irriana"||P2name="Jurane"||P2name="Master_Rosa"
+trigger32=P2name="mai_Pocket"||P2name="Rerakusa Siro Dokisada"||P2name="Tessa"||P2name="BDI_Pocket_Chun-li"||P2name="xi_yuri"||P2name="Aner"||P2name="chizuru"||P2name="Chizuru Kagura"||P2name="karla_Keller"||P2name="RajaaMech-Hisui"||P2name="Mahesvara 1"
+trigger33=P2name="Mai Shiranui"||P2name="Mai Kawasumi"||P2name="mai_rb"||P2name="Mai_K"||P2name="Maid Serio"||P2name="R.B Mai"||P2name="BDI_CvS2Mai"||P2name="94 Yuri Sakazaki"||P2name="February"||P2name="November"||P2name="TOU-NYAN-LEN"||P2name="G-akiha"
+trigger34=P2name="MN"||P2name="LUNA"||P2name="Blue Mary"||P2name="Yuri Sakazaki"||P2name="god yuri"||P2name="Yuri"||P2name="wind"||P2name="kasumi todo"||P2name="Cometto-san"||P2name="Doremi Harukaze"||P2name="Sorami_Shizaki"||P2name="BlackPrincess_Tohka"
+trigger35=P2name="Athena Asamiya"||P2name="Athena TYPE-M"||P2name="athena-rkn"||P2name="Mystic Athena"||P2name="Sandy"||P2name="Another Leona"||P2name="Leona By Ssonic"||P2name="Pneophen's pissed off Sakura"||P2name="Kurisu_Siratori"||P2name="sakurachan"
+trigger36=P2name="Yuki_a"||P2name="Kula"||P2name="senna kyoudou"||P2name="kula_new"||P2name="robo-kula"||P2name="Yuki By Third"||P2name="Miu Kurosaki"||P2name="Zero Hotaru"||P2name="Tenshi_X"||P2name="Udonge_A"||P2name="Kochiya-Sanae"||P2name="SUWAREIMU"
+trigger37=P2name="Malin"||P2name="Hotaru Futaba"||P2name="Maria Shinzaki"||P2name="fliz"||P2name="angel"||P2name="Rin"||P2name="Alty"||P2name="Shijyo Hinako"||P2name="Hinako"||P2name="Anonym-guard"||P2name="SF4 Juri"||P2name="SaikyoCirno"||P2name="r-mai"
+trigger38=P2name="Tin's Shiki"||P2name="J_Mary"||P2name="kukuru"||P2name="Akari Ichijo by M@PPY"||P2name="Akari Kamigisi"||P2name="NewAkari"||P2name="Li Xiang Fei"||P2name="Tin's May Lee"||P2name="Fiorenza2"||P2name="M-PrincessJade"||P2name="Flame Demon"
+trigger39=P2name="isabeau"||P2name="hiel"||P2name="Sula"||P2name="Elisabeth Branctorche"||P2name="Shermie"||P2name="Bonne Jenet"||P2name="PokeAthena! Wai!"||P2name="Osage Akari"||P2name="Turanga Leela"||P2name="Emma Frost"||P2name="notos"||P2name="whip"
+trigger40=P2name="Super Akarin"||P2name="Hibiki_Takane"||P2name="alice"||P2name="Pupa Salgueiro"||P2name="Annie Murakami"||P2name="Lynn Baker"||P2name="Lynn"||P2name="Kurara Hanakouji"||P2name="Marrow"||P2name="Sonson"||P2name="Spiral"||P2name="LB_Tenko"
+trigger41=P2name="Youmu Double Blade"||P2name="Sissy"||P2name="clara"||P2name="MVCremi by ryokucha"||P2name="popura"||P2name="Roomi v2.1 by Inverse"||P2name="roomi"||P2name="arina"||P2name="Cooking Mama"||P2name="HanreiYoumu"||P2name="G_Saber_Revision_2"
+trigger42=P2name="Tesse"||P2name="Tia"||P2name="Izumo Ryoko"||P2name="k_carol"||P2name="yukihime"||P2name="kurenai"||P2name="Reika"||P2name="Chen Mao"||P2name="Riu Yung Mie"||(P2name="MAOH"&&enemynear,authorname="shikkoku")||P2name="MI_Sakura_Chitose"
+trigger43=P2name="tsugumi"||P2name="Marian"||P2name="li hua"||P2name="Marisa Kirisame"||P2name="Tsunade"||P2name="Yagumo by Mattasaur!"||P2name="Momokoi Aoyama"||P2name="Alice_6kinoko"||P2name="Marisa Cos Tenshi"||P2name="6kinoko_reimu"||P2name="Gorgona"
+trigger44=P2name="Ryuho"||P2name="chibiko"||P2name="B_Raiya"||P2name="Raiya Mikazuchi"||P2name="kiriko"||P2name="Shaia"||P2name="honda asuka"||P2name="Jun Kubota by Luchini"||P2name="kurumi"||P2name="Neige_Pebble"||P2name="ZeroHibiki"||P2name="SoR3Blaze"
+trigger45=P2name="Asuka"||(P2name="tao"&&enemynear,authorname="NHK")||(P2name="UNKNOWN"&&(enemynear,authorname="kuri"||enemynear,authorname="hanma"||enemynear,authorname="586"||enemynear,authorname="gu"))||P2name="STG Fran"||P2name="Bella"
+trigger46=P2name="Shinobu"||(P2name="Kurokishi"&&enemynear,authorname="ihoo1836")||P2name="torami"||P2name="kumi"||P2name="megumi"||P2name="Reimi"||P2name="Kaori Yanase"||P2name="ZeroHighwayStar"||P2name="ZeroKing"||P2name="TELETTE"||P2name="konachan"
+trigger47=P2name="Erina by Luchini"||P2name="Ayako by Luchini"||P2name="Masuda Chiho"||P2name="Tamao Mitsurugi"||P2name="Tamao V.G-MAX"||P2name="Yuka Takeuchi"||P2name="Satomi Yajima"||P2name="QUEEN OF HEART"||P2name="MvC2_Boa_Hancock"||P2name="ZenKasen"
+trigger48=P2name="satomi"||P2name="Manami Kusunoki"||P2name="Kirisima Kyoko"||P2name="HIRO"||P2name="ROZE"||P2name="Fuziwara Yuki"||P2name="Yueng Soi Leng"||P2name="ai momoyama"||P2name="Shiki_Ryougi"||P2name="Senna_Kyoudou"||P2name="True Heroine Kotone"
+trigger49=P2name="Mimi by Luchini"||P2name="Natumi takasimada"||P2name="Aska by BEK"||P2name="Nanashi Kimura"||P2name="Hikari Reiko"||P2name="Benten"||P2name="Fiona"||P2name="Original_Flandre"||P2name="H_31Rin"||P2name="Another_Mai_K"||P2name="draculina"
+trigger50=P2name="Saki"||P2name="Saki_Tsuzura"||P2name="Tsuzura_Saki"||P2name="Konoha"||P2name="kira"||P2name="Lieselotte"||P2name="Maori"||P2name="Lilica"||P2name="Heart_Aino"||P2name="Stealer"||P2name="CureHappy"||P2name="Arabianmoon"||P2name="Ristill"
+trigger51=P2name="petora"||P2name="kendo nakanishi&kyudo nakanishi"||P2name="kunagi tenrou"||P2name="Kaori Misaka"||P2name="Kaori Misaka & Shiori Misaka"||P2name="Nayuki Minase"||(P2name="Mimic"&&enemynear,authorname="Tukimoon")||P2name="AOI MATUBARA"
+trigger52=P2name="Ayu Tukimiya"||P2name="Mishio"||P2name="Shiori"||P2name="Sayuri Kurata"||P2name="Sayurin"||P2name="Misuzu"||P2name="Misuzu_K"||P2name="EXnanase"||P2name="Valentina"||P2name="haruchan"||P2name="Shiori Misaka"||P2name="G-Saber-Revision-1"
+trigger53=P2name="Ikumi Amasawa By Toshi"||P2name="Ikumi_Amasawa"||P2name="Minagi Tohno"||P2name="Minagi Tohno By Toshi"||P2name="Mizuka Nagamori"||P2name="Mayu Shiina"||P2name="Minis Mahn"||P2name="Gudea-Suika"||P2name="Yatogi Akane"||P2name="MvC Peach"
+trigger54=P2name="Kano Kirishima"||P2name="michiru"||P2name="Rumi Nanase"||P2name="Misaki Kawana"||P2name="Shiiko Yuzuki"||P2name="Akane Satomura"||P2name="c_serika"||P2name="gregariously"||P2name="LADY BRACKPEARL"||P2name="caster-mini"||P2name="Yukarin"
+trigger55=P2name="Serio"||P2name="HMX-12-2 M-custom"||P2name="Made Multi"||P2name="HMX-12"||P2name="Asahi_Sakurai By Toshi"||P2name="Minami_Makimura"||P2name="Yue Imasaka"||P2name="Mary Agent"||P2name="Orochi-Yuyuko"||P2name="Yakumo_Ran"||P2name="serika"
+trigger56=P2name="tomoko"||P2name="Kotone_Himekawa"||P2name="Rapied Ayaka"||P2name="Kanako"||P2name="Kaede Kasiwagi"||P2name="mizuki"||P2name="ruriko"||P2name="Huryou_Hatune"||P2name="Mukai_Chiko"||P2name="Flandre-Bernstein"||P2name="Leia"||P2name="Pale"
+trigger57=P2name="azusa"||P2name="Azusa Hinomori"||P2name="corin"||P2name="Yu Inokawa"||P2name="Chi-chan"||P2name="kasiwagi_chiduru"||P2name="Bousou Oni-CHIDURU"||P2name="Syuren_Kano"||P2name="Marvel vs Capcom - Eternity of Heroes: Chun-Li"||P2name="Mio"
+trigger58=P2name="Zenon"||P2name="Erika_Sendou"||P2name="Masako Houjyouin"||P2name="Yumiko Watanuki"||P2name="Kaori Yanase"||P2name="seriko"||P2name="Mary_Deiyon"||P2name="hatune"||P2name="Narukana"||P2name="I_LILICA"||P2name="Pheus_Mor"||P2name="Poison"
+trigger59=P2name="aya hasebe"||P2name="c_mizuki"||P2name="Ecoco"||P2name="mel"||P2name="Princess Comet"||P2name="Hoshi Monako"||P2name="Monako Ogura"||P2name="Reika Murasame"||P2name="Princess Meteo"||P2name="Potpourri"||P2name="nbc_aoko"||P2name="Lemmy"
+trigger60=P2name="hory marlu"||P2name="Etoile Chrono Tokiko"||P2name="RYUKO"||P2name="Eimi Ohba"||P2name="eimi"||P2name="kaga reiko"||P2name="irori"||P2name="material"||P2name="Felicia_LG"||P2name="Dembo"||P2name="miku"||P2name="Material-S"||P2name="Gum"
+trigger61=P2name="Kana Orikura"||P2name="Izen"||P2name="Asami Yamazawa"||P2name="Kikuko Nogi"||P2name="Meer Campbel"||P2name="Marle 2"||P2name="Lucca"||P2name="Aeris Gainsborough"||P2name="Shinki"||P2name="oboren"||P2name="shiratama20"||P2name="Yu Asuka"
+trigger62=P2name="ARURU"||P2name="Amity"||P2name="valkyrie"||P2name="Wonder Momo"||P2name="Tiria Roset"||P2name="Hikari"||P2name="Yadamon"||P2name="Game Master"||P2name="Yukari_hsts"||P2name="December"||P2name="hakurou"||P2name="Laurent"||P2name="YokoWP"
+trigger63=P2name="Tifa Lockheart"||P2name="Tifa Lockhart"||P2name="Rugal Bee"||P2name="Yoma Komatsu"||P2name="fujisaki"||P2name="HATSUNE_MIKU"||P2name="HATSUNE MIKU"||P2name="mutumi"||(enemynear,authorname="KFC?"&&(P2name="shogun"||P2name="swordman"))
+trigger64=P2name="Eruru"||P2name="Sylphie"||P2name="Toron"||P2name="Walkyrie"||P2name="RIMLE"||P2name="Yo-Jo"||P2name="lyris"||P2name="Lyris Aileron"||P2name="Farah Oersted"||P2name="Stealer"||P2name="Honda Asuka PB"||P2name="Chen_Tiger"||P2name="Vesper"
+trigger65=P2name="Chelsea Tone"||P2name="Collet Brunel"||P2name="Suzu Fujibayashi"||P2name="Arcana Presea"||P2name="Presea Combatir"||P2name="fron"||P2name="DQ5-daughter"||P2name="Asutorea"||P2name="Shigure_Sakuya"||P2name="Lei Lei"||P2name="SCWU_Zenka"
+trigger66=P2name="Princess Daisy"||P2name="EvilPeach"||P2name="Peach"||P2name="Kung Fu Mako"||P2name="Eri Kamei"||P2name="Reina Tanaka"||P2name="Miki Fujimoto"||P2name="MONO FREAKS"||P2name="Yoriko_Yasuzumi"||P2name="Remy Miyauchi"||P2name="Izumi Konata"
+trigger67=P2name="Ai Takahashi"||P2name="Yumi Yoshimura"||P2name="Ami Ohnuki"||P2name="Hyuuga A Akiko By CAP"||P2name="mana"||P2name="Kung Fu girl"||P2name="Myuu"||P2name="LOWREN"||P2name="RI-NE"||P2name="Tichiel-Juspian"||P2name="Nazrin"||P2name="Kamui"
+trigger68=P2name="Pneophen's Kotono from Dead Dance"||P2name="ranoh"||P2name="waha-"||P2name="Yuki Kotonomiya"||P2name="Manamana"||P2name="komepo"||P2name="wagahai"||P2name="Marvel Frozen"||P2name="Racheal"||P2name="Sakuya_Izayoi_A"||P2name="Bra by Mira"
+trigger69=P2name="rusty"||(enemynear,authorname="woman"&&(P2name="2"||P2name="95"||P2name="98"||P2name="98SE"||P2name="2k"||P2name="me"||P2name="XP(pro)"||P2name="r'"))||P2name="Scarlet Devil"||P2name="saigyouji yuyuko"||P2name="Jill Valentine by XCB"
+trigger70=P2name="mayko"||P2name="medoi"||P2name="Madoi San"||P2name="modoi"||P2name="Yakui San"||P2name="Ozoi san"||P2name="itai"||P2name="Yamiyuki"||P2name="Karen na Hito"||P2name="Tenko_L"||P2name="DHSakuya"||P2name="cassandra"||P2name="Serio+ HMX-13"
+trigger71=P2name="ikisan"||P2name="Mako"||P2name="Rinfa"||P2name="gurocure"||P2name="neyufeulle"||P2name="ryuuou"||P2name="Shinocchi"||P2name="nyaonyao"||P2name="huninki"||P2name="Virgilia"||P2name="Lambdadelta"||P2name="Inaba Tewi"||P2name="mai_kof94hi"
+trigger72=P2name="s_crea-f"||P2name="s_sayia-f"||(P2name="j"&&enemynear,authorname="DEAD ATOM")||P2name="nukunuku"||P2name="Sakuya_Izayoi"||P2name="Sakuya Izayoi"||P2name="Hong_Meirin"||P2name="Curly_Brace"||P2name="Kunoichi_NWA"||P2name="CordeliaSF2"
+trigger73=P2name="Hong Meirin"||P2name="MegaMari_chuugoku"||P2name="Chu-goku"||P2name="Patchouli"||P2name="Patchouli_Knowledge"||P2name="Reimu_Hakurei"||P2name="89006"||P2name="Misaka-Kaori"||P2name="Peace of Len"||P2name="YAKF Star"||P2name="Dr.Nuclear"
+trigger74=P2name="MegaMari_sukima"||P2name="Toyota Karina Cerenas Version NEO"||P2name="Kyogoku Majikina Mioh"||P2name="Toyota Karina Cerenas Version Original"||P2name="RKR"||P2name="MAJI_IROHA"||P2name="Nyarlathotep"||P2name="Riesbyfe_Stridberg_Arrange"
+trigger75=P2name="Toyota Karina Cerenas Version Clone"||P2name="Honda Asuka Cerenas Version"||P2name="Ookubo Kumi Cerenas Version"||P2name="Suzuki Megumi Cerenas Version"||P2name="Owada Nana Cerenas Version"||P2name="Aya_S_Guile"||P2name="Kirisame_Mario"
+trigger76=P2name="MasterMaiLing"||(P2name="uesugi kensin"&&enemynear,authorname="minoo")||P2name="Reisen Udongein Inaba"||P2name="Iku_Nagae"||P2name="Sonozaki_Shion"||P2name="Tenrou_Kunagi"||P2name="[Vanessa]'s Vanessa"||P2name="noble_daughter_Hatate"
+trigger77=P2name="ranmaru"||P2name="Kotori Shirakawa"||P2name="Nemu Asakura"||P2name="rumia"||P2name="Tamiflu Miko"||P2name="Sakuya OS"||P2name="Hisouten_Patchouli"||P2name="RainbowMeiling"||P2name="Sailorpig"||P2name="Meg Griffin"||P2name="Chibi Nazrin"
+trigger78=P2name="Izuna"||P2name="RajaaCammy"||P2name="RajaaLilith"||P2name="RajaaMaki"||P2name="RajaaYuri"||P2name="Komachi Onoduka"||P2name="cvsmika"||P2name="Akira Honjoji"||P2name="Reisen_ABS"||P2name="Tenshi_A"||P2name="Homura_m"||P2name="Resonance"
+trigger79=P2name="Jubilation Lee"||P2name="launa"||P2name="LENALEE-MVC"||P2name="NANASE-MVC"||P2name="Misuzu Kamio"||P2name="AYAKA-MVC"||P2name="mai_kof9495"||P2name="yako_katsuragi"||P2name="Tannhauser"||P2name="lily_white"||P2name="Reas"||P2name="A-ko"
+trigger80=P2name="YoumuSS"||P2name="Shino Kamui Rimuhime"||P2name="akira_kogami"||P2name="Super Jupiter"||P2name="Sailor Neptune"||P2name="Hyper Beast"||P2name="Tabasa"||P2name="gobotenn"||P2name="gouhou"||P2name="Trixie"||P2name="Truffe"||P2name="Beako"
+trigger81=P2name="Super Sailor Venus"||P2name="Super Sailor Mars"||P2name="SuperNovice"||P2name="Sailor Uranus"||P2name="KRukia"||P2name="Nao Yuuki"||P2name="Yumel"||P2name="HiHuMi"||P2name="Parsee"||P2name="Kongara_Another_Style"||P2name="kump_nv20(St)"
+trigger82=P2name="Yomi"||P2name="MasterHibiki"||P2name="Duna"||P2name="Cecilia"||P2name="tiki"||P2name="Walkure"||P2name="kanna-mvc"||P2name="SAKI-MVC"||P2name="Asha"||P2name="Tatsuki Arisawa"||P2name="Yuka Kazami"||P2name="D-Sayaka"||P2name="Kei Shidou"
+trigger83=P2name="Rosa"||P2name="Arima_Meirin"||P2name="ONI-MIKO-REIMU"||P2name="RajaaMechHisui"||P2name="Sanae Kotiya"||P2name="Mishio Amano"||P2name="Chunli_Sf3_Marvel"||(P2name="youhei"&&enemynear,authorname="Pre-to")||P2name="Frey"||P2name="Linda"
+trigger84=P2name="kogasa"||P2name="Yumeka Ohajiki"||P2name="Hong_Meiling_Brawl_Remix"||P2name="MvC2 Tron Bonne"||P2name="mokou"||P2name="mystia"||P2name="Kureha Hayate"||P2name="hibiki"||P2name="sunny"||P2name="Rydia"||P2name="MOMO-LEN"||P2name="Inazuma"
+trigger85=P2name="Rei Ayanami"||P2name="Feng Xiaoyen"||P2name="STGreimu"||P2name="STGsakuya"||(P2name="yue"&&enemynear,authorname="Ryu")||P2name="kimexemaru"||P2name="Miyako_Arima"||P2name="Arima Miyako"||P2name="Yuuko(kari)"||P2name="kump_nv25(thea)"
+trigger86=P2name="Omni-Psych Jam"||P2name="Sakuya_SWR"||P2name="Patchouli_SWR"||P2name="Scylla"||P2name="Tyris Flare"||P2name="SAYO CHAN"||P2name="Suika_pon"||P2name="MVC3_Sanae"||P2name="ruili"||P2name="Linne_SS"||P2name="Fio Germi"||P2name="asa_jissou"
+trigger87=P2name="Mizuki Takase"||P2name="Monami Ogura"||P2name="Petit Charat"||P2name="Athena"||P2name="Sakura' Por Drugen"||P2name="rbsmai"||P2name="Hinako Shijo"||P2name="Kotono"||P2name="Iria Silvestoli"||P2name="Elsa La Conti"||P2name="Zekken Yuuki"
+trigger88=P2name="RajaaChunli"||P2name="RajaaHibiki"||P2name="KulaXI"||P2name="Subaru"||P2name="Kujo Meirin"||P2name="Marona"||P2name="Asagiri_Asagi"||P2name="DISRUPTER"||P2name="MF_Flan"||P2name="H-Flan"||P2name="Flaso_violet"||P2name="Mai Kawasumi-KFX"
+trigger89=P2name="KYOUDOU SENNA"||P2name="Hong Meiling"||P2name="elen"||P2name="Reak"||P2name="Yuri_cvs"||P2name="Shartel"||P2name="ffsp_mai"||P2name="H Kanna"||P2name="Yagudo Shameimaru"||P2name="RajaaSatsuki"||P2name="F_HEAT_ver3"||P2name="Matsuko-San"
+trigger90=P2name="Psycho Weapon MB-00"||P2name="Athena_Asamiya"||P2name="Kanna_Kouryu"||P2name="D-Athena"||P2name="Johanna Capcom Style"||P2name="Rosemary Applefield"||P2name="prishe"||P2name="Renne"||P2name="honbunnai"||P2name="IDchan"||P2name="spingel"
+trigger91=P2name="darkathena"||P2name="Dark Athena 2nd B"||P2name="Dark Athena 2nd"||P2name="Kyoko Kusanagi"||P2name="Bunny Girl, Mika Edit"||P2name="Blaze Fielding"||P2name="Kill Bill v.1 Gogo"||P2name="MVCjuni"||P2name="Yuki Kameoka"||P2name="takorimu"
+trigger92=P2name="G Mizuka"||P2name="Project_Sakura"||(P2name="Reon"&&enemynear,authorname="NRF")||P2name="AegisLilith"||P2name="Ayu Tukumiya"||P2name="Medicine Melancholy"||P2name="reimu"||P2name="F_HEAT"||P2name="MVC Ton Pooh"||P2name="Rocio Rocket"
+trigger93=P2name="Reimu_Scarlet"||P2name="Meilyne Cujo"||P2name="RajaaMiyako"||P2name="pandora"||P2name="STG0235"||P2name="Hong Meilin"||P2name="EFZaya"||P2name="Sonozaki_Mion"||P2name="Hatate_Himekaidou"||P2name="Elina Gold Smith"||P2name="Kimasi_Sanae"
+trigger94=P2name="Li Xiangfei"||P2name="セーラームーン"||P2name="どろぴー"||P2name="Reisen U Inaba"||P2name="KasumiWP"||P2name="ピーチ姫"||P2name="ellen"||P2name="alieta"||P2name="ffblaze"||P2name="Arche Clain"||P2name="Himegami Aisa"||P2name="mokorugal"
+trigger95=P2name="carrot"||P2name="guraid"||P2name="mail"||P2name="mariel"||P2name="raira"||P2name="sharum"||P2name="valkily"||P2name="windy"||P2name="Ayu&Misuzu&Mizuka"||P2name="GODZILLEN"||P2name="biollente"||P2name="Bibin MC"||P2name="KotonohaSisters"
+trigger96=P2name="Kaori&Shiori"||P2name="Mishio&Makoto"||P2name="伊吹風子"||P2name="hu-ko"||P2name="LANG"||P2name="cvssakura_ex"||P2name="cvssakura_normal"||P2name="Deedrit"||(P2name="Bubbles"&&enemynear,authorname="Daigoro")||P2name="PW_Hong_Meiling"
+trigger97=P2name="Nei"||P2name="Saku"||P2name="Mildred_Avallon"||P2name="Hakufu Sonsaku"||P2name="yorihime"||P2name="Anita EOH"||P2name="yagumo"||P2name="Nicole Neil"||P2name="Valis_Yuko"||P2name="fflucia"||P2name="Cueca"||P2name="Blossom"||P2name="Nico"
+trigger98=P2name="SAKURA-SvsC"||(P2name="Miku"&&enemynear,authorname="P415")||P2name="KONOHA-SS"||P2name="ibuki_mx"||P2name="S.Clara"||P2name="RajaaSion"||P2name="Chizuru&Maki"||P2name="Erika Sendou"||P2name="Mai_Tsurugino"||P2name="Pink Power Ranger"
+trigger99=P2name="Rimururu-Rufuhi Kamui"||P2name="kofsakura"||P2name="yuri_S"||P2name="EFZiku"||P2name="SilverChariot_Youmu"||P2name="makoto_mx"||P2name="Kendo&Kyudo"||P2name="Kaenbyou Rin"||P2name="Ultimate Sadistic Creature"||P2name="azufight_morrigan"
+trigger100=P2name="nitori"||P2name="Freedom nitori"||P2name="Margaret Garside"||P2name="AliceDolls"||(P2name="UME"&&enemynear,authorname="エス")||P2name="Princess_Athena"||P2name="Mordred"||P2name="PROTO_WEAPON"||P2name="CRIMSON VIPER?"||P2name="Lois"
+trigger101=P2name="juri"||P2name="Youmu_K"||P2name="Kunagi_Tenrou"||P2name="250% Project Devil Bird Sad-ist"||P2name="250% Project Honda Asuka"||P2name="250% Project Ookubo Kumi"||P2name="Heidi"||P2name="Mituki Takada"||P2name="AngelaSD"||P2name="Serval"
+trigger102=P2name="250% Project Forione II"||P2name="250% Project Mitarai Kiyoko"||P2name="250% Project Cathy Wild"||P2name="250% Project Suzuki Megumi"||P2name="250% Project Yamazaki Ryuko"||P2name="B_ZENIA"||P2name="Homura & Friends"||P2name="ARAI_SAN"
+trigger103=P2name="250% Project Houjyou Torami"||P2name="250% Project Shindou Tamaki"||P2name="250% Project Hurutachi Ichiko"||P2name="250% Project Kawasaki Sinobu"||P2name="250% Project Ogigaya Tetsuko"||P2name="kump00(St)"||P2name="Lilith Aensland MvC"
+trigger104=P2name="250% Project Toyota Karina"||P2name="Evil Q"||P2name="HAKUREI"||P2name="KOTOHIME"||P2name="Komachi_Smash_Remix"||(P2name="Smoke"&&enemynear,authorname="Smoke")||P2name="Tomoe_Mami"||P2name="Yuka_Kazami"||P2name="Jill"||P2name="rina"
+trigger105=P2name="Smoke & Claudia"||P2name="CHENSHIROU"||P2name="rider-fsd"||P2name="Churuya_san"||P2name="yumemi okazaki"||P2name="Leona"||P2name="Hinanoko"||P2name="koakuma"||P2name="Mami Tomoe"||P2name="Mami_Tomoe"||P2name="Tomoe Mami"||P2name="ZWEI"
+trigger106=P2name="Tayuya"||P2name="Temari"||P2name="Tenten"||P2name="Elizabeth Branctorche"||P2name="Miss Marvel"||P2name="Elisabeth"||P2name="Aura"||P2name="akashi_kaoru"||P2name="Solis"||P2name="EINS"||P2name="EX_keine"||P2name="Meira"||P2name="kanna"
+trigger107=P2name="shampoo"||P2name="SakuyaEX"||P2name="Nanase(+D)&Mayu"||P2name="Mysty"||P2name="Soul_Iku"||P2name="Lilica_Felchenerow"||P2name="Mildred_Avallone"||P2name="Meiling_K"||P2name="Cafelier"||P2name="Satori_Komeiji"||P2name="kurusugawa Ayaka"
+trigger108=P2name="ryoko"||P2name="Flamme"||P2name="Aiko Senoo"||P2name="Pyocola Analogue Third"||P2name="BarningCirno"||P2name="Neyuki"||P2name="G-Sakuya"||P2name="IF_Brando"||P2name="Platinum The Trinity"||P2name="Litchi=Faye=Ling"||P2name="Neo Edifel"
+trigger109=P2name="The･World_Sakuya"||P2name="STGinu398"||(P2name="kagami"&&enemynear,authorname="Yogoreneko")||P2name="Kelly Blender(Elektra) by AHRIMANES"||P2name="B.ORCHID BY AHRIMANES"||P2name="HOMUTOKI"||P2name="KYOUTHER"||P2name="SuperPeachKart"
+trigger110=P2name="KYOKO_typeA"||P2name="KYOKO_typeK"||P2name="The･World_Sakuya"||P2name="Tin's Anny"||P2name="Chen"||P2name="Riesz"||P2name="ikumi_amazawa"||P2name="Ranma-chan"||P2name="Litchi-Faye-Ling"||P2name="Litchi Faye Ling"||P2name="XMVCTsubakiX"
+trigger111=P2name="Ami Onuki"||P2name="Ami Ohnuki Bikini Fashion"||P2name="BloodRayne"||P2name="Goeniko"||P2name="InuSakuya"||P2name="Julie Hinikawa"||P2name="MK vs SF Chun-Li"||P2name="Platinum_The_Trinity"||P2name="Litchi_Faye_Ling"||P2name="cureflora"
+trigger112=P2name="Ninja Yumi Yoshimura"||P2name="Ranko"||P2name="Hong_Meiling_Smash_Remix"||P2name="Hakurei Reimu"||P2name="UchIbuki"||P2name="Yumi Yoshimura BF"||P2name="SS6_youmu"||P2name="Platinum-The-Trinity"||P2name="Relly"||P2name="SK'Boa Hancock"
+trigger113=P2name="ZeroJuli"||P2name="ZeroJuni"||P2name="ZeroYuri"||P2name="C-18"||P2name="Super Kurara"||P2name="Street Fighter Marisa"||P2name="J_marisa"||P2name="SS6_senna"||P2name="SS6_komachi"||P2name="Platinum=The=Trinity"||P2name="Ayame_Hamaguchi"
+trigger114=P2name="Orochi Leona"||P2name="ikusan"||P2name="Toki Hakurei"||P2name="nogami_aoi"||P2name="Aya_K"||P2name="Hei Meiling"||P2name="Hotaru"||P2name="Hotaru_Futaba"||P2name="Kazami Yuka"||P2name="Yuyuko_Saigyouzi"||P2name="SENNAAAAAAAAAAAAA!!!!!"
+trigger115=P2name="AyaneWP"||P2name="Patchouli Knowledge"||P2name="Reimu Hakurei"||P2name="Wind-SE"||P2name="Tamara"||P2name="xiangfei"||P2name="May Lee"||P2name="Kendou_Nakanishi"||P2name="king"||P2name="ChargeMan_LEN"||P2name="Lemius"||P2name="DMTenko"
+trigger116=P2name="Petra_Johanna_Lagerkvist"||P2name="Kamui_Tokinomiya"||P2name="Aika Toacreat"||P2name="Kei Nanasawa"||P2name="Kimberly Browning"||P2name="Megumi Shinigami"||P2name="Mika Uraki"||P2name="Chloe"||P2name="Charlotte"||P2name="MEGA-MAI-ZERO"
+trigger117=P2name="mery.white"||P2name="oichi"||P2name="YORIKO-MVC"||P2name="JagiMeirin"||P2name="Mei"||P2name="MishioSS"||P2name="J_cirno"||P2name="Hoshi Kage"||P2name="Rucheca"||P2name="astranalent"||P2name="Kinako_Tukuyomi"||P2name="Ingrid by Beximus"
+trigger118=P2name="tenshi"||P2name="tenshi_rei"||P2name="ikusan_juda"||P2name="reisen"||P2name="lehyu"||P2name="Kaori"||P2name="Akane Inuwaka"||P2name="You Takamiyagi"||P2name="Kusabi Shimesigi"||P2name="Quartz"||P2name="SAWANATU KOTONE"||P2name="Chloe "
+trigger119=P2name="Hikaru Shidou"||P2name="sanaesan"||P2name="Kotiya_Sanae"||P2name="Anna Kyoyama"||P2name="Saojin"||P2name="Elie Unarmed"||P2name="Shiena Bee"||P2name="momizi"||P2name="spinel"||P2name="Marisa_Kirisame"||P2name="Marin_Aoki"||P2name="aoi"
+trigger120=P2name="makoto kikuchi"||P2name="BurningCirno"||P2name="tina"||P2name="Sakuya_K"||P2name="Hong_krizalid"||P2name="sannomiya_shiho"||P2name="Kassha"||P2name="c-wind"||P2name="xi_yurika"||P2name="Suika_hsts"||P2name="Eri_Hasumi"||P2name="GR-Mk2"
+trigger121=P2name="c-wind2"||P2name="ninjaVal2009"||P2name="Elza Kanagusuku"||P2name="Kirisame-Marisa"||P2name="marisa"||P2name="Hime Kawano"||P2name="Witch"||P2name="Walkure-n3"||P2name="さゐにょ"||P2name="Maria_Christel"||P2name="Samus Aran by Jupiter"
+trigger122=P2name="Shaia Cerenas Version"||P2name="ShinSamusupi Rimururu Cerenas Version"||(P2name="yagami"&&enemynear,authorname="Yogoreneko")||P2name="shizuha"||P2name="Zenia_Valov"||P2name="Elf Jinniy"||P2name="Inazuma Shermie"||P2name="Selvaria_K"
+trigger123=P2name="Princess Peach Toadstool"||P2name="Hirasaka Hatsune"||P2name="Momoko Aoyama"||P2name="Athena_WPr"||P2name="Reisen Udongein Inaba blazer"||P2name="Macheta"||P2name="Remilia_9jyou"||P2name="Sanrio"||P2name="sinku"||P2name="Megan Griffin"
+trigger124=P2name="Mashiro Mito"||P2name="BSREIMU"||P2name="Schlussel"||P2name="atsuko Tomohara"||P2name="Kohaku_K"||P2name="Nunuko"||P2name="footee"||P2name="Sheryl"||P2name="Priecia"||P2name="kump03(pizz)"||P2name="GedouMiko_V2"||P2name="Mikoto Misaka"
+trigger125=P2name="Black Iku"||P2name="ss-iku"||P2name="Beal_Zephyr"||P2name="C_Patchouli"||P2name="鳴夜"||P2name="iriya"||P2name="yuka"||P2name="Silvy"||P2name="Kanae"||P2name="Natsumi Andou"||P2name="Sefu-Sefu-Len"||P2name="CharlotteSS4"||P2name="Annu"
+trigger126=P2name="Mist"||P2name="Inverno"||P2name="xianfeng"||P2name="xianfeng-KFM"||P2name="Syameimaru Aya"||P2name="hiziri"||P2name="amber"||(P2name="Kai"&&enemynear,authorname="Dru")||P2name="Sicilianrouge"||P2name="Seena-IF"||P2name="MagicalSion"
+trigger127=P2name="Chirno"||P2name="Yukari_Yakumo_RP"||P2name="Pokita"||P2name="Tessa (Tabasa)"||P2name="Marisa_K"||P2name="エレ＝マス"||P2name="Akira px"||P2name="Xehrnyth.Exale.Elleiyah"||P2name="F_HEAT_2nd"||P2name="ASUKA HONDA"||P2name="Azusa Nakano"
+trigger128=P2name="Yohko"||P2name="DnF_Ranger_F"||P2name="WitchCraft"||P2name="School Girl Lilith"||P2name="KONATA&KAGAMI"||P2name="Beauty"||P2name="Megumi Togawa"||P2name="Grizela"||P2name="trish una"||P2name="T_MAORI"||P2name="GedouMiko"||P2name="TAKI"
+trigger129=P2name="Angelia Avallone"||P2name="Lynia"||P2name="Satsuki Shindou"||P2name="Serena"||P2name="Yukina"||P2name="Yuuka Kazami"||P2name="Remi Jingu"||P2name="Shin_Athena97"||P2name="ZeroMika"||P2name="ZeroReika"||P2name="ZeroBlaze"||P2name="Cana"
+trigger130=P2name="Louise Francoise le Blanc de la Valliere"||P2name="Youmu Konpaku"||P2name="TEOC REISEN"||P2name="CirnoBrando"||P2name="kump01(Tea)"||P2name="blackraiya"||P2name="Milky Estrella Asteer Stern and Etoile etc"||P2name="peco"||P2name="m-10"
+trigger131=P2name="Towa Yuuhazaki"||P2name="MOTOKO_AOYAMA_by_kinbo"||P2name="MOTOKO_AOYAMA"||P2name="Raiya_Mikazuchi"||P2name="Wu-Ling"||P2name="Tsukushi_Mio"||P2name="Shiori_Misaka"||P2name="SHIZUPA"||P2name="Chisa Tsukamoto"||P2name="Sachiko_koshimizu"
+trigger132=P2name="Aleti"||(P2name="Tenma"&&enemynear,authorname="Aotsuki")||(P2name="9"&&enemynear,authorname="Elecbyte")||P2name="STGkoakuma"||P2name="meirin"||P2name="kaminarisama"||P2name="Tewi_Inaba"||P2name="Another_Scarlet"||P2name="Kagura2"
+trigger133=P2name="KOMAOH"||P2name="M-Reimu"||P2name="Physalis"||P2name="Sarashina"||P2name="Reisen.E.Inaba"||P2name="Final_Sakuya"||P2name="Shiki_Sakuya"||P2name="Fevrier"||P2name="Citizens-Female"||P2name="chunli_mx"||P2name="PATERIKO"||P2name="L_SAKI"
+trigger134=P2name="yuna"||P2name="Orochi Marisa"||P2name="Noembelu"||P2name="Lyndis"||P2name="Komelu"||P2name="Orin"||P2name="Sanae-Type-M"||P2name="Sanae_K"||P2name="Bulleta"||(P2name="Zangief Steel"&&enemynear,authorname="aokmaniac13")||P2name="ADO"
+trigger135=P2name="Tubaki"||P2name="Nozomi Nagamine"||P2name="Satuki Ikaruga"||P2name="Naya Tatca Nanafe"||P2name="Euphoria The Everlasting"||P2name="MAYURA-IF"||P2name="MAYURA"||(P2name="Shinra"&&enemynear,authorname="Hanayakuro")||P2name="Charlotta"
+trigger136=P2name="Ryuuguu_Rena"||P2name="kump02(sha)"||P2name="Fullmoon_Iku"||P2name="Clone-Angel"||P2name="Kano Ryoko"||P2name="ninja-val"||P2name="CvSval"||P2name="ninjaVal2007"||P2name="Eirin_Yagokoro"||P2name="Jubilee by ShinZankuro and Gladiacloud"
+trigger137=P2name="nn-Val"||(P2name="val"&&enemynear,authorname="Navetsea")||P2name="Fujibayashi Suzu"||P2name="Ikumi Amasawa"||P2name="spinyoumu"||P2name="Meiling_RP"||P2name="Mai-Ling (Tao)"||P2name="Renfield"||P2name="ZeroMaki"||P2name="Yui_Kutuna"
+trigger138=P2name="Mizuka_Nagamori"||P2name="Oota Kanako"||P2name="Usagi Shirakaba"||P2name="Youmu Zero"||P2name="Machi Ayaya"||P2name="Fallen Alice"||P2name="miyuki"||P2name="dc_reimu"||P2name="Rio Hinayama"||P2name="ZeroMarrow"||P2name="Princess Peach"
+trigger139=P2name="Kotiya Sanae"||P2name="Saki Mitonoya"||P2name="anne"||P2name="Sanae_RP"||P2name="cvshotaru"||P2name="Celesty"||P2name="kyonko"||P2name="CATHERINE-MVC"||P2name="rian_high_do_run"||P2name="Giant Akiha Nightmare"||P2name="heroineX[alter]"
+trigger140=P2name="Dark Karin"||P2name="Leona Heidern"||P2name="Nanaly Fletch"||P2name="Shinobu Kawasaki"||P2name="Mint"||P2name="Suzu"||P2name="Elsa_La_Conti"||P2name="Nazuna_Inuwaka"||P2name="Akari Ichijo"||P2name="UMVC_Suika"||P2name="Rainbowdash_EqG"
+trigger141=P2name="Marie"||P2name="Lina"||P2name="Lyzer"||P2name="Hime_Len"||P2name="Tohno Akiha"||P2name="Ayane Ikuse"||P2name="Athena XI"||P2name="Athena 2002"||P2name="Maria"||P2name="Arcueid_Brunestud"||P2name="Dazzler"||P2name="mion"||P2name="Junko"
+trigger142=P2name="Athena 2003"||P2name="Luna Himeki"||P2name="Jenet"||P2name="momomeno"||P2name="noriko"||P2name="Cirno_AT"||P2name="Nadja Applefield"||P2name="Riesbyfe_Stridberg"||P2name="kitana"||P2name="Aihara Mizuho"||P2name="sheeva"||P2name="Kyoka"
+trigger143=P2name="Riesbyfe"||P2name="nair"||P2name="Minoriko"||P2name="Chabo Youmu"||P2name="wriggle"||P2name="miko"||P2name="Project F"||P2name="Tei"||P2name="Kotiya-Sanae"||P2name="mamizou"||P2name="Kosanjou"||P2name="Mini_Ikamusume"||P2name="Tsubaki"
+trigger144=P2name="Komachi_Onoduka"||P2name="lety"||P2name="zeroko"||P2name="Kyugohanin"||P2name="dc_Irene"||P2name="lilith_tod"||P2name="strider lilith"||P2name="satsuki EX"||P2name="Miku_TT"||P2name="Sugoi Cirno"||P2name="K_Cirno"||P2name="momomeno_tt"
+trigger145=P2name="Monako Ogura 2007"||P2name="suzu_fujibayashi"||P2name="Yorihime Watatsuki"||P2name="Izuko Chrysoberyl"||P2name="cureblossom"||P2name="Chaborin"||P2name="yagumo_EX"||P2name="Saikyo-Cirno"||P2name="Faintear=Esperanto"||P2name="TFS Lilly"
+trigger146=P2name="Unyuho"||(P2name="Fureimu"&&enemynear,authorname="GAB")||(P2name="Reon"&&enemynear,authorname="NRF")||P2name="MaoWP"||P2name="nako_1st"||P2name="Hanshi Sakura"||P2name="LargeFencer_Mysty"||P2name="kinu_EX"||P2name="Scissor_Woman"
+trigger147=P2name="Haruka_Amami"||P2name="raiya"||P2name="Seisai"||P2name="ZeroLeona"||P2name="fujisaki shiori"||P2name="Tao Taido Miku"||P2name="miki"||P2name="Blue Eyes White Karin"||P2name="Kazane Humuro"||P2name="Chloe Valens"||P2name="Akame_Ga_Kill"
+trigger148=P2name="Mishio_K"||P2name="Marguerite"||P2name="Mysty_MonkStyle"||P2name="Mokou_RP"||P2name="Kirigamine Kiriko"||P2name="Konoha_MVC"||P2name="Milan Flare"||P2name="Shoujo Genkai"||P2name="PsychoCiel"||P2name="oyashirorika"||P2name="94_Flandre"
+trigger149=P2name="Takane Hibiki"||P2name="J_tenko"||P2name="no.8"||P2name="Izayoi Zero"||P2name="Master Sakura"||P2name="Fio_MST"||P2name="Thalia"||P2name="Remi"||P2name="Deliza"||P2name="Angela Belti"||P2name="A_Minagi"||P2name="akane"||P2name="kaname"
+trigger150=P2name="MapleStory - MvC2 Leila Theif/Magician"||(P2name="MadoGakusha"&&enemynear,authorname="BluishCat")||P2name="MvC Antherica (MapleStory)"||P2name="Marvel vs Capcom - Eternity of Heroes: Sakura"||P2name="G_akiha"||P2name="Subaru Mikage"
+trigger151=P2name="Luise Meyrink"||P2name="Aiwhen"||P2name="Komeiji_Koishi"||P2name="Marilyn"||P2name="possibility of Chizuru"||P2name="Tokiko"||P2name="lion_gunta"||P2name="caviar-IF"||P2name="BlueMary"||P2name="Sailor Chibi Moon"||P2name="Cometto-san+"
+trigger152=P2name="Mary_A"||P2name="Mary_V"||P2name="Leona XIII"||(P2name="ice"&&enemynear,authorname="BLACK")||P2name="Rin Rin"||P2name="Rin_Kaenbyou"||P2name="Hiedano Akyu"||P2name="Ryouko_Kiori"||P2name="SA-X by endoedgarjunior"||P2name="SFCMeirin"
+trigger153=P2name="Mokou_K"||P2name="Reimu Hakurei a la B-kun"||P2name="Mugetu"||P2name="Sakuya_FF"||P2name="Hururu"||P2name="asellus"||P2name="Rutee_Kartret"||P2name="Milan"||P2name="KyaroF"||P2name="ZeroTashigi"||P2name="ZeroCassandra"||P2name="Harmir"
+trigger154=P2name="Rubette"||P2name="Asamiya Athena"||P2name="Athena Asamiya XI"||P2name="S-Len"||P2name="Inaba Tei"||P2name="Celsius"||P2name="ZeroMarilyn"||P2name="Larxene"||P2name="Disciple's Blaze"||P2name="mihoko"||P2name="MIKUdayo-"||P2name="pizza"
+trigger155=P2name="Marvel vs. Capcom - Eternity of Heroes: Roll"||P2name="Megaman - Robot Master Mayhem: Roll"||P2name="Mamoru Bicycle"||P2name="KaLen"||P2name="yuki"||P2name="Sanaeclair"||P2name="Shizuka_Minakami"||P2name="Chun-Li (sftm)"||P2name="nana"
+trigger156=P2name="gengetu"||P2name="ar-chan"||P2name="Lenja"||P2name="Daiyousei"||P2name="No.9"||P2name="Lilia"||P2name="Hina_RP"||P2name="Iku_hsts"||P2name="yagami-hayate"||P2name="Princess Fine"||P2name="Princess Meteo+"||P2name="Morrigan by hsienthm"
+trigger157=P2name="MC_Youmu"||P2name="madotsuki"||P2name="HAKU=LEN"||P2name="Marilyn Sue"||P2name="Satsujin=ki="||P2name="P_Raira"||P2name="Noel"||P2name="MOKOU FUJIWARA"||P2name="Bulldog CF3"||P2name="Cobra CF"||P2name="EvaBeatrice"||P2name="Ckusirojin"
+trigger158=P2name="wanda"||P2name="maho"||(P2name="shiki_tohno"&&(enemynear,authorname="チユリ"||enemynear,authorname="チユリ&&エス"))||P2name="Kim Wu"||P2name="Boa_Hancock"||P2name="ZeroBlair"||P2name="CammyHD"||P2name="nayuta"||P2name="Kagalogan"
+trigger159=P2name="Jamm"||P2name="elena_mx"||P2name="Tachibana Kanade"||P2name="Double-A"||P2name="y_mizuki"||P2name="33_reika"||P2name="N-Len"||P2name="chibi Kuroko"||P2name="Angelica"||P2name="Panda CF3"||P2name="Pantera CF"||P2name="SC_Paniko_Odawara"
+trigger160=P2name="Priere"||P2name="Emerada"||P2name="Constantinus"||P2name="Terumi kannazuki"||P2name="Yungmie_XN"||P2name="karin_mx"||(P2name="On"&&enemynear,authorname="Rien")||P2name="Kurokishineko"||P2name="Misery"||P2name="Plum"||P2name="Misako"
+trigger161=P2name="P_Alietta"||P2name="P_Windy"||P2name="Lucifer"||P2name="Hybrid"||P2name="Arche Klaine"||P2name="Reala"||P2name="Nariyuki"||P2name="mika_mx"||P2name="imouto"||P2name="Hinata"||P2name="Karin_NZC"||P2name="Powered Ciel"||P2name="Amy Rose"
+trigger162=P2name="Ryoko_Amasaki"||P2name="SIROHIME"||P2name="KOF_Meirin"||P2name="Athena Asamiya 2002"||P2name="Okanemoti Len"||P2name="USHIROMIYA ANGE"||P2name="RACHEL ALUCARD"||P2name="Crescent"||P2name="Sherisernes Zarbach"||P2name="R-Pupa Salgueiro"
+trigger163=P2name="Sanae-MBAA"||P2name="Tyssa"||P2name="Another Kung Fu girl"||P2name="saya"||P2name="Hirasawa_Yui "||P2name="ZeroAthena"||P2name="Meu_IF"||P2name="Envy & Lynette"||P2name="honki wriggle"||P2name="izayoi aki & BRD"||P2name="Buffy Summers"
+trigger164=P2name="Hirasawa_Yui"||P2name="WLen_K"||P2name="Suilen"||P2name="Geisya"||P2name="Reiko Mikami"||P2name="Shiratama"||P2name="botan"||P2name="Hong-Meirin"||P2name="ALENA"||(P2name="BlackHeart"&&enemynear,authorname="HM")||P2name="P3 Heroine"
+trigger165=P2name="satori"||P2name="Project F"||P2name="NAGID4"||P2name="Matou Sakura"||P2name="Rinrin"||P2name="Masaki Anzu"||P2name="Necoco_Midarezaki"||P2name="Amalilith"||P2name="mjn_Alice"||P2name="ssmjn_Alice"||P2name="Heart Aino"||P2name="P_Alisa"
+trigger166=P2name="Komachi_SN"||P2name="Ryunmei Ranka"||P2name="くりすたらー"||P2name="Crowe_sail_v2"||P2name="C_B_A_S"||P2name="negazero"||P2name="coolseven"||P2name="Labrys"||P2name="Akasaka Juri"||P2name="Shinobu Kirigakure"||P2name="Zeta the echidna"
+trigger167=P2name="RajaaLen"||P2name="Okanemoti Len"||P2name="SpeLenker"||P2name="LUU"||P2name="KouyaLen"||P2name="HakoLen-SBS"||P2name="Wlen_force"||P2name="Hong Meilong"||(P2name="Kenshin Uesugi"&&enemynear,authorname="Shiroto")||P2name="YUKARI ICE"
+trigger168=P2name="B.Jenet"||P2name="Black Rock Shooter"||P2name="maplenagi"||P2name="Chiester410_S"||P2name="HawkeyeSD"||P2name="Hikari_Tsurugino"||P2name="Ruputna"||P2name="Kung_Fu_Mithra"||P2name="Heart-PW"||P2name="sfcs_chunli"||P2name="sqrt_of_b0rf"
+trigger169=P2name="AssasinCross"||P2name="Cecil_Damon"||P2name="Yuuri Kureo"||P2name="unzan&ichirin"||P2name="Lucia"||P2name="RajaaRiesbyfe"||P2name="sonia"||P2name="kuroko_s"||P2name="Feli"||P2name="HelionBlackspirit"||P2name="Cloudis"||P2name="Akaneko"
+trigger170=P2name="Suzushina Yuriko"||P2name="Tain-ren"||P2name="Yuki kushinada"||(P2name="Kurisu"&&enemynear,authorname="mass")||P2name="Rouge"||P2name="Weiss"||P2name="Sauri"||P2name="Bo_ZENIA"||P2name="K_Lieselotte"||P2name="D-Miyako"||P2name="yoh"
+trigger171=P2name="RieszSD"||P2name="Oni-Minoriko"||P2name="Kazami Yuuka"||P2name="hina-k"||P2name="akkarin"||P2name="Ayatsuji_Tsukasa"||P2name="M Tenko"||P2name="Cloudis"||P2name="Spiral by Luchini"||P2name="Miu_Kurosaki"||P2name="HABARA"||P2name="Dies"
+trigger172=P2name="Lilibel"||P2name="maraiah"||P2name="Sorami"||P2name="Reimi Jahana"||P2name="Kubota Jun"||P2name="Erina Gold Smith"||P2name="murasa"||P2name="Kotoe Kashima"||P2name="Satsuki Yumizuka"||P2name="lilly_kane"||P2name="Crane"||P2name="Iku_T"
+trigger173=P2name="beryl_toh"||P2name="Sinanai"||P2name="ryujin"||P2name="Aya Kamuka"||P2name="youko"||P2name="tsukuyo"||P2name="nina"||P2name="Invisible Woman"||P2name="Earth-Suika"||P2name="Chiko"||P2name="Watatsuki no Toyohime"||P2name="NaporitanMama"
+trigger174=P2name="Kirara"||P2name="D_MINORIKO"||P2name="carmilla"||P2name="syllin"||P2name="madiesha"||P2name="sakura_mx"||P2name="Doppel-Nanase"||P2name="Supergirl"||P2name="Yumi Yoshimura Bikini Fashion"||P2name="Saki Omokane by Gladiacloud & Beximus"
+trigger175=P2name="Elsa"||P2name="HARMAN"||P2name="Petra"||P2name="Ageha Hayate"||P2name="J_Rose"||P2name="Fujiwara_no_Mokou"||P2name="Yamame Kurotani"||P2name="solitaire"||P2name="krasnaya"||P2name="moriya_yae"||P2name="alisa"||P2name="Marrow by Buckus"
+trigger176=P2name="itoko"||P2name="Gloria"||P2name="China Kohaku"||P2name="Zenia"||P2name="Eve_D.C"||P2name="VAkiha_K"||(P2name="Kat"&&enemynear,authorname="Daigoro")||P2name="Miyako Yoshika"||P2name="Heartless-Meiling"||P2name="renna"||P2name="Lihua"
+trigger177=P2name="Michael-Reforexister"||(P2name="Ana"&&enemynear,authorname="Daigoro")||P2name="Louise F.B. Valliere"||P2name="Black Magician Girl"||P2name="Lip"||P2name="Yumina"||P2name="yuyu"||P2name="cvsingrid"||P2name="cvsking"||P2name="eyelina"
+trigger178=P2name="Madoka Kaname"||P2name="MyonGitsune"||P2name="Miacis"||P2name="SAYAKA.M.KISCHINE"||P2name="maino"||P2name="Rozaly"||P2name="Katima"||P2name="Sabnock_Youmu"||P2name="corona"||P2name="Meta Jade"||P2name="KOSMOS"||P2name="Wonder Woman TF"
+trigger179=P2name="BRS by HyperNeko"||P2name="Sisters"||P2name="cvsnakoruru"||P2name="Ren Mizusaka"||P2name="Mia Touma"||P2name="Yun Kanzaki"||P2name="Yuka Kanzaki"||P2name="L_SAKI_2ND"||P2name="Yuki Nagato"||P2name="nagato"||P2name="Pupa"||P2name="airi"
+trigger180=P2name="Windows 2K-Tan"||P2name="Windows XP-Tan"||P2name="Windows 95-Tan"||P2name="Windows ME-Tan"||P2name="Hotaru Futaba XIII"||P2name="MikuMMD_L"||P2name="Q-Bee by M@PPY"||P2name="[Shinta]'s Storm"||P2name="Kamikaze_Meiling"||P2name="multia"
+trigger181=P2name="rei-kugo"||P2name="NATUMI"||P2name="Scharlachrot"||P2name="wakimiko"||P2name="MARISA,K"||P2name="7TH HEAVEN CIEL"||P2name="Souseiseki"||P2name="Hinaichigo-D"||P2name="kaguya_houraisan"||P2name="another_suigintou"||P2name="Captain Kido"
+trigger182=P2name="Ciel"||P2name="CIEL(ELEICIA)"||P2name="CHIEL"||P2name="Full Armor Ciel"||P2name="Akiko Minase"||P2name="Red_Arcueid"||P2name="Red Arcueid"||P2name="Arcueid Brunestud"||P2name="Wonder Woman"||P2name="Janne Dulk"||P2name="Scarlet Sakebi"
+trigger183=P2name="Dark Arcueid"||P2name="Dark Arcueid mk2"||P2name="Akaitsuki"||P2name="Willow Rosemberg"||P2name="Suigintou-D"||P2name="SuigintouF-D"||P2name="Sakuya Shadow Brando"||P2name="Wonder Woman Reloaded"||P2name="Nagato Yuki"||P2name="Mika_VQ"
+trigger184=P2name="Barasy-D"||P2name="Queen Beryl"||P2name="Yuyuko_Saigyouji"||P2name="Yuyuko Saigyouji"||P2name="remilia"||P2name="Remilia_Scarlet"||P2name="Megumi The Queen Of Blades"||P2name="Neo Rose"||P2name="Ingrid SXP"||P2name="Dr.SLUMP ARALEchan"
+trigger185=P2name="Yakumo Yukari"||P2name="Yukari_Yakumo"||P2name="Yukari Yakumo"||P2name="Mech-HISUI"||P2name="Mech Hisui"||P2name="mechhisuiex"||P2name="Giant_Mech-HISUI"||P2name="Ingrid_MB"||P2name="Hsien-ko"||P2name="Lei-Lei"||P2name="StardustUtsuho"
+trigger186=P2name="suigintou"||P2name="Morrigan Aensland"||P2name="Morrigan"||P2name="Shadow Lady"||P2name="kula & eddie"||P2name="Takano_Miyo"||P2name="Arrange_Yukari"||P2name="Ishtar"||P2name="SF3SHADOWLADY"||P2name="SF3 Chun Li"||P2name="AuroraTenshi"
+trigger187=P2name="Flandre_Scarlet"||P2name="chain combo yuyuko"||(enemynear,authorname="suika_no_otto"&&(P2name="ore_no_ane"||P2name="ore_no_yome"||P2name="ore_no_moto_yome"||P2name="ore_no_aijin"))||P2name="another jissou seki"||P2name="amy (S3nAR)"
+trigger188=P2name="Barbarccia"||P2name="Crowe_sail"||P2name="Igniz_Scarlet"||P2name="remilia_h"||P2name="Remilia Scarlet"||P2name="Remilia_K"||P2name="Gemilia"||P2name="G-REMILIA"||P2name="Sousei-D"||P2name="kos-mos"||P2name="TronBonne"||P2name="Soi fon"
+trigger189=P2name="Remilia-Brando"||P2name="S_Remilia"||P2name="S_Remilia-old"||P2name="Yuyuko_RP"||P2name="Kisume"||P2name="LOMRIA"||P2name="toramaru syou"||P2name="toramaru"||P2name="KAGUYA HOURAISAN"||P2name="Izayoi Sakuya Brando"||P2name="Daichi-jin"
+trigger190=P2name="RajaaArcueid"||P2name="AnotherIgniz Scarlet_P"||P2name="Elraine_Yukari"||P2name="Tohma_Suika"||P2name="Ibuki_Suika"||P2name="MP-Suika"||P2name="Aoko Aozaki 7thMoonStyle"||P2name="Erin Yagokoro"||P2name="Eirin Yagokoro"||P2name="alissa"
+trigger191=P2name="Suika_Ibuki"||P2name="Suika Ibuki"||P2name="Fullmoon_Suika"||P2name="Youki-so-Suika"||P2name="Chibi Suika"||P2name="Alex_suika"||P2name="Aoko_nm"||P2name="Aoko Aozaki"||P2name="Kanako Yasaka"||P2name="Kanako Yasaka2"||P2name="Mystique"
+trigger192=P2name="Aozaki_Aoko(CPU)"||P2name="InferisAOKO"||P2name="RajaaAoko"||P2name="Aoko_Aozaki"||P2name="Aozaki Aoko"||P2name="Aozaki_Aoko"||P2name="MATURE"||P2name="[Vice]'s Mature"||P2name="Yagokoro eirin"||P2name="Stefanie"||P2name="cureblack EX"
+trigger193=P2name="Ruquia"||P2name="Meifang"||P2name="Mei-Fang"||P2name="Meifan"||P2name="Ming-Vase"||P2name="Mei fang"||P2name="Sikieiki_Yamaxanadu"||P2name="Hiziri_Byakuren"||P2name="Ran Horigein"||P2name="mitsume"||P2name="morinosan"||P2name="Jagruti"
+trigger194=P2name="Vice Cerenas Version"||P2name="Thunder-Iku"||P2name="C-Izayoi Zero"||P2name="O-Izayoi Zero"||(P2name="Ponta"&&enemynear,authorname="ahuron")||P2name="Vanessa"||P2name="Akashi_Hibiki"||P2name="jun@"||P2name="kanmi Chan"||P2name="Meg"
+trigger195=P2name="Isabella Valentine"||P2name="ViceXIII"||P2name="Nico Robin"||P2name="Nico_Robin"||P2name="Yagokoro eirin"||P2name="cattleya"||P2name="cattleya 1.0 by grafo_maxi"||P2name="Suwako Moriya"||P2name="Suwako_Moriya"||P2name="kump_nv23(pizz)"
+trigger196=P2name="another blood"||P2name="another_blood"||P2name="Nitro Ignis"||P2name="anna"||P2name="Ein"||P2name="mora"||P2name="henri"||P2name="Kaigen Ishima"||P2name="Reiuzi Utsuho"||P2name="Utsuho_K"||P2name="Reiuzi_Utsuho"||P2name="Kaname_Hibiki"
+trigger197=P2name="AL AZIF"||P2name="Fate_Copy"||P2name="bernkastel"||P2name="ushiromiya_ange"||P2name="ange ushiromiya"||P2name="ange_ushiromiya"||P2name="shannon"||P2name="shanon"||P2name="Tenshi_K"||P2name="tenshi"||P2name="tenshi_rei"||P2name="hanyu"
+trigger198=P2name="Tohno_Akiha"||P2name="eva beatrice"||P2name="eva_beatrice"||P2name="eva-beatrice"||P2name="chiester410"||P2name="chiester 410"||P2name="chiester_410"||P2name="beatrice"||P2name="M Tenko"||P2name="Hinanai_Tenshi"||P2name="PullumShermie"
+trigger199=P2name="chiester-410"||P2name="ushiromiya Jessica"||P2name="ushiromiya_Jessica"||P2name="Jessica ushiromiya"||P2name="Jessica_ushiromiya"||P2name="Jessica"||P2name="ushiromiya Rosa"||P2name="J_tenko"||P2name="melty_magic_tenko"||P2name="Syaro"
+trigger200=P2name="ushiromiya_Rosa"||P2name="Rosa ushiromiya"||P2name="Rosa_ushiromiya"||P2name="Furudo_Erika"||P2name="Furudo Erika"||P2name="Erika_Furudo"||P2name="Erika Furudo"||P2name="Meiling Hong"||P2name="Tenshi Hinanai"||P2name="Marina Liteyears"
+trigger201=P2name="Dlanor A.Knox"||P2name="Dlanor_A.Knox"||P2name="Dlanor-A.Knox"||P2name="Dlanor A Knox"||P2name="Dlanor_A_Knox"||P2name="Dlanor-A-Knox"||P2name="Dlanor.A.Knox"||P2name="Kashima"||P2name="akuisan"||P2name="anasuu"||P2name="Puri*Princess"
+trigger202=P2name="Dlanor"||P2name="AIHARA NATSUMI"||P2name="Nayu"||P2name="Akemi-Homura"||P2name="Akemi_Homura"||P2name="Akemi Homura"||P2name="Madoka_Kaname"||P2name="Kaname Madoka"||P2name="Rarity_EqG"||P2name="Red Witch Calamities"||P2name="Ada Wong"
+trigger203=P2name="Kaname_Madoka"||P2name="Ika musume"||P2name="Shiranui Mai"||P2name="Kula Diamond"||P2name="MAMIYA"||P2name="Arena_DQ4"||P2name="Nobuko"||P2name="MYCALE"||P2name="Ryogi_Shiki"||P2name="Ryogi Shiki"||P2name="ryougishiki"||P2name="Bibin+"
+trigger204=P2name="DOROTHY ALBRIGHT"||P2name="Clarice_Di_Lanza"||P2name="Clarice Di Lanza"||(P2name="obachan"&&enemynear,authorname="barai")||P2name="korogareimu"||P2name="D4?mizuki?"||P2name="koakuma_AC"||P2name="Ling Fengling"||P2name="HatateModoki"
+trigger205=P2name="m_canon"||P2name="Barasuisyou"||P2name="P-ciel"||P2name="Ryougi_K"||P2name="FAKE_OKAMI"||P2name="Kikyo_EX"||P2name="ZeroKula"||P2name="Elisabeth Blanctorche XIII"||P2name="Clone Weiss"||P2name="s siho"||P2name="Chun-Li by Supermystery"
+trigger206=P2name="Kaede_Hioh"||P2name="Mami"||P2name="P_Tabasa"||P2name="Agony"||P2name="Agrias_Oaks"||P2name="HQ-meifang"||P2name="HTB-nancy"||P2name="QOD-chizuru"||P2name="QOD-emily"||P2name="QOD-kiriko"||P2name="VAL-byakko"||P2name="Cassandra Murata"
+trigger207=P2name="VAL-nomu"||P2name="VAL-sari"||P2name="VAL-yumiko"||P2name="Tukuyo"||P2name="KONEKO"||P2name="Ryougi Shiki"||P2name="ARCHETYPE:EARTH"||P2name="CURE BLACK"||P2name="Mito_Mashiro"||P2name="Tamamo-no-mae"||P2name="Kairu"||P2name="Platinum"
+trigger208=P2name="Elsa_GG"||P2name="LaunaMod"||P2name="Kurokawa kirara ss"||P2name="Marcia Utterback"||P2name="Storm COTA"||P2name="Phoenix (Jean Grey)"||P2name="Scream"||P2name="Shadowcat"||P2name="Taki Beta 2.1"||P2name="A.B.A"||P2name="Yuhazaki Towa"
+trigger209=P2name="Melusine"||P2name="Agrias"||P2name="Polon"||P2name="g64Saki"||P2name="Lieselotte_Achenbach"||P2name="androide 18"||P2name="Videl by MRPｮ"||P2name="QOD-reika"||P2name="anasutasia"||P2name="A_Nayu"||P2name="Mai_Tokiha"||P2name="Broadway"
+trigger210=P2name="sukunyan"||P2name="Volcana"||P2name="Taki Demo 4"||P2name="Neptune"||P2name="cvsaprile"||P2name="cvsDecapre"||P2name="cvsEnero"||P2name="cvsFevrier"||P2name="cvsMarz"||P2name="cvsNoembelu"||P2name="MapleStory Mage"||P2name="Hibiki-SAN"
+trigger211=P2name="cvsSantum"||P2name="cvsSatuki"||P2name="cvsXiayu"||P2name="cvsYanyu"||P2name="Charlotte Aulin"||P2name="Labyrinth"||P2name="Maria Renard Young"||P2name="Arcade Gamer Fubuki"||P2name="Hinanai Tenshi"||P2name="XI-clala"||P2name="raira_n"
+trigger212=P2name="PERFECTI"||P2name="binran"||P2name="sara_CAT"||P2name="Kung Fu Rabbit"||P2name="nyakko"||P2name="Kyouko Sakura"||P2name="Kinako_Tukiyomi"||P2name="Natsume_Rin"||P2name="Tokido_Saya"||P2name="Klarissa Moonflower"||P2name="Cyberdoll May"
+trigger213=P2name="MaouPriere"||P2name="Okuu"||P2name="pailwing"||P2name="Nuclear Cirno(Boss)"||P2name="Nuclear Cirno"||P2name="kasen"||P2name="Gehorsam"||P2name="Captain_Heart"||P2name="Felicueid"||P2name="G_Fiona"||P2name="Hawk_Mina"||P2name="carrot-s"
+trigger214=P2name="Iron_Miyako"||P2name="Mechrisui"||P2name="Ayu Tsukimiya"||P2name="Hijiri Byakuren"||P2name="Void"||P2name="Flandre Scarlet"||P2name="Hanyuu"||P2name="Nitori Kawashiro"||P2name="Seravy"||P2name="Chesspiece_royaloid"||P2name="Ichirin_RP"
+trigger215=P2name="Poltergeist"||(enemynear,authorname="Seravy"&&(P2name="Silver"||P2name="UNKNOWN"))||P2name="Wriggle_Nightbug"||P2name="conpaku_golem"||P2name="Tenko_hsts"||P2name="Tewi_hsts"||P2name="Juli & Juni"||P2name="King_95"||P2name="NeoKing"
+trigger216=P2name="Athena WP"||P2name="Papillonnage Matchouli"||P2name="MissMarvel"||P2name="A Pair Of Jiggling Tits"||P2name="Lara Croft"||P2name="MomaSusta"||(P2name="98"&&enemynear,authorname="DarkMasao2")||P2name="Saint of Cecilia"||P2name="Tenko"
+trigger217=P2name="yu-ka"||P2name="Kanaka"||P2name="Maximum_Cute_Hisui"||P2name="Kurenai Misuzu"||P2name="chijo"||P2name="nudemai"||P2name="Princess Daisy "||P2name="Samus Aran"||P2name="Esclava"||P2name="Sucubo"||P2name="Tendril"||P2name="Chun-Li Chung"
+trigger218=P2name="Athena A. SNK"||P2name="Bra"||P2name="Rana"||P2name="Bra USSJ"||P2name="Claudia"||P2name="Delilah"||P2name="Dizzy By Third"||P2name="Elektra"||P2name="Fallen Angel"||P2name="Hinako Shijou"||P2name="Rasyouzin Miduki"||P2name="RobinMVC"
+trigger219=P2name="Ranma Saotome Female"||P2name="Ice"||P2name="Jean Grey"||P2name="Maki"||P2name="Rainbow Mika"||P2name="Mimi"||P2name="Mugena"||P2name="Nako_xvi"||P2name="Cammy White"||P2name="Lorna Dane"||P2name="Momoko rapeable"||P2name="ZenKasen1.0"
+trigger220=P2name="ROSE"||P2name="Orochi Shermie"||P2name="Red Snake"||P2name="Dark Bolt"||P2name="Sofia"||P2name="Sonya Blade"||P2name="Tiazinha"||P2name="Viuda Negra"||P2name="DVanessa"||(P2name="Kai"&&enemynear,authorname="Dru")||P2name="Sakura_BC"
+trigger221=P2name="kula_new_xmas"||P2name="Psylocke By WhiteMagic2002"||P2name="KARINA TOYOTA"||P2name="Medusa"||P2name="F_Weiss"||P2name="Mercurially"||P2name="Shimo"||P2name="Jhoana Ivonne"||P2name="Chun-Li, but a robot or something"||P2name="Psyanide"
+trigger222=P2name="AgriasOaks"||P2name="Elf Jinny"||P2name="Katana Jinguuji"||P2name="Miyuki Matsuda"||P2name="Silvy (Basic)"||P2name="Boa Hancock"||P2name="RajaaSupergirl"||P2name="Miyazato Erika"||P2name="Tsukiyomi Kinako"||P2name="amu"||P2name="Mulan"
+trigger223=P2name="Athena-Goddess"||P2name="Tanya"||P2name="SSF2X春麗"||P2name="SSF2X 春麗"||P2name="HQ-christina"||P2name="HQ-miao"||P2name="Alsa"||(P2name="Blood"&&enemynear,authorname="nyankiryu")||P2name="YUKA DIMERK"||P2name="Ferir"||P2name="ATY"
+trigger224=P2name="ZeroHotaruXIII"||P2name="ZeroVanessaXIII"||P2name="ZeroRyuko"||P2name="Sha Len"||P2name="Yami_No_Tiko"||P2name="UMVC_Youmu"||P2name="Akane "||P2name="Ayla"||P2name="SakuraKyouko"||P2name="Stella"||P2name="Ingrid_VSav"||P2name="Yanpeko"
+trigger225=P2name="Pocket Yuri Sakazaki"||P2name="Militsa_Patchouli"||P2name="Akari Kamigishi"||P2name="Peach Mizuki"||P2name="katuowatan"||P2name="Maori_H"||P2name="NakoruruS"||P2name="someru_877_hkw"||P2name="Koko Tsukishima"||P2name="ResonanceNoMusic"
+trigger226=P2name="Nanaka Shirakawa"||P2name="Patchouli_K"||P2name="Black Cat"||P2name="Cham SS6"||P2name="Enmko"||P2name="Fara Phoenix"||P2name="Foxy Roxy"||P2name="Hot Sakura"||P2name="Leona by Edo Impact"||P2name="BIYO_Reiuzi_Utsuho"||P2name="Seasell"
+trigger227=P2name="Lilith aX"||P2name="X SHIRANUI MAI"||P2name="Maji Iroha"||P2name="Petra Johanna Lagerkvist"||P2name="Maxine"||P2name="Michael"||P2name="Mika"||P2name="Naked Emma Frost"||P2name="Naked Red Snake"||P2name="Naked Rose"||P2name="nudecammy"
+trigger228=P2name="Nude Chun Li"||P2name="nudejuli"||P2name="nudejuni"||P2name="PornoDiano"||P2name="Nude Psylocke"||P2name="QbeeCV"||P2name="H-Reimi"||P2name="Ella 2.5"||P2name="Sexy_Juli"||P2name="Princess Sissy"||P2name="Kula new Xmas"||P2name="keine"
+trigger229=P2name="Tiff"||P2name="MakiXI"||P2name="NM_Hayate"||P2name="NM_Kanae"||P2name="NM_Seina"||P2name="ATHENA_XIII"||P2name="YURI_XIII"||P2name="sindel"||P2name="Suika_N"||P2name="Mizore Shirayuki"||P2name="Dokuro"||P2name="Hecate"||P2name="Acirno"
+trigger230=P2name="Yukino"||P2name="Amoumi"||P2name="Alou_AKOF"||P2name="Another-Alou_AKOF"||P2name="Anothr-Alou"||P2name="C-Xion_AKOF"||P2name="Forte_AKOF"||P2name="Reika_AKOF"||P2name="Selen_AKOF"||P2name="Snow_Knight"||P2name="Xion"||P2name="Geslenst"
+trigger231=P2name="Xion_AKOF"||P2name="NG-len"||P2name="Hattori Hanzo Ayuka"||P2name="Yuri C-Type"||P2name="Ming-Ming"||P2name="mei long vampaia"||P2name="TrapSatoko"||P2name="Lili"||P2name="Patye"||P2name="Levin"||P2name="Sophitia"||P2name="Hinako_Kita"
+trigger232=P2name="Natalia"||(P2name="Hanzo"&&enemynear,authorname="Antagonist")||P2name="DEKINAIKO"||P2name="INDEX"||P2name="MOMO-LEN-SANTA"||P2name="Emily Barnet"||P2name="Filea"||P2name="Magician_dkpn"||P2name="KAWASHIMA MIZUKI"||P2name="Fgo_Youjo"
+trigger233=P2name="Ryoko Kano"||P2name="lt_raechel"||P2name="xi_Chunli"||P2name="Dora"||P2name="Makoto "||P2name="Makoto Nanaya"||P2name="XMVCMuX"||P2name="MU 12"||P2name="Ryoko_Kano"||P2name="Reichel_TP"||P2name="Einsatz (YR-style)"||P2name="S.Sinclair"
+trigger234=P2name="nouka"||(P2name="Hong"&&enemynear,authorname="GS")||P2name="Miranda"||P2name="Kurenai by Inverse v1.0"||P2name="Silvermoon"||P2name="caster_Extra"||P2name="Reayonis"||P2name="Elf-00 Ula"||P2name="Yukari_IWBTG"||P2name="ameno_sagume"
+trigger235=P2name="KOF 2002 Diana"||P2name="ThurisaZ"||P2name="Tenko ao"||P2name="Akiha_MA"||P2name="Konoha_MA"||P2name="Miyako_MA"||P2name="Ryougi Shiki_MA"||P2name="Weis_MA"||P2name="OST"||P2name="Aspectus"||P2name="Sengoku 3 OKUNI"||P2name="HiohKaede"
+trigger236=P2name="DekaLen_with_wonderful_slaves"||P2name="Kill Bill v.1 O-Ren_Ishii"||P2name="Kill Bill v.1 Uma Thurman"||P2name="Leela"||P2name="OKUNI"||P2name="Mary"||P2name="Scharlachrot_MA"||P2name="Sailor Mini Moon"||P2name="layla"||P2name="Angela"
+trigger237=P2name="rebecca"||P2name="Moe Yumezora"||P2name="Alice-AS"||P2name="anzu_futaba"||P2name="Utsuho_IAMP"||P2name="eharu"||P2name="Arcueid_MA"||P2name="White Len_MA"||P2name="Tesya"||P2name="Saki_GG"||P2name="Hattori Hanzo Uruka"||P2name="B-Flan"
+trigger238=P2name="KH-myao"||P2name="APEFUCHI"||P2name="P4U_mai"||P2name="Carol"||P2name="Riesbyfe Stridberg"||P2name="UMVC_Aya"||P2name="ZeroChunXIII"||P2name="Batgirl"||P2name="Wasp"||P2name="Ehecatl"||P2name="Anita"||P2name="Izayoi"||P2name="MokoWolf"
+trigger239=P2name="MikuMMD_T"||P2name="Daiyousei_hsts"||P2name="kyoko_typeP"||P2name="Kasumi Todoh"||P2name="Agrias_BB"||P2name="Nayuki"||(P2name="lin"&&enemynear,authorname="hetyo")||P2name="Kureha Kazaoka"||P2name="Dana Dee Shotoman"||P2name="Lina2"
+trigger240=P2name="sogne"||P2name="Hei_F"||P2name="Physalis_F"||P2name="August"||P2name="Megalith"||P2name="Orochi Tenko"||(P2name="Uroboros"&&enemynear,authorname="Nachel")||P2name="Zatracenie"||P2name="Ramia-J"||P2name="Ramia-P"||P2name="Ryogi_EXVS"
+trigger241=P2name="Rukia Shikai"||(P2name="18"&&enemynear,authorname="GohanSSM2")||P2name="Sakuya_Amakawa"||P2name="Tokimi Kurahashi"||P2name="Akiha Tohno"||(P2name="kenshi"&&enemynear,authorname="Pre-to")||P2name="Mery White"||P2name="Mouri Alice"
+trigger242=P2name="Jessica Ushiromiya_S"||P2name="Daisy"||P2name="Birdy"||P2name="Ayaka"||P2name="C_Zenia"||P2name="Megu Asuhara"||P2name="ULNoel"||P2name="Beherrscher"||P2name="ss3komachi"||P2name="woman"||P2name="gaoru"||P2name="sotai"||P2name="Undyne"
+trigger243=P2name="Catwoman"||P2name="Scarlet Witch"||P2name="LieMeiling_RP"||P2name="Elfin Berkley"||P2name="UMVC_AsgardYoumu"||P2name="Neko&Mech"||P2name="Eko_MA"||P2name="HQ-aisur"||P2name="HQ-francesca"||P2name="Hikari Kujou"||P2name="INDEX(MaidVer)"
+trigger244=P2name="KH-silva"||P2name="Elweyne"||P2name="Neige_Obsidian"||(P2name="remy"&&enemynear,authorname="悠霧")||P2name="SC_Puchiko/Petit_Charat"||P2name="TorrentialNitori"||P2name="ZenSukuna"||P2name="KohKyo"||P2name="Himekisi"||P2name="Chinko"
+trigger245=(P2name="Tsu"&&enemynear,authorname="chibasin")||P2name="vita"||P2name="Irene"||P2name="Jissou seki"||P2name="Keion Chan"||P2name="new_Manamana"||P2name="Oogane Mari"||P2name="mage_mayu"||P2name="Rosetta"||P2name="Axeria"||P2name="Tibiyami"
+trigger246=P2name="Paprika"||(P2name="Eva"&&authorname="Animaraz")||P2name="Maron Namikaze"||P2name="gatiko"||P2name="AOFking by kain the supreme"||P2name="miku_hatsune"||P2name="jentai"||P2name="spider girl"||P2name="Princess Jasmine"||P2name="Ikazuchi"
+trigger247=P2name="Ramaya"||P2name="Noa"||P2name="Xeona"||P2name="kjharuka"||P2name="LadyKFM"||P2name="reena"||P2name="Lina Inverse"||P2name="Cherry"||P2name="Martha"||P2name="emily"||P2name="Annie Polley"||P2name="Anoa"||P2name="Goddes Saber Revision-1"
+trigger248=P2name="Amanda - Strip Fighter II"||P2name="Arshes Nei"||P2name="Gabriel"||P2name="Kai Harn"||P2name="Sean Harri"||P2name="XMVCRachelX"||P2name="XMVCPlaX"||P2name="XMVCNuX"||P2name="Lambda"||P2name="Kaede Kasiwagi Rsmix"||P2name="Falco Knight"
+trigger249=P2name="Nollie"||P2name="Aoi Matsubara"||P2name="Comode_sericha"||P2name="multi"||P2name="Ikumi Tatikawa"||P2name="Lemmy Miyauchi"||P2name="Sakashita Yoshie"||P2name="Saorin"||P2name="Shiho Nagaoka"||P2name="Tiria Flay"||P2name="morikawa yuki"
+trigger250=P2name="Agrius_by_kinbo"||P2name="Areuhat"||P2name="Ayame"||P2name="Celes"||P2name="Mumor"||P2name="onekonin"||P2name="rikku"||P2name="Summoner Rydia"||P2name="Shantotto's Doll"||P2name="ZeroTifa"||P2name="DSaber"||P2name="The Queen of Hearts"
+trigger251=P2name="Amelia"||P2name="Lady Lyndis"||P2name="Ranma-Chan Remix (Ranma 1/2 Hard Battle)"||P2name="Rouge (Ranma 1/2)"||P2name="ukyo2"||P2name="shadowec"||P2name="Chiho Masuda"||P2name="Tamao"||P2name="武内 優香"||P2name="lilin"||P2name="lunasa"
+trigger252=P2name="Tin's chunli"||P2name="Chotto-Ko Yuka"||P2name="cvsmorrigan"||P2name="LeiLei"||P2name="DS_Morrigan 2"||P2name="Tin's Charakon Morrigan"||P2name="Qbee"||P2name="Aska"||P2name="aqua"||P2name="ariel"||P2name="laxerine"||P2name="Diao Chan"
+trigger253=P2name="Malefica"||P2name="G_namine"||P2name="xion #14"||P2name="Kuchiki Rukia"||P2name="Yoruichi JUS"||P2name="Amane Misa"||P2name="LenaLee by talic"||P2name="JssHsakura"||P2name="future sakura"||P2name="Classic Sonya Blade"||P2name="Ringo-C"
+trigger254=P2name="NicoRobin by talic"||P2name="Andead.Archer"||P2name="TamikoRen-Disgaea2_Mage"||P2name="Sophia_Xiaoyu"||P2name="Ms.archer"||P2name="Flonne"||P2name="Roxy The Succubus"||P2name="Momo"||P2name="NBC_Ai"||P2name="NBC_Hotaru"||P2name="Vixen"
+trigger255=P2name="Mui"||P2name="NBC_Kisarah"||P2name="NBC_Mai"||P2name="mileena"||P2name="Annie Hamilton"||P2name="PI_ANNIE"||P2name="PI_GirlOUME"||P2name="Inner Nanaka"||P2name="Violent Kotori"||P2name="Princess Shroob"||P2name="Zelda"||P2name="Miduki"
+trigger256=P2name="liza"||P2name="Lipsyncher"||P2name="Kimberly Hart"||P2name="midler girl"||P2name="Cheeta"||P2name="silverbanshee"||P2name="Harley Quinn"||P2name="Lady Shiva"||P2name="pocket_ice"||P2name="pocket_wondy by magus"||P2name="Rimusin Ruruki"
+trigger257=P2name="Poison Ivy"||P2name="Raven"||P2name="Supergirl Kara Zor-el"||P2name="TEN"||P2name="Zatanna"||P2name="Doremi_harukaze"||P2name="Ghostface"||P2name="juano`s kit girl"||P2name="MK2 Mileena"||P2name="Gata Negra by Eclipse"||P2name="Wagnas"
+trigger258=P2name="Firestar"||P2name="Shard"||P2name="lenny"||P2name="Maria (Body Blows PC/Amiga)"||P2name="Crystal of The Avengers"||P2name="Dark Phoenix"||P2name="Jubilee"||P2name="Eternity of Heroes: Dark Psylocke"||P2name="SHE-HULK"||P2name="Echidna"
+trigger259=P2name="Emma Frost, The White Queen"||P2name="Elisabeth Braddock"||P2name="SSF2Cammy"||P2name="Rimururu ILR Ver."||P2name="SS_Mizuki"||P2name="SS_Cham Cham"||P2name="SS_Rimururu 3"||P2name="FHD_Feilin"||P2name="Sailor Angellily"||P2name="MysP"
+trigger260=P2name="Sailor Angelsalvia"||P2name="Atsugessho"||P2name="Super Sailor Chibi Moon"||P2name="Sailor Eris"||P2name="Sailor Haumea"||P2name="Sailor V"||P2name="sailor Urano"||P2name="Super Sailor Uranus"||P2name="Emerald"||P2name="Kojiroh Sanada"
+trigger261=P2name="Ingrid SFA3"||P2name="natsume"||P2name="Marian-tm"||P2name="liza by ryokucha"||P2name="Yukari Tanizaki"||P2name="Yoko Belnades"||P2name="Hareimukurani"||P2name="magaiku"||P2name="C3reimu"||P2name="Master China"||P2name="MMPATCHOULI-IF"
+trigger262=P2name="MMMARISA-IF"||P2name="XANADU-IF"||P2name="Sikieiki yamaxanadu"||P2name="SunFlower Fairy"||P2name="tiko"||P2name="Eri"||P2name="ameri"||P2name="chibi momiji"||P2name="NekoMeirin"||P2name="PatchUsagi"||P2name="ShangHoi_san"||P2name="MTG"
+trigger263=P2name="cirnof"||P2name="Aya Sol"||P2name="Iku Ky"||P2name="Marisa Chipp"||P2name="Meirin Jam"||P2name="Remilia Slayer"||P2name="Sanae Faust"||P2name="Suika Potemkin"||P2name="Tenshi Baiken"||P2name="CHENSHIRO"||P2name="Marisa_S"||P2name="Fio"
+trigger264=P2name="Reisen E Inaba"||P2name="HMX-12-2 Multi"||P2name="Kanorin"||P2name="Letty Whiterock"||P2name="Reiuji Utsuho"||P2name="Yuyuko Saigyouji & Youmu Konpaku"||P2name="ichirin"||P2name="TOKIKO_&_OTHER_GOD"||P2name="tenma_sama"||P2name="Sinki"
+trigger265=P2name="[Txpot's] Team Reimisen"||P2name="D-Mai_Kawasumi_by_Nachel"||P2name="Tibi_Mai_by_Nachel"||P2name="Misuzu_M"||P2name="T&V Akiha"||P2name="Powerd Ciel"||P2name="Warcueid"||P2name="W ARCUEID"||P2name="Natalia Glinka"||P2name="Y-L00043664"
+trigger266=P2name="Sakura_Kyoko"||P2name="MOWMai"||P2name="ayayayaya"||P2name="Sonsaku Hakufu"||P2name="Panchan"||P2name="Lunch by Cartoon King"||P2name="Chichi by heroijapa and W1ll_Smith"||P2name="Andriode Nｺ 18"||P2name="hotaride"||P2name="Reia Bizet"
+trigger267=P2name="Android No. 18 by Orestes"||P2name="Zangya"||P2name="A.F Another Futaba "||P2name="Yuuka_Kurenai"||P2name="KYOKO_typeC"||P2name="yuri945"||P2name="D4miku"||P2name="Roll_MM8_by_Zetah_y_TheMegaFBX"||P2name="Rutee Katrea "||P2name="sonya"
+trigger268=P2name="rollexe"||P2name="D.REM"||P2name="presea"||(P2name="Snow"&&enemynear,authorname="Aoba")||P2name="sqIVswordman"||P2name="Devil_lilia"||P2name="Sarah_Bryant"||P2name="Ishana_Syameimaru"||P2name="Rachel"||P2name="Erika"||P2name="Youmu"
+trigger269=P2name="Erza"||P2name="Minmin"||P2name="Ananzi"||P2name="Noroko"||P2name="Kamui_MA"||P2name="Reimu_RP"||(P2name="KENSIN"&&enemynear,authorname="19tyou")||P2name="Reisen RGM"||P2name="D4_KENSIN"||P2name="Hibiki Katagiri"||P2name="Syanahimen"
+trigger270=P2name="AOI_AMATU"||P2name="Metal_Kikyo"||P2name="Wind_Demon_Kagura"||P2name="kamui tokinomiya"||P2name="S_KAMUI"||P2name="YORIKO"||P2name="まおりん"||P2name="blackraiya_b"||P2name="millarca"||P2name="SDK Shiina Yuya"||P2name="Heart Aino XIII"
+trigger271=P2name="Nyaruko"||P2name="Peach Kart Fighter"||P2name="Heart_GG"||P2name="morgiana"||P2name="Rashoujin Mizuki"||P2name="Chartette"||P2name="Uzuki"||P2name="Erza_FM"||P2name="Athena Asamiya(r)"||P2name="Kuchiki-RukiaED3"||P2name="TayuyaCS2-ED3"
+trigger272=P2name="Haruno-SakuraED3"||P2name="Taki By CVS Artist"||P2name="Sakura-HarunoED3"||P2name="Temari-FutureED3"||P2name="Yun_Fang"||(P2name="Lightning"&&enemynear,authorname="klares")||P2name="Alice_RP"||P2name="mageinfa"||P2name="Etomo Shuko"
+trigger273=P2name="MIO SAKAMOTO"||P2name="Claudette"||P2name="Catherine Kido"||P2name="Ren Onodera"||P2name="Tear"||P2name="Priere-IF"||P2name="Takega_Satsu-IF"||P2name="YAMISAKA KUREHA"||P2name="Dantalion_Alice"||P2name="Wakasagi-Hime"||P2name="komachi"
+trigger274=P2name="Titi"||P2name="Kudo"||P2name="MHP Kukuri"||P2name="Shiny F. Demeter"||P2name="Honey"||P2name="Kutsuna_Haruka"||P2name="Kutsuna_Yui"||P2name="Sophitia by CVS Artist"||P2name="Pan Transform"||P2name="Kohaku_S"||P2name="Ivy by CVS Artist"
+trigger275=P2name="Youz"||P2name="Kyoko_Sakura"||P2name="dokurochan"||P2name="Hatano Kokoro"||P2name="Lee Xiangfei"||P2name="Elena"||P2name="toyohime"||P2name="Charlotte Christine"||P2name="CvS_PoisonTAG"||P2name="takiyasya"||P2name="pill"||P2name="Erie"
+trigger276=P2name="aka"||P2name="Momiji"||P2name="mumei"||P2name="Hirasaka_Hatsune-IF"||P2name="MEGAMAMI"||P2name="Calnarsa"||P2name="D.Hibiki"||P2name="Random Touhou Succubus"||P2name="Lililen"||P2name="Scorn"||P2name="UMVC_Yuyuko"||P2name="kump04(psi)"
+trigger277=P2name="seoritsuhime"||P2name="Dorothy-Albright"||P2name="Amanomiya_Tiharu"||P2name="Alyssa_Searrs"||P2name="serika_os"||P2name="lenneth Valkyrie"||P2name="Patchouli_RP"||P2name="Saki Kusanagi"||P2name="Snow_Knight_AKOF"||P2name="Kirin Musume"
+trigger278=(enemynear,authorname="suigin"&&(P2name="sousou"||P2name="tyouun"||P2name="tyouhi"||P2name="ryofu"||P2name="kanu"||P2name="kakouton"||P2name="sonken"||P2name="kannei"||P2name="kakouen"||P2name="sonsyoukou"))||P2name="BRS"||P2name="NM_Uduki"
+trigger279=P2name="Kokoro"||P2name="gamelen"||P2name="Sakuya_RP"||P2name="PETRA_R"||P2name="Iyo"||P2name="VH_mami"||P2name="Azami"||P2name="Azure"||P2name="Nirvana"||P2name="ss3youmu"||P2name="Barbatos_Komachi_D2"||P2name="SSF4 Viper 3D"||P2name="KOTONE"
+trigger280=P2name="Regin"||P2name="Tiria_Roset"||P2name="ZeroReimi"||P2name="SONYA MK1"||P2name="Saki_Mitonoya"||P2name="Inami"||P2name="eryth-ritol"||P2name="Fate_Copy_Type.F_B"||P2name="Tita"||P2name="MVC2 Cammy"||P2name="sigure"||P2name="Aner_Rolange"
+trigger281=P2name="kagerou"||P2name="Archetype Earth_R"||P2name="F_HEAT_CLIMAX"||P2name="RENCYON"||P2name="Yukari_RP"||P2name="UMVC_RedArcueid"||P2name="gyokuto"||P2name="shimakaze"||P2name="Kitakami"||P2name="CV-01"||P2name="SD-shop"||P2name="Uran 80's"
+trigger282=P2name="BIYO_Komeiji_Koishi"||P2name="Saber By CVS Artist"||(P2name="WO"&&enemynear,authorname="Moiky")||P2name="CvS_NinaTAG"||P2name="zakurochan"||P2name="chinacurry"||P2name="shiroma"||P2name="GC-utsutsu"||P2name="L.C.Kiso"||P2name="Inma"
+trigger283=P2name="Michelle Heart"||P2name="CvS_UnknownTAG"||P2name="Videl"||P2name="T_MAORI_CLIMAX"||P2name="Shin Izayoi"||P2name="Elena_Sf3_Marvel"||P2name="S-Yuuka"||P2name="Ai_ANESAN"||P2name="Dlanor A. Knox"||P2name="Kaku Seiga"||P2name="Asuka M/TF"
+trigger284=P2name="hasumi, eri"||P2name="kurumiydesu..."||P2name="tamamo"||P2name="Linlin"||(enemynear,authorname="Hanyu-maru"&&(P2name="Isami_Kondou"||P2name="Sohshi_Okita"))||(P2name="Kongou"&&enemynear,authorname="hetyo")||P2name="TRF2 Beatrice"
+trigger285=P2name="takiyasya_R"||P2name="Mai-Ling"||(P2name="injya"&&enemynear,authorname="Pre-to")||P2name="Snowy Bitch"||P2name="Kagome"||P2name="kusanagi Arcueid"||P2name="Orochi_Akiha"||P2name="Beelzebub-W"||P2name="Berserker_Misaki"||P2name="Est"
+trigger286=P2name="R,mika"||P2name="Matunaga Yukari"||P2name="Catherine_kyohbashi"||P2name="Gogan-IF"||P2name="Vermilion"||P2name="Riesbyfe_R"||P2name="erio"||P2name="imouto"||P2name="kofsion"||P2name="CvS_AnnaTAG"||P2name="Tia Langray"||P2name="hibachi"
+trigger287=P2name="KOHARU TANAKA"||P2name="the_mountenshi"||P2name="Elsa_La_Conti_OMK"||P2name="Judith"||P2name="CATHY WILD"||P2name="Kula Diana"||P2name="Riyuka Fo Ruyaka"||P2name="CC_Medusa"||P2name="RENA"||P2name="Runaway Girl"||P2name="TDA_Maid_Miku"
+trigger288=P2name="Pachet"||P2name="natsuki_kisumi"||P2name="Ootani Reimu"||P2name="Sekibanki"||P2name="Riesbyfe_Fortress"||P2name="Soul Calibur By CVS Artist"||P2name="AISYA"||P2name="Perona"||(P2name="Huuma Kotetu"&&enemynear,authorname="tomottuxi")
+trigger289=P2name="Hakolen"||P2name="Kiyama_Karin"||P2name="Strider_Hakutyo"||P2name="Halphas_Iku"||P2name="Rin_Tohsaka"||P2name="Dragon-White-dream"||(P2name="Lam Bat"&&enemynear,var(57)=0)||P2name="P_CIEL_LP"||P2name="Natsuka_Fuou"||P2name="Scarlet"
+trigger290=P2name="Nanoha_Tsukikage"||P2name="class RE"||P2name="inubashiri momiji"||P2name="Soul Calibur Elysium"||P2name="April Batis Kula"||P2name="Mileena by FastFlash"||P2name="Milan By CVS Artist"||P2name="Saintliness｡､Xe"||P2name="Yawara_Yamabuki"
+trigger291=P2name="Kami_Remi_Kira"||P2name="Shizuru Fujino"||P2name="AthenaXIII"||P2name="Fate_Copy_Light"||P2name="Mughi the Destiny"||P2name="MvC3 Ruby Heart By Kamekaze"||P2name="yuri_Pocket"||P2name="Destrudia"||P2name="Angelia_MA"||P2name="Princess"
+trigger292=P2name="Shantae the Half-Genie"||P2name="Shelly from Draglade"||P2name="CvS_Decapre"||P2name="Ima Shape"||P2name="Tamamushihime"||P2name="D Kanna"||P2name="Spera"||P2name="godreisen"||P2name="Raine"||P2name="Shijo_Hinako"||P2name="Todo_Kasumi"
+trigger293=P2name="Akane_Higurashi"||P2name="elf-female-"||P2name="wich lancer2"||P2name="Princess Sally Acorn"||P2name="Caren Ortensia"||P2name="dongdong_feifei"||P2name="dongdong_marshmallow"||P2name="DT2 Beatrix"||P2name="dayomon"||P2name="Hilda Rize"
+trigger294=P2name="dongdong_sisters"||P2name="dongdong_yinyin"||P2name="warc_R"||P2name="Hannah"||P2name="KulaXIII"||P2name="Meiling_MA"||P2name="Heart_Fist_of_North_Star"||P2name="kump05(thea)"||P2name="SFEX Alpha Sakura Kasugano"||P2name="Pure and Fur"
+trigger295=P2name="Diana"||(P2name="toushi"&&enemynear,authorname="Pre-to")||P2name="Prier"||P2name="Konpaku_Youmu"||P2name="Fubuki"||P2name="Tenryu"||P2name="Jun (Tekken) V2"||P2name="Ice Chun Li"||P2name="Toriel_XIV"||P2name="risty"||P2name="Jeanne"
+trigger296=P2name="ZeroYuka"||P2name="ZSReimu"||P2name="ZSAya"||P2name="ZSMeiling"||P2name="ZSYoumu"||P2name="Constans II"||P2name="Nicole Neil By Ryon"||P2name="UMVC_Marisa"||P2name="RilaEstancia"||P2name="Ohosi Nagisa"||P2name="Lu_saifa"||P2name="i-58"
+trigger297=P2name="BIYO_Kaenbyou_Rin"||P2name="Miss_Fattiest"||P2name="CHIFFON"||P2name="MizukamiHokuto"||P2name="Hitomi Karasuma"||P2name="HARADA ORIE"||P2name="Giant_Akiha"||P2name="Bighakolen"||P2name="Vita-IF"||P2name="Material-S"||P2name="Ein Lowen"
+trigger298=P2name="Akagi"||P2name="Kaga"||P2name="i-58"||P2name="Maki Genryusai"||P2name="Tei Glauber"||P2name="Iron_Petra"||P2name="CFJ_JuriHan"||P2name="Rea Katori"||P2name="CFJ_C.Viper"||P2name="K7Len"||P2name="Remilia_MA"||P2name="Uzuki_Shimamura_SB"
+trigger299=P2name="BlankaGirl"||P2name="Modern Juri"||P2name="pj_tiffany"||P2name="Rose Dewitt Bukater"||P2name="kump05(thea)xmas"||(P2name="yutaka"&&enemynear,authorname="chaos doumei")||P2name="AH-Nanase"||P2name="Cure Beauty"||P2name="Utsuho-Hyper"
+trigger300=P2name="Elizabeth Joestar"||P2name="Anko Mitarashi"||P2name="QOD-kanade"||P2name="KC-shimakaze"||P2name="SD-zizel"||P2name="Ertot"||P2name="yuho"||P2name="Chrome Dokuro"||P2name="yuki_the_crimsondead"||P2name="Saber_Alter"||P2name="KITANA MK2"
+trigger301=P2name="kthanid"||P2name="Reimu_hsts"||P2name="Yubari"||P2name="Rouge The Bat"||P2name="ZSKomachi"||P2name="Heart_WK7"||P2name="Ber Eri"||P2name="Kamille"||P2name="Senndai-Miko"||P2name="Thermia"||P2name="Pyriss"||P2name="Ami"||P2name="Shinma"
+trigger302=P2name="Asuna"||P2name="Mikan"||P2name="Kousaka Kirino"||P2name="Yurika"||P2name="Eni_BlackDragon"||P2name="ZeroJun"||P2name="ZSPsylocke"||P2name="ZSMarisa"||P2name="Custom 2DFM95 Anne"||P2name="marihana"||P2name="Taiga_K"||P2name="Killer Bee"
+trigger303=P2name="Custom MKV Virginia"||P2name="ZSKing"||P2name="Hanaqo"||P2name="Hannah Dundee"||P2name="Homura_K"||P2name="Senna_K"||P2name="Scharlachrot_GG"||P2name="Syo_G"||P2name="Mai_Shiranui"||P2name="Ryuko 4rd"||P2name="zekamasi"||P2name="Kinni"
+trigger304=P2name="Athena 98"||P2name="Chizzy Kagura"||P2name="Blue Mary Ryan"||P2name="X-ISM ChunLi"||P2name="Z-ISM ChunLi"||P2name="claire redfield"||P2name="gign"||P2name="Shelly Tarlar"||P2name="Taiga Aisaka"||P2name="mew-ichigo"||P2name="Mary_FF3RB"
+trigger305=P2name="Mio Akiyama"||P2name="Aska_Himeko"||P2name="hoppou_seiki"||P2name="Mech Hisui 404"||(P2name="Hope"&&enemynear,authorname="Acey")||(P2name="rider"&&enemynear,authorname="rioriot")||P2name="ﾐｸﾀﾞﾖｰ"||P2name="Regina by Zvitor and ER"
+trigger306=P2name="K_Saber"||P2name="Seal"||P2name="Zilva_Tenshi"||P2name="Komeiji Koishi"||P2name="She-ra"||P2name="Eponine Thenardier"||P2name="Eva Roza"||P2name="Mai_FF3RB"||P2name="Another_Mio"||P2name="D4meirin"||P2name="A_Nayuki"||P2name="JADE MK2"
+trigger307=P2name="Hutatsuiwa_Mamizou"||P2name="Rukia"||P2name="Master Morrigan"||P2name="Chino"||P2name="Another_Shiori"||P2name="A_Sayuri"||P2name="Sonna"||P2name="FUUKO"||P2name="QOD-tsubasa"||P2name="saber_Extra"||P2name="taiga"||P2name="Ashimiya_Yu"
+trigger308=P2name="Yukina_Himeragi"||P2name="Miyuki_Shiba"||P2name="Nise Athena"||P2name="Toyosatomimi no Miko"||P2name="Tsubame-Chan"||P2name="milky rose"||P2name="Homura"||P2name="umaibou_nadeko"||P2name="kotori_k"||P2name="Taokaka"||P2name="DEVILOTTE"
+trigger309=P2name="ROXY"||P2name="RUBYHEART"||P2name="UNKNOWNSOLDIER"||P2name="CvS_SuitSamus"||P2name="CvS_ZeroSuitSamus"||P2name="Samus"||P2name="VariaThirtyOneSamus"||P2name="BloodRayne By CVS Artist"||P2name="Lady Deathstrike"||P2name="CFJ_SahraBryan"
+trigger310=P2name="TON POOH"||P2name="CvS_SeungMina"||P2name="Erza By CVS Artist"||P2name="CvS_AsukaTAG"||P2name="CvS_XiaoyuTAG"||P2name="SVC_Asuka_Kazama"||P2name="Matriarch_Temourin"||P2name="Abe no Seimei"||P2name="Emerald Empress"||P2name="PowerGirl"
+trigger311=P2name="Anita MSH"||P2name="Domino"||(P2name="Fire"&&enemynear,authorname="Jhonny DC & Chimoru")||P2name="Giganta"||P2name="Lady Phantom"||P2name="CvShokuto"||P2name="Sakura SF4"||P2name="Misaka By CVS Artist"||P2name="ursa"||P2name="Storm"
+trigger312=P2name="Cir-El"||P2name="Eirin_RP"||P2name="Byakuren_RP"||P2name="cherry_Megumi"||P2name="Otome_Daiyousei"||P2name="Patchouli_Kishinami"||P2name="Reisen_RA"||P2name="Akuma_Melt"||P2name="Elizabeth_Remilia"||P2name="HiHuMi_Pre"||P2name="Sheena"
+trigger313=P2name="curefroor"||P2name="Guruguru_Flan"||P2name="Elegant Madness"||P2name="Momoko Sakura"||P2name="Yae"||P2name="hamakaze"||P2name="Ringo_Aomori"||P2name="Other Candy"||P2name="Sakagami_Tomoyo"||P2name="A-01/K/K.A.R.I.S-B"||P2name="Astraea"
+trigger314=P2name="Umaru Doma"||P2name="K.Kasumi"||P2name="Flandre_RP"||P2name="VNT-001-B/X"||P2name="Canme - KOF98 - Sega Genesis"||P2name="Retro Suika"||P2name="Serena By Ryon"||P2name="BRS_Digitrevx"||P2name="Lilith Aensland"||P2name="precureALLSTERS"
+trigger315=P2name="Akame"||P2name="NM_hikari"||P2name="NM_Sakura"||P2name="Ichirin_snkr"||P2name="Mei-Fang_R"||P2name="Gogyou Setsuna"||P2name="Ibuki-Toranoo"||P2name="Sae-Kamaguchi"||P2name="Atmosphere"||P2name="SDmiko"||P2name="simikaze"||P2name="Lady"
+trigger316=P2name="Tanegashima Yuri"||P2name="Generic Moeblob Cat Girl"||P2name="Isane Kotetsu"||P2name="Mirajane Strauss"||P2name="reimu_hakurei_R"||P2name="youmu_konpaku_R"||P2name="kump_nv26(pr)"||P2name="someru_877_sw"||P2name="H9999"||P2name="COCOA"
+trigger317=P2name="Destrud"||P2name="Vana Glama"||P2name="sakuya_izayoi_R"||P2name="L_SAKI_CLIMAX"||P2name="kump09(St)_R"||P2name="Miyuki_K"||P2name="Akatuki_Reifi"||P2name="kula_nv2"||P2name="Miyoshi_Karin"||P2name="Morrigan_Aensland"||P2name="Congcong"
+trigger318=P2name="Sandra"||P2name="zatsune miku"||P2name="Milk"||P2name="CvS_KazumiTAG"||P2name="NamiCLSVM"||P2name="Eliza Masters"||P2name="Karin Kanzuki By Ryon"||P2name="Linne"||P2name="Patoelietoe Two"||P2name="b0rf"||P2name="SAILOR MERCURY Crystal"
+trigger319=P2name="tiny b0rf"||P2name="Fiolina Germi"||P2name="D-Tenshi"||P2name="Flowering Night"||P2name="FuRyu"||P2name="G-komati"||P2name="Hinanai Renko"||P2name="Hiyoi"||P2name="Magasame"||P2name="RaiUn"||P2name="Sumireko"||P2name="Yamagishi Yukako"
+trigger320=P2name="ULMakoto"||P2name="RayneBetrayal"||P2name="Amanda"||P2name="Mirajane"||P2name="Lisanna"||P2name="Lucy"||P2name="Levy"||P2name="Bisca"||P2name="Wendy"||P2name="Saki Omokane"||P2name="Shana_K"||P2name="bai-meiling"||P2name="Yui Hirasawa"
+trigger321=P2name="bai-meiling-Festival"||P2name="Kamiya"||P2name="Tiny_Tenko"||P2name="Kamehameha"||P2name="Sion_Eltnam"||(P2name="Jessi Rono"&&enemynear,var(57)=0)||P2name="Hades_Izanami"||P2name="Aka Cho-Tin"||P2name="araki runa"||P2name="yosinani"
+trigger322=P2name="Ono Kohaku"||P2name="Sion_of_Nests"||P2name="Fafner"||P2name="bunny_marry"||P2name="riz"||P2name="midoriko"||P2name="Custom 2DFM95 SNSFW Asahina Yuko"||P2name="kump_nv26(tr)"||P2name="RU"||P2name="BonebreakMary"||P2name="Tachibana_Gin"
+trigger323=P2name="curemoonlight"||P2name="Gradriel"||P2name="Luthild"||P2name="TongPoo"||P2name="ge_alisa_ak"||P2name="Uzuki_Shimamura_GF"||P2name="Hina_Bardy"||P2name="Yuzuriha"||P2name="Tsumugi Kotobuki"||P2name="Pamela Portrait"||P2name="valkyrieKOF"
+trigger324=P2name="yayoi"||P2name="yumeko"||P2name="mahoko"||P2name="Ritsu Tainaka"||P2name="Tojo Nozomi"||P2name="Ayase Eli"||P2name="Kung Fu Girl Hong Mei-Ling"||P2name="SeyaRen"||P2name="DonaiyaRen"||P2name="Cosplay_Suika"||P2name="ultimate-high-legs"
+trigger325=P2name="Koa the Nightmare of Ruin"||(P2name="oi"&&enemynear,authorname="REDWAVE.s.t")||P2name="(SkullGirls) Squigly"||P2name="Asuna_K"||P2name="Kirino_K"||P2name="Eri Hasumi"||P2name="Pacifica Northwest"||P2name="p3heroine"||P2name="Seraph"
+trigger326=P2name="Kanako_RP"||P2name="Koishi_RP"||P2name="Cirno_RP"||P2name="Yuuka_RP"||P2name="Utsuho_RP"||P2name="Reisen_RP"||P2name="Marisa_RP"||P2name="claudiaProgramIII"||P2name="Miley Stewart"||P2name="curedream"||P2name="Filia"||P2name="Phewtith"
+trigger327=P2name="Doda"||P2name="Ecila"||P2name="ri-san"||P2name="kanami"||P2name="masou"||P2name="Ramlethal Valentine"||P2name="curewhite EX"||P2name="Fiona Belli 1.0"||P2name="MeuMeuAI"||P2name="Remilia_RP"||P2name="Quietly_Chirno"||P2name="Scorn 2.0"
+trigger328=P2name="Marika"||P2name="Tenshi_RP"||P2name="Minato Tomoka"||P2name="fic_sister"||P2name="Nanami Kobakura"||P2name="Yukari Yuduki"||P2name="Zuiho"||(P2name="W_Len&Nanaya"&&enemynear,var(0)=0)||P2name="Kiyohime"||P2name="Yui"||P2name="Trish"
+trigger329=P2name="Mech_Hisui"||P2name="Bunny Street Fighter IV"||P2name="Tracy Street Fighter IV"||P2name="Michelle Chang TK2"||P2name="Nina Williams TK2"||P2name="HighPriest"||P2name="Kathryne_Keyron"||P2name="Lieza_Flora_Melno"||P2name="Yuduki Yukari"
+trigger330=P2name="BSKLen"||P2name="ShinGodzillen"||P2name="Perfect-Perfecti"||P2name="CvS_ChristieTAG"||P2name="CvS_R.Mika"||P2name="UmiNoKokoro1.0"||P2name="Youmu_RP"||P2name="Kuroyukihime_K"||P2name="Yuuki"||P2name="yuzuki sachi"||P2name="Uneri_Youmu"
+trigger331=P2name="Elisabeth Blanctorche"||(P2name="29"&&enemynear,authorname="mer")||P2name="Santa Witch"||P2name="May Star"||P2name="Mikiko Mikihara"||P2name="mai_Pocket_d"||P2name="RacingMiku2014_EV"||P2name="Happy.Valentine"||P2name="Jiggly Bunny"
+trigger332=P2name="kn-AQUA"||P2name="RIRIA NANASE"||P2name="curebloom"||P2name="Mittelt"||P2name="pikopiko"||P2name="hatuyuki"||P2name="C_Dizzy"||P2name="Black Ikumin"||P2name="Hei_Long"||P2name="Amachi"||P2name="VENUS"||P2name="EstXIII"||P2name="Hina.H"
+trigger333=P2name="Broom of Marisa"||P2name="Kotiya Sanae_AC"||P2name="H.Ruputna"||P2name="Ms.Etna"||P2name="STG-Smarisa"||P2name="A-Mishio"||P2name="Sweet-Angel"||P2name="Sonic.Vanessa"||P2name="acalyha"||P2name="nyainyai"||P2name="O-el"||P2name="Arcus"
+trigger334=P2name="HSI"||P2name="Akiha-D"||P2name="Akiha-R"||P2name="keine_EX"||P2name="穴クア"||P2name="クア（仮）"||P2name="Athena Asamiya 94"||P2name="King_95UJin"||P2name="96-Leona"||P2name="Magic Athena99"||P2name="athena99"||P2name="Shermie Orochi"
+trigger335=P2name="Mai Shiranui The Ninja Master"||P2name="Mai 96"||P2name="Yuri sakazaki 96"||P2name="Athena98"||P2name="DKing"||P2name="Yuri98"||P2name="yuri99"||P2name="Yuri_Sakazaki"||P2name="Kula-2002(UM)"||P2name="KID- Athena XI"||P2name="JM_Malin"
+trigger336=P2name="chizuru_maki"||P2name="Maki Kagura"||P2name="AKOF - Angel"||P2name="JM_Whip"||P2name="Malin-XI"||P2name="Blue Mary xi"||P2name="MJ_King"||P2name="Chizuru&Maki_G"||P2name="Alpha.candy"||P2name="KYOKO"||P2name="evilsula"||P2name="glacia"
+trigger337=P2name="KYOKO_typeY"||P2name="Hitomi Makimura"||P2name="Yagami Xiang"||P2name="Alessia"||P2name="atesa"||P2name="Athena GACN"||P2name="Bia Peres"||P2name="Carolaine"||P2name="Clara Heidern"||P2name="Esmeralda"||P2name="AR026-P"||P2name="Maoko"
+trigger338=P2name="Aika_MK"||P2name="Heraclius"||P2name="Heraklonas"||P2name="Lumina"||P2name="Maria Shinzaki-0"||P2name="CC_Marvelgirl"||P2name="Aidoryu_Master"||P2name="Athena Nakomiya"||P2name="Jamine Polonce"||P2name="Atomic Saki"||P2name="holy-kula"
+trigger339=P2name="Psycho Soldier Athena"||P2name="Another Athena"||P2name="Tethys della sirena by Kingseiya"||P2name="Other Kula"||P2name="Amy_Warlock"||P2name="Another Vesper"||P2name="Aoyama Tsugumi"||P2name="Aunus"||P2name="Devils eye"||P2name="Izis"
+trigger340=P2name="Aura by Crucifix"||P2name="Aury"||P2name="This is not an EMO!"||P2name="Candy"||P2name="Claire_Force"||P2name="Tendou No Yuki"||P2name="Cruelty Sula"||P2name="Princess Cyanic Kula"||P2name="Lucy Diclonius by Crucifix"||P2name="Rockula"
+trigger341=P2name="Dark-Rockula"||P2name="Daphne"||P2name="Depula"||P2name="DF Sula"||P2name="Eve Original"||P2name="EvilKula"||P2name="The Hatebreeded"||P2name="Finale Sula"||P2name="Nana Diclonius by Crucifix & Manchotlife"||P2name="Neo-Reaper Isabeau"
+trigger342=P2name="Flame purple"||P2name="Flame Ametryn"||P2name="Fliz_SP"||P2name="Freya de Lima"||P2name="Yukino Ozawa"||P2name="Hiel_MK"||P2name="human candy"||P2name="Huriken"||P2name="Hybrid Form Sula"||P2name="Iruin"||P2name="Another Aura by ageha"
+trigger343=P2name="isabeauXIII"||P2name="Izzy Blue"||P2name="June"||P2name="kameron"||P2name="Kana Isolde"||P2name="Kula DarkDiamond"||P2name="Kera_N"||P2name="Kula_Claire"||P2name="Kula_Fliz"||P2name="Kula Mime"||P2name="Other_Sula"||P2name="Sweet_Kula"
+trigger344=P2name="kula-ScarletMoon"||P2name="Kuula Fournine"||P2name="Lady Hiel"||P2name="Magatsu Isabeau"||P2name="Marine"||P2name="Mec-Sula"||P2name="Neige Pebble"||P2name="New_Flamme"||P2name="n-ri_ssj9"||P2name="Shiny Diamond"||P2name="Serious Kula"
+trigger345=P2name="Olivia Alchemy"||P2name="Puppet Yukino"||P2name="Purple Rain"||P2name="Cruelty Blood Rose"||P2name="Sariel"||P2name="Viany Isabel"||P2name="Silvy_Black"||P2name="Queen Ouranus"||P2name="Sula_MK"||P2name="Terha"||P2name="Naraku No Yuki"
+trigger346=P2name="Hot lady on fire"||P2name="Ultimate Sula"||P2name="Vela"||P2name="Zombie Kula"||P2name="kura"||P2name="春麗SUPER"||P2name="DSJ_Chun li"||P2name="Area"||P2name="CvSDarkHokuto2014"||P2name="hokuto"||P2name="pullum"||P2name="Kuroyukihime"
+trigger347=P2name="JM_Chunli"||P2name="Akari"||P2name="Athena Goddess"||P2name="Nakoruru HD"||P2name="rose_mx"||P2name="sukumizu_ingrid"||P2name="Iichiko Furutachi"||P2name="Altia by Kiske Otoko"||P2name="BloodStorm Mirage EX"||P2name="Ultimate Morrigan"
+trigger348=P2name="BloodStorm Tempest EX"||P2name="Chompoo"||P2name="Chae Lee"||P2name="Kimala Z"||P2name="D-Morrigan"||P2name="Felicia Furrycia"||P2name="morrig"||P2name="Tomoka Minato"||P2name="アラド戦記 バトルメイジ"||P2name="DSJ_Mai"||P2name="Hanna"
+trigger349=P2name="DnF_Rogue"||P2name="DnF_Witchcraft"||P2name="Michelle-Monaghan"||P2name="TomboyishBecky"||P2name="Elsword"||P2name="HPBF_Iida_Kaori"||P2name="Cielo"||P2name="Bibin"||P2name="SMG_Juni"||P2name="sayurinn"||P2name="ru_ru_ "||P2name="nue7"
+trigger350=P2name="Yazawa Nico"||P2name="Tasha"||P2name="Alicephia"||P2name="kei okuda"||P2name="Tiffany Lords"||P2name="Wyldestar"||P2name="Kurisu"||P2name="DSJ_Janne"||P2name="cammy_mx"||P2name="Kusunoki Manami By CAP"||P2name="Storm by WhiteMagic2002"
+trigger351=P2name="SSF2HD_Chun-Li"||P2name="Morrigan_EX"||P2name="Yuka_Takeuchi"||P2name="Chie Satonaka"||P2name="Elizabeth"||P2name="Mitsuru Kirijo"||P2name="Yukiko Amagi"||P2name="cvspsylocke"||P2name="Shira"||P2name="Shadow Labrys"||P2name="MVC_Storm"
+trigger352=P2name="mvctabasa by ryokucha"||P2name="A.F"||P2name="Bianchi"||P2name="Gokudera_A"||P2name="psylocke by Qkrtkf!"||P2name="Lunathia"||(P2name="tako"&&enemynear,authorname="Elecbyte")||P2name="through_Lightning_Shuko"||P2name="Rinka Yoshino"
+trigger353=(P2name="matthew"&&enemynear,authorname="hetyo")||P2name="eko"||P2name="Naomi Kokoro"||P2name="Mai Maino"||P2name="kohakuSD"||P2name="Abyss Aircraft Carrier Type-ONI"||P2name="sayaking"||P2name="Konan"||P2name="PhycoCiel"||P2name="jam BAND"
+trigger354=P2name="Tanooki Peach"||P2name="Mima"||P2name="Ayako"||P2name="Samus Aran by endoedgarjunior"||P2name="Samus Aran (Fusion) by endoedgarjunior"||P2name="Nu-13"||P2name="Alt"||P2name="Asahi_Sakurai"||P2name="King_AoF2"||P2name="Aerolite (Reimu)"
+trigger355=P2name="Codename = miduki hara"||P2name="nue"||P2name="CFJ_Dural"||P2name="SENNA"||P2name="Honoka"||P2name="comode_serika"||P2name="EXmjn_Alice"||P2name="Annie"||P2name="Rufuu"||P2name="LESTY"||P2name="Shanoa"||P2name="Lian"||P2name="koiboshi"
+trigger356=P2name="VAL-moe"||P2name="Uino"||P2name="Mizuho"||P2name="Lavia"||P2name="Kasumin"||P2name="Nekomo"||P2name="Bibin"||P2name="Eltnum"||P2name="AOBA"||P2name="Yang Warrior Family - Mu Guiying"||P2name="hu-ama"||P2name="Necorsair"||P2name="Cream"
+trigger357=P2name="Lucina"||P2name="Luste Teuber"||P2name="Shakugan No Shana"||P2name="Hamusu"||P2name="Iari"||P2name="AobaFK"||P2name="kinu"||P2name="Aoko_M"||P2name="PAULA"||P2name="FLen_d"||P2name="rumine"||P2name="miyabi"||P2name="EXHF"||P2name="Pan"
+trigger358=P2name="V-Madoka"||P2name="ingrid"||P2name="hina"||P2name="rimururu"||P2name="Aimi"||P2name="Tifa"||P2name="Lucia Morgan"||P2name="GROOVY_ARCHE"||P2name="udon"||P2name="Erisnomia"||P2name="18go"||P2name="Azusa&Tiger"||P2name="FlashByakuren1.0"
+trigger359=P2name="yurin"||P2name="judy"||P2name="XMVCLitchiX"||P2name="XMVCMakotoX"||P2name="XMVCNaotoX"||P2name="B-sakuya"||P2name="Agni"||P2name="NAGI"||P2name="Tamaki"||P2name="C.Viper"||P2name="Ran Eat Tofu"||P2name="Erika Storm"||P2name="Blossom D"
+trigger360=P2name="Jataaka"||P2name="Jennifer Cage"||P2name="Chiaki Nanami"||P2name="JACK1982"||P2name="Olivia"||P2name="Naked Zeta the echidna"||P2name="Sakuya_Maplestory type-A"||P2name="Scathacha"||P2name="MORGAN"||P2name="Zarina"||P2name="tibigintou"
+trigger361=P2name="maid"||P2name="Amagatsu"||P2name="Vanellope von Schweetz"||P2name="Janne"||P2name="Regina"||P2name="RYUKO2nd"||P2name="HARUKA"||P2name="SpFIV Yuki"||P2name="konata"||P2name="Momoko"||P2name="Yu-Lan"||P2name="Erim"||P2name="Suika_pokan"
+trigger362=P2name="Eve_Justice"||P2name="miyako"||P2name="Cornelia"||P2name="Ryougi_Shiki"||P2name="Dark Chun-Li"||P2name="Psylocke"||P2name="Tenshi_IT"||P2name="Foz"||P2name="Iku_RP"||P2name="Trouillet"||P2name="menad"||P2name="Koa_RP"||P2name="Chen_RP"
+trigger363=P2name="Aqua_AI"||P2name="Suisei-D"||P2name="Saki Tsuzura"||P2name="Yoko"||P2name="Mima_RP"||P2name="Erina"||P2name="Black Widow"||P2name="Popuko"||P2name="PrismaticJam"||P2name="Starfire"||P2name="Argento"||P2name="Etna"||P2name="CharlotteSD"
+trigger364=P2name="lily_Black"||P2name="Aidoryu_Master"||P2name="Ella"||P2name="Jade"||P2name="signum"||P2name="Hotaru_BC"||P2name="yuiran"||P2name="rulue"||P2name="LEICA"||P2name="Cheetah TF"||P2name="Shinku-D"||P2name="Stone-Len"||P2name="Erika Wagner"
+trigger365=P2name="Minori_Amanohara(OpenSource)"||P2name="Yui_Emelia_Mitsukihara-AH3"||P2name="Weiss_DB"||P2name="Custom Experimental BA Wang Pairon"||(P2name="Akatsuki"&&enemynear,authorname="REDWAVE.s.t")||P2name="Tenrou Kunagi"||P2name="someru_877"
+trigger366=P2name="htohtos-goy"||P2name="sawatada"||P2name="Torami Hojo"||P2name="Shaomu"||P2name="Y_yuyuko"||P2name="cvsvice"||P2name="Akiha"||P2name="Q-Bee"||P2name="Foxy"||P2name="strayed"||P2name="Olga"||P2name="cirno"||P2name="kyouko"||P2name="Aile"
+trigger367=P2name="elastigirl"||P2name="Xiayu"||P2name="Dual Koa"||P2name="Kei"||P2name="Bubbles D"||P2name="Hisou"||P2name="Fiorenza"||P2name="HQ-reika"||P2name="Ms.UnKnown"||P2name="Nyamo"||P2name="suwako"||P2name="G-Tenshi"||P2name="umr"||P2name="Mai"
+trigger368=P2name="GNHKN"||P2name="B-Sion"||P2name="saten"||P2name="ZSAoko"||P2name="Luciel"||P2name="kojiroh B"||P2name="Castor"||P2name="cureegret"||P2name="Jatzieta"||P2name="seruzad"||P2name="Koa-SD"||P2name="kyko"||P2name="viola"||P2name="siki_eiki"
+trigger369=P2name="Namine"||P2name="Elya"||P2name="athena945"||P2name="eirin"||P2name="Neva"||P2name="April"||P2name="Rindou"||P2name="S_AQN"||P2name="Meld"||P2name="Komachi_RP"||P2name="Colon"||P2name="Mery_Magus"||P2name="Dominatrix"||P2name="SK'Rukia"
+trigger370=P2name="Vice"||P2name="SK'Chun-Li"||P2name="SK'Kushina'RBM-K"||P2name="SK-RBM'Chino Chinoike"||P2name="SK'Tsunade"||P2name="tatsumaki"||P2name="KanaIriya"||P2name="A-Shi"||P2name="madoka3"||P2name="Hatter_Ren"||P2name="nako_2nd"||P2name="ange"
+trigger371=P2name="KASUMI'"||P2name="Natural"||(P2name="okita"&&enemynear,authorname="バジル")||P2name="Ryogi_EXVS_Weak_Edition"||P2name="Super mech hisui Revenger"||P2name="Arena"||P2name="Emi_K"||P2name="Idol_hisui"||P2name="250% Project Okubo Kumi"
+trigger372=P2name="SB"||P2name="eiki"||P2name="Ako"||P2name="Rem"||P2name="Wind-Aya"||P2name="MS-ALICE"||P2name="Luka"||P2name="DF Cirno"||P2name="cvsJuli"||P2name="Litchi"||P2name="EXELICA"||P2name="Blood Akiko San"||P2name="Shiki Ryougi"||P2name="futo"
+trigger373=P2name="Mami Fujisaki"||(P2name="JOKER"&&enemynear,authorname="kamaboko_saiha")||P2name="Tia Halibel by Giovanni"||P2name="kukaku"||P2name="CLIFF-Lilynette-DS"||P2name="Matsumoto Rangiku School Uniform"||P2name="mistress"||P2name="ginka_WS"
+trigger374=P2name="Maverick Ikumi"||P2name="Jaguar"||P2name="ADTOKI_KF_SS"||P2name="dekakohaku"||P2name="Sayuri_HEXE"||P2name="Mamizou_RP"||P2name="rize_Chaos"||P2name="ko_PM"||P2name="Thora Kithugawa"||P2name="Stupido"||P2name="Anna-EX"||P2name="Sierra"
+trigger375=P2name="Rinne_churchyard"||P2name="MQ_ino"||P2name="Erina_A"||P2name="Fear_Mace_Rosenkranz"||P2name="arajin_god"||P2name="chainsaw_SZaneki"||P2name="P-daichan"||P2name="Desteny Remilia"||P2name="flow iku"||P2name="GOLIATH-IF"||P2name="Unohana"
+trigger376=P2name="Ex Rumia"||P2name="Kanako_Yasaka_RP"||P2name="Kana-chan"||P2name="KD-Izayoi Sakuya"||P2name="kikuri"||P2name="kisumechan"||P2name="lt_komachi"||P2name="M_Bstyle_youmu"||P2name="MasohisTenko"||P2name="mitori"||P2name="Rukia by Giovanni"
+trigger377=P2name="Youmu_BASARAX-Style"||P2name="yukkuriyukari"||P2name="YURUSANAE"||P2name="Yuugi_RP"||P2name="zzzzibakutenko"||P2name="Wii Fit Trainer"||P2name="CLIFF-Hiyori-DS"||P2name="Nemu Kurotsuchi"||P2name="Orihime Inoue"||P2name="Satori Komeiji"
+trigger378=P2name="Rangiku Matsumoto"||P2name="Yachiru Kusajishi"||P2name="Yoruichi Shihoin"||P2name="momizisan"||P2name="MTR [CHO]"||P2name="remilia_h_2"||P2name="Shanghai"||P2name="SHANGHAI-IF"||P2name="ShW Marisa"||P2name="GG_Suika"||P2name="Unit (9)"
+trigger379=P2name="Tenshi_ABS"||P2name="GG_Tenshi"||P2name="Izayoi Sakuya"||P2name="yuby"||P2name="Nell"||P2name="RRM"||P2name="fake_NYN"||P2name="DIKNYKSYchan"||P2name="MSPNMN"||P2name="Tenshi_V"||P2name="NYN"||P2name="RIM"||P2name="SZZ"||P2name="tougi"
+trigger380=P2name="kyu-ka"||P2name="Alice_Margatroid-D4"||P2name="Kotori itsuka"||P2name="Othinus"||P2name="Tobiichi Angel"||P2name="Yoshino"||P2name="Kiyohime-T-K"||P2name="P_Satsuki"||P2name="Reisen_U_Inaba"||P2name="Nine"||P2name="March"||P2name="SNE"
+trigger381=P2name="Kobushi_Moe"||P2name="Irisu"||P2name="Twilight Sparkle"||P2name="UMVC3_Twilight Sparkle"||P2name="Pinkie Pie"||P2name="Rainbow Dash"||P2name="Applejack"||P2name="Rarity"||P2name="Fluttershy"||P2name="Death_Rebecca"||P2name="Sion_Clone"
+trigger382=P2name="Lyra Heartstrings"||P2name="KoashiMaster_Hatate"||P2name="Natural Disasters KOISHI"||P2name="Nipponia_nippon"||P2name="SK'A-18"||P2name="SK'A-18 Jus"||P2name="matoi ryuko"||P2name="Hisano Ogami"||P2name="Konpaku Youmu"||P2name="Wuling"
+trigger383=P2name="curemarch"||P2name="Gabriella"||P2name="Acicirno"||P2name="Undyne_the_Undying"||P2name="Kula AC"||P2name="Dirigente"||P2name="Splash Woman"||P2name="Kunoichi Roll"||P2name="Engleza_Scarlet"||P2name="kump_nv24(psi)_xmas"||P2name="marge"
+trigger384=P2name="kump_nv24(psi)_xmas_xmas"||P2name="Dark_rumia"||P2name="DEKINAIKO-SANTA"||(P2name="Kotaro kazama"&&enemynear,authorname="ohgaki")||P2name="V.B.S.D/Ryogi"||P2name="ameno_sagume_V2"||P2name="Homu_Homu"||P2name="preremi"||P2name="Vier"
+trigger385=P2name="Suika_RP"||P2name="Kuna-R"||P2name="ICG"||P2name="Green Breeze Misaki"||P2name="Kibanohara Ethica"||P2name="Al Azif Ex Mortis"||P2name="Taimanin_Asagi"||P2name="Sunset_Shimmer"||P2name="Minori_Amanohara_AH3LMSSS"||P2name="Edogawa Yuka"
+trigger386=P2name="cn01"||P2name="D_Komachi"||P2name="HAKUMYON"||P2name="Senya_Reifi"||P2name="justicia"||P2name="cn02"||P2name="U'Lucy"||P2name="Ms-X"||P2name="B_Chunli"||P2name="Nono.the.Forest"||P2name="cureblack"||P2name="Fu Shun"||P2name="Lycee_FGO"
+trigger387=P2name="PopTeamEpiclimbers"||P2name="popuko Amalgam"||P2name="Popuko Chitosegaoka"||P2name="Popuko Chitosegaoka AS"||P2name="Lyo_Gudako"||P2name="A cheerful traveler"||P2name="Abyss Mega's"||P2name="MGR"||P2name="Bobunemimimmi"||P2name="karen"
+trigger388=P2name="kump_nv21(tea)"||P2name="Yukina Himeragi"||P2name="VelaSherry"||P2name="VioletThunder_IKU"||P2name="Kurama-Tengu"||P2name="Rim_Silveria"||P2name="Akiha_AS"||P2name="Angel_AS"||P2name="Another Blood_AS"||P2name="2B"||P2name="ERESHKIGAL"
+trigger389=P2name="Athena Asamiya_AS"||P2name="Ayane Ikuse_AS"||P2name="dragon_AS"||P2name="Heart_Aino_AS"||P2name="Blue Mary_AS"||P2name="Nakoruru_AS"||P2name="Saber_AS"||P2name="Satsuki_AS"||P2name="Shermie_AS"||P2name="Vanessa_AS"||P2name="DQ3_priest"
+trigger390=P2name="Luciege_Capella"||P2name="Sunset Shimmer"||P2name="Maleficent"||(P2name="Tempest"&&enemynear,authorname="Lucas9999")||P2name="Goddess Athena"||P2name="FighterZ Android 18"||P2name="Permanent Girl Mizuka"||P2name="Trap Master Makoto"
+trigger391=P2name="Wriggle Nightbug"||P2name="MvC3 Alice Buster"||P2name="3 Dual Screen Mio"||P2name="Dress Cinderella Mio"||P2name="Dual Screen Mio"||P2name="ERESHKIGAL_easy"||P2name="First Role Mayu"||P2name="Tane Maki Makoto"||P2name="Ibuki Beast-Max"
+trigger392=P2name="Kokoro Pyon!Pyon!"||P2name="Remilia_E"||P2name="BOB-KO"||P2name="Kaguya.Luna"||P2name="Cure Passion"||P2name="Asuka(TMNT)_Remix"||P2name="Kujo_Karen"||P2name="ES-4039781"||P2name="Pipimi"||P2name="Panty Anarchy"||P2name="FKG_Ivy_v1.01"
+trigger393=P2name="nxektpiouos"||P2name="FF-Tomoka"||P2name="Boreas"||P2name="Mature_AS"||P2name="Rimururu_AS"||P2name="Saki_AS"||P2name="Stocking Anarchy"||P2name="Ainsley Beth Castleria"||P2name="Lady's_Sorrel_v1.02"||P2name="AdaWong"||P2name="FKG_Ivy"
+trigger394=P2name="Koto"||P2name="Taki F"||P2name="Veroniva"||P2name="Mai Ling"||P2name="Meimu_RP"||P2name="Fennel"||P2name="Fennel_v1.02"||P2name="Lady's_Sorrel"||P2name="MLG_Ivy"||P2name="MLG_Ivy_v1.01"||P2name="Nymphaea"||P2name="Rinne_Salvator_Atman"
+trigger395=P2name="Nymphaea_v1.03"||P2name="Salacenia"||P2name="Yang Xiao Long"||P2name="Azumi_Hojo"||P2name="Hatoba tsugu"||P2name="Herajika"||P2name="alphaVer_Krystal"||P2name="Prism River Noisy Girls Orchestra"||P2name="Isurugi_Remi"||P2name="!!pafio"
+trigger396=P2name="Azure_Y"||P2name="Harime Nui"||P2name="asakura ryouko EX"||P2name="Brannen_Rosso"||P2name="Benediximus_Folium"||P2name="Flip nue"||P2name="M-S-Kohaku"||P2name="Charisma Guard Remilia"||P2name="Erina-the_Forgotten_Maiden"||P2name="W.K."
+trigger397=P2name="Apolia_Scarlet"||P2name="みさきズ"||P2name="Deconstructeur"||P2name="Administrator"||P2name="AdministratorD4"||P2name="STG Reiuji"||P2name="mechgoenikoex"||P2name="Super mech Goeniko_v2"||P2name="kawakaze(azur lane)"||P2name="Arushivu"
+trigger398=P2name="Dore-King"||P2name="STG_'el"||P2name="FalseEcho"||P2name="Tamaki Ako"||P2name="k master dragon"||P2name="konayuki itezora"||P2name="DueDue_Hatates"||(P2name="Karma"&&enemynear,authorname="SK")||P2name="Fulmina"||P2name="Kanna Kamui"
+trigger399=P2name="YUtyan&REIkun"||P2name="Aka-Saber"||P2name="sengajaguar"||P2name="MvC3 Reika Murasame"||(P2name="UDK"&&enemynear,authorname="kamaboko_saiha")||(P2name="grappler"&&enemynear,authorname="knkn")||P2name="Kelt"||P2name="Hashibirokou"
+trigger400=P2name="sqXswordman"||P2name="Reimu_Hakurei-KK"||P2name="Blue_Intense_Wind_Misaki"||P2name="AquaBlaze_Nitori"||P2name="Habana_Moe"||P2name="Alpaca_Suri"||P2name="Mokou_R_Heinlein"||P2name="Orochi_Mature"||P2name="Tamaki Sindo"||P2name="Chichi"
+trigger401=P2name="yayoi&uduki"||P2name="Zill"||P2name="Mevella"||P2name="Blue_Garnet"||P2name="Rei Hatada"||P2name="KD2Remilia-A"||P2name="Vlad-Rose"||P2name="Vice_KN"||P2name="UNXAVN"||P2name="yukari-meio"||P2name="Yukari_THIZ"||P2name="Jumba Elephant"
+trigger402=P2name="Umihara Kawase"||P2name="Kagami_Jun"||P2name="GERBERA-PETRA"||P2name="Riesebyfe Stridberg"||P2name="XANXUS"||P2name="Kurosaki_miu"||P2name="tujino akari"||P2name="yurina"||P2name="Annabelle"||P2name="Disintegrator"||P2name="A-Yuzuriha"
+trigger403=P2name="Lilica_AH3LMSSS"||P2name="Meifang_AH3LMSSS"||P2name="Miko Toyosatomimi"||P2name="Janifer AV"||P2name="Fyra.noll"||P2name="Misaki murasaki"||P2name="Yaegaki Kyoji"||P2name="jimone"||P2name="Honki Yuri"||P2name="M_AQN"||P2name="Miko_ABK"
+trigger404=P2name="Vatista"||P2name="A-Lunathia"||P2name="Irisu in Wonderland"||P2name="Eava"||P2name="Absolute_Sword"||P2name="DIYUSI_kit"||P2name="Futatsuiwa Mamizou"||P2name="Annette"||P2name="Kaguya_Howard"||P2name="Schnee Blume"||P2name="S_Kiyohime"
+trigger405=P2name="R-Toziko"||P2name="Trivia"||P2name="toziko"||P2name="Arai Rider Fennec"||P2name="A-Okita"||P2name="Ceridwen"||P2name="Thanatos"||P2name="RIEN"||P2name="Lin_Aotsuki"||P2name="Kokonoe"||P2name="Spooky"||P2name="Rosaurum"||P2name="Kefura"
+trigger406=P2name="Mashiro_Y"||P2name="Touka-KN"||P2name="Lacked"||P2name="Driving_Girl-KN"||P2name="Zeroko-KN"||P2name="MEGATON_PUNCHER_KN"||P2name="Metatron"||P2name="Territory"||P2name="IRIR_Lei-Lei"||P2name="KARULAU"||P2name="MvC2_Jean_Grey_v1.3.1.4"
+trigger407=P2name="Mephis to Pheles"||P2name="YASHA KATASHIGURE"||(P2name="k3"&&enemynear,authorname="GhoS")||P2name="F-X-L"||P2name="S-SENNA"||P2name="白夜千鶴"||P2name="Susie"||P2name="Mikasa"||P2name="MvC2_Invisible_Woman"||P2name="Noel Vermillion"
+trigger408=P2name="MvC2_Hsien-Ko"||P2name="MvC2_Karin_Kanzuki_v1.1"||P2name="MvC2_Supergirl"||P2name="AvS_Anna_Takatsuki"||P2name="SC_Teppo_Hishi_Torodoki"||P2name="Bishoo"||P2name="Fan"||P2name="Lang-fang"||P2name="langorda"||P2name="Blue Sorcerer Aoko"
+trigger409=P2name="Mei-ling"||(P2name="Star"&&enemynear,authorname="crisk")||P2name="I'll krump ON you sweetiepie"||P2name="Kuki Sanban"||P2name="Don Satsukrieg"||P2name="Aisaka Taiga"||P2name="Akari Ichijou"||P2name="Hieda no Akyuu"||P2name="cvsmina"
+trigger410=P2name="Doppel Nanase"||P2name="Homura Akemi"||P2name="Mio Kouzuki"||P2name="Sayaka Miki"||P2name="Renia Schizoph"||P2name="Weiss Schnee"||P2name="Blake Belladonna"||(P2name="Kuroneko"&&enemynear,authorname="Sennou-Room")||P2name="cvsiroha"
+trigger411=P2name="Kuroko Shirai"||P2name="Mai Natsume"||P2name="Mika Returna"||P2name="Row Boat Weiss"||P2name="Ruby Rose"||P2name="Yumi"||P2name="Neo Politan"||P2name="Bullet_BB"||P2name="Hope Angel"||P2name="rmika"||P2name="Gasai Yuno"||P2name="TOUKA"
+trigger412=P2name="Iai Arthur"||P2name="Sanae_THIZ"||P2name="Sakuya_THIZ"||P2name="Reimu_THIZ"||P2name="Reisen_THIZ"||P2name="Momiji_THIZ"||P2name="Meimu_GRBoss"||P2name="Marisa_THIZ"||P2name="Iku_THIZ"||P2name="Battle_Master_Reisen"||P2name="Youmu_THIZ"
+trigger413=P2name="Meiling_THIZ"||P2name="Boxing_Chen"||P2name="Aya_THIZ"||P2name="Yuuka_THIZ"||P2name="Sumireko_THIZ"||P2name="Tenshi_THIZ"||P2name="Asuna(Kimono)"||P2name="poisong"||P2name="Isabeau Incarnate"||P2name="Jeanne D'Arc"||P2name="VeraTrappz"
+trigger414=P2name="Blizzard_Sword_Princess"||P2name="Black&White_hina"||P2name="MvC2_Roll"||P2name="Clowna"||P2name="C18 Z2"||P2name="LunatiCrazy-Xtra"||P2name="Susan_Scarlet"||P2name="Vanisher-KN"||P2name="G-Lilith"||P2name="Izayoi1.0"||P2name="tsuyama"
+trigger415=P2name="Hatsune_Miku_JUS"||P2name="jolyne"||P2name="Cosmo The Seedrian By Latroy6"||P2name="MeteoricMarisa"||P2name="UmiNoKokoro"||P2name="FlashByakuren1.1"||P2name="Boss Wizard"||P2name="Suwako_THIZ"||P2name="trauma-box"||P2name="Saki Mamiya"
+trigger416=P2name="Kefla_Pocket_DBS"||P2name="Lucy_Diclonius_JUS"||P2name="Princess_Daisy_TB"||P2name="Taiga_JUS"||(P2name="Blake"&&enemynear,authorname="Arcutomory")||P2name="T Momizi 2nd"||P2name="T Momizi 3RB"||P2name="PS2 Rouge"||P2name="Plumeria"
+trigger417=P2name="村娘小傘"||P2name="ryokuhana"||P2name="風ノ巫女レイチェ"||P2name="Liiria"||P2name="suwako02"||P2name="翠傘"||P2name="Habranthus"||P2name="Lady's_Sorrel_v1.04"||P2name="Maturing Nymphaea"||P2name="Amy"||P2name="Nimue"||P2name="T Momizi"
+trigger418=P2name="Imperishable Inferno"||P2name="Big Fight - Zill"||P2name="Blandia - Imageo"||P2name="Mutant DNA - Pamerla"||P2name="Best of Best - Shalin"||P2name="Power Moves - Reayon"||P2name="Revengers of Vengeance - Daktar"||P2name="Phoenix Force"
+trigger419=P2name="Revengers of Vengeance - Organa"||P2name="Revengers of Vengeance - Talon"||P2name="Doremy Sweet"||P2name="Ibuki-ToranooV3"||P2name="RubyRose"||P2name="Undertale Alphys by FourthRhyme"||P2name="Anri (Rue Anemone)"||P2name="Mora_SCustom"
+trigger420=P2name="Amy Rose (sprites were created by E-122-phi)"||P2name="Jenny Wakeman"||P2name="peach kf"||P2name="Amy Rose By Latroy6"||P2name="Blaze the Cat by Latroy6"||P2name="Cream The Rabbit By Latroy6"||P2name="FKG_Poppy"||P2name="Easter Cactus"
+trigger421=P2name="Rouge The Bat By Latroy6"||P2name="Symbiote Cream"||P2name="Amy Rose by MUGENHunter"||P2name="Rouge the Bat by MH"||P2name="Cream.exe the Rabbit"||P2name="黄えここ"||P2name="Auxesia"||P2name="炎ノ巫女サキ"||P2name="Red vampire Remilia"
+trigger422=(P2name="Fighter"&&(enemynear,authorname="Felicity"||enemynear,authorname="Antagonist"||enemynear,authorname="S.Y.D, April Fools' Day"||enemynear,authorname="ikaruga"))||P2name="Mamizou Futatsuiwa"||P2name="Tora Shou"||P2name="suu"
+trigger423=(P2name="EVE"&&(enemynear,authorname="Sankiti"||enemynear,authorname="AKIMICHI"||enemynear,authorname="hanma"||enemynear,authorname="<I>"))||(P2name="junk"&&enemynear,authorname="DrKelexo")||P2name="Relentless March Of Progress"
+trigger424=(P2name="Saber"&&(enemynear,authorname="Juke Kisaragi"||enemynear,authorname="kuri"||enemynear,authorname="humi"||enemynear,authorname="Mikel8888,Anime M.G"))||P2name="(ResidentEvil) Ada Wong"||P2name="GreenKnight"||P2name="Tillis"
+trigger425=(P2name="dragon"&&(enemynear,authorname="kayui uma"||enemynear,authorname="suigin"||enemynear,authorname="K2"||enemynear,authorname="DHQ"||enemynear,authorname="kayui uma&SHADALOO_NSFW"))||P2name="SuperAmy"||P2name="LunatiCrazy"
+trigger426=(P2name="Shiki"&&(enemynear,authorname="ohgaki"||enemynear,authorname="Zelgadis"))||(P2name="Hikaru"&&(enemynear,authorname="Elecbyte"||enemynear,authorname="Nyankoro"||enemynear,authorname="Tokage"))||P2name="MeteoricMarisa1.0"
+trigger427=(P2name="Ranma Saotome"&&(enemynear,authorname="Nyan☆Kiryu"||enemynear,authorname="chibasin"||enemynear,authorname="Doctor M"))||(P2name="Yugi"&&(enemynear,authorname="shin"||enemynear,authorname="minoo"))||P2name="Mai_Natsume"
+trigger428=(P2name="Ukyo"&&(enemynear,authorname="Namaguideran"||enemynear,authorname="nyo"||enemynear,authorname="unknown"))||(P2name="Magic_Knight"&&(enemynear,authorname="kagetsu yuki"||enemynear,authorname="yuki"))||P2name="Hibiki...?"
+trigger429=(P2name="Jun"&&(enemynear,authorname="Kunshomo"||enemynear,authorname="kain the supreme"||enemynear,authorname="U"))||(P2name="⌒∨⌒"&&enemynear,authorname="Graf_Zeppelin")||P2name="nes-Utsuho"||P2name="passu"||P2name="passu-bomb"
+trigger430=(P2name="Ren"&&(enemynear,authorname="Akimoto"||enemynear,authorname="Lycoris"||enemynear,authorname="kouya"))||P2name="Shui Hu Feng Yun Zhuan - Hu Sanniang"||P2name="Body Blows Galactic - Azona"||P2name="Body Blows Galactic - Kai-Ti"
+trigger431=P2name="Rukia Kuchiki"||P2name="Cosmo"||P2name="Saki_Hazakura"||P2name="HebiItigo"||P2name="ojousama"||P2name="Xanmi Chan"||P2name="Yuka sazanami"||P2name="Lisa Lisa"||P2name="Chara_GE"||P2name="Magnolia"||P2name="Hibiki_Kai"||P2name="Lu_sama"
+trigger432=((P2name="Vengeance"||P2name="Fantasma")&&enemynear,authorname="みかえる")||(P2name="null"&&enemynear,authorname="null")||P2name="Cream The Rabbit"||P2name="Charmy The Bee"||P2name="Ushio_Kai_Ni"||P2name="Vampire_Rio"||P2name="K-Unknown"
+trigger433=P2name="cvsgoeniko"||P2name="cvscarol"||P2name="うどんちゃん"||P2name="Android 21"||P2name="False Yuka Takeuchi"||P2name="Maki Crimson"||P2name="Miss.K"||P2name="Kefla-KN"||P2name="DM.PerKO"||P2name="Linka"||P2name="Haman Karn"||P2name="Moegi"
+trigger434=P2name="Ultimate_Janne"||P2name="Last_Order"||P2name="kiryuin satsuki"||P2name="Yuudachi Kai Ni MMD"||P2name="Shiho EX"||P2name="Rival-Chan"||P2name="Uraraka Ockaco"||P2name="Hikaru Nanjo"||P2name="vampy"||P2name="Kiita Haduki"||P2name="Umbra"
+trigger435=P2name="Pitou"||P2name="Es"||P2name="YoRHa No. 2 Type B"||P2name="Elesis"||P2name="Nezuko"||P2name="pafio"||P2name="R-Kula"||P2name="Ashley V3"||P2name="あたしメアリーっていうの あたしメアリーっていうの あたしメアリーっていうの"||P2name="X-23"
+trigger436=P2name="Yandere Chan"||P2name="MvC2 Katarina Kittycat"||P2name="Nico Marisa"||P2name="Ushiwakahime"||P2name="Blossomko"||P2name="Janne D' Arc"||P2name="Zafta Giraffe"||P2name="SHIRAI Kuroko"||P2name="Alice Synthesis Thirty"||P2name="Marisa-KN"
+trigger437=P2name="Yelena Volkova"||P2name="Tifa "||P2name="Zero Suit Samus"||P2name="Maid Taiga"||P2name="Aoi Kusanagi"||P2name="Strong Yorigami"||P2name="M_Braver-KN"||P2name="Dizzy-KN"||P2name="Tendril-KN"||P2name="Alice-KN"||P2name="Kitsune no Botan"
+trigger438=P2name="Rockula-KN"||P2name="Karulau-KN"||P2name="Kokonoe-KN"||P2name="Ikumi-KN"||P2name="Neyuki-KN"||P2name="Hilda-KN"||P2name="Yorigami-KN"||P2name="Yorigami Jyoon&Shion"||P2name="Rene-KN"||P2name="E_F_Utsuho"||P2name="Euro"||P2name="B_Futo"
+trigger439=P2name="P_Yukari"||P2name="Sister_NYA"||P2name="Wind_Thunder_Sword_Youmu"||P2name="wonder c@t"||P2name="Lesserdemon"||P2name="Re Zero Rem MMD"||P2name="S-Linne"||P2name="rulue02"||P2name="Meiling"||P2name="Satori Yumeko"||P2name="KIZUNA AKARI"
+trigger440=P2name="Hasebe-SP"||P2name="Cosplayer Kyoko"||P2name="R_Saki"||P2name="Hilda"||P2name="HallowKnightGirls"||P2name="Kirakira_DD"||P2name="Bisclavret"||P2name="Pure-Angel"||P2name="yukie"||P2name="Degital Ayaya"||P2name="Iinchou"||P2name="sarah"
+trigger441=P2name="Firm Amenta"||P2name="Shion and Remilia"||P2name="Rokugan Miyako"||P2name="Rokugan Miyako-E-"||P2name="95AE-937B"||P2name="shirayuki"||P2name="Neng-Tian-Shi"||P2name="MvC2_Ibuki"||P2name="raigu's Maria"||P2name="Saku-V"||P2name="koa63"
+trigger442=P2name="Aroma Skunk"||P2name="Bertha Hippo"||P2name="Enorma Pig"||P2name="Ana 'Jiggly' Bunny"||P2name="TaigaEX"||P2name="M-Vice"||P2name="Shiiko&Rugal"||P2name="Twiggi Bunny"||P2name="Katrina Crocodile"||P2name="Pastilla Skunk"||P2name="laura"
+trigger443=P2name="Violet 'Tyla' Bunny"||P2name="Froppy"||P2name="Ice_Fox"||P2name="Kolin"||P2name="GS YOUMU"||P2name="OF_Sae_Sawanoguchi"||P2name="Mononofu"||P2name="Disturbed-Warcueid"||P2name="Resurrection_reisen"||P2name="reisens"||P2name="KYON-KYON"
+trigger444=P2name="Eltina"||P2name="Fraza Scarlet"||P2name="leonora"||P2name="Thief Arthur"||P2name="custy"||P2name="Kogetsu_Lin"||P2name="Elen_Phelcetyeere"||P2name="Lily_Revadaolith"||P2name="Kohyou_Makoto"||P2name="Albino_Quin"||P2name="Stella_Preces"
+trigger445=P2name="F.Overhaul.Scarlet"||P2name="Hilda_UNI-KN"||P2name="IROHA-KN"||P2name="Orie-KN"||P2name="Soul_Edge_Incarnation"||P2name="Misty Gainsborough"||P2name="Blue Star"||P2name="Shigesato Nanami"||P2name="JubileeMVC"||P2name="Hakuno Kishinami"
+trigger446=P2name="KSBH_Angelica"||P2name="The Gachatuber"||P2name="Chun-Li-5"||P2name="Lambda-11"||P2name="Shantae"||P2name="Nanase"||P2name="K-Kogasa"||P2name="Caren Hortensia Arrange"||P2name="Yamame_Kurodani"||P2name="H-Mature"||P2name="Alice Nakata"
+trigger447=P2name="Shizuka Joestar"||P2name="tetsuno"||P2name="Tamaki Kousaka"||P2name="Orie Ballardiae"||P2name="Ramlethal Valentine K"||P2name="Nanase&Doppel&Mayu"||P2name="UMVC3_Morrigan"||P2name="真剣妖夢"||P2name="Sun Shower"||P2name="Tohno_Michiru"
+trigger448=P2name="S H I R A Y U K I"||P2name="faivouevo"||P2name="nentwkws_ayyexos"||P2name="MMANIMANIMANIMANIKKKOXAXAXAaaaaa"||P2name="Dark-Alice"||P2name="BorderInfomater"||P2name="Nabe-reimu"||P2name="Senritsu no Tatsumaki"||P2name="Nacht_Jaeger1.29"
+trigger449=P2name="R-mina"||P2name="F-EX-Anko"||P2name="F-EX-Anko-Chan-V2"||P2name="s-hamakaze"||P2name="Yuduki_Yukari"||P2name="KokuByaku"||P2name="Graceful tyY-v.SG"||P2name="STGs15"||P2name="Cursed Misuzu"||P2name="Freedom Nitoris"||P2name="Eipouaxos"
+trigger450=P2name="Miyako Gibbous_Moon STYLE"||P2name="Miyako Gibbous_Moon STYLE_BOSS"||P2name="IKUSAOTOME"||P2name="KENDOU"||P2name="17_Chirno_KY"||P2name="Dragon-Meiling"||P2name="NESTS_Utsuho"||P2name="Luna Himeki.Rx"||P2name="Rockuma"||P2name="O-MEN"
+trigger451=P2name="opakwv_vepaioa"||P2name="Colossus_Magna"||P2name="EGS"||P2name="Chie"||P4name="G-Sanae"||P4name="MountainCastle"||P4name="Meija"||P4name="SUSTINA NO YOME"||P2name="vidael"||P2name="Miyuki Shiba"
+trigger452=(P2name="EMT"&&enemynear,authorname="Light")
+trigger453 = p2name = "Goenitz" || p4name = "Goenitz"
+trigger453 = enemy,authorname = "ikaruga" && enemy,var(24) = 1
+value = 193
+
+[State 190, ChangeState]
+type = ChangeState
+triggerall = time = 1
+trigger1 = 1
+value = 191
+
+;---------------------------------------------------------------------------
+; イントロ（試合開始直前のアクション）
+; CNS レベル: 基本
+
+[Statedef 191]
+type = S
+ctrl = 0
+anim = 191
+velset = 0,0
+
+[State 191, 特殊効果] ;「ROUND1, FIGHT!」のアナウンスが始まるまでは、このコントローラを使ってください
+type = AssertSpecial
+trigger1 = 1
+flag = Intro ;イントロの状態になります
+
+[State 191, 特殊効果]
+type = AssertSpecial
+trigger1 = numexplod(78000) = 1
+flag = nobardisplay
+
+[State 191, ChangeAnim]
+type = ChangeAnim
+trigger1 = RoundNo = 1
+trigger1 = Time <= 48
+value = 191
+Elem = 1
+
+[State 191, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = s10,36
+
+[State 191, ステート変更]
+type = ChangeState
+trigger1 = AnimElemTime(8) >= 4
+trigger1 = numhelper(7600) = 0
+value = 0
+
+;---------------------------------------------------------------------------
+; イントロ(vs京)
+; CNS レベル: 基本
+
+[Statedef 192]
+type = S
+ctrl = 0
+anim = 192
+velset = 0,0
+
+[State 192, 特殊効果] ;「ROUND1, FIGHT!」のアナウンスが始まるまでは、このコントローラを使ってください
+type = AssertSpecial
+trigger1 = 1
+flag = Intro ;イントロの状態になります
+
+[State 192, 特殊効果]
+type = AssertSpecial
+trigger1 = numexplod(78000) = 1
+flag = nobardisplay
+
+[State 192, 無敵]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 192, ChangeAnim]
+type = ChangeAnim
+;trigger1 = RoundNo = 1
+trigger1 = Time <= 48
+value = ifelse((Enemy,AuthorName = "ikaruga" && Enemy,var(24) = 0),192,194)
+Elem = 1
+
+[State 192, PlaySnd]
+type = PlaySnd
+trigger1 = Anim = 192 && AnimElem = 7
+value = s10,38
+
+[State 192, PlaySnd]
+type = PlaySnd
+trigger1 = Anim = 192 && AnimElem = 8,= 56
+value = s10,39
+
+[State 192, PlaySnd]
+type = PlaySnd
+trigger1 = Anim = 194 && AnimElem = 4
+value = s10,42
+channel = 0
+
+[State 192, PlaySnd]
+type = PlaySnd
+trigger1 = Anim = 194 && AnimElem = 7
+value = s10,43
+channel = 0
+
+[State 192, PlaySnd]
+type = PlaySnd
+trigger1 = Anim = 194 && AnimElem = 7
+value = s12,7
+
+[State 192, エフェクト表示]
+type = Explod
+trigger1 = Anim = 194 && AnimElem = 7
+anim = 195
+postype = P1
+pos = 0,0
+sprpriority = 5
+ownpal = 1
+
+[State 192, ステート変更]
+type = ChangeState
+triggerall = NumHelper(7600) = 0
+trigger1 = Anim = 192 && AnimElemTime(11) >= 4
+trigger2 = Anim = 194 && AnimElemTime(10) >= 4
+value = 0
+
+;---------------------------------------------------------------------------
+; イントロ(vs女性キャラ)
+; CNS レベル: 基本
+
+[Statedef 193]
+type = S
+ctrl = 0
+anim = 193
+velset = 0,0
+
+[State 191, 特殊効果] ;「ROUND1, FIGHT!」のアナウンスが始まるまでは、このコントローラを使ってください
+type = AssertSpecial
+trigger1 = 1
+flag = Intro ;イントロの状態になります
+
+[State 191, 特殊効果]
+type = AssertSpecial
+trigger1 = numexplod(78000) = 1
+flag = nobardisplay
+
+[State 193, ChangeAnim]
+type = ChangeAnim
+;trigger1 = RoundNo = 1
+trigger1 = Time <= 48
+value = 193
+Elem = 1
+
+[State 191, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = s10,40
+
+[State 191, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 3,= 50
+value = s10,41
+
+[State 191, ステート変更]
+type = ChangeState
+trigger1 = AnimElemTime(11) >= 4
+trigger1 = numhelper(7600) = 0
+value = 0
+
+;==============================================================================
+; ふっとばし攻撃
+
+[Statedef 250]
+type     = S
+movetype = A
+physics  = N
+juggle   = 0
+poweradd = 0
+ctrl     = 0
+velset   = 0,0
+anim     = 250
+sprpriority = 3
+facep2 = 1
+
+[State 250, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s10,1
+channel = 0
+
+[State 250, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 4
+value = s0,1
+
+[State 250, ヒット定義]
+type = HitDef
+triggerall = var(12) = 0
+triggerall =!movecontact && !movereversed
+trigger1 = AnimElemTime(5) >= 0 && AnimElemTime(6) < 0
+trigger1 = var(28) := 1
+attr = S, NA
+damage    = floor((ifelse(var(6),20,17)-var(21))*fvar(7)), 0
+getpower  = floor(ifelse(var(40),0,7)*fvar(8)),floor(ifelse(var(40),0,7)*fvar(8))
+getpower  = floor(1*fvar(8)),floor(1*fvar(8))
+animtype  = Hard
+air.animtype = back
+guardflag = M
+hitflag   = MAF
+priority  = 4, Hit
+pausetime = 11+(Helper(40000),var(0)),13
+guard.pausetime = 11+(Helper(40000),var(0)),11
+sparkno = s6001+ifelse(var(40),3,0)
+guard.sparkno = s6011
+sparkxy = -15, -60
+hitsound = s1,4
+guardsound = s2,0
+ground.type = High
+ground.slidetime = 21
+ground.hittime = 21
+ground.velocity = -4.5-ifelse(var(40),0.5,0),-6.5-ifelse(var(40),0.5,0)
+guard.velocity = -10.5-ifelse(var(40),0.5,0)
+air.type = High
+air.hittime = 12
+air.velocity = -4.5-ifelse(var(40),0.5,0),-6.5-ifelse(var(40),0.5,0)
+airguard.velocity = -4-ifelse(var(40),0.5,0),-1-ifelse(var(40),0.5,0)
+ground.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+fall = 1
+fall.recover = 1
+fall.recovertime = 600
+fall.yvelocity = -3.5
+yaccel = .5
+ID = 30
+
+[State 250, ヒット定義消去]
+type = HitDef
+triggerall = var(12) > 0
+trigger1 = AnimElemTime(5) >= 0 && AnimElemTime(6) < 0
+attr = 
+
+[State 250, ガードクラッシュ値削り]
+type = VarAdd
+triggerall = RoundState = 2
+triggerall = p2movetype = H
+trigger1 = moveguarded = 1
+fvar(10) = floor((12-var(21))*fvar(12))
+ignorehitpause = 1
+persistent = 0
+
+[State 250, スタン値削り]
+type = VarAdd
+triggerall = RoundState = 2
+triggerall = p2movetype = H
+triggerall = fvar(15) = 0
+trigger1 = movehit = 1
+fvar(13) = floor((19-var(21))*fvar(16))
+ignorehitpause = 1
+persistent = 0
+
+[State 250, MoveType]
+type = StateTypeSet
+trigger1 = AnimElem = 6
+MoveType = I
+
+[State 250, ステート変更]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; ガードキャンセルふっとばし攻撃
+
+[Statedef 255]
+type     = S
+movetype = A
+physics  = N
+juggle   = 0
+poweradd = 0
+ctrl     = 0
+velset   = 0,0
+anim     = 255
+sprpriority = 3
+facep2 = 1
+
+[State 255, PowerAdd]
+type = PowerAdd
+triggerall = var(9) = 0
+trigger1 = time = 0
+value = -1000
+
+[State 255, パワーMAX解除]
+type = VarSet
+triggerall = var(9) = 1
+triggerall = var(40) > 0
+trigger1 = time = 0
+var(40) = 0
+
+[State 255, 無敵]
+type = NotHitBy
+trigger1 = AnimElemTime (1) >= 0 && AnimElemTime (7) < 0
+value = SCA
+
+[State 255, 時間停止]
+type = SuperPause
+trigger1 = AnimElem = 1
+anim = -1
+time = 11
+movetime = 11
+p2defmul = 1.0
+darken = 0
+
+[State 255, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6030
+pos = -24, -72
+sprpriority = 20
+ownpal = 1
+bindtime = 1
+supermove = 1
+
+[State 255, EnvColor]
+type = EnvColor
+trigger1 = time = [0,3]
+time = 1
+value = 255,255,255
+under = 1
+
+[State 255, 特殊効果]
+type = AssertSpecial
+trigger1 = time = [0,3]
+flag = NoFG
+flag2 = NOBG
+flag3 = GlobalNoShadow
+ignorehitpause = 1
+
+[State 255, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = s10,1
+channel = 0
+
+[State 255, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 5
+value = s0,1
+
+[State 255, ヒット定義]
+type = HitDef
+triggerall = var(12) = 0
+triggerall =!movecontact && !movereversed
+trigger1 = AnimElemTime(6) >= 0 && AnimElemTime(7) < 0
+trigger1 = var(28) := 1
+attr = S, NA
+damage    = floor((ifelse(var(6),6,5)-var(21))*fvar(7)), 0
+getpower  = 0
+getpower  = floor(1*fvar(8)),floor(1*fvar(8))
+animtype  = Hard
+air.animtype = back
+guardflag = M
+hitflag   = MAF
+priority  = 4, Hit
+pausetime = 11+(Helper(40000),var(0)),13
+guard.pausetime = 11+(Helper(40000),var(0)),11
+sparkno = s6001+ifelse(var(40),3,0)
+guard.sparkno = s6011
+sparkxy = -15, -60
+hitsound = s1,4
+guardsound = s2,0
+ground.type = High
+ground.slidetime = 21
+ground.hittime = 21
+ground.velocity = -4.5-ifelse(var(40),0.5,0),-6.5-ifelse(var(40),0.5,0)
+guard.velocity = -10.5-ifelse(var(40),0.5,0)
+air.type = High
+air.hittime = 12
+air.velocity = -4.5-ifelse(var(40),0.5,0),-6.5-ifelse(var(40),0.5,0)
+airguard.velocity = -4-ifelse(var(40),0.5,0),-1-ifelse(var(40),0.5,0)
+ground.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+fall = 1
+fall.recover = 1
+fall.recovertime = 600
+fall.yvelocity = -3.5
+yaccel = .5
+ID = 30
+
+[State 255, ヒット定義消去]
+type = HitDef
+triggerall = var(12) > 0
+trigger1 = AnimElemTime(6) >= 0 && AnimElemTime(7) < 0
+attr = 
+
+[State 255, ガードクラッシュ値削り]
+type = VarAdd
+triggerall = RoundState = 2
+triggerall = p2movetype = H
+trigger1 = moveguarded = 1
+fvar(10) = floor((5-var(21))*fvar(12))
+ignorehitpause = 1
+persistent = 0
+
+[State 255, スタン値削り]
+type = VarAdd
+triggerall = RoundState = 2
+triggerall = p2movetype = H
+triggerall = fvar(15) = 0
+trigger1 = movehit = 1
+fvar(13) = floor((5-var(21))*fvar(16))
+ignorehitpause = 1
+persistent = 0
+
+[State 255, MoveType]
+type = StateTypeSet
+trigger1 = AnimElem = 7
+MoveType = I
+
+[State 255, ステート変更]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; 空中ふっとばし攻撃
+
+[Statedef 650]
+type     = A
+movetype = A
+physics  = A
+juggle   = 0
+poweradd = 0
+ctrl     = 0
+anim     = 650
+sprpriority = 3
+
+[State 650, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s10,1
+channel = 0
+
+[State 650, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = s0,1
+
+[State 650, ヒット定義]
+type = HitDef
+triggerall = var(12) = 0
+triggerall = !movecontact && !movereversed
+trigger1 = AnimElemTime(3) >= 0 && AnimElemTime(4) < 0
+trigger1 = var(28) := 1
+attr = A, NA
+damage    = floor((ifelse(var(6),20,17)-var(21))*fvar(7)), 0
+getpower  = floor(ifelse(var(40),0,7)*fvar(8)),floor(ifelse(var(40),0,7)*fvar(8))
+getpower  = floor(1*fvar(8)),floor(1*fvar(8))
+animtype  = Hard
+air.animtype = back
+guardflag = M
+hitflag   = MAF
+priority  = 4, Hit
+pausetime = 11+(Helper(40000),var(0)),13
+guard.pausetime = 11+(Helper(40000),var(0)),11
+sparkno = s6001+ifelse(var(40),3,0)
+guard.sparkno = s6011
+sparkxy = -20, -60
+hitsound = s1,4
+guardsound = s2,0
+ground.type = High
+ground.slidetime = 21
+ground.hittime = 21
+ground.velocity = -4.5-ifelse(var(40),0.5,0),-6.5-ifelse(var(40),0.5,0)
+guard.velocity = -10.5-ifelse(var(40),0.5,0)
+air.type = High
+air.hittime = 12
+air.velocity = -4.5-ifelse(var(40),0.5,0),-6.5-ifelse(var(40),0.5,0)
+airguard.velocity = -4-ifelse(var(40),0.5,0),-1-ifelse(var(40),0.5,0)
+ground.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+fall = 1
+fall.recover = 1
+fall.recovertime = 600
+fall.yvelocity = -3.5
+yaccel = .5
+ID = 30
+
+[State 650, ヒット定義消去]
+type = HitDef
+triggerall = var(12) > 0
+trigger1 = AnimElemTime(3) >= 0 && AnimElemTime(4) < 0
+attr = 
+
+[State 650, ガードクラッシュ値削り]
+type = VarAdd
+triggerall = RoundState = 2
+triggerall = p2movetype = H
+trigger1 = moveguarded = 1
+fvar(10) = floor((12-var(21))*fvar(12))
+ignorehitpause = 1
+persistent = 0
+
+[State 650, スタン値削り]
+type = VarAdd
+triggerall = RoundState = 2
+triggerall = p2movetype = H
+triggerall = fvar(15) = 0
+trigger1 = movehit = 1
+fvar(13) = floor((16-var(21))*fvar(16))
+ignorehitpause = 1
+persistent = 0
+
+[State 650, MoveType]
+type = StateTypeSet
+trigger1 = AnimElem = 4
+MoveType = I
+
+;---------------------------------------------------------------------------
+; 緊急回避前
+
+[Statedef 700]
+type     = S
+movetype = I
+physics  = N
+anim     = 700
+ctrl     = 0
+velset   = 0,0
+sprpriority = -2
+
+[State 700, VarSet]
+type = VarSet
+trigger1 = time = 0
+var(16) = 0
+
+[State 700, VarSet]
+type = VarSet
+trigger1 = prevstateno = 150 || prevstateno = 152
+var(16) = 1
+
+[State 700, ChangeAnim]
+type = ChangeAnim
+trigger1 = var(16) = 1
+trigger1 = time = 0
+value = 701
+
+[State 700, Turn]
+type = Turn
+trigger1 = var(16) = 0
+trigger1 = Time = 0
+trigger1 = P2Dist X < 0
+
+[State 700, PowerAdd]
+type = PowerAdd
+triggerall = var(9) = 0
+trigger1 = var(16) = 1 && AnimElem = 1
+value = -1000
+
+[State 700, パワーMAX解除]
+type = VarSet
+triggerall = var(9) = 1
+triggerall = var(40) > 0
+trigger1 = var(16) = 1 && AnimElem = 1
+var(40) = 0
+
+[State 700, 時間停止]
+type = SuperPause
+trigger1 = var(16) = 1 && AnimElem = 1
+anim = -1
+movetime = 11
+time = 11
+p2defmul = 1.0
+darken = 0
+
+[State 700, エフェクト表示]
+type = Explod
+trigger1 = var(16) = 1 && AnimElem = 1
+anim = 6030
+pos = -24, -72
+sprpriority = 20
+ownpal = 1
+bindtime = 1
+supermove = 1
+
+[State 700, EnvColor]
+type = EnvColor
+trigger1 = var(16) = 1 && (time = [0,3])
+time = 1
+value = 255,255,255
+under = 1
+
+[State 700, 特殊効果]
+type = AssertSpecial
+trigger1 = var(16) = 1 && (time = [0,3])
+flag = NoFG
+flag2 = NOBG
+flag3 = GlobalNoShadow
+ignorehitpause = 1
+
+[State 700, 残像]
+type = AfterImage
+triggerall = var(16) = 0
+trigger1 = AnimElem = 1
+time = 10
+palbright = 30,30,30
+PalContrast = 256,256,256
+paladd = 0,0,0
+palmul = 1,1,1
+trans = none
+Length = 7
+FrameGap = 3
+
+[State 700, 残像]
+type = AfterImage
+triggerall = var(16) = 1
+trigger1 = AnimElem = 2
+time = 2
+palcolor = 0
+paladd = 60,20,100
+PalContrast = 220,200,350
+Trans = none
+TimeGap  = 1
+FrameGap = 3
+length = 11
+ignorehitpause = 1
+
+[State 700, AfterImageTime]
+type = AfterImageTime
+triggerall = var(16) = 1
+trigger1 = AnimElemTime(2) >= 0
+trigger1 = gametime%2 = 0
+time = 2
+
+[State 700, 非無敵]
+type = HitBy
+triggerall = var(16) = 0
+trigger1 = AnimElem = 6, <= 0
+value = SC, NT, ST, HT
+
+[State 700, 無敵]
+type = NotHitBy
+triggerall = var(16) = 1
+trigger1 = 1
+value = SCA
+
+[State 700, 音を鳴らす]
+type = PlaySnd
+trigger1 = Anim = 700 && AnimElem = 2
+trigger2 = Anim = 701 && AnimElem = 3
+value = s10,4
+channel = 0
+
+[State 700, 移動量]
+type = VelSet
+trigger1 = Anim = 700 && AnimElem = 3
+trigger2 = Anim = 701 && AnimElem = 4
+x = ifelse((PrevStateNo = 100 || var(16) = 1),7.5,5)
+
+[State 700, 移動終了]
+type = VelSet
+trigger1 = Anim = 700 && AnimElem = 7
+trigger2 = Anim = 701 && AnimElem = 8
+x = 0
+
+[State 700, 相手と重なった場合]
+type = PlayerPush
+trigger1 = AnimElemTime(1) > 0
+value = 0
+
+[State 700, 終了]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; 緊急回避後
+
+[Statedef 710]
+type     = S
+movetype = I
+physics  = N
+anim     = 710
+ctrl     = 0
+velset   = 0,0
+sprpriority = -2
+
+[State 710, VarSet]
+type = VarSet
+trigger1 = time = 0
+var(16) = 0
+
+[State 710, VarSet]
+type = VarSet
+trigger1 = prevstateno = 150 || prevstateno = 152
+var(16) = 1
+
+[State 710, ChangeAnim]
+type = ChangeAnim
+trigger1 = var(16) = 1
+trigger1 = time = 0
+value = 711
+
+[State 710, Turn]
+type = Turn
+trigger1 = var(16) = 0
+trigger1 = Time = 0
+trigger1 = P2Dist X < 0
+
+[State 710, PowerAdd]
+type = PowerAdd
+triggerall = var(9) = 0
+trigger1 = var(16) = 1 && AnimElem = 1
+value = -1000
+
+[State 710, パワーMAX解除]
+type = VarSet
+triggerall = var(9) = 1
+triggerall = var(40) > 0
+trigger1 = var(16) = 1 && AnimElem = 1
+var(40) = 0
+
+[State 710, 時間停止]
+type = SuperPause
+trigger1 = var(16) = 1 && AnimElem = 1
+anim = -1
+movetime = 11
+time = 11
+p2defmul = 1.0
+darken = 0
+
+[State 710, エフェクト表示]
+type = Explod
+trigger1 = var(16) = 1 && AnimElem = 1
+anim = 6030
+pos = -24, -72
+sprpriority = 20
+ownpal = 1
+bindtime = 1
+supermove = 1
+
+[State 710, EnvColor]
+type = EnvColor
+trigger1 = var(16) = 1 && (time = [0,3])
+time = 1
+value = 255,255,255
+under = 1
+
+[State 710, 特殊効果]
+type = AssertSpecial
+trigger1 = var(16) = 1 && (time = [0,3])
+flag = NoFG
+flag2 = NOBG
+flag3 = GlobalNoShadow
+ignorehitpause = 1
+
+[State 710, 残像]
+type = AfterImage
+triggerall = var(16) = 0
+trigger1 = AnimElem = 1
+time = 10
+palbright = 30,30,30
+PalContrast = 256,256,256
+paladd = 0,0,0
+palmul = 1,1,1
+trans = none
+Length = 7
+FrameGap = 3
+
+[State 710, 残像]
+type = AfterImage
+triggerall = var(16) = 1
+trigger1 = AnimElem = 2
+time = 2
+palcolor = 0
+paladd = 60,20,100
+PalContrast = 220,200,350
+Trans = none
+TimeGap  = 1
+FrameGap = 3
+length = 11
+ignorehitpause = 1
+
+[State 710, AfterImageTime]
+type = AfterImageTime
+triggerall = var(16) = 1
+trigger1 = AnimElemTime(2) >= 0
+trigger1 = gametime%2 = 0
+time = 2
+
+[State 710, 非無敵]
+type = HitBy
+triggerall = var(16) = 0
+trigger1 = AnimElem = 6, <= 0
+value = SC, NT, ST, HT
+
+[State 710, 無敵]
+type = NotHitBy
+triggerall = var(16) = 1
+trigger1 = 1
+value = SCA
+
+[State 710, 音を鳴らす]
+type = PlaySnd
+trigger1 = Anim = 710 && AnimElem = 2
+trigger2 = Anim = 711 && AnimElem = 3
+value = s10,4
+channel = 0
+
+[State 710, 移動量]
+type = VelSet
+trigger1 = Anim = 710 && AnimElem = 3
+trigger2 = Anim = 711 && AnimElem = 4
+x = ifelse(var(16) = 1,-7.5,-5)
+
+[State 710, 移動終了]
+type = VelSet
+trigger1 = Anim = 710 && AnimElem = 7
+trigger2 = Anim = 711 && AnimElem = 8
+x = 0
+
+[State 710, 相手と重なった場合]
+type = PlayerPush
+trigger1 = AnimElemTime(1) > 0
+value = 0
+
+[State 710, 終了]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; 攻撃避け
+
+[Statedef 720]
+type     = S
+movetype = I
+physics  = N
+anim     = 720
+ctrl     = 0
+velset   = 0,0
+sprpriority = -2
+
+[State 720, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s10,4
+channel = 0
+
+[State 720, HitBy]
+type = HitBy
+trigger1 = 1
+value = SC, NT, ST, HT
+
+[State 720, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 0
+
+[State 720, VarSet]
+type = VarSet
+trigger1 = time = 0
+var(15) = 0
+
+[State 720, VarSet]
+type = VarSet
+triggerall = var(59) != 1
+triggerall = Time >= 5
+trigger1 = command = "a"
+trigger2 = command = "b"
+trigger3 = command = "x"
+trigger4 = command = "y"
+var(15) = 1
+
+[State 720, ChangeState]
+type = ChangeState
+triggerall = var(59) != 1
+triggerall = AnimElemTime(2) >= 7 && AnimElemTime(3) < 0
+trigger1 = var(15) = 1
+value = 721
+
+[State 720, ChangeState - AI]
+type = ChangeState
+triggerall = var(59) = 1
+triggerall = AnimElemTime(2) >= 7 && AnimElemTime(3) < 0
+triggerall = Random <= (200 + (var(57) * 100))
+triggerall = enemynear(var(58)),statetype != A
+triggerall = enemynear(var(58)),statetype != L
+triggerall = enemy,numproj = 0
+triggerall = P2BodyDist x = [-5,30]
+trigger1 = enemynear(var(58)),ctrl = 0
+trigger1 = enemynear(var(58)),movetype != H
+trigger1 = enemynear(var(58)),stateno >= 200
+trigger1 = enemynear(var(58)),animtime <= -11
+trigger1 = Random <= 600
+trigger2 = Random <= 200
+value = 721
+
+[State 720, ChangeState]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; カウンター攻撃
+
+[Statedef 721]
+type     = S
+movetype = A
+physics  = N
+juggle   = 0
+velset   = 0,0
+ctrl     = 0
+anim     = 721
+poweradd = 0
+sprpriority = -2
+
+[State 721, VarSet]
+type = VarSet
+trigger1 = time = 0
+var(15) = 0
+
+[State 721, HitDef]
+type = HitDef
+triggerall = var(12) = 0
+triggerall = !movecontact && !movereversed
+trigger1 = AnimElemTime(4) >= 0 && AnimElemTime(5) < 0
+trigger1 = var(28) := 1
+attr = S, NA
+damage    = floor((ifelse(var(6),18,12)-var(21))*fvar(7)), 0
+getpower  = floor(ifelse(var(40),0,7)*fvar(8)),floor(ifelse(var(40),0,7)*fvar(8))
+getpower  = floor(1*fvar(8)),floor(1*fvar(8))
+animtype  = Hard
+air.animtype = back
+guardflag = M
+hitflag = MAF
+priority  = 4, Hit
+pausetime = 11+(Helper(40000),var(0)),13
+guard.pausetime = 11+(Helper(40000),var(0)),11
+sparkno = s6001+ifelse(var(40),3,0)
+guard.sparkno = s6011
+sparkxy = -20, -80
+hitsound = s1,var(32)
+guardsound = s2,0
+ground.type = High
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = -10.5-ifelse(var(40),0.5,0)
+air.type = High
+air.hittime = 12
+air.velocity = -4.5-ifelse(var(40),0.5,0),-6.5-ifelse(var(40),0.5,0)
+airguard.velocity = -4-ifelse(var(40),0.5,0),-1-ifelse(var(40),0.5,0)
+ground.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+fall.yvelocity = -3.5
+yaccel = .5
+air.fall = 1
+fall.recover = 1
+fall.recovertime = 600
+ID = 30
+
+[State 721, ヒット定義消去]
+type = HitDef
+triggerall = var(12) > 0
+trigger1 = AnimElemTime(4) >= 0 && AnimElemTime(5) < 0
+attr = 
+
+[State 721, ガード弾き値削り]
+type = VarAdd
+triggerall = RoundState = 2
+triggerall = p2movetype = H
+trigger1 = moveguarded = 1
+fvar(10) = floor((4-var(21))*fvar(12))
+ignorehitpause = 1
+persistent = 0
+
+[State 721, 気絶値削り]
+type = VarAdd
+triggerall = RoundState = 2
+triggerall = p2movetype = H
+triggerall = fvar(15) = 0
+trigger1 = movehit = 1
+fvar(13) = floor((6-var(21))*fvar(16))
+ignorehitpause = 1
+persistent = 0
+
+[State 721, SprPriority]
+type = SprPriority
+trigger1 = MoveContact = 1
+trigger2 = MoveReversed = 1
+value = 1
+ignorehitpause = 1
+
+[State 721, MoveType]
+type = StateTypeSet
+trigger1 = AnimElem = 5
+MoveType = I
+
+[State 721, ChangeState]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; MAX発動
+
+[Statedef 750]
+type     = S
+movetype = I
+physics  = N
+anim     = 750
+ctrl     = 0
+velset   = 0,0
+sprpriority = 1
+
+[State 750, PowerAdd]
+type = PowerAdd
+trigger1 = AnimElem = 1
+value = -1000
+
+[State 750, VarSet]
+type = VarSet
+trigger1 = AnimElem = 1
+var(40) = 1200
+
+[State 750, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s10,0
+channel = 0
+
+[State 750, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = s8,1
+
+[State 750 エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 3
+anim = 6061
+postype = P1
+pos = 0, 0
+sprpriority = 5
+ownpal = 1
+
+[State 750, EnvShake]
+type = EnvShake
+trigger1 = AnimElem = 3
+time = 10
+ampl = -5
+freq = 95
+phase = 95
+
+[State 750, ChangeState]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; ゲージ溜め
+
+[Statedef 760]
+type     = S
+movetype = I
+physics  = N
+anim     = 760
+ctrl     = 0
+velset   = 0,0
+
+[State 760, Null]
+type = Null
+triggerall = time = 0
+trigger1 = command = "holdx" && command = "holda" && command = "holdy"
+trigger1 = var(15) := 1
+trigger2 = command = "holdc"
+trigger2 = var(15) := 2
+
+[State 760, VarAdd]
+type = VarAdd
+trigger1 = 1
+fvar(9) = 8
+
+[State 760, ChangeState]
+type = ChangeState
+trigger1 = animtime = 0
+value = 761
+
+[State 760, ChangeState]
+type = ChangeState
+triggerall = Time >= 2
+trigger1 = var(59) != 1
+trigger1 = var(15) = 1
+trigger1 = command != "holdx" && command != "holda" && command != "holdy"
+trigger2 = var(59) != 1
+trigger2 = var(15) = 2
+trigger2 = command != "holdc"
+trigger3 = fvar(9) >= 1000 || var(40)
+trigger4 = roundState != 2
+value = 762
+
+[State 760, ChangeState]
+type = ChangeState
+triggerall = var(59) = 1
+triggerall = Time >= 2
+trigger1 = P2bodydist X = [-5,200]
+trigger1 = EnemyNear(var(58)),MoveType = A
+trigger2 = P2bodydist X = [-5,60]
+trigger2 = EnemyNear(var(58)),statetype != L
+trigger3 = Enemy,numproj
+trigger4 = inguarddist
+trigger5 = roundState != 2
+value = 762
+
+[Statedef 761]
+type     = S
+movetype = I
+physics  = N
+anim     = 761
+ctrl     = 0
+velset   = 0,0
+
+[State 761, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = s8,0
+channel = 4
+
+[State 761, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = s10,5
+channel = 0
+
+[State 761, Explod]
+type = Explod
+trigger1 = AnimElem = 3
+anim = 6060
+ID = 6060
+pos = 0, 0
+sprpriority = 5
+bindtime = -1
+removetime = -1
+ownpal = 1
+supermove = 1
+removeongethit = 1
+
+[State 761, VarAdd]
+type = VarAdd
+trigger1 = Time >= 1
+fvar(9) = 8
+
+[State 761, ChangeState]
+type = ChangeState
+trigger1 = var(59) != 1
+trigger1 = var(15) = 1
+trigger1 = command != "holdx" && command != "holda" && command != "holdy"
+trigger2 = var(59) != 1
+trigger2 = var(15) = 2
+trigger2 = command != "holdc"
+trigger3 = fvar(9) >= 1000 || var(40)
+trigger4 = roundState != 2
+value = 762
+
+[State 761, ChangeState]
+type = ChangeState
+triggerall = var(59) = 1
+trigger1 = P2bodydist X = [-5,200]
+trigger1 = EnemyNear(var(58)),MoveType = A
+trigger2 = P2bodydist X = [-5,60]
+trigger2 = EnemyNear(var(58)),statetype != L
+trigger3 = Enemy,numproj
+trigger4 = inguarddist
+trigger5 = Time >= 60
+trigger5 = EnemyNear(var(58)),statetype != L
+trigger5 = EnemyNear(var(58)),movetype != H
+trigger5 = random <= 5
+trigger6 = roundState != 2
+value = 762
+
+[Statedef 762]
+type     = S
+movetype = I
+physics  = N
+anim     = 762
+ctrl     = 0
+velset   = 0,0
+
+[State 762, ChangeAnim]
+type = ChangeAnim
+trigger1 = Time = 0
+trigger1 = prevstateno = 761
+value = 763
+
+[State 762, VarSet]
+type = VarSet
+trigger1 = time = 0
+var(15) = 0
+
+[State 762, StopSnd]
+type = StopSnd
+trigger1 = time = 0
+channel = 4
+
+[State 762, StopSnd]
+type = StopSnd
+trigger1 = time = 0
+channel = 0
+
+[State 762, RemoveExplod]
+type = RemoveExplod
+trigger1 = time = 0
+ID = 6060
+
+[State 762, ChangeState]
+type = ChangeState
+trigger1 = animtime = 0
+value = 0
+ctrl = 1
+
+;-----------------------------------------------------------------------------
+; AI用のステート
+;-----------------------------------------------------------------------------
+; 前進
+[Statedef 19]
+type    = S
+physics = S
+sprpriority = 0
+ctrl = 0
+
+[State 20, 1]
+type = VelSet
+trigger1 = 1
+x = const(velocity.walk.fwd.x)
+
+[State 20, 3]
+type = ChangeAnim
+triggerall = vel x > 0
+trigger1 = Anim != 20 && Anim != 5
+trigger2 = Anim = 5 && AnimTime = 0
+value = 20
+
+[State 20, 4]
+type = ChangeAnim
+triggerall = vel x < 0
+trigger1 = Anim != 21 && Anim != 5
+trigger2 = Anim = 5 && AnimTime = 0
+value = 21
+
+;---------------------------------------------------------------------------
+; 前ジャンプ
+
+[Statedef 30]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = 1
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 50
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; 後ろジャンプ
+
+[Statedef 31]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = -1
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 50
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; 前小ジャンプ
+
+[Statedef 32]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = 1
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 55
+ctrl = 0
+
+;---------------------------------------------------------------------------
+; 後ろ小ジャンプ
+
+[Statedef 33]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = -1
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 55
+ctrl = 0
+
+;---------------------------------------------------------------------------
+; 前中ジャンプ
+
+[Statedef 34]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = 2
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 55
+ctrl = 0
+
+;---------------------------------------------------------------------------
+; 後ろ中ジャンプ
+
+[Statedef 35]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = -2
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 55
+ctrl = 0
+
+;---------------------------------------------------------------------------
+; 前大ジャンプ
+
+[Statedef 36]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = 2
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 50
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; 後ろ大ジャンプ
+
+[Statedef 37]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = -2
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 50
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; 垂直ジャンプ
+
+[Statedef 38]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = 0
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 50
+ctrl = 1
+
+;---------------------------------------------------------------------------
+;垂直小ジャンプ
+
+[Statedef 39]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = 0
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 55
+ctrl = 0
+
+;---------------------------------------------------------------------------
+; RUN_FWD
+[Statedef 99]
+type    = S
+physics = S
+anim = 100
+ctrl = 0
+velset = 0,0
+sprpriority = 1
+
+[State 100, 音を鳴らす]
+type = PlaySnd
+triggerall = time = 4
+trigger1 = Alive
+loop = 1
+value = s5,0
+channel = 3
+
+[State 100, 1]
+type = VelSet
+trigger1 = AnimElemtime(2) >= 0
+x = const(velocity.run.fwd.x)
+
+[State 100, 2] ;Prevent run from canceling into walk
+type = AssertSpecial
+trigger1 = 1
+flag = NoWalk
+
+[State 100, 3] ;Prevent from turning
+type = AssertSpecial
+trigger1 = 1
+flag = NoAutoTurn
+
+[State 100, 4]
+type = ChangeState
+Triggerall = var(59) != 1
+trigger1 = command = "holdup"
+value = 40
+
+[State 100, 4]
+type = ChangeState
+Triggerall = var(59) != 1
+triggerall = time >= 14;AnimElemtime(2) >= 0
+trigger1 = command != "holdfwd"
+value = 101
+
+[State 100, AI]
+Type = ChangeState
+triggerall = var(59) = 1
+triggerall = time >= 14;AnimElemtime(2) >= 0
+Trigger1 = time = 60
+Trigger2 = P2BodyDist X <= 60
+Trigger2 = P2BodyDist Y >= -120
+Trigger2 = EnemyNear(var(58)),MoveType != H
+Trigger2 = EnemyNear(var(58)),facing != facing || P2BodyDist X < 0
+Trigger3 = EnemyNear(var(58)),MoveType = A
+Trigger3 = EnemyNear(var(58)),facing != facing
+Trigger4 = EnemyNear(var(58)),StateType = L
+Trigger4 = P2BodyDist X <= 60
+Trigger5 = inguarddist
+Trigger5 = EnemyNear(var(58)),facing != facing
+Trigger6 = Enemy,NumProj
+value = 101
+
+[State 100, AI]
+Type = ChangeState
+triggerall = var(59) = 1
+triggerall = time >= 14;AnimElemtime(2) >= 0
+trigger1 = alive
+trigger1 = life > 0
+trigger1 = roundstate = 3
+value = 101
+
+;━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+;AIヘルパー
+;━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+;==============================================================================
+;AI起動ヘルパー
+;==============================================================================
+[StateDef 30000]
+movetype = A
+ctrl = 0
+anim = 0
+
+[State 30000, 間違いで本体が来たら立ちへ移行]
+type = SelfState
+trigger1 = !IsHelper
+value = 0
+
+[State 30000, 透明化]
+type = AssertSpecial
+trigger1 = 1
+flag = Invisible
+
+[State 30000, 無敵化]
+type = hitby
+trigger1 = 1
+value =
+value2=
+
+[State 30000, 攻撃範囲消去]
+type = AttackDist
+trigger1 = 1
+value = 0
+
+[State 30000, 人操作フラグON]
+type = VarSet
+trigger1 = Command = "a" && Command = "AI"
+trigger2 = Command = "b" && Command = "AI"
+trigger3 = Command = "c" && Command = "AI"
+trigger4 = Command = "x" && Command = "AI"
+trigger5 = Command = "y" && Command = "AI"
+trigger6 = Command = "z" && Command = "AI"
+trigger7 = Command = "start" && Command = "AI"
+trigger8 = Command = "F" && Command = "AI"
+trigger9 = Command = "B" && Command = "AI"
+trigger10 = Command = "U" && Command = "AI"
+trigger11 = Command = "D" && Command = "AI"
+trigger12 = (RoundState = 0 || RoundState = 1) && Command = "/command"
+var(59) = -1
+
+[State 30000, AIフラグON]
+type = VarSet
+triggerall = !var(59) && !root,var(59)
+trigger1 = Command = "/command"
+trigger2 = Command = "AI" || Command = "F" || Command = "B" || Command = "U" || Command = "D"
+trigger3 = Command = "a" || Command = "b" || Command = "c" || Command = "x" || Command = "y" || Command = "z" || Command = "start"
+var(59) = 1
+
+[State 30000, 本体にフラグが立ったら消去]
+type = DestroySelf
+triggerall = IsHelper
+trigger1 = root,var(59)
+
+;==============================================================================
+;ガードチェックヘルパー
+;==============================================================================
+[Statedef 30100]
+type     = A
+movetype = I
+physics  = N
+anim     = 0;9999
+
+[State 30100, AssertSpecial]
+type = AssertSpecial
+Trigger1 = 1
+flag = NoShadow
+flag2 = invisible
+
+[State 30100, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 30100, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 0
+
+[State 30100, 間違いで本体が来たら立ちへ移行]
+type = SelfState
+trigger1 =!ishelper
+value = 0
+
+[State 30100, 目の前の敵が一番近い相手である]
+type = VarSet
+triggerall = RoundState = 2
+trigger1 = numenemy <= 1
+trigger2 = numenemy >= 2
+trigger2 = enemy(0),life <= 0 || enemy(1),life <= 0
+trigger2 = enemynear(0),life > 0
+trigger3 = numenemy >= 2
+trigger3 = enemy(0),life > 0 && enemy(1),life > 0
+trigger3 = abs(root,pos x - enemynear(0),pos x) <= abs(root,pos x - enemynear(1),pos x) 
+var(1) = 0
+IgnoreHitPause = 1
+
+[State 30100, 目の前の敵が一番近い相手ではない]
+type = VarSet
+triggerall = RoundState = 2
+triggerall = numenemy >= 2
+trigger1 = enemynear(0),life <= 0
+trigger2 = numenemy >= 2
+trigger2 = enemy(0),life <= 0 || enemy(1),life <= 0
+trigger2 = enemynear(0),life <= 0
+trigger3 = enemy(0),life > 0 && enemy(1),life > 0
+trigger3 = abs(root,pos x - enemynear(0),pos x) > abs(root,pos x - enemynear(1),pos x) 
+var(1) = 1
+IgnoreHitPause = 1
+
+;---------------------------------------------------------------------------
+;自分の後ろに設置
+[State 30100]
+type = turn
+trigger1 = facing*ifelse((enemynear(var(1)),pos x-pos x)>=0,1,-1) < 0
+IgnoreHitPause = 1
+supermovetime = 9999
+pausemovetime = 9999
+
+[State 30100]
+type = VarSet
+trigger1 = enemynear(var(1)),facing*ifelse((enemynear(var(1)),pos x-root,pos x)>=0,1,-1)<=0
+trigger2 = !enemynear(var(1)),hitdefattr = A,NA,SA,HA
+var(2) = 0
+IgnoreHitPause = 1
+supermovetime = 9999
+pausemovetime = 9999
+
+[State 30100]
+type = VarSet
+trigger1 = enemynear(var(1)),facing*ifelse((EnemyNear(var(1)),pos x-root,pos x)>=0,1,-1)>0
+trigger1 = enemynear(var(1)),hitdefattr = A,NA,SA,HA
+var(2) = 1
+IgnoreHitPause = 1
+supermovetime = 9999
+pausemovetime = 9999
+
+[State 30100]
+type = posset
+trigger1 = 1
+x = root,pos x+ifelse((enemynear(var(1)),pos y<0&&var(2)=1),(enemynear(var(1)),const(size.attack.dist)),(enemynear(var(1)),const(size.proj.attack.dist)))*(enemynear(var(1)),facing)
+IgnoreHitPause = 1
+supermovetime = 9999
+pausemovetime = 9999
+
+;---------------------------------------------------------------------------
+;ガード学習
+
+[State 30100, 中段記憶]
+Type = Null
+triggerall = root,var(59) = 1
+triggerall = root,var(57) >= 6
+triggerall = Var(10) != p2stateno
+triggerall = root,movetype = H &&(root,stateno != [120,155])
+triggerall = root,prevstateno = [120,155]
+triggerall = Root,statetype = C && p2statetype != A
+trigger1 = 0 && Var(14) := Var(13)
+trigger2 = 0 && Var(13) := Var(12)
+trigger3 = 0 && Var(12) := Var(11)
+trigger4 = 0 && Var(11) := Var(10)
+trigger5 = 0 && Var(10) := p2stateno
+IgnoreHitPause = 1
+
+[State 30100, 下段記憶]
+Type = Null
+triggerall = root,var(59) = 1
+triggerall = root,var(57) >= 6
+triggerall = Var(20) != p2stateno
+triggerall = root,movetype = H &&(root,stateno != [120,155])
+triggerall = Root,prevstateno = [120,155]
+triggerall = Root,statetype = S && p2statetype != C
+trigger1 = 0 && Var(24) := Var(23)
+trigger2 = 0 && Var(23) := Var(22)
+trigger3 = 0 && Var(22) := Var(21)
+trigger4 = 0 && Var(21) := Var(20)
+trigger5 = 0 && Var(20) := p2stateno
+IgnoreHitPause = 1
+
+[State 30100, リセット]
+Type = Null
+triggerall = enemy,authorname = "ikaruga"
+triggerall = root,stateno = 5700
+trigger1 = Var(10) := 2
+trigger1 = Var(11) := 2
+trigger1 = Var(12) := 2
+trigger1 = Var(13) := 2
+trigger1 = Var(14) := 2
+trigger1 = Var(20) := 2
+trigger1 = Var(21) := 2
+trigger1 = Var(22) := 2
+trigger1 = Var(23) := 2
+trigger1 = Var(24) := 2
+
+;---------------------------------------------------------------------------
+[State 30100, DestroySelf]
+type = DestroySelf
+triggerall = ishelper
+triggerall = RoundState >= 3
+trigger1 = root,stateno != [120,159]
+trigger2 = RoundState >= 4
+
+;==============================================================================
+; 飛び道具感知ヘルパー
+;==============================================================================
+[Statedef 30200];飛び道具
+anim = 0;9999
+ctrl = 0
+
+[State 30200, AssertSpecial]
+type = AssertSpecial
+Trigger1 = 1
+flag = NoShadow
+flag2 = invisible
+
+[State 30200, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 30200, 間違いで本体が来たら立ちへ移行]
+type = SelfState
+trigger1=!ishelper
+value=0
+
+[State 30200, VarSet]
+type = VarSet
+trigger1 = RoundState = 2
+var(10) = enemynear,GetHitVar(hitshaketime)+enemynear,GetHitVar(hittime)
+ignorehitpause = 1
+
+[State 30200, VarSet]
+type = VarSet
+triggerall = Var(1) = 0
+Trigger1 = EnemyNear,NumHelper > 0
+Trigger1 = RoundState <= 1 || (EnemyNear,movetype = H && EnemyNear,StateNo!=[120,159])
+var(1) = (EnemyNear,NumHelper - NumEnemy) + 1
+
+[State 30200, VarSet]
+type = VarSet
+triggerall = Var(1) > EnemyNear,NumHelper
+Trigger1 = RoundState = 2
+var(1) = (EnemyNear,NumHelper - NumEnemy) + 1
+
+[State 30200, VarSet]
+type = VarSet
+trigger1 = ishelper(30200)
+var(2) = gametime
+pausemovetime=0
+supermovetime=0
+
+[State 30200, DestroySelf]
+Type = DestroySelf
+trigger1 = RoundState > 2
+
+;---------------------------------------------------------------------------
+[Statedef 30250]
+anim = 0;9999
+ctrl = 0
+
+[State 30250, AssertSpecial]
+type = AssertSpecial
+Trigger1 = 1
+flag = NoShadow
+flag2 = invisible
+
+[State 30250, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 30250, 間違いで本体が来たら立ちへ移行]
+type = SelfState
+trigger1=!ishelper
+value=0
+
+[State 30250, ストーカー]
+type = BindtoRoot
+trigger1 = IsHelper
+time = -1
+facing = 1
+pos = 50*(ifelse(IsHelper(30250),1.5,-2)) ,0
+ignorehitpause = 1
+pausemovetime=2147483647
+supermovetime=2147483647
+
+[State 30250, Turn]
+type = Turn
+trigger1 = root,facing != facing
+
+[State 30250, VarSet]
+type = VarSet
+trigger1 = IsHelper(30250)
+trigger1 = var(1) = 0
+var(0) = 0
+ignorehitpause = 1
+
+[State 30250, ParentVarSet]
+type = VarSet
+trigger1 = IsHelper(30250)
+trigger1 = !inguarddist
+var(0) = 1
+ignorehitpause = 1
+
+[State 30250, ParentVarSet]
+type = VarSet
+trigger1 = IsHelper(30251)
+trigger1 = !inguarddist
+var(1) = 0
+ignorehitpause = 1
+
+[State 30250, ParentVarSet]
+type = VarSet
+trigger1 = IsHelper(30251)
+trigger1 = inguarddist
+var(1) = 1
+ignorehitpause = 1
+
+[State 30250, DestroySelf]
+Type = DestroySelf
+trigger1 = RoundState > 2
+
+;この下、一行以上空ける事！

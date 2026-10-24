@@ -1,0 +1,40 @@
+[Info]
+Name         = "Rugal Bernstein"
+DisplayName  = "Rugal"
+Author       = "ikaruga"
+VersionDate  = 04,03,2022
+MugenVersion = 1.0
+Pal.Defaults = 4
+localcoord   = 320
+
+[Files]
+Cmd      = Rugal.cmd
+Cns      = Constants.cns
+St       = Rugal.cns
+St1      = Rugal-N.cns
+St2      = Rugal-S.cns
+St3      = Rugal-H.cns
+St4      = Rugal-2-3.cns
+St5      = Helper.cns
+St6      = Config.cns
+St7      = Member.cns
+St8      = OmegaRugal.cns
+StCommon = common_kof.cns
+Sprite   = OmegaRugal.sff
+Anim     = Rugal.air
+Sound    = Rugal.snd
+
+;---カラーパレット---
+
+Pal1  = act/act09.act
+Pal2  = act/act11.act
+Pal3  = act/act12.act
+Pal4  = act/act08.act
+Pal5  = act/act10.act
+Pal6  = act/act01.act
+Pal7  = act/act16.act
+Pal8  = act/act18.act
+Pal9  = act/act14.act
+Pal10 = act/act15.act
+Pal11 = act/act17.act
+Pal12 = act/act13.act

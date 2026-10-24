@@ -1,0 +1,39 @@
+[Info]
+Name         = "Mr.Karate"
+DisplayName  = "Mr.Karate"
+Author       = "ikaruga"
+VersionDate  = 05,27,2018
+MugenVersion = 1.0
+Pal.Defaults = 4
+localcoord   = 320
+
+[Files]
+Cmd      = Takuma.cmd
+Cns      = Constants.cns
+St       = Takuma.cns
+St1      = Takuma-N.cns
+St2      = Takuma-S.cns
+St3      = Takuma-H.cns
+St4      = Takuma-2-3.cns
+St5      = Helper.cns
+St6      = Config.cns
+St7      = Member.cns
+StCommon = common_kof.cns
+Sprite   = MrKarate.sff
+Anim     = Takuma.air
+Sound    = Takuma.snd
+
+;---カラーパレット---
+
+Pal1 = act/act02EX.act
+Pal2 = act/act04EX.act
+Pal3 = act/act06EX.act
+Pal4 = act/act01EX.act
+Pal5 = act/act03EX.act
+Pal6 = act/act05EX.act
+Pal7 = act/act08EX.act
+Pal8 = act/act04EX.act
+Pal9 = act/act06EX.act
+Pal10 = act/act07EX.act
+Pal11 = act/act03EX.act
+Pal12 = act/act05EX.act

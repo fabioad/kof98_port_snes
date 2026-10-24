@@ -1,0 +1,41 @@
+Hola a todos los mugeneros:
+Soy Juanxoc creador editor, y todo lo que se le paresca de bao kof estilo XI.
+Hace mucho tiempo comenze este char partiendo la base de saber muy poco de la 
+edición y creación de char, por ende me tomo mucho tiempo construir este personaje,
+por lo mismo no esperemos que sea algo increible, me di el tabajo de ripear los sprites,
+darle paleta y todo eso.
+El personaje aun no esta al 100 %, también debe tener muchos errores, pero con el tiempo
+se ira reparando y mejorando,para lograr algo de buena calidad.
+La versión XI es completamente inventada y adaptada a lo que podria haber sido en el game, 
+pues este personaje no existe en el juego original, la version  2001 por el contrario
+estara o se construira en base a lo que es el juego original.
+
+
+Agradecimientos:
+Primeramente a mi Señor que cada día me da fuerza y vida para seguir en el mugen, y seguir luchando
+en esta vida, por iluminarme y guiarme por su camino de amor.
+Agradeesco a mi gran amigo y maestro shammahalfa1, sin el char no estaria ni al 20 %, por haberme 
+enseñado tanto,por haberme creado varios codigos para este Bao, por estar conmigo en cada 
+instante, por corregirme, por sen un buen amigo, por ser una persona de buenos sentimientos,
+el cual se aventuro a ayudar a una persona desconocida, en fin miles de gracias para él.
+También debo agradecer al gran Misamu, (thanks Misamu) el cual me permitió ocupar los códigos de su bao,
+así el trabajo se me simplificó bastante, pude modificar sus codec y adaptarlos a mi versión, a 
+zelgadis por hecharme un empujón al principio,a Oscar por todo el apoyo y por testear y aportarme con el char.,
+a mi amigo Kofab por ser un tester, al igual que
+God Ryu, Mechkyo y Ehnyd. (team KMC).. si me faltó  mas gente luego la agrego, que ando medio desmemodiado.
+
+ Este char es close sourse, osea no se puede editar ni modificar ni nada ¿Por qué?, porqué
+posee varios códigos de Misamu, el cual no es open, simplemente por eso, pero si tienen alguna consulta
+o desean agregar el char a algun juego podemos hablar de ello, tengo mail : juanxoc@hotmail.com.
+
+Char liberado desde http://kofmugenchile.all-forum.net/ y quizas hospedado en algun otro foro.
+
+
+
+4 de febrero del 2009, cumplaeaños de una persona muy especial para mi!!!
+
+"Dios mi supremo creador"
+
+
+
+ 

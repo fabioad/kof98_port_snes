@@ -1,0 +1,798 @@
+;#ADD004BASIC PIEs#
+[Command]
+name = "¡ý¨K¡ú¡ý¨K¡ú£«£Å"
+command = ~D, DF, F, D, DF, F, c
+time = 30
+buffer.time = 15
+
+[Command]
+name = "¡ý¨K¡ú¡ý¨K¡ú£«£Å"
+command = ~D, DF, F, D, DF, F,x+y
+time = 30
+buffer.time = 15
+
+[Command]
+name = "¡ý¨L¡û¡ý¨L¡û£«£Å"
+command = ~D, DB, B, D, DB, B, c
+time = 30
+buffer.time = 15
+
+[Command]
+name = "¡ý¨L¡û¡ý¨L¡û£«£Å"
+command = ~D, DB, B, D, DB, B, x+y
+time = 30
+buffer.time = 15
+
+;---------------------------------------
+[Command]
+name = "¡ý¨K¡ú¡ý¨L¡û£«£Áor£Ã"
+command = ~D, F, B, x
+time = 30
+buffer.time = 15
+[Command]
+name = "¡ý¨K¡ú¡ý¨L¡û£«£Áor£Ã"
+command = ~D, F,  B, y
+time = 30
+buffer.time = 15
+
+[Command]
+name = "¡ý¨L¡û¡ý¨K¡ú£«£Áor£Ã"
+command = ~D, B,  F, x
+time = 30
+buffer.time = 15
+[Command]
+name = "¡ý¨L¡û¡ý¨K¡ú£«£Áor£Ã"
+command = ~D,  B,  F, y
+time = 30
+buffer.time = 15
+
+[Command]
+name = "¡ý¨K¡ú¡ý¨K¡ú£«£Âor£Ä"
+command = ~D, DF, F, D, DF, F, a
+time = 30
+buffer.time = 15
+[Command]
+name = "¡ý¨K¡ú¡ý¨K¡ú£«£Âor£Ä"
+command = ~D, DF, F, D, DF, F, b
+time = 30
+buffer.time = 15
+
+[Command]
+name = "¡ý¨L¡û¡ý¨L¡û£«£Âor£Ä"
+command = ~D, DB, B, D, DB, B, a
+time = 30
+buffer.time = 15
+[Command]
+name = "¡ý¨L¡û¡ý¨L¡û£«£Âor£Ä"
+command = ~D, DB, B, D, DB, B, b
+time = 30
+buffer.time = 15
+
+;----------------------
+[Command]
+name = "¡ú¡ý¨K£«£Áor£Ã"
+command = ~F, D, DF, x
+time = 15
+buffer.time = 8
+[Command]
+name = "¡ú¡ý¨K£«£Áor£Ã"
+command = ~F, D, DF, y
+time = 15
+buffer.time = 8
+[Command]
+name = "¡ú¡ý¨K£«£Áor£Ã"
+command = ~F, D, DF, F, x
+time = 15
+buffer.time = 8
+[Command]
+name = "¡ú¡ý¨K£«£Áor£Ã"
+command = ~F, D, DF, F, y
+time = 15
+buffer.time = 8
+
+[Command]
+name = "¡ú¡ý¨K£«£Áor£Ã"
+command = ~F, D, F, x
+time = 15
+buffer.time = 8
+[Command]
+name = "¡ú¡ý¨K£«£Áor£Ã"
+command = ~F, D, F, y
+time = 15
+buffer.time = 8
+
+[Command]
+name = "¡û¡ý¨L£«£Áor£Ã"
+command = ~B, D, DB,  x
+time = 15
+buffer.time = 8
+[Command]
+name = "¡û¡ý¨L£«£Áor£Ã"
+command = ~B, D, DB,  y
+time = 15
+buffer.time = 8
+
+[Command]
+name = "¡û¡ý¨L£«£Áor£Ã"
+command = ~B, D, B, x
+time = 15
+buffer.time = 8
+[Command]
+name = "¡û¡ý¨L£«£Áor£Ã"
+command = ~B, D, B, y
+time = 15
+buffer.time = 8
+
+----------------------------------
+
+[Command]
+name = "¡ú¡ý¨K£«£Áor£Ãor£Âor£Ä"
+command = ~F, D, DF,  a
+time = 12
+buffer.time = 6
+
+[Command]
+name = "¡ú¡ý¨K£«£Áor£Ãor£Âor£Ä"
+command = ~F, D, DF,  b
+time = 12
+buffer.time = 6
+
+[Command]
+name = "¡û¡ý¨L£«£Áor£Ãor£Âor£Ä"
+command = ~B, D, DB, a
+time = 12
+buffer.time = 6
+
+[Command]
+name = "¡û¡ý¨L£«£Áor£Ãor£Âor£Ä"
+command = ~B, D, DB, b
+time = 12
+buffer.time = 6
+
+[Command]
+name = "¡ú¡ý¨K£«£Áor£Ãor£Âor£Ä"
+command = ~F, D, DF, x
+time = 12
+buffer.time = 6
+
+[Command]
+name = "¡ú¡ý¨K£«£Áor£Ãor£Âor£Ä"
+command = ~F, D, DF, y
+time = 12
+buffer.time = 6
+
+[Command]
+name = "¡û¡ý¨L£«£Áor£Ãor£Âor£Ä"
+command = ~B, D, DB, x
+time = 12
+buffer.time = 6
+
+[Command]
+name = "¡û¡ý¨L£«£Áor£Ãor£Âor£Ä"
+command = ~B, D, DB, y
+time = 12
+buffer.time = 6
+
+----------------------------------
+
+[Command]
+name = "¡ý¨K¡ú£«£Áor£Ãor£Âor£Ä"
+command = ~D, DF, F, a
+time = 12
+buffer.time = 6
+
+[Command]
+name = "¡ý¨K¡ú£«£Áor£Ãor£Âor£Ä"
+command = ~D, DF, F, b
+time = 12
+buffer.time = 6
+
+[Command]
+name = "¡ý¨L¡û£«£Áor£Ãor£Âor£Ä"
+command = ~D, DB, B, a
+time = 12
+buffer.time = 6
+
+[Command]
+name = "¡ý¨L¡û£«£Áor£Ãor£Âor£Ä"
+command = ~D, DB, B, b
+time = 12
+buffer.time = 6
+
+[Command]
+name = "¡ý¨K¡ú£«£Áor£Ãor£Âor£Ä"
+command = ~D, DF, F, x
+time = 12
+buffer.time = 6
+
+[Command]
+name = "¡ý¨K¡ú£«£Áor£Ãor£Âor£Ä"
+command = ~D, DF, F, y
+time = 12
+buffer.time = 6
+
+[Command]
+name = "¡ý¨L¡û£«£Áor£Ãor£Âor£Ä"
+command = ~D, DB, B, x
+time = 12
+buffer.time = 6
+
+[Command]
+name = "¡ý¨L¡û£«£Áor£Ãor£Âor£Ä"
+command = ~D, DB, B, y
+time = 12
+buffer.time = 6
+
+[Command]
+name = "¡ý¨K¡ú£«£Áor£Ã"
+command = ~D, DF, F, x
+time = 12
+buffer.time = 6
+
+[Command]
+name = "¡ý¨K¡ú£«£Áor£Ã"
+command = ~D, DF, F, y
+time = 12
+buffer.time = 6
+
+[Command]
+name = "¡ý¨L¡û£«£Áor£Ã"
+command = ~D, DB, B, x
+time = 12
+buffer.time = 6
+
+[Command]
+name = "¡ý¨L¡û£«£Áor£Ã"
+command = ~D, DB, B, y
+time = 12
+buffer.time = 6
+
+[Command]
+name = "¡ý¡ý£«£Áor£Ãor£Âor£Ä"
+command = ~D, D, a
+time = 13
+buffer.time = 7
+[Command]
+name = "¡ý¡ý£«£Áor£Ãor£Âor£Ä"
+command = ~D, D, b
+time = 13
+buffer.time = 7
+[Command]
+name = "¡ý¡ý£«£Áor£Ãor£Âor£Ä"
+command = ~D, D, x
+time = 13
+buffer.time = 7
+[Command]
+name = "¡ý¡ý£«£Áor£Ãor£Âor£Ä"
+command = ~D, D, y
+time = 13
+buffer.time = 7
+
+;-----------------------------------------
+[Command]
+name = "longjump"
+command = ~$D, $U
+time = 10
+buffer.time = 5
+
+;-| Double Tap |-----------------------------------------------------------
+
+[Command]
+name = "FF"
+command = F, F
+time = 10
+buffer.time = 5
+[Command]
+name = "FBF"
+command = F, B, F
+time = 10
+buffer.time = 5
+
+[Command]
+name = "BB"
+command = B, B
+time = 10
+buffer.time = 5
+[Command]
+name = "BFB"
+command = B, F, B
+time = 10
+buffer.time = 5
+
+[Command]
+name = "¡ú¡ú"
+command = ~F, F
+time = 10
+buffer.time = 5
+[Command]
+name = "¡û¡û"
+command = ~B, B
+time = 10
+buffer.time = 5
+
+[Command]
+name = "¡û¡ú¡û"
+command = ~B, $F, B
+time = 10
+buffer.time = 5
+[Command]
+name = "¡ú¡û¡ú"
+command = ~F, $B, F
+time = 10
+buffer.time = 5
+
+[Command]
+name = "¡û¡û¡ü"
+command = ~$B, B, $U
+time = 10
+buffer.time = 5
+[Command]
+name = "¡ú¡ú¡ü"
+command = ~$F, F, $U
+time = 10
+buffer.time = 5
+
+[Command]
+name = "¡ý¡ü"
+command = ~$D, U
+time = 10
+buffer.time = 5
+
+[Command]
+name = "¡ü"
+command = ~$U, U
+time = 10
+buffer.time = 5
+
+;-| 2/3 Button Combination |-----------------------------------------------
+
+[Command]
+name = "recovery"
+command = x+y
+time = 10
+buffer.time = 5
+
+[Command]
+name = "dodge"
+command = x+a
+time = 10
+buffer.time = 5
+
+[Command]
+name = "knockdown"
+command = y+b
+time = 10
+buffer.time = 5
+
+[Command]
+name = "abc"
+command = a+b+c
+time = 10
+buffer.time = 5
+
+;-| Dir + Button |---------------------------------------------------------
+;-| Single Button |---------------------------------------------------------
+
+[Command]
+name = "a"
+command = a
+time = 1
+buffer.time = 4
+
+[Command]
+name = "a+"
+command = a
+time = 15
+buffer.time = 15
+[Command]
+name = "a++"
+command = a
+time = 30
+buffer.time = 30
+
+[Command]
+name = "hold_a"
+command = /a
+time = 1
+
+[Command]
+name = "b"
+command = b
+time = 1
+buffer.time = 4
+
+[Command]
+name = "b+"
+command = b
+time = 15
+buffer.time = 15
+[Command]
+name = "b++"
+command = b
+time = 30
+buffer.time = 30
+
+[Command]
+name = "hold_b"
+command = /b
+time = 1
+
+[Command]
+name = "c"
+command = c
+time = 1
+buffer.time = 4
+
+[Command]
+name = "c"
+command = y+b
+time = 1
+buffer.time = 4
+
+[Command]
+name = "c+"
+command = c
+time = 15
+buffer.time = 15
+[Command]
+name = "c++"
+command = c
+time = 30
+buffer.time = 30
+
+[Command]
+name = "hold_c"
+command = /c
+time = 1
+
+[Command]
+name = "x"
+command = x
+time = 1
+buffer.time = 2
+
+[Command]
+name = "x+"
+command = x
+time = 15
+buffer.time = 15
+[Command]
+name = "x++"
+command = x
+time = 30
+buffer.time = 30
+
+[Command]
+name = "hold_x"
+command = /x
+time = 1
+
+[Command]
+name = "y"
+command = y
+time = 1
+buffer.time = 1
+
+[Command]
+name = "y+"
+command = y
+time = 15
+buffer.time = 15
+[Command]
+name = "y++"
+command = y
+time = 30
+buffer.time = 30
+
+[Command]
+name = "hold_y"
+command = /y
+time = 1
+
+[Command]
+name = "z"
+command = z
+time = 1
+buffer.time = 1
+
+[Command]
+name = "z+"
+command = z
+time = 15
+buffer.time = 15
+[Command]
+name = "z++"
+command = z
+time = 30
+buffer.time = 30
+
+[Command]
+name = "hold_z"
+command = /z
+time = 1
+
+[Command]
+name = "s"
+command = s
+time = 1
+buffer.time = 4
+
+[Command]
+name = "start"
+command = s
+time = 1
+buffer.time = 4
+;-| Hold Dir |--------------------------------------------------------------
+[Command]
+name = "holdfwd"
+command = /$F
+time = 1
+
+[Command]
+name = "holdback"
+command = /$B
+time = 1
+
+[Command]
+name = "holdup"
+command = /$U
+time = 1
+
+[Command]
+name = "holddown"
+command = /$D
+time = 1
+
+[Command]
+name = "holdfwd+"
+command = /$F
+time = 15
+buffer.time = 15
+[Command]
+name = "holdback+"
+command = /$B
+time = 15
+buffer.time = 15
+[Command]
+name = "holdup+"
+command = /$U
+time = 15
+buffer.time = 15
+[Command]
+name = "holddown+"
+command = /$D
+time = 15
+buffer.time = 15
+
+[Command]
+name = "holdfwd++"
+command = F
+time = 15
+buffer.time = 15
+[Command]
+name = "holdback++"
+command = B
+time = 15
+buffer.time = 15
+[Command]
+name = "holdup++"
+command = U
+time = 15
+buffer.time = 15
+[Command]
+name = "holddown++"
+command = D
+time = 15
+buffer.time = 15
+;-|Commands|------------------------------------------------------------------------------
+[Statedef -1]
+
+;//==========================
+;// add004-1-sctrls-start
+;//==========================
+;--- partner_standby
+[state 0]
+	type=selfstate
+	trigger1=ctrl && numpartner && !ishelper && roundstate=2 && pos y=0
+	trigger1=sysfvar(4)>0 && sysfvar(0)>0 && playeridexist(floor(sysfvar(0)))
+	trigger1=playerid(floor(sysfvar(0))),var(0)=90900 && playerid(floor(sysfvar(0))),var(22)=4
+	value=190190
+	ctrl=0
+	ignorehitpause=1
+;//==========================
+;// add004-1-sctrls-end
+;//==========================
+
+
+
+
+[State -1,MAX³¬±ØÉ±]
+type = ChangeState
+value = 2200
+triggerall=!var(50)&&power>=IfElse((Stateno=[899,2999]),3000,2000)&&NumHelper(1100)<=0&&statetype!=A&&((P2Dist X>=0&&command="¡ý¨K¡ú¡ý¨K¡ú£«£Å"&&command!="¡ý¨L¡û¡ý¨L¡û£«£Å")||(P2Dist X < 0&&command!="¡ý¨K¡ú¡ý¨K¡ú£«£Å"&&command="¡ý¨L¡û¡ý¨L¡û£«£Å"))
+trigger1 = ctrl || stateno = 100 || stateno = 101 || stateno = 105 || stateno = 106
+trigger2 = ((anim = 200 || anim = 220 ||anim = 240 || anim=260||anim=306||anim=[420,425])&&(MoveContact=1||AnimElem=4,=[1,9]))||((anim=250||anim=430||anim=307)&&(MoveContact=1||AnimElem=5,=[1,9]))||(MoveContact=1&&anim!=1211&&anim=[1000,1999])
+trigger3 = ((anim=270||anim=400||anim=435||anim=[302,305])&&(MoveContact=1||AnimElem=3,=[1,9]))||(anim=410&&(MoveContact=1||AnimElem=2,=[1,9]))||((anim=225||anim=235||anim=[300,301])&&MoveContact=1)||(anim=310&&(MoveContact=1||AnimElem=7,=[1,9]))
+
+[State -1,±ØÉ±¼¼]
+type = ChangeState
+value = 2100
+anim = IfElse(command != "x+",IfElse(command = "x+",2100,2101),2100)+(var(50)*2)
+triggerall=power>=IfElse((Stateno=[899,2999]),2000,1000)&&NumHelper(1100)<=0&&statetype!=A&&((P2Dist X>=0&&command="¡ý¨L¡û¡ý¨K¡ú£«£Áor£Ã"&&command!="¡ý¨K¡ú¡ý¨L¡û£«£Áor£Ã")||(P2Dist X < 0&&command!="¡ý¨L¡û¡ý¨K¡ú£«£Áor£Ã"&&command="¡ý¨K¡ú¡ý¨L¡û£«£Áor£Ã"))
+trigger1 = ctrl || stateno = 100 || stateno = 101 || stateno = 105 || stateno = 106
+trigger2 = ((anim = 200 || anim = 220 ||anim = 240 || anim=260||anim=306||anim=[420,425])&&(MoveContact=1||AnimElem=4,=[1,9]))||((anim=250||anim=430||anim=307)&&(MoveContact=1||AnimElem=5,=[1,9]))||(MoveContact=1&&anim!=1211&&anim=[1000,1999])
+trigger3 = ((anim=270||anim=400||anim=435||anim=[302,305])&&(MoveContact=1||AnimElem=3,=[1,9]))||(anim=410&&(MoveContact=1||AnimElem=2,=[1,9]))||((anim=225||anim=235||anim=[300,301])&&MoveContact=1)||(anim=310&&(MoveContact=1||AnimElem=7,=[1,9]))
+
+[State -1,³¬±ØÉ±]
+type = ChangeState
+value = 2000
+anim = IfElse(command != "a+",IfElse(command = "a+",2000,2001),2000)+(var(50)*2)
+triggerall=power>=IfElse((Stateno=[899,2999]),2000,1000)&&NumHelper(1100)<=0&&statetype!=A&&((P2Dist X>=0&&command="¡ý¨K¡ú¡ý¨K¡ú£«£Âor£Ä"&&command!="¡ý¨L¡û¡ý¨L¡û£«£Âor£Ä")||(P2Dist X < 0&&command!="¡ý¨K¡ú¡ý¨K¡ú£«£Âor£Ä"&&command="¡ý¨L¡û¡ý¨L¡û£«£Âor£Ä"))
+trigger1 = ctrl || stateno = 100 || stateno = 101 || stateno = 105 || stateno = 106
+trigger2 = ((anim = 200 || anim = 220 ||anim = 240 || anim=260||anim=306||anim=[420,425])&&(MoveContact=1||AnimElem=4,=[1,9]))||((anim=250||anim=430||anim=307)&&(MoveContact=1||AnimElem=5,=[1,9]))||(MoveContact=1&&anim!=1211&&anim=[1000,1999])
+trigger3 = ((anim=270||anim=400||anim=435||anim=[302,305])&&(MoveContact=1||AnimElem=3,=[1,9]))||(anim=410&&(MoveContact=1||AnimElem=2,=[1,9]))||((anim=225||anim=235||anim=[300,301])&&MoveContact=1)||(anim=310&&(MoveContact=1||AnimElem=7,=[1,9]))
+
+[State -1,±ØÉ±¼¼]
+type = ChangeState
+value = 1300
+anim = IfElse(command != "x+",IfElse(command="a+"||command="b+"||command!="y+",IfElse(command != "a+",IfElse(command = "a+",1301,1303),1301),1302),1300)
+triggerall = !var(50) && statetype != A && NumHelper(1100) <= 0 && ((P2Dist X>=0&&command="¡û¡ý¨L£«£Áor£Ãor£Âor£Ä"&&command!="¡ú¡ý¨K£«£Áor£Ãor£Âor£Ä")||(P2Dist X < 0&&command!="¡û¡ý¨L£«£Áor£Ãor£Âor£Ä"&&command="¡ú¡ý¨K£«£Áor£Ãor£Âor£Ä"))
+trigger1 = ctrl || stateno = 100 || stateno = 101 || stateno = 105 || stateno = 106 || stateno = 40
+trigger2 = ((anim = 200 || anim = 220 ||anim = 240 || anim = 260 || anim = 306 || anim = [420,425]) && (MoveContact = 1 || AnimElem = 4, = [1,9]))||((anim=250||anim=430||anim=307) && (MoveContact=1||AnimElem=5,=[1,9]))
+trigger3 = ((anim=270||anim=400||anim=435||anim=[302,305])&&(MoveContact=1||AnimElem=3,=[1,9]))||(anim=410&&(MoveContact=1||AnimElem=2,=[1,9]))||((anim=225||anim=235||anim=[300,301])&&MoveContact=1)||(anim=310&&(MoveContact=1||AnimElem=7,=[1,9]))
+
+[State -1,±ØÉ±¼¼]
+type = ChangeState
+value = 1100
+anim = IfElse(command != "x+",IfElse(command = "x+",1100,1101),1100)+(var(50)*2)
+triggerall = statetype != A && NumHelper(1100) <= 0 && ((P2Dist X>=0&&command="¡ú¡ý¨K£«£Áor£Ã"&&command!="¡û¡ý¨L£«£Áor£Ã")||(P2Dist X < 0&&command!="¡ú¡ý¨K£«£Áor£Ã"&&command="¡û¡ý¨L£«£Áor£Ã"))
+trigger1 = ctrl || stateno = 100 || stateno = 101 || stateno = 105 || stateno = 106 || stateno = 40
+trigger2 = ((anim = 200 || anim = 220 ||anim = 240 || anim = 260 || anim = 306 || anim = [420,425]) && (MoveContact = 1 || AnimElem = 4, = [1,9]))||((anim=250||anim=430||anim=307) && (MoveContact=1||AnimElem=5,=[1,9]))
+trigger3 = ((anim=270||anim=400||anim=435||anim=[302,305])&&(MoveContact=1||AnimElem=3,=[1,9]))||(anim=410&&(MoveContact=1||AnimElem=2,=[1,9]))||((anim=225||anim=235||anim=[300,301])&&MoveContact=1)||(anim=310&&(MoveContact=1||AnimElem=7,=[1,9]))
+
+[State -1,±ØÉ±¼¼]
+type = ChangeState
+value = 1000
+anim = IfElse(command != "x+",IfElse(command = "x+",1000,1001),1000)+(var(50)*2)
+triggerall = statetype != A && NumHelper(1100) <= 0 && ((P2Dist X>=0&&command!="¡ý¨L¡û£«£Áor£Ã"&&command="¡ý¨K¡ú£«£Áor£Ã")||(P2Dist X < 0&&command="¡ý¨L¡û£«£Áor£Ã"&&command!="¡ý¨K¡ú£«£Áor£Ã"))
+trigger1 = ctrl || stateno = 100 || stateno = 101 || stateno = 105 || stateno = 106 || stateno = 40
+trigger2 = ((anim = 200 || anim = 220 ||anim = 240 || anim = 260 || anim = 306 || anim = [420,425]) && (MoveContact = 1 || AnimElem = 4, = [1,9]))||((anim=250||anim=430||anim=307) && (MoveContact=1||AnimElem=5,=[1,9]))
+trigger3 = ((anim=270||anim=400||anim=435||anim=[302,305])&&(MoveContact=1||AnimElem=3,=[1,9]))||(anim=410&&(MoveContact=1||AnimElem=2,=[1,9]))||((anim=225||anim=235||anim=[300,301])&&MoveContact=1)||(anim=310&&(MoveContact=1||AnimElem=7,=[1,9]))
+
+[State -1,±ØÉ±¼¼]
+type = ChangeState
+value = 1200
+anim = IfElse(command != "x+",IfElse(command="a+"||command="b+"||command!="y+",IfElse(command != "a+",IfElse(command = "a+",1201,1203),1201),1202),1200)+(var(50)*2)
+triggerall=statetype!=A&&NumHelper(1100)=0&&((command!="hold_b"&&var(50))||!var(50))&&((P2Dist X>=0&&command="¡ý¨L¡û£«£Áor£Ãor£Âor£Ä"&&command!="¡ý¨K¡ú£«£Áor£Ãor£Âor£Ä")||(P2Dist X < 0&&command!="¡ý¨L¡û£«£Áor£Ãor£Âor£Ä"&&command="¡ý¨K¡ú£«£Áor£Ãor£Âor£Ä"))
+trigger1 = ctrl || stateno = 100 || stateno = 101 || stateno = 105 || stateno = 106 || stateno = 40
+trigger2 = ((anim = 200 || anim = 220 ||anim = 240 || anim = 260 || anim = 306 || anim = [420,425]) && (MoveContact = 1 || AnimElem = 4, = [1,9]))||((anim=250||anim=430||anim=307) && (MoveContact=1||AnimElem=5,=[1,9]))
+trigger3 = ((anim=270||anim=400||anim=435||anim=[302,305])&&(MoveContact=1||AnimElem=3,=[1,9]))||(anim=410&&(MoveContact=1||AnimElem=2,=[1,9]))||((anim=225||anim=235||anim=[300,301])&&MoveContact=1)||(anim=310&&(MoveContact=1||AnimElem=7,=[1,9]))
+
+[State -1,±ØÉ±¼¼]
+type = ChangeState
+value = 1400
+anim = IfElse(command != "x+",IfElse(command="a+"||command="b+"||command!="y+",IfElse(command != "a+",IfElse(command = "a+",1401,1403),1401),1402),1400)+(var(50)*2)
+triggerall = statetype != A && NumHelper(1100) <= 0 && command="¡ý¡ý£«£Áor£Ãor£Âor£Ä"
+trigger1 = ctrl || stateno = 100 || stateno = 101 || stateno = 105 || stateno = 106 || stateno = 40
+trigger2 = ((anim = 200 || anim = 220 ||anim = 240 || anim = 260 || anim = 306 || anim = [420,425]) && (MoveContact = 1 || AnimElem = 4, = [1,9]))||((anim=250||anim=430||anim=307) && (MoveContact=1||AnimElem=5,=[1,9]))
+trigger3 = ((anim=270||anim=400||anim=435||anim=[302,305])&&(MoveContact=1||AnimElem=3,=[1,9]))||(anim=410&&(MoveContact=1||AnimElem=2,=[1,9]))||((anim=225||anim=235||anim=[300,301])&&MoveContact=1)||(anim=310&&(MoveContact=1||AnimElem=7,=[1,9]))
+
+;-------------------------------
+[State -1,ÆÕÍ¨Í¶]
+type = ChangeState
+value = 360
+trigger1 = (command = "y"||command = "b") && (command = "holdfwd"||command = "holdback") && p2movetype != H && p2statetype = S && P2BodyDist x < 30
+trigger1 = statetype = S && ctrl && stateno != 100
+[State -1,»Ø±Ü]
+type = ChangeState
+value = 340
+trigger1 = ((command = "x"&&command = "a")||command = "z")
+trigger1 = (statetype != A && ctrl) || (power>= 500 && stateno = [150,153])
+
+[State -1,»÷µ¹¹¥»÷]
+type = ChangeState
+value = 310
+triggerall = command = "c"
+trigger1 = (ctrl || stateno = 100 || stateno = 101 || stateno = 106) || (power>= 500 && stateno = [150,153])
+trigger2 = ((anim = 200 || anim = 220 || anim = 240 || anim = 260 || anim = [420,425]) && AnimElem = 5, = [1,9])||((anim = 250||anim = 235||anim = [430,435]) && AnimElem = 6, = [1,9])
+trigger3 = ((anim = 270 || anim = 400) && AnimElem = 4, = [1,9])||(anim = 410 && AnimElem = 3, = [1,9])||(anim = 225 && AnimElem = 16, = [1,19])
+
+[State -1,ÌØÊâ¼¼]
+type = ChangeState
+value = 300
+anim = IfElse(command != "x+",IfElse(command = "x+",300,IfElse(command = "holddown+",302,301)),300)
+triggerall = ((command="x"&&command!="holddown"&&(command="holdfwd"||command="holdback"))||(command="a"&&command="holdfwd")) && command!="holdup" && statetype != A
+trigger1 = ctrl || stateno = 100 || stateno = 101 || stateno = 105 || stateno = 106
+trigger2 = ((anim = 200 || anim = 220 || anim = 240 || anim = 260 || anim = [420,425]) && (MoveContact = 1 || AnimElem = 4, = [1,9]))||((anim = 250||anim = 430) && (MoveContact = 1 || AnimElem = 5, = [1,9]))
+trigger3 = ((anim = 270 || anim = 400 || anim = 435) && (MoveContact = 1 || AnimElem = 3, = [1,9]))||(anim = 410 && (MoveContact = 1 || AnimElem = 2, = [1,9]))||((anim = 225||anim=235) && MoveContact = 1)
+
+[State -1,Õ¾-½üÇáÈ­]
+type = ChangeState
+value = 240
+anim = IfElse(command != "x+",IfElse(command="a+"||command="b+",IfElse(command != "a+",IfElse(command = "a+",250,270),250),260),240)
+triggerall = (command = "x"||command = "a"||command = "y"||command = "b") && command != "holddown" && P2bodydist X <= 15
+trigger1 = statetype = S && (ctrl || stateno = 100 || stateno = 101)
+trigger2 = ((anim = 200 || anim = 240) && (MoveContact = 1 || AnimElem = 4, = [1,9]))||(anim = 250 && (MoveContact = 1 || AnimElem = 5, = [1,9]))
+trigger3 = (anim = 400 && (MoveContact = 1 || AnimElem = 3, = [1,9]))||(anim = 410 && (MoveContact = 1 || AnimElem = 2, = [1,9]))
+
+[State -1,Õ¾-ÇáÈ­]
+type = ChangeState
+value = 200
+anim = IfElse(command != "x+",IfElse(command="a+"||command="b+",IfElse(command != "a+",IfElse(command = "a+",210,230),210),220),200)
+triggerall = (command = "x"||command = "a"||command = "y"||command = "b") && command != "holddown"
+trigger1 = statetype = S && (ctrl || stateno = 100 || stateno = 101)
+trigger2 = ((anim = 200 || anim = 240) && ((MoveContact=1&&command!="y"&&command!="b") || AnimElem = 4, = [1,9]))||(anim = 250 && ((MoveContact=1&&command!="y"&&command!="b") || AnimElem = 5, = [1,9]))
+trigger3 = (anim = 400 && ((MoveContact=1&&command!="y"&&command!="b") || AnimElem = 3, = [1,9]))||(anim = 410 && ((MoveContact=1&&command!="y"&&command!="b") || AnimElem = 2, = [1,9]))
+
+[State -1,Õ¾-ÇáÈ­]
+type = ChangeState
+value = 400
+anim = IfElse(command != "x+",IfElse(command="a+"||command="b+",IfElse(command != "a+",IfElse(command = "a+",410,430),410),420),400)
+triggerall = (command = "x"||command = "a"||command = "y"||command = "b") && command = "holddown"
+trigger1 = statetype = C && ctrl
+trigger2 = ((anim = 200 || anim = 240) && ((MoveContact=1&&command!="y"&&command!="b") || AnimElem = 4, = [1,9]))||(anim = 250 && ((MoveContact=1&&command!="y"&&command!="b") || AnimElem = 5, = [1,9]))
+trigger3 = (anim = 400 && ((MoveContact=1&&command!="y"&&command!="b") || AnimElem = 3, = [1,9]))||(anim = 410 && ((MoveContact=1&&command!="y"&&command!="b") || AnimElem = 2, = [1,9]))
+
+[State -1,Ìø-ÇáÈ­]
+type = ChangeState
+value = 600
+anim = IfElse(command != "x+",IfElse(command="a+"||command="b+",IfElse(command != "a+",IfElse(command = "a+",610,630),610),620),600)
+trigger1 = (command = "x"||command = "a"||command = "y"||command = "b") && statetype = A && ctrl
+
+[State -1,Õ¾-ÅÜ]
+type = ChangeState
+value = 100
+trigger1 = ((P2Dist X>=0&&command="¡ú¡ú"&&command!="¡û¡û")||(P2Dist X < 0&&command!="¡ú¡ú"&&command="¡û¡û"))&&command!="¡ú¡û¡ú"&&command!="¡ú¡û¡ú"&& command != "holddown"
+trigger1 = statetype != A && ctrl && Stateno != 100 && Stateno != 101
+[State -1,Õ¾-ºó¶ã]
+type = ChangeState
+value = 105
+trigger1 = ((P2Dist X>=0&&command!="¡ú¡ú"&&command="¡û¡û")||(P2Dist X < 0&&command="¡ú¡ú"&&command!="¡û¡û"))&&command!="¡ú¡û¡ú"&&command!="¡ú¡û¡ú"&& command != "holddown"
+trigger1 = statetype != A && Stateno != 52 && (ctrl||Stateno = 101)
+
+[State -1,Õ¾-ÌôÐÆ]
+type = ChangeState
+value = 195
+trigger1 = command = "s"
+trigger1 = statetype != A && ctrl
+
+[State -1]
+type = ChangeState
+triggerall = Vel Y > 0 && Pos Y >= -20 && (alive||GetHitVar(Damage) < Life) && (StateNo = 5050||StateNo = 5071)
+trigger1 = Command = "recovery" || Command = "z+" || (command = "x+"&&command = "a+")
+value = 5200
+
+[State -1]
+type = ChangeState
+triggerall = Vel Y > 0 && alive && CanRecover && (StateNo = 5050||StateNo = 5071)
+trigger1 = Command = "recovery" || Command = "z" || (command = "x"&&command = "a")
+value = 5210
+;-------------------------------------
+[State -1, 0]
+type = ChangeState
+trigger1 = statetype != A && (Command = "holdup"||command="¡ü"||command="¡ý¡ü"||command="¡ú¡ú¡ü"||command="¡û¡û¡ü") && (stateno = [100,107])
+value = 40
+ctrl = 0
+
+[State -1, 0]
+type = varset
+trigger1 = movetype = H || (pos y >= 0&&stateno !=[40,51])
+sysvar(1) = 0
+ignorehitpause = 1
+
+[State -1, DisplayToClipboard]
+type = DisplayToClipboard
+trigger1 = 1
+text = "V10=%d,11=%d,sysV1=%d,BEBDist=%d,FEBDist=%d*[author=MDK][version=23092007]"
+params = var(10),var(11),sysvar(1),BackEdgeBodyDist,FrontEdgeBodyDist
+ignorehitpause = 1
+
+[State -1, AppendToClipboard]
+type = AppendToClipboard
+trigger1 = 1
+text = "\n[Dist X=%d,Y=%d], Vel X=%d/10,Y=%d/10 : Power=%d*"
+params = floor(P2BodyDist X),ceil(P2BodyDist Y),ceil(Vel X*10),floor(Vel Y*10),Power
+ignorehitpause = 1
+
+
+

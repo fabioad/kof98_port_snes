@@ -1,0 +1,26 @@
+{
+  "character": "mature",
+  "config_hash": "9023e842c4282add9b8267cf0adebd7676966bb21bd58a701450b4164d050e08",
+  "corrections": [],
+  "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Mature-KOF98/Mature.def",
+  "inputs": {
+    "assets/characters/Mature-KOF98/Billy.cns": "3c93bedebf1215c7e8eb64d2d95ecb189df45f3ef2b9b316d27157964a9aeb0c",
+    "assets/characters/Mature-KOF98/Iori.cns": "51e79e4b37f72baf36c3f21066d2b639e64e10dd8cd3176c5af4e29505cbc161",
+    "assets/characters/Mature-KOF98/Mature.air": "b04d8f1a500773bf6017b731fe34af0fe85a74dc7fe8a868fd5e54221447e064",
+    "assets/characters/Mature-KOF98/Mature.air.orig": "8e4dfccc04456cb64a50638a7d48396dcc1dc8b803d0556e09c5915de13d5565",
+    "assets/characters/Mature-KOF98/Mature.cmd": "17595a8338afa6d458d07cafc0b1b12cd9a97e74d57734dac6df74978b1e0366",
+    "assets/characters/Mature-KOF98/Mature.cns": "753aa94a0a5d98bb22cce91c94dec6434b6287fb8ea6ad7e34a36498676c35dd",
+    "assets/characters/Mature-KOF98/Mature.def": "a8c7f4ea12a3fdec54c51dba4bde6e01c4022138ab119843aea1deeb826d61aa",
+    "assets/characters/Mature-KOF98/Mature.sff": "538d15ac87984b2071286d4b8df8ea7462bce00e878d87846713809c47ccfaae",
+    "assets/characters/Mature-KOF98/Mature.snd": "792b1f745718c30a83bbe0da6379f1afa3dedd9e00105f8861d315029d5a1916",
+    "assets/characters/Mature-KOF98/Mature00.act": "34112155d59a6ee3cb0bcb3e2f2a55fdf3ad79246d4780cd4b83d49c377b6651",
+    "assets/characters/Mature-KOF98/Mature_SNES.cmd": "90620aa012a5efa20b29da3b10b6f2323913054eb8b6e214860f4bdff5d28da7",
+    "assets/characters/Mature-KOF98/Mature_SNES.cns": "fc069732c42af1c7e6cc874053aec6cd3469beea7ed2328ff5b280bc9801ff4a",
+    "assets/characters/Mature-KOF98/Rugal.cns": "0e935dc8c7c9f2f00e017672d1ae14d473cc47a221a5609711d90fa2528981bb",
+    "assets/characters/Mature-KOF98/Vice.cns": "4e4c4b8d8a5899027abed840543eb4ef92e646a69602e9a79afca7700cc7139b",
+    "assets/characters/Mature-KOF98/Yamazaki.cns": "c2246fb15d77411cd26fbb9ec03f1ae3a94d2ebcf646c5c1d151786006e4dab5",
+    "assets/characters/Mature-KOF98/Yashiro.cns": "266053af326e6ace25748e53bfe6cd96f251470dce1cb36e7f74fdc33fae2f22",
+    "assets/characters/Mature-KOF98/common1.cns": "3a1db66c57af1fe92acf78d7328334b385c1c230448c1c3d32d5bdf271137bfc"
+  },
+  "schema": 1
+}

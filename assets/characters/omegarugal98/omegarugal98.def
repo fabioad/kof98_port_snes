@@ -1,0 +1,31 @@
+[Info]
+Name="omega rugal98"
+DisplayName="omega rugal"
+MugenVersion=04,15,2001
+Author="GONZO-"
+Pal.Defaults=1,2,7,8,
+
+
+[Files]
+cmd = omegarugal98.cmd
+cns = omegarugal98.cns
+st = omegarugal98.cns
+st1 = omegarugal98B.cns
+st2 = omegarugal98C.cns
+;st2 = omegarugal98NOAI.cns@;AI–³‚µ‚Ìê‡‚Í‚±‚¿‚ç
+stcommon = common1.cns
+sprite = omegarugal98.sff
+anim = omegarugal98.air
+sound = omegarugal98.snd
+pal1 = omegarugal01.act
+pal2 = omegarugal02.act
+pal3 = omegarugal03.act
+pal4 = omegarugal01.act
+pal5 = omegarugal02.act
+pal6 = omegarugal03.act
+pal7 = omegarugalex.act
+pal8 = omegarugalex2.act
+pal9 = omegarugal01.act
+pal10 = omegarugalex2.act
+pal11 = omegarugalex.act
+pal12 = omegarugal01.act

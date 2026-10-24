@@ -1,0 +1,513 @@
+;------------------------------------------------------------------------------
+;------------The King Of Fighters'98--Jpn TempleStage(Jpn Templeステージ）-----
+;製作：RYO 2005-----1月21日製作終了--------------------------------------------
+
+[Info]        
+name           = "KOF98 Jpn Temple Stage" 
+
+;------------------------------------------------------------------------------
+[Camera]
+startx         = 0         
+starty         = 0           
+                             
+boundleft      = -216        
+boundright     = 216        
+boundhigh      = -10          
+boundlow       = 0          
+verticalfollow = 0           
+tension        = 50          
+
+;------------------------------------------------------------------------------
+[PlayerInfo]
+;--- プレイヤー１ ---           
+p1startx       = -70        
+p1starty       = 0           
+p1startz       = 0           
+p1facing       = 1  
+         
+;--- プレイヤー２ ---             
+p2startx       = 70         
+p2starty       = 0           
+p2startz       = 0           
+p2facing       = -1  
+        
+;--- Common ---              
+leftbound      = -1000       
+rightbound     = 1000        
+topbound       = 0           
+botbound       = 0           
+
+;------------------------------------------------------------------------------
+[Scaling]
+topz           = 0           
+botz           = 50         
+topscale       = 1           
+botscale       = 1.2        
+
+;------------------------------------------------------------------------------
+[Bound]
+screenleft     = 20          
+screenright    = 20          
+
+;------------------------------------------------------------------------------
+[StageInfo]
+zoffset        = 218         
+autoturn       = 1           
+;resetBG       = 1           
+
+;------------------------------------------------------------------------------
+[Shadow]
+
+color = 256,256,256
+                            
+yscale         = 0.2         
+          
+;------------------------------------------------------------------------------
+;--- 背景音楽指定         
+[Music]
+bgmusic = sound/Art Of Fight.mp3
+bgvolume       = 255
+
+;------------------------------------------------------------------------------
+;---sffファイル指定
+[BGdef]
+spr            = stages/KOF98-JpnTempleStage.sff
+debugbg        = 1              
+
+;------------------------------------------------------------------------------
+[BG 0];最背景
+type = normal
+spriteno = 0,0
+layerno = 0
+start = 0,180
+delta = .48,.2
+trans = none
+mask = 1
+tile = 0
+
+;------------------------------------------------------------------------------
+[BG 5];最背景・左
+type = anim
+actionno = 5 
+layerno = 0
+start = 0,180
+delta = .48,.8
+trans = none
+mask =1
+
+[Begin action 5];最背景・左・アニメーション
+5,0.,0,0,6
+5,1.,0,0,6
+5,2.,0,0,6
+5,3.,0,0,6
+5,4.,0,0,6
+5,5.,0,0,6
+5,6.,0,0,6
+5,7.,0,0,6
+
+;------------------------------------------------------------------------------
+[BG 10];最背景・右
+type = anim
+actionno = 10 
+layerno = 0
+start = 0,180
+delta = .48,.8
+trans = none
+mask =1
+
+[Begin action 10];最背景・右・アニメーション
+10,0.,0,0,6
+10,1.,0,0,6
+10,2.,0,0,6
+10,3.,0,0,6
+10,4.,0,0,6
+10,5.,0,0,6
+10,6.,0,0,6
+10,7.,0,0,6
+
+;------------------------------------------------------------------------------
+[BG 15];背景・蛍・固定
+type = anim
+actionno = 15 
+layerno = 0
+start = -190,100
+delta = .48,.8
+trans = none
+mask =1
+
+[BG 15]
+type = anim
+actionno = 15 
+layerno = 0
+start = -100,130
+delta = .48,.8
+trans = none
+mask =1
+
+[BG 15]
+type = anim
+actionno = 15 
+layerno = 0
+start = 20,100
+delta = .48,.8
+trans = none
+mask =1
+
+[BG 15]
+type = anim
+actionno = 15 
+layerno = 0
+start = 120,70
+delta = .48,.8
+trans = none
+mask =1
+
+[BG 15]
+type = anim
+actionno = 15 
+layerno = 0
+start = 235,130
+delta = .48,.8
+trans = none
+mask =1
+
+;------------------------------------------------------------------------------
+[BG 15];背景・蛍１
+type = anim
+actionno = 15 
+layerno = 0
+start = -100,110
+delta = .48,.8
+trans = none
+mask =1
+sin.x = -40, 300
+id = 16
+
+[BG 15]
+type = anim
+actionno = 15 
+layerno = 0
+start = 100,110
+delta = .48,.8
+trans = none
+mask =1
+sin.x = -40, 300
+id = 16
+
+[BGCtrlDef 15]
+CtrlID = 16
+loopTime = 150
+
+[BGCtrl 15]
+type = posset
+time = 0
+x = 0
+y = 0
+
+[BGCtrl 15]
+type = SinY
+time = 0
+value = 20, 150
+
+[BGCtrl 15]
+type = SinY
+time = 75
+value = -20, 150
+
+[BGCtrl 15]
+type = velset
+time = 0
+y = .4
+
+[BGCtrl 15]
+type = velset
+time = 75
+y = -.4
+
+;------------------------------------------------------------------------------
+[BG 15];背景・蛍２
+type = anim
+actionno = 15 
+layerno = 0
+start = 180,140
+delta = .48,.8
+trans = none
+mask =1
+sin.x = 60, 300
+id = 17
+
+[BG 15]
+type = anim
+actionno = 15 
+layerno = 0
+start = -180,140
+delta = .48,.8
+trans = none
+mask =1
+sin.x = 60, 300
+id = 17
+
+[BGCtrlDef 15]
+CtrlID = 17
+loopTime = 150
+
+[BGCtrl 15]
+type = posset
+time = 0
+x = 0
+y = 0
+
+[BGCtrl 15]
+type = SinY
+time = 0
+value = -20, 150
+
+[BGCtrl 15]
+type = SinY
+time = 75
+value = 20, 150
+
+[BGCtrl 15]
+type = velset
+time = 0
+y = -.3
+
+[BGCtrl 15]
+type = velset
+time = 75
+y = .3
+
+;------------------------------------------------------------------------------
+[BG 15];背景・蛍３
+type = anim
+actionno = 15 
+layerno = 0
+start = 100,90
+delta = .48,.8
+trans = none
+mask =1
+sin.x = -80, 600
+id = 18
+
+[BG 15]
+type = anim
+actionno = 15 
+layerno = 0
+start = -130,90
+delta = .48,.8
+trans = none
+mask =1
+sin.x = -80, 600
+id = 18
+
+[BGCtrlDef 15]
+CtrlID = 18
+loopTime = 600
+
+[BGCtrl 15]
+type = posset
+time = 0
+x = 0
+y = 0
+
+[BGCtrl 15]
+type = SinY
+time = 0
+value = 40, 600
+
+[BGCtrl 15]
+type = SinY
+time = 75
+value = -40, 600
+
+[BGCtrl 15]
+type = velset
+time = 0
+y = .4
+
+[BGCtrl 15]
+type = velset
+time = 150
+y = -.4
+
+;------------------------------------------------------------------------------
+[BG 15];背景・蛍４
+type = anim
+actionno = 15 
+layerno = 0
+start = 0,90
+delta = .48,.8
+trans = none
+mask =1
+sin.x = -90, 600
+id = 19
+
+[BGCtrlDef 15]
+CtrlID = 19
+loopTime = 300
+
+[BGCtrl 15]
+type = posset
+time = 0
+x = 0
+y = 0
+
+[BGCtrl 15]
+type = SinY
+time = 0
+value = 30, 600
+
+[BGCtrl 15]
+type = SinY
+time = 150
+value = -30, 600
+
+[BGCtrl 15]
+type = velset
+time = 0
+y = .4
+
+[BGCtrl 15]
+type = velset
+time = 150
+y = -.4
+
+[Begin action 15];蛍・アニメーション
+15,0.,0,0,1
+99,0.,0,0,1
+15,1.,0,0,1
+99,0.,0,0,1
+15,2.,0,0,1
+99,0.,0,0,1
+15,3.,0,0,1
+99,0.,0,0,1
+15,2.,0,0,1
+99,0.,0,0,1
+15,1.,0,0,1
+99,0.,0,0,1
+15,0.,0,0,1
+99,0.,0,0,1
+15,1.,0,0,1
+99,0.,0,0,1
+15,2.,0,0,1
+99,0.,0,0,1
+15,3.,0,0,1
+99,0.,0,0,1
+15,4.,0,0,1
+99,0.,0,0,1
+15,4.,0,0,1
+99,0.,0,0,1
+15,3.,0,0,1
+99,0.,0,0,1
+15,4.,0,0,1
+99,0.,0,0,1
+15,3.,0,0,1
+99,0.,0,0,1
+15,4.,0,0,1
+99,0.,0,0,1
+15,3.,0,0,1
+99,0.,0,0,1
+15,2.,0,0,1
+99,0.,0,0,1
+15,1.,0,0,1
+99,0.,0,0,1
+15,0.,0,0,1
+99,0.,0,0,1
+
+;------------------------------------------------------------------------------
+[BG 20];背景・足場
+type = normal
+spriteno = 20,0
+layerno = 0
+start = 0,240
+delta = 1,.2
+trans = none
+mask = 1
+tile = 0
+
+;------------------------------------------------------------------------------
+[BG 25];背景・左
+type = anim
+actionno = 25 
+layerno = 0
+start = 0,240
+delta = 1,.8
+trans = none
+mask =1
+
+[Begin action 25];背景・左・アニメーション
+25,0.,0,0,6
+25,1.,0,0,6
+25,2.,0,0,6
+25,3.,0,0,6
+25,4.,0,0,6
+25,5.,0,0,6
+25,6.,0,0,6
+25,7.,0,0,6
+
+;------------------------------------------------------------------------------
+[BG 30];背景・中央
+type = anim
+actionno = 30 
+layerno = 0
+start = 0,240
+delta = 1,.8
+trans = none
+mask =1
+
+[Begin action 30];背景・中央・アニメーション
+30,0.,0,0,6
+30,1.,0,0,6
+30,2.,0,0,6
+30,3.,0,0,6
+30,4.,0,0,6
+30,5.,0,0,6
+30,6.,0,0,6
+30,7.,0,0,6
+
+;------------------------------------------------------------------------------
+[BG 35];背景・右
+type = anim
+actionno = 35 
+layerno = 0
+start = 0,240
+delta = 1,.8
+trans = none
+mask =1
+
+[Begin action 35];背景・右・アニメーション
+35,0.,0,0,6
+35,1.,0,0,6
+35,2.,0,0,6
+35,3.,0,0,6
+35,4.,0,0,6
+35,5.,0,0,6
+35,6.,0,0,6
+35,7.,0,0,6
+
+;------------------------------------------------------------------------------
+[BG 40];手前・壊れた障子
+type = anim
+actionno = 40 
+layerno = 1
+start = -46,240
+delta = 1.21,.8
+trans = none
+mask =1
+
+[Begin action 40];壊れた障子・アニメーション
+40,0.,0,0,6
+40,1.,0,0,6
+40,2.,0,0,6
+40,3.,0,0,6
+
+;------------------------------------------------------------------------------
+[BG 45];手前・木片
+type = normal
+spriteno = 45,0
+layerno = 1
+start = 46,240
+delta = 1.21,.2
+trans = none
+mask = 1
+tile = 0

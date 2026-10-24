@@ -1,0 +1,200 @@
+---------------------------------------------------------------------
+Nombre:                     Leona Heidern
+Juego de Origen             The King of Fighters '98: The Slugfest
+Autor                       Ehnyd (A.K.A.: <<VRG>>)
+Web                         http://kofmugenchile.co.cc
+---------------------------------------------------------------------
+Archivos contenidos:
+
+Leona.Air	; Animaciones
+Leona.cmd	; Comandos
+01_Main.cns	; Data principal
+02_attacks	; Golpes y patadas simples
+03_specials	; Tecnicas
+04_DMs  	; Supers
+05_Others	; Agarres, y cosas del sistema ADVANCE / EXTRA
+06_poses	; Intros, burla y Winpos
+UM.cns          ; Archivo Common1.cns exclusivo para el char
+98Leona.def	; Archivo de definicion
+Leona.sff	; Archivo de sprites
+Leona.snd	; Archivo de sonidos
+Leeme.txt	; Lo que estas leyendo
+
+Paletas de colores:
+pal/Leona01.act ; KOF'98UM Color 1, Cabello Azul
+Pal/Leona02.act ; KOF'98UM Color 2, Cabello Azul
+Pal/Leona03.act ; KOF'98UM Color 3, Cabello Azul
+Pal/Leona04.act ; KOF'98UM Color 5, Cabello Azul
+Pal/Leona05.act ; KOF'98UM Color 6, Cabello Azul
+Pal/Leona06.act ; KOF'98UM Color 8, Cabello Azul
+
+pal/Leona11.act ; KOF'98UM Color 1, Cabello Rojo
+Pal/Leona12.act ; KOF'98UM Color 2, Cabello Rojo
+Pal/Leona13.act ; KOF'98UM Color 3, Cabello Rojo
+Pal/Leona14.act ; KOF'98UM Color , Cabello Rojo
+Pal/Leona15.act ; KOF'98UM Color , Cabello Rojo
+Pal/Leona16.act ; KOF'98UM Color , Cabello Rojo
+
+---------------------------------------------------------------------
+ Solo compatible con MUGEN 1.0 (Creada en la version RC8)
+---------------------------------------------------------------------
+Version 2.4
+-Implementacion de fondo rojo cuando entra en Riot Mode.
+-Revision de archivo AIR.
+
+Version 2.3
+-Mejora en AI.
+-Depuracion en Chain Combos
+-Depuracion de Baltic Launcher
+
+Version 2.2 (18/03/2012)
+-Corregido error en intro 1.
+-Baltic Launcher (AIR y CNS), codificado, mejorado y depurado.
+-Implementacion de AI, (Nivel: Novato)
+-Modificado el sustema de combos (CMD)
+
+Version 2.1 (28/02/2012)
+-Renovacion y depuracion de codes y states de defensa.
+-Corregidos Chain Combos.
+-Ajustes en archivos SFF y AIR (Group 5000).
+-Modificacion de pose Standing para ajustarla a la original.
+-Modificacion al State 195.
+
+Version 2.0 (30/11/2011)
+-Se ha rediseñado por completo el char, dejando de lado las cosas que
+ se utilizaron en su momento como base.
+-En consideracion a lo anterior, se han creado paletas nuevas usando
+ colores del '98UM.
+-Archivos AIR, CMD y CNS, rediseñados en totalidad.
+-Se han cambiado las propiedades a varios ataques.
+-Se ha retocado el codigo de la barra TIME.
+-Por asuntos de Fluidez visual, se han agregado sprites de KOF'02UM
+-Se han renovado el set de spark cuando el oponente es quemado.
+-Modo 'Riot of Blood' agregado. En base a eso, en cuanto a comandos y
+ movimientos, es basicamente similar al 98'UM
+-Para acceder al Modo Riot, solo manten Start a la hora de elegir, o
+ bien, conecta exitosamente el SDM Rebel Spark en batalla estando en
+ modo Normal (NOTA: la transformacion dura solo hasta el final del
+ Round, o bien, hasta que conectes exitosamente el Grateful Dead.)
+-KO por defensa, agregado.
+-Char testeado en vs contra Yamazaki (Demianoff, Sander), Rugal
+ (Mr.X-File) y Eiji (Me) para prueba de devoluction de proyectiles.
+ ¿El resultado? Si el oponente debe devolverle un proyectil, lo hará.
+-Y varias cosas que de seguro he olvidado mencionar.
+
+=====================================================================
+---------------------------------------------------------------------
+                           Lista de Comandos
+Simbologia
+WP  = Golpe Debil
+WK  = Patada Debil
+SP  = Golpe Fuerte
+SK  = Patada Fuerte
+p   = Cualquier golpe
+k   = Cualquier patada
+
+F   = adelante
+B   = atras
+D   = abajo
+U   = arriba
+DF  = Diagonal abajo adelante
+DB  = Diagonal abajo atras
+QCF = Cuarto de circulo hacia adelante (D,DF,F)
+QCB = Cuarto de circulo hacia atras (D,DB,B)
+DP  = Adelante, abajo, diagonal Abajo-adelante
+RDP = Atras, abajo, diagonal abajo-atras
+HCF = medio circulo hacia adelante (B,DB,D,DF,F)
+HCB = medio circulo hacia atras (F,DF,D,BD,B)
+#   = mantener dos tiempos...
+[Close] = junto al rival
+[Air] = Solo en el aire
+
+=====================================================================
+
+===================
+| Grapple Attacks |
+===================
+(b_f) + SP                      Leona Crush
+(b_f) + SK                      Orient Bucker
+[Air](b_f)+(SP_SK)		Heidern Inferno
+
+==================
+| Normal Attacks |
+==================
+F + WK				Strike kick (1)
+
+===================
+| Special Attacks |
+===================
+#D, U, Golpe			Moon Slasher
+#B, F, Patada			Ground Saber
+    <SK Ground saber> f+SK	    Sonic kick
+[Air] QCB, Golpe		X-Caliber (2)
+#B, F, Golpe			Baltic Launcher
+HCB, Golpe			Ice Slasher (2)
+QCB, Patada			Earring Bomb (1)
+
+==================
+| DM/SDM Attacks |
+==================
+[AIR]QCF, HCB, Golpe		V-Slasher
+QCF x2, Patada			Gravity Storm
+QCB, HCF, Patada		Rebel Spark (3)
+QCF x2, Golpe                   Grateful Dead (4)
+
+NOTAS: 1.- Solo pueden ser ejecutados en modo Normal.
+       2.- Estos ataques varian secuencia segun el modo en batalla.
+       3.- si la version SDM conecta exitosamente, cambiará
+           automaticamente al modo Riot.
+       4.- Grateful Dead posee las mismas propiedades de Final
+           Bringer de Heidern. Sin importar cual version del ataque
+           uses, una vez conectado exitosamente, al terminar, pasará
+           a modo Normal.
+---------------------------------------------------------------------
+=====================================================================
+---------------------------------------------------------------------
+=====================================================================
+==================
+| System / Modes |
+==================
+NOTA: A diferencia del KOF'98 de arcade, donde se elige entre los
+modos ADVANCE o EXTRA, en este char ambos sistemas estan mezclados
+en un solo modo. Estan disponibles al mismo tiempo:
+
+WK + SP                       Power MAX estilo ADVANCE (requiere
+                              1000 de power; aumenta el daño)
+mantener WP + SK              Carga estilo EXTRA (con power < 3000)
+
+---------------------------------------------------------------------
+                              CREDITS
+
+Elecbyte, motivos obvios.
+SNK NeoGeo (Actualmente SNKK Playmore), Por haberla creado.
+Ses (http://ses.mgbr.net), por crear el MCM (MUGEN Character Maker)
+DCelso, por crear el Paletero
+mugenchina.org, por los sets de sprites de los KOFs 98UM y 02UM, los
+                cuales me sirvieron bastante.
+Shammahomega1, por el code de cambio de modo en pleno combate.
+ALD y ShadowBlade, por darme una explicacion detallada de como
+                   funciona el code de RemapPal.
+Zelgadis, por codigos varios.
+Juanxoc, por darme la idea de hacer esto hace ya bastante.
+Sander, Demianoff, Mr.X-File y sus creaciones antes mencionadas para
+ testeo y prueba de devolucion de proyectiles.
+
+				...
+
+A TODOS aquellos que me deben estar agarrando sentimientos cochinos
+ por no haberlos mencionado en este documento.
+
+				...
+
+			Y a tí... Por usarlo.
+
+---------------------------------------------------------------------
+                            Este char fue actualizado el --/--/2012.
+                    Ah... ah... RAAAAAAAAAAAAAAAAAAAAAAAAAAAAARGH!!!
+---------------------------------------------------------------------
+                                 F I N   D E L   D O C U M E N T O .
+---------------------------------------------------------------------
+=====================================================================

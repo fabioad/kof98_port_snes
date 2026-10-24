@@ -1,0 +1,57 @@
+{
+  "character": "yashiro",
+  "config_hash": "89d6794b31469188096bb28052885144cc35477e2784592d38822a657ec81bc2",
+  "corrections": [
+    {
+      "after": 0,
+      "before": 384,
+      "confidence": "ALTA",
+      "controller": 5,
+      "expression": "0",
+      "key": "gvx",
+      "kind": "combat",
+      "property": "ground.velocity",
+      "runtime_scope": "native_scalar",
+      "sid": 49,
+      "source": {
+        "file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Yashiro-KOF98/Yashiro-S.cns",
+        "line": 1477
+      },
+      "state": 1110,
+      "status": "correctable"
+    }
+  ],
+  "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Yashiro-KOF98/Yashiro-KOF98.def",
+  "inputs": {
+    "assets/characters/Yashiro-KOF98/Config.cns": "2f29efb72975e0ac4dd6bfd8e8ffad5846b063d2d15e2952c1fba1e17086cd2e",
+    "assets/characters/Yashiro-KOF98/Constants.cns": "477b17ee02b3bdc44757aa6fea3c9a5cc3dc6a2cf837486221c56a4daa97b093",
+    "assets/characters/Yashiro-KOF98/Helper.cns": "c7f164502209e9e14e88c08e7bf7574b132a255d13c1a1e01feb0b3dfcbd583d",
+    "assets/characters/Yashiro-KOF98/Member.cns": "e8c73e51750fcea449f3964271a39ae58cf73842eb1d14fd85a2cd6670719e8f",
+    "assets/characters/Yashiro-KOF98/Yashiro-2-3.cns": "affdff5672785f23cf16c9d162be1c0561fd012eb53d247d3313f92a1be63386",
+    "assets/characters/Yashiro-KOF98/Yashiro-H.cns": "b7d38ed137046acbe6a0f5e4c4580e15d0542b98f910353cd6b7e038d811853b",
+    "assets/characters/Yashiro-KOF98/Yashiro-KOF98.def": "407977b60c071086fd27d9599b7a98a3cbdb44fedd048ccbbfade3c5fbb0e2c0",
+    "assets/characters/Yashiro-KOF98/Yashiro-N.cns": "a06b982cd001884f992b5e73eff33dff47d3739a257286d49deba15df28df31f",
+    "assets/characters/Yashiro-KOF98/Yashiro-S.cns": "f25fe35501be95b334eff95d289c5b818232199f9daee890fd865a969d24e6db",
+    "assets/characters/Yashiro-KOF98/Yashiro.air": "d9c228296402e36d5185dc8b3193fdc729b887020e0399e21ade7f109aec880e",
+    "assets/characters/Yashiro-KOF98/Yashiro.cmd": "ebcd34f137e03b10ec11503a4e77d499c323487f3add2aef7791384303bb2920",
+    "assets/characters/Yashiro-KOF98/Yashiro.cns": "0ce6fb9e79695f1185f9c15ec45a985d4e5338fc1c52ac8be1f44b44d5df60c1",
+    "assets/characters/Yashiro-KOF98/Yashiro.sff": "34c028588836fe7446d5782dfa1919df59ea1bec87b47e75dd913fd2ae27f94c",
+    "assets/characters/Yashiro-KOF98/Yashiro.snd": "0474977e3eac05543294976481a709d4aaad73efa83269e2a5b1816f9e317739",
+    "assets/characters/Yashiro-KOF98/Yashiro_SNES.cmd": "e1e32f3ffb966ef35b68152f2ae12fc1fb2f5a0b7a30f1e356ed598205500300",
+    "assets/characters/Yashiro-KOF98/Yashiro_SNES.cns": "598981e74c8f4aa5a06e3395145ad81bf70065b22a8633074b16b2f6315dbfcd",
+    "assets/characters/Yashiro-KOF98/act/act01.act": "fc8bbb115b7d320dda5f04e05cd1ce77e4eff83ff8b671b4044437f88fdfde15",
+    "assets/characters/Yashiro-KOF98/act/act02.act": "c18cbdd66f64bba667beb61df48bc0219459e27de3158c501c03a510238ac7a1",
+    "assets/characters/Yashiro-KOF98/act/act03.act": "3272924390b624b440ca28f372217b3e3b8a5ad6457e00cf977dd4ddda086ff7",
+    "assets/characters/Yashiro-KOF98/act/act04.act": "5db3c047f21622e39322d86bea60ed394b9ababc514d3b275b525e9d07e8b830",
+    "assets/characters/Yashiro-KOF98/act/act05.act": "cc928be317281648494d7fc8d51d23cdb2bbc633f503b7370f997b8418ddcb6f",
+    "assets/characters/Yashiro-KOF98/act/act06.act": "2f963ac04ac501a27c28928bee840605c8d72d4464966b79bf36bc3dfa964743",
+    "assets/characters/Yashiro-KOF98/act/act101.act": "36cf6a0c4688467d7879b0d5a7153e48f75276b43e31f1cdd80bb6d056b64428",
+    "assets/characters/Yashiro-KOF98/act/act11.act": "6dbefead6f328cbd94ac00ac11eab3297ee42ff34c6d3c2dddcd4218b45f9ed9",
+    "assets/characters/Yashiro-KOF98/act/act12.act": "9a279e52000f3a0549e93de4c808edd374fb9fa7964964b3b165a0d347fd22a6",
+    "assets/characters/Yashiro-KOF98/act/act13.act": "f520ee7d3acecdc996bca0f349734272024079034c15efec405553cb9647a4cb",
+    "assets/characters/Yashiro-KOF98/act/act14.act": "108c27938de7f5a8d8778dcbe4ef7ca5285c4389672113ba0910718c3bdaeab5",
+    "assets/characters/Yashiro-KOF98/act/act15.act": "7ff97c28ab8cbe254780da9f4a52471c68d02cb6a082034746ac005b128c896b",
+    "assets/characters/Yashiro-KOF98/common_kof.cns": "a80f9f22df2b598a5c2228a9b505ff9b14c2d7a9ef77e36d33fc04d9382f88f9"
+  },
+  "schema": 1
+}

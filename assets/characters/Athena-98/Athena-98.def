@@ -1,0 +1,36 @@
+[Info]
+Name         ="Athena 98"
+DisplayName  ="Athena A."
+VersionDate  =05,28,2008
+MugenVersion =06,14,2003
+Author       ="Zelgadis"
+Pal.Defaults =1,2,3,4,5,6
+
+[Files]
+Cmd      =Athena-98.cmd
+Cns      =Athena-98.cns
+St       =Athena-98.cns
+StCommon =common1.cns
+Sprite   =Athena-98.sff
+Anim     =Athena-98.air
+Sound    =Athena-98.snd
+pal1=Paletas/Athena-98-1.act
+pal2=Paletas/Athena-98-2.act
+pal3=Paletas/Athena-98-3.act
+pal4=Paletas/Athena-98-Original.act
+pal5=Paletas/Athena-98-5.act
+pal6=Paletas/Athena-98-6.act
+st1=Athena-98-N.cns
+st2=Athena-98-S.cns
+st3=Athena-98-H.cns
+st4=Athena-98-2-3.cns
+
+
+
+
+
+
+
+[Arcade]
+intro.storyboard  =
+ending.storyboard =

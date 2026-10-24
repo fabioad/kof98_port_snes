@@ -1,0 +1,32 @@
+{
+  "character": "mary",
+  "config_hash": "4974a890467582aec00db594931814ccc982f8c5513a03625ab0b5b4713d04d8",
+  "corrections": [],
+  "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/bluemary-kofa/bluemary-kofa.def",
+  "inputs": {
+    "assets/characters/bluemary-kofa/02um-max2.txt": "3143499761d2f77b03a46695976440dfb91d8c31409b538dd8f398c1a4c0faae",
+    "assets/characters/bluemary-kofa/Mary-s.cns": "e49c0ba38fc96f27c8c96793288759ad233f5583a47b7b7d9188e302887ea55f",
+    "assets/characters/bluemary-kofa/Mary.air": "0d83cec0a8b6fb41c5f65ea1baa76a628f2c8804746456e348459e210cb83baf",
+    "assets/characters/bluemary-kofa/Mary.cmd": "998b9abb1f44879bbf98a52563fa7beb9d9f7ad0726a08c2eb03fed5ea36044a",
+    "assets/characters/bluemary-kofa/Mary.cns": "a52a8b5b7a558586017ec6baa1c93b56c01e3fa0641188eb8700127df93cfd83",
+    "assets/characters/bluemary-kofa/Mary.sff": "c3bb48d9c57439b160dc7abfed437a839e54a6cd3675e38a76daf5c89f637df1",
+    "assets/characters/bluemary-kofa/Mary.snd": "3b68e28a175d6a98220a2d35df7c3d910d0a7ddbef40ade2d952aaddbae30e06",
+    "assets/characters/bluemary-kofa/Mary_SNES.cmd": "519b9e4f03610db0cec6f3909bc1325cd10f95904aa7eaaa164cd4264a04114d",
+    "assets/characters/bluemary-kofa/Mary_SNES.cns": "02c1a116a4c1febd21a3c873bbd40eff98a4223c4da3af19c23fca46d3a74128",
+    "assets/characters/bluemary-kofa/bluemary-kofa.def": "dd3c8e1add8ee845f7be06adc819ffaaf372071933ea0e953edcbaac816999bd",
+    "assets/characters/bluemary-kofa/mary-h.cns": "34305ebc63dae22f026c0a96524facf1c57a6ef2aef319ab6b77a7ecd6195a53",
+    "assets/characters/bluemary-kofa/pal/ex01.act": "393554489d1a5129f1ca3afa227712001b329d40dfc830687a24157adf9d314b",
+    "assets/characters/bluemary-kofa/pal/ex02.act": "5f904478dae9e4f9ed3354c35d0941f68c89be973bc4776c3fde198830a6b262",
+    "assets/characters/bluemary-kofa/pal/ex03.act": "f79be4299c3b41a77c7d737e078f5fc4dbb73ca509af3f475e28566ce5dd8241",
+    "assets/characters/bluemary-kofa/pal/ex04.act": "068706548bf58102c7ca2f228b72d00dd689f32aa6b941ca908f353f1ced4554",
+    "assets/characters/bluemary-kofa/pal/ex05.act": "5a0cd463281b90c69ae7168f99eb67ff46341c504a36c5d0b0825bc18f0b6fc5",
+    "assets/characters/bluemary-kofa/pal/ex06.act": "5bfc0d57e7dee3cb9f0476440d693e8e3a4029146437ce240079471c99dc28a4",
+    "assets/characters/bluemary-kofa/pal/mary01.act": "6e1bd6af56d5dfb01a4d61a9de8d8714ca89ec3747c2c2e425f7aee678bc4948",
+    "assets/characters/bluemary-kofa/pal/mary02.act": "0c085a66ef95837129c197ed2f3b6436154653aadb884cb60ec5f759251bcf0c",
+    "assets/characters/bluemary-kofa/pal/mary03.act": "fccaf3d9eee40bbbd0b95ceff1311610eb29be497311d35f0a719f00f69cda79",
+    "assets/characters/bluemary-kofa/pal/mary04.act": "41cfb627410c3f97a6a031a142936754c543ebaeab5e271b682cdf8addb1eecf",
+    "assets/characters/bluemary-kofa/pal/mary05.act": "3a55fa10cf3b89fcd479b4be73bd8ca5f7f43790ab8342f8848fc33956cc4126",
+    "assets/characters/bluemary-kofa/pal/mary06.act": "4f3176fe5124fd6ec6fb70a25b0fe408345301a5f86bdeeef05dbc5254d9a519"
+  },
+  "schema": 1
+}

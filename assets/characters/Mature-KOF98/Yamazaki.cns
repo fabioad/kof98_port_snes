@@ -1,0 +1,728 @@
+;---------------------------------------------------------------------------
+; Yamazaki Alpha
+[Statedef 6303]
+type = S
+movetype = A
+physics = S
+anim = 6303
+poweradd = 63
+ctrl = 0
+
+[State 6303, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 6303, Width]
+type = Width
+trigger1 = 1
+value = 10,0
+
+[State 6303, ParentVarAdd]
+type = ParentVarAdd
+trigger1 = !Time
+var(55) = -25
+
+[State 6303, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 6303, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 6303, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 6
+value = 24,0
+
+[State 6303, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 6
+attr = S, SA
+animtype = Hard
+damage = 29,10
+getpower = 0
+givepower = 21,21
+hitflag = MAF
+guardflag = MA
+pausetime = 0,4
+sparkno = 2
+sparkxy = 0,-50
+hitsound = S0,4
+guardsound = S2,1
+ground.type = High
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = 0,18
+guard.velocity = -11
+air.velocity = 0,18
+airguard.velocity = -4,-6
+envshake.time = 5
+envshake.ampl = -4
+fall = 1
+fall.recover = 0
+fall.xvelocity = 0
+fall.yvelocity = -2
+fall.envshake.time = 10
+fall.envshake.ampl = -5
+ground.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+
+[State 6303, NotHitBy]
+type = NotHitBy
+trigger1 = MoveHit
+time = 1
+value = SCA
+
+[State 6303, TargetState]
+type = TargetState
+trigger1 = MoveHit = 1
+value = 36303
+persistent = 0
+
+[State 6303, ChangeState]
+type = ChangeState
+trigger1 = AnimElem = 8, = 5 && MoveHit
+value = 16303
+
+[State 6303, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+value = 0
+ctrl = 1
+
+[Statedef 16303]
+type = S
+movetype = A
+physics = S
+anim = 16303
+ctrl = 0
+
+[State 16303, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 16303, Width]
+type = Width
+trigger1 = 1
+value = 10,0
+
+[State 16303, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 16303, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 16303, Explod]
+type = Explod
+trigger1 = AnimElem = 4
+anim = F61
+sprpriority = -2
+postype = p1
+pos = 48,0
+bindtime = -1
+ownpal = 1
+
+[State 16303, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 4
+attr = S, SA
+animtype = Hard
+damage = 29,10
+getpower = 0
+givepower = 21,21
+hitflag = MAFD
+guardflag = MA
+pausetime = 12,12
+sparkno = 2
+sparkxy = 0,-5
+hitsound = S0,4
+guardsound = S2,1
+ground.type = High
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = 0,18
+guard.velocity = -11
+air.velocity = 0,18
+airguard.velocity = -4,-6
+envshake.time = 10
+envshake.ampl = -5
+air.fall = 1
+fall.recover = 0
+fall.xvelocity = 0
+fall.yvelocity = -2
+ground.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+
+[State 16303, NotHitBy]
+type = NotHitBy
+trigger1 = MoveHit
+time = 1
+value = SCA
+
+[State 16303, TargetState]
+type = TargetState
+trigger1 = MoveHit = 1
+value = 36303
+persistent = 0
+
+[State 16303, ChangeState]
+type = ChangeState
+trigger1 = AnimElem = 5, = 6 && MoveHit
+value = 26303
+
+[State 16303, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+value = 0
+ctrl = 1
+
+[Statedef 26303]
+type = S
+movetype = A
+physics = S
+anim = 26303
+ctrl = 0
+
+[State 26303, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 26303, Width]
+type = Width
+trigger1 = 1
+value = 10,0
+
+[State 26303, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 26303, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 26303, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = 24,5
+
+[State 26303, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 3
+attr = S, SA
+animtype = Hard
+damage = 67,10
+getpower = 0
+givepower = 21,21
+hitflag = MAFD
+guardflag = MA
+pausetime = 28,28
+sparkno = 2
+sparkxy = 0,-40
+hitsound = S0,4
+guardsound = S2,1
+ground.type = High
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = -1,-14
+air.velocity = -1,-14
+p2facing = 1
+envshake.time = 15
+envshake.ampl = -6
+fall = 1
+fall.recover = 0
+fall.envshake.time = 15
+fall.envshake.ampl = -6
+ground.cornerpush.veloff = 0
+guard.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+airguard.cornerpush.veloff = 0
+yaccel = .5
+
+[State 26303, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+value = 6030
+
+[Statedef 36303]
+type = A
+movetype = H
+physics = N
+anim = 5050
+ctrl = 0
+
+[State 36303, VelSet]
+type = VelSet
+trigger1 = !Time
+x = GetHitVar(xvel)
+y = GetHitVar(yvel)
+
+[State 36303, VelAdd]
+type = VelAdd
+trigger1 = 1
+y = GetHitVar(yaccel)
+
+[State 36303, ChangeState]
+type = ChangeState
+trigger1 = Vel Y > 0 && Pos Y > 0
+value = 46303
+
+[Statedef 46303]
+type = L
+movetype = H
+physics = N
+anim = 5100
+ctrl = 0
+
+[State 46303, VelSet]
+type = VelSet
+trigger1 = !Time
+x = 0
+y = 0
+
+[State 46303, PosSet]
+type = PosSet
+trigger1 = !Time
+y = 0
+
+[State 46303, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+value = 56303
+
+[Statedef 56303]
+type = L
+movetype = H
+physics = N
+anim = 5160
+velset = 0,-3
+ctrl = 0
+
+[State 56303, VelAdd]
+type = VelAdd
+trigger1 = 1
+y = Const(movement.yaccel)
+
+[State 56303, SelfState]
+type = SelfState
+trigger1 = Pos Y > 0 && Time
+value = 5110
+
+;---------------------------------------------------------------------------
+; Yamazaki Beta
+[Statedef 6304]
+type = S
+movetype = A
+physics = S
+anim = 6304
+poweradd = 63
+ctrl = 0
+
+[State 6304, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 6304, ParentVarAdd]
+type = ParentVarAdd
+trigger1 = !Time
+var(55) = -15
+
+[State 6304, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 6304, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 6304, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 4
+value = 24,4
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 4 || AnimElem = 4, = 1
+x = 7
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 5
+x = 5
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 5, = 1
+x = 4
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 6 || AnimElem = 6, = 1
+x = 3
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 7
+x = 2
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 7, = 1
+x = 1
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 8
+x = 8
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 9 || AnimElem = 9, = 1
+x = 6
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 10
+x = 4
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 10, = 1
+x = 3
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 11 || AnimElem = 11, = 1 || AnimElem = 11, = 2
+x = 2
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 12 || AnimElem = 12, = 1
+x = 1
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 14
+x = 8
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 14, = 1
+x = 7
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 15
+x = 5
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 15, = 1
+x = 4
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 16
+x = 3
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 16, = 1 || AnimElem = 17 || AnimElem = 17, = 1
+x = 2
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 18
+x = 8
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 19
+x = 6
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 19, = 1
+x = 5
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 20
+x = 4
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 20, = 1 || AnimElem = 21
+x = 3
+
+[State 6304, PosAdd]
+type = PosAdd
+trigger1 = AnimElem = 21, = 1 || AnimElem = 21, = 2 || AnimElem = 22, = 1
+x = 2
+
+[State 6304, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 5 || AnimElem = 13 || AnimElem = 16 || AnimElem = 25
+value = 24,1
+
+[State 6304, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 5 || AnimElem = 16
+attr = S, SA
+animtype = Hard
+damage = 19,10
+getpower = 0
+givepower = 21,21
+hitflag = MAF
+guardflag = MA
+pausetime = 10,12
+sparkno = 2
+sparkxy = 0,-65
+hitsound = S1,3
+guardsound = S2,1
+ground.type = Low
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = -11
+air.velocity = -4,-6
+air.fall = 1
+fall.recover = 0
+fall.xvelocity = -3
+fall.yvelocity = -2
+ground.cornerpush.veloff = 0
+guard.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+airguard.cornerpush.veloff = 0
+
+[State 6304, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 13
+attr = S, SA
+animtype = Hard
+damage = 19,10
+getpower = 0
+givepower = 21,21
+hitflag = MAF
+guardflag = MA
+pausetime = 10,12
+sparkno = 2
+sparkxy = 0,-75
+hitsound = S1,3
+guardsound = S2,1
+ground.type = High
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = 0
+air.velocity = -4,-6
+air.fall = 1
+fall.recover = 0
+fall.xvelocity = -3
+fall.yvelocity = -2
+ground.cornerpush.veloff = 0
+guard.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+airguard.cornerpush.veloff = 0
+
+[State 6304, HitDef]
+type = HitDef
+trigger1 = p2stateno != [5020,5040]
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 25
+attr = S, SA
+animtype = Hard
+damage = 19,10
+getpower = 0
+givepower = 21,21
+hitflag = MAF
+guardflag = MA
+pausetime = 10,12
+sparkno = 2
+sparkxy = 0,-75
+hitsound = S1,3
+guardsound = S2,1
+ground.type = High
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = -11
+air.velocity = -4,-6
+air.fall = 1
+fall.recover = 0
+fall.xvelocity = -3
+fall.yvelocity = -2
+ground.cornerpush.veloff = 0
+guard.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+airguard.cornerpush.veloff = 0
+
+[State 6304, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+value = 6030
+
+;---------------------------------------------------------------------------
+; Yamazaki Gamma
+[Statedef 6305]
+type = S
+movetype = A
+physics = S
+anim = 6305
+poweradd = 63
+ctrl = 0
+
+[State 6305, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 6305, ParentVarAdd]
+type = ParentVarAdd
+trigger1 = !Time
+var(55) = -10
+
+[State 6305, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 6305, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 6305, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 3
+value = 24,3
+
+[State 6305, HitDef]
+type = HitDef
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 5
+attr = S, SA
+animtype = Light
+damage = 19,10
+getpower = 0
+givepower = 21,21
+hitflag = MAFD
+guardflag = MA
+pausetime = 0,0
+sparkno = 2
+sparkxy = 0,-10
+hitsound = S1,1
+guardsound = S2,1
+ground.type = Trip
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = 6,-2
+air.velocity = 6,-2
+ground.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+fall = 0
+fall.recover = 0
+snap = 118,0 ;148,0
+
+[State 6305, ChangeState]
+type = ChangeState
+trigger1 = AnimElem = 11 && MoveHit
+value = 16305
+
+[State 6305, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+value = 6030
+
+[Statedef 16305]
+type = S
+movetype = A
+physics = S
+anim = 26303
+ctrl = 0
+
+[State 16305, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 1
+
+[State 16305, HitOverride]
+type = HitOverride
+trigger1 = 1
+time = 1
+attr = SCA, AA, AP
+stateno = 6010
+
+[State 16305, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+time = 2
+value = , AT
+
+[State 16305, HitDef]
+type = HitDef
+trigger1 = p2stateno != [154,155]
+trigger1 = AnimElem = 3
+attr = S, SA
+animtype = Back
+damage = 48,10
+getpower = 0
+givepower = 21,21
+hitflag = MAF
+guardflag = MA
+pausetime = 28,28
+sparkno = 2
+sparkxy = 0,-40
+hitsound = S0,4
+guardsound = S2,1
+ground.type = High
+ground.slidetime = 17
+ground.hittime = 17
+air.velocity = -3.15,-4.75
+ground.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+envshake.time = 5
+envshake.ampl = -4
+p2facing = 1
+p2stateno = 16005
+
+[State 16305, ChangeState]
+type = ChangeState
+trigger1 = !AnimTime
+value = 6030

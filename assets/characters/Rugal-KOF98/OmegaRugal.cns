@@ -1,0 +1,100 @@
+;---------------------------------------------------------------------------
+; EXキャラのステート
+;---------------------------------------------------------------------------
+; Initialize (at the start of the round)
+[Statedef 5900]
+type = S
+
+[State 0, 1]
+type = ChangeAnim
+trigger1 = Anim != 1
+value = 1
+
+[State 5900, エフェクト表示]
+type = Explod
+trigger1 = RoundNo != 1
+trigger1 = time = 0
+trigger1 = numexplod(78000) = 0
+anim = 8001
+ID = 78000
+ontop = 1
+postype = left
+scale = 500.0,10.0
+ownpal = 1
+bindtime = -1
+ignorehitpause = 1
+
+[State 5900, 1] ;Clear all int variables
+type = VarRangeSet
+trigger1 = roundsexisted = 0
+value = 0
+
+[State 5900, 2] ;Clear all float variables
+type = VarRangeSet
+trigger1 = roundsexisted = 0
+fvalue = 0
+
+;------------------------
+;キャラ判定
+;------------------------
+[State 5900, VarSet]
+type = VarSet
+trigger1 = 1
+var(8) = 1
+
+;------------------------
+;トレモ判定
+;------------------------
+[State 5900, LifeSet]
+type = LifeSet
+trigger1 = roundsexisted = 0
+trigger1 = time = 0
+value = 0
+
+[State 5900, VarSet]
+type = VarSet
+triggerall =!var(39) = 1
+trigger1 = roundsexisted = 0
+trigger1 = time = 0
+trigger1 = Life = 1
+trigger2 = p2name = "Training"
+trigger2 = enemy,authorname = "stupa"
+trigger3 = p2name = "TRM Man"
+trigger3 = enemy,authorname = "M3"
+var(39) = 1
+
+[State 5900, LifeSet]
+type = LifeSet
+trigger1 = roundsexisted = 0
+trigger1 = time = 0
+value = LifeMax
+
+;------------------------
+[State -2, 二人目のイントロ];特殊イントロ持ち
+type = ChangeState             ;二人目でもイントロを作る
+value = 190                    ;イントロへ
+triggerall = TeamMode = Turns  ;ターンモード
+triggerall = roundno > 1       ;2ラウンド目以降
+trigger1 = p2name = "Heidern" || p4name = "Heidern"
+trigger1 = enemy,AuthorName = "ikaruga"
+trigger2 = p2name = "Saisyu Kusanagi" || p4name = "Saisyu Kusanagi"
+trigger2 = enemy,AuthorName = "ikaruga"
+trigger3 = p2name = "Wolfgang Krauser" || p4name = "Wolfgang Krauser"
+trigger3 = enemy,AuthorName = "ikaruga"
+
+[State -2, 二人目のイントロ]
+type = ChangeState             ;二人目でもイントロを作る
+value = 5903;5901              ;イントロへ
+triggerall = TeamMode = Turns  ;ターンモード
+triggerall = roundno > 1       ;2ラウンド目以降
+trigger1 = RoundsExisted = 0   ;自分が初参戦時
+
+[State 5900, 3] ;Intro for round 1
+type = ChangeState
+trigger1 = roundno = 1
+trigger2 = RoundsExisted = 0
+trigger2 = TeamMode = Turns
+trigger2 = RoundNo > 0
+value = 190
+
+;この下、一行以上空ける事！

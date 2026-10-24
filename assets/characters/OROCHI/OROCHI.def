@@ -1,0 +1,30 @@
+[Info]
+Name         ="Orochi Sama"
+DisplayName  ="OROCHI"
+VersionDate  =16,10,2008
+MugenVersion =06,14,2003
+Author       ="Zelgadis"
+Pal.Defaults = 1
+
+[Files]
+Cmd      =cmd/Orochi-98-UM.cmd
+Cns      =cns/Orochi-98-UM.cns
+St       =cns/Orochi-98-UM.cns
+StCommon =common1.cns
+Sprite   =sff/Orochi-98-UM.sff
+Anim     =air/Orochi-98-UM.air
+Sound    =snd/Orochi-98-UM.snd
+pal1=act/Orochi-98-UM-Original.act
+st1=cns/Orochi-98-UM-N.cns
+st2=cns/Orochi-98-UM-S.CNS
+st3=cns/Orochi-98-UM-H.CNS
+st4=cns/Orochi-98-UM-2-3.cns
+
+
+
+;---カラーパレット---
+
+
+[Arcade]
+intro.storyboard  =
+ending.storyboard =

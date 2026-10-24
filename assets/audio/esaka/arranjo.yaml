@@ -1,0 +1,25 @@
+name: esaka
+settings:
+  tempo: 135
+  rows_per_beat: 4
+  allocation: packed
+
+tracks:
+  separated/ch00_lead.mid:
+    instrument_file: instruments/eurobeat_lead.iti
+    channels: 1
+  separated/ch02_strings.mid:
+    instrument_file: instruments/euro_pad.iti
+    channels: 2
+  separated/ch03_distgtr.mid:
+    instrument_file: instruments/saw_stab.iti
+    channels: 1
+  separated/ch04_bass.mid:
+    instrument_file: instruments/bass_closer.iti
+    channels: 1
+  separated/ch05_cleangtr.mid:
+    instrument_file: instruments/saw_stab.iti
+    channels: 1
+  separated/ch09_drums.mid:
+    instrument_file: instruments/909_kit.iti
+    channels: 2

@@ -1,0 +1,31 @@
+{
+  "character": "chizuru",
+  "config_hash": "54dc043d5c07e76cd2643fb7c1fe65ebf679629a03a9927fb4de54db8b3470ed",
+  "corrections": [],
+  "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/CHIZURU/CHIZURU.def",
+  "inputs": {
+    "assets/characters/CHIZURU/CHIZURU.def": "f0c22e29235662c608c50ee5569ec34110119c8f49bd52a8fc5deb40d5d67b33",
+    "assets/characters/CHIZURU/Chizuru_SNES.cmd": "8f9d8f521c504b9c1fbecb6d5e8da38a231465f00b4781160ee82023477e6a2c",
+    "assets/characters/CHIZURU/Chizuru_SNES.cns": "f0e770c9666ba76f08a13e5bd76f6d2993374d64f0bf7d9be3fd36ec0bb6905d",
+    "assets/characters/CHIZURU/chizuru_maki-01.act": "1a90a0ad37a7d1ed4d71abede2316ca30b86b35b65fcb5f4973d880ca2f64aba",
+    "assets/characters/CHIZURU/chizuru_maki-02.act": "1da699176df8e06bf2d383f06b93c17e45a7d248b6cde33d5d24a92f3986278e",
+    "assets/characters/CHIZURU/chizuru_maki-03.act": "95c212a3e50ae873e0792289a127bb50f91a67497e02e3aa994ffe21aa313dd4",
+    "assets/characters/CHIZURU/chizuru_maki-04.act": "f29bdb8f9be4e035d87ce9c75b0a21591bd95bdda3c3409cbe0d291d547ac39d",
+    "assets/characters/CHIZURU/chizuru_maki-05.act": "b2d73fe82d3bc47a7eccc8a372481d5bda035be765db126f79958175583a4e65",
+    "assets/characters/CHIZURU/chizuru_maki-06.act": "bb29b34f1b99c953262ec6349d8f4917e1355f993e9eb6373a422b52a7d1957e",
+    "assets/characters/CHIZURU/chizuru_maki-08.act": "712fb19e38dc28407747c550473e5e6df52caeb87811838ba300fe6beab8547b",
+    "assets/characters/CHIZURU/chizuru_maki-09.act": "4b442cf72e4280e981814ec14768a5da39317004b9d1937b317671e0199c437b",
+    "assets/characters/CHIZURU/chizuru_maki-10.act": "c4bb29edb3b872a2ef3cb5df5783bef015be6ed2fd7b426758fb19f6ee9ee7c1",
+    "assets/characters/CHIZURU/chizuru_maki-11.act": "00081feca0ac176ba38dd5e51167a53ce78a9402d8562b5807fc50d0d7e02bf5",
+    "assets/characters/CHIZURU/chizuru_maki-12.act": "c55e475c06ccf7d4240cd4a912a6e4cd659180f67ebd7d9fe0c2700a981008f2",
+    "assets/characters/CHIZURU/chizuru_maki.act": "663929e874b9177dec84a38347d3b434b1fb9d7d87a22b88979037cac2c06763",
+    "assets/characters/CHIZURU/chizuru_maki.air": "79122c7dba661f0680fdfe6b3db05a3a05cdb42f8550215065ef0897d5499616",
+    "assets/characters/CHIZURU/chizuru_maki.cmd": "c973083ed8c3b7fbec30e8d927ed91d4ae31213a6988c40348d4970d28037dc8",
+    "assets/characters/CHIZURU/chizuru_maki.cns": "4bacf57e3cf6653ed30f02c32b84244f88b17309624e729c5bd2a567fea9eade",
+    "assets/characters/CHIZURU/chizuru_maki.sff": "bdabc1ad685335ba8fb320185095b0c4462f32301af1d5895080b4dc69dcdbba",
+    "assets/characters/CHIZURU/chizuru_maki.snd": "5104a1203565c0c04c3b4476a79a928a526301b66cfc843fabcce11ec280b0b2",
+    "assets/characters/CHIZURU/chizuru_maki_N.cns": "5c23a30a6562a9ed7594a743a8b45dbffad9cc67d008822ccbeba797ce663a14",
+    "assets/characters/CHIZURU/chizuru_maki_S.cns": "2fc7e7aef97eb4c8ddedfad12a876ed95cdd9c7a24248977d20b191e1174fab5"
+  },
+  "schema": 1
+}

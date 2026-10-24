@@ -1,0 +1,303 @@
+{
+  "_comment": "Victory quotes shown on the win screen. Up to 4 entries per character; the engine cycles through them. Sources: KOF '98 in-game quotes (SNK Wiki / KOF Fandom / Wikiquote), Street Fighter Alpha 2 quotes for the SF guests (GameFAQs Quotes/Dialogue Guide #916 and Street Fighter Wiki), M. Bison from the Street Fighter II series (Street Fighter Wiki), Fatal Fury / Art of Fighting quotes for the SNK guests. See README.md in this folder.",
+  "iori": [
+    "No value in a broken toy. That's all you losers are.",
+    "A rose blooms best near death. You're in full bloom, pal!",
+    "Geez, sorry. There's no cure for stupidity!",
+    "This is your last fight. A memorable final act!"
+  ],
+  "kyo": [
+    "You just ain't got it. Stop whining and get lost.",
+    "That's it? I'm not angry, just disappointed.",
+    "Burn in the fury of my flames, you weakling.",
+    "Eat my flames of fury. Grovel before Kusanagi."
+  ],
+  "shingo": [
+    "Did you see me, mom?! I won! King of the world!",
+    "I am Shingo Yabuki! I'll be honored to challenge you!",
+    "Kusanagi-san's enemy is my enemy! You can't pass!",
+    "Father! Could you check my Kusanagi style?"
+  ],
+  "rugal": [
+    "Repeat after me: I'll never take on a god again.",
+    "Foolish!",
+    "Too weak!",
+    "You can't run!"
+  ],
+  "omegarugal": [
+    "Mmm... Here I go!",
+    "You can't run!",
+    "Foolish!",
+    "Too weak!"
+  ],
+  "saisyu": [
+    "Defeat is defeat. Fighting's no picnic, kid.",
+    "You think you can win against me?",
+    "How lukewarm...",
+    "That was tough."
+  ],
+  "heidern": [
+    "You let your guard down? I think you're a weenie!",
+    "Situation cleared!",
+    "Mission complete!",
+    "You are next!"
+  ],
+  "takuma": [
+    "Wow, you're a disgrace! Better hang it up, kid.",
+    "You can't copy my fighting!",
+    "Always be on the alert!",
+    "Go home now!"
+  ],
+  "clark": [
+    "Losers have no rights. That's what history's about.",
+    "I had fun. For about five seconds.",
+    "Enemy neutralized. Move out!",
+    "You've nothing to regret. You came this far."
+  ],
+  "ralf": [
+    "That's enough. I can only be forgiving so much.",
+    "We were trained in war!",
+    "Take it easy on chicks? No way!",
+    "You fought like a star. A dead one."
+  ],
+  "leona": [
+    "Had enough? Then beat it, fool!",
+    "You cannot win.",
+    "I shall fulfill my mission.",
+    "Why did you do it? You had no chance."
+  ],
+  "mature": [
+    "Good night. Forever. Have a million sweet dreams.",
+    "You disgust me!",
+    "That was fun. Thank you.",
+    "Now, if you'll excuse me."
+  ],
+  "vice": [
+    "I'm through. There are no more bones to break.",
+    "Just looking at you makes me mad!",
+    "You make me puke...",
+    "Chew on this!"
+  ],
+  "benimaru": [
+    "My reason for winning? I'm just cool. Real cool!",
+    "Lambs are tougher than you. How do I know?",
+    "Someone as good-looking as me has to win.",
+    "If you can't win elegantly, don't win at all!"
+  ],
+  "daimon": [
+    "Lightweight!",
+    "A peaceful world is the best one!",
+    "Keep practicing hard!",
+    "I hate copy cats!"
+  ],
+  "terry": [
+    "Say what? It's no fluke. This is why I'm here every year.",
+    "You had guts, kid. Now clean them off the pavement!",
+    "If you don't have fangs, don't flap your gums!",
+    "It's going to be our century!"
+  ],
+  "andy": [
+    "If you want to be the best, practice every day, pal.",
+    "You can't win only by power.",
+    "You move like an elephant in a tutu! Hit the showers!",
+    "Faith is what wins. And a devastating left hook!"
+  ],
+  "joe": [
+    "How's that? I'm the Satan of martial arts.",
+    "All of you are just big!",
+    "You never had a chance against the kickboxing king!",
+    "Maybe we were just too strong!"
+  ],
+  "ryo": [
+    "Absolute karate. That's Kyokugen. Don't forget it!",
+    "We are alike? No way!",
+    "No match for Kyokugenryu!",
+    "We earn our living fighting!"
+  ],
+  "robert": [
+    "Underestimate me, huh? You're dumber than you look!",
+    "Now it's clear who's stronger!",
+    "4000 year history? Ha!",
+    "You're one of the strongest. Not!"
+  ],
+  "yuri": [
+    "I'm Kyokugen! Face it, Ryo. You can't beat me!",
+    "Isn't my bro's team stronger?",
+    "Interesting team. But weak!",
+    "I'm a master of Kyokugenryu!"
+  ],
+  "athena": [
+    "Sorry about that. Are you hurt? I got carried away.",
+    "You rely on power too much!",
+    "There's no tea time for heroines! Let's go!",
+    "I put my heart into that match. Thank you!"
+  ],
+  "kensou": [
+    "New threads. New attitude. The new Kensou is here!",
+    "Don't worry! We are too strong!",
+    "Good fight! Let us do it again!",
+    "I'm no psychic, but I am a psycho!"
+  ],
+  "chin": [
+    "I get power from wine. Next time you can test it.",
+    "I am not drunk, I am sober.",
+    "Little guys, practice more and get stronger.",
+    "You were beaten by an old man!"
+  ],
+  "king": [
+    "In battle, sex means nothing. Who's left standing matters.",
+    "Strong. Worthy of your fame.",
+    "Challenge me anytime.",
+    "My kick is matchless!"
+  ],
+  "mai": [
+    "With this body and strength, you thought you had a chance?",
+    "No one calls me babe without paying for it.",
+    "You OK? Sorry. I wasn't even trying.",
+    "I'm hot this year. It might be my millennium."
+  ],
+  "chizuru": [
+    "Play time's over. Winning's too easy. You can't touch me!",
+    "You can't win, let alone touch me.",
+    "If your heart breaks, you can't win at anything.",
+    "It's over. You never had a chance."
+  ],
+  "kim": [
+    "How about it? Let's do the Tae Kwon Do thing!",
+    "Don't make light of Tae Kwon Do!",
+    "You get stronger by training.",
+    "Strength without justice is violence. Got that?"
+  ],
+  "chang": [
+    "Scooby dooby doo wop. Doo wop, ah doo doo.",
+    "Yeeeeah! One more time: yeeeeah!",
+    "That's all? Kim's kid is tougher than you!",
+    "A crushing victory! Heh, heh, heh."
+  ],
+  "choi": [
+    "You did pretty good just to last this long.",
+    "Winning isn't everything. It's the only thing, loser!",
+    "Through already? What a gyp!",
+    "A quick win. This time, I'm really free!"
+  ],
+  "yashiro": [
+    "You're not too bad. That is, you're second.",
+    "Size, speed, and strength. With these, I won't lose.",
+    "Why did I win? Ask yourself, loser.",
+    "Bye-bye!"
+  ],
+  "shermie": [
+    "Game over, pal! Don't forget to save. Sweet dreams!",
+    "Done already? That was only the aperitif.",
+    "Excuse me.",
+    "I won't like it if it hurts."
+  ],
+  "chris": [
+    "You make me laugh, chump. And laugh, and laugh!",
+    "Let's get serious.",
+    "That was fun, yes!",
+    "Please go easy on me."
+  ],
+  "yamazaki": [
+    "Annoying! Annoying! You're just so annoying!",
+    "Heh. You're dead.",
+    "Don't make me laugh, punk.",
+    "Get out of my sight!"
+  ],
+  "mary": [
+    "This isn't about logic. It's about smashing your face in!",
+    "Oh, you're OK. I did take it easy on you!",
+    "A first rate warrior wins without lifting a finger.",
+    "Everyone knows their limits. You got more than others."
+  ],
+  "billy": [
+    "How does it feel to be well done? Bet you taste terrible.",
+    "You're not ready for the big leagues, kid.",
+    "Don't waste my time, weakling.",
+    "I'll burn you to a crisp!"
+  ],
+  "lucky": [
+    "Wake up! It's too early for bedtime.",
+    "Too easy!",
+    "I knew I went a little overboard!",
+    "We are seasoned fighters!"
+  ],
+  "heavyd": [
+    "Slow. Your attack's too slow. I read you like a book.",
+    "I'll take care of you!",
+    "Your fists are too soft!",
+    "Good grief... You bore me."
+  ],
+  "brian": [
+    "Your defense means nothing to my tackling!",
+    "I'm number one!",
+    "I am a superstar!",
+    "Come on, bring it!"
+  ],
+  "geese": [
+    "Hmph. That street act could never beat me!",
+    "Know your place, rat!",
+    "You're no match for me.",
+    "Don't get ahead of yourself!"
+  ],
+  "krauser": [
+    "Oppose me with such low ability. You make me laugh.",
+    "Thanks for a good time!",
+    "I'll chisel your gravestone. Sleep well!",
+    "KAISER WAVE!"
+  ],
+  "mrbig": [
+    "How's that? Now you know what I'm big at, don't you?",
+    "I'm just that great!",
+    "You happy?",
+    "Fever!"
+  ],
+  "eiji": [
+    "Kisaragi-ryu is invincible. My ninja arts are matchless.",
+    "Tell future generations of my brilliance!",
+    "Hate the heavens for being born in my era.",
+    "How foolish. The battle was mine from the start."
+  ],
+  "vega": [
+    "Get lost! You can't compare with my powers!",
+    "Anyone who opposes me will be destroyed!",
+    "You're no match for my Psycho Power!",
+    "I will weep when there are no more worlds to conquer."
+  ],
+  "ryu": [
+    "I look forward to our next battle.",
+    "You fought well. I was honored.",
+    "Now I'll find a better challenge!",
+    "What's wrong? Why do you hold back?"
+  ],
+  "ken": [
+    "Don't tell me you're actually unconscious.",
+    "Next time I won't be so easy on you!",
+    "Now you see the difference between us!",
+    "You're better than you look. Try harder."
+  ],
+  "chunli": [
+    "I don't have time for amateurs!",
+    "I expected better.",
+    "If you're going to fight, fight for real.",
+    "You don't have the skill to beat me!"
+  ],
+  "sakura": [
+    "Do you have time for another beating before class?",
+    "Now you know, justice always prevails!",
+    "Victory is mine. Get up so I can smack you again!",
+    "Wow, that was cool. Do it again!"
+  ],
+  "kyonests": [
+    "You just ain't got it. Stop whining and get lost.",
+    "That's it? I'm not angry, just disappointed.",
+    "Burn in the fury of my flames, you weakling.",
+    "Eat my flames of fury. Grovel before Kusanagi."
+  ],
+  "kyoash": [
+    "You just ain't got it. Stop whining and get lost.",
+    "That's it? I'm not angry, just disappointed.",
+    "Burn in the fury of my flames, you weakling.",
+    "Eat my flames of fury. Grovel before Kusanagi."
+  ]
+}

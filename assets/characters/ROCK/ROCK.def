@@ -1,0 +1,27 @@
+[Info]
+Name         = "Rock"
+DisplayName  = "Rock"
+VersionDate  = 06,17,2009
+Author       = "jin"
+Pal.Defaults = 1,2,3,4,5,6
+mugenversion = 1.0
+localcoord   = 320,240
+[Files]
+Cmd      = Rock.cmd
+Cns      = Rock.cns
+St       = Rock.cns
+St0      = Rock-N.cns
+St1      = Rock-S.cns
+St2      = Rock-H.cns
+St3      = Rock-2-3.cns
+StCommon = common1.cns
+Sprite   = Rock.sff
+Anim     = Rock.air
+Sound    = Rock.snd
+Pal1 = pals/Rock01.act
+Pal2 = pals/Rock02.act
+Pal3 = pals/Rock03.act
+Pal4 = pals/Rock04.act
+Pal5 = pals/Rock05.act
+Pal6 = pals/Rock06.act
+

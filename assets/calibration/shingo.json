@@ -1,0 +1,70 @@
+{
+  "character": "shingo",
+  "config_hash": "60d747b47a5e2e02babfc37b9ba7826b59d6f45298134aec694fe08e48c077ae",
+  "corrections": [
+    {
+      "after": 5120,
+      "before": 0,
+      "confidence": "ALTA",
+      "controller": 7,
+      "expression": "-4.5-ifelse(var(40),0.5,0),20",
+      "key": "avy",
+      "kind": "combat",
+      "property": "air.velocity",
+      "runtime_scope": "native_scalar",
+      "sid": 54,
+      "source": {
+        "file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Shingo-KOF98/Shingo-S.cns",
+        "line": 1911
+      },
+      "state": 1500,
+      "status": "correctable"
+    },
+    {
+      "after": 5120,
+      "before": 0,
+      "confidence": "ALTA",
+      "controller": 7,
+      "expression": "-4.5-ifelse(var(40),0.5,0),20",
+      "key": "avy",
+      "kind": "combat",
+      "property": "air.velocity",
+      "runtime_scope": "native_scalar",
+      "sid": 55,
+      "source": {
+        "file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Shingo-KOF98/Shingo-S.cns",
+        "line": 2034
+      },
+      "state": 1510,
+      "status": "correctable"
+    }
+  ],
+  "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Shingo-KOF98/Shingo-KOF98.def",
+  "inputs": {
+    "assets/characters/Shingo-KOF98/Config.cns": "716cafa2d71e616ed5d4277ffc05c851a35ad9d0722b504d2474a28fdb6eacc7",
+    "assets/characters/Shingo-KOF98/Constants.cns": "e6e31264af2e8a39d7406b21407456076e23531022692aa96e88b19fb97f8a6b",
+    "assets/characters/Shingo-KOF98/Helper.cns": "0a473b96fee636c0edd3e5f9338533a04d5f08e8a45a5a27861f2e448d8d44f7",
+    "assets/characters/Shingo-KOF98/Member.cns": "ff84ddb2057fa5a8f403ca79b754772b21babb074179a8d5cfc5eade206aff5d",
+    "assets/characters/Shingo-KOF98/Shingo-2-3.cns": "c14d7ea794f58a24da78ea7f774a2ea56323d24143166ff6c5513f4c57926248",
+    "assets/characters/Shingo-KOF98/Shingo-H.cns": "15382bbb01817f2d42424e8b5d8b9b95586c8a79b46425483fa2081b990f1025",
+    "assets/characters/Shingo-KOF98/Shingo-KOF98.def": "14279f412ab7c198a0b485b08f768ea038cd4f9c4925116792d3c6e107089255",
+    "assets/characters/Shingo-KOF98/Shingo-N.cns": "1cd0f755f258e33875247b88ebc504878b8acbbda9f88f2a265f9e2ff91815a9",
+    "assets/characters/Shingo-KOF98/Shingo-S.cns": "0950eac5d11a34d4e018a00f0597cabc8855486a56685014ffd6cbf795854fc1",
+    "assets/characters/Shingo-KOF98/Shingo.air": "293cda5d39f8de8a77f67b88c1397e67b50c09d22118f7784e4ad94bf592f5a1",
+    "assets/characters/Shingo-KOF98/Shingo.air.orig": "49878b8dafb1a2cb08e50f500d07a10c561c23a899c300e406fb0ebba7f7dc43",
+    "assets/characters/Shingo-KOF98/Shingo.cmd": "4e876d93bdab05bc0b89286b097dbd2a8b8893e3116b7bc2812c2baaea3db34a",
+    "assets/characters/Shingo-KOF98/Shingo.cns": "27b2cce12fa4a168a0519e89a557757e80df0c21040429ad7a84e9a80cc46cc3",
+    "assets/characters/Shingo-KOF98/Shingo.sff": "7082a6c6ab8b0eee00b3d6b644a8f0c292fe3dc174aecc6927f68bf8e02dbe2c",
+    "assets/characters/Shingo-KOF98/Shingo.snd": "72b90b2a14fd0c5b1c88889c5295b24f3dab22a4edc90e78bccf7112bb051959",
+    "assets/characters/Shingo-KOF98/Shingo_SNES.cmd": "20e57ae3b4c81b2acf8178c6c67a83f2672d809e09386a17765fcb4de2c6b67d",
+    "assets/characters/Shingo-KOF98/Shingo_SNES.cns": "7901e2f1c5579b570fbbdb363cceb54a270b1a51202430bc7184a3434b99b4e6",
+    "assets/characters/Shingo-KOF98/act/act01.act": "26002c3b7525dc2dee3a3669844a2fe208f9548e26e172a83fdca8cf6b78021b",
+    "assets/characters/Shingo-KOF98/act/act02.act": "a29ed2de2cc39708200b62fd2278f884049660b5cfc7c0be2d0d5ba5135849ca",
+    "assets/characters/Shingo-KOF98/act/act03.act": "2a661496d321c063d0bf3d45668a304f8c9d247e0ae2930b119d7260f1cff782",
+    "assets/characters/Shingo-KOF98/act/act04.act": "afe1c60da04735da102da7d6291e6d59b109acfc78aa54a72513975c349cdba1",
+    "assets/characters/Shingo-KOF98/act/act05.act": "52ca9951715e295e189f917e1da75d914742bc0018620baa16e7620441b496a8",
+    "assets/characters/Shingo-KOF98/act/act06.act": "8cc0c11f146bdd335a43bc36b17dd0f28da76b1516cdf6ca942eeb507c91b384",
+    "assets/characters/Shingo-KOF98/common_kof.cns": "d87a9bb40d1e1fcc6b491e3f31ac08d9c1c9c6bb1897d8ee66f41c66bd87eafc"
+  },
+  "schema": 1
+}

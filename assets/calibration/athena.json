@@ -1,0 +1,27 @@
+{
+  "character": "athena",
+  "config_hash": "0a83071bdafc4408473f1d765b84429fe9d07cf340c2360b70e1fa87d56c4c5a",
+  "corrections": [],
+  "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Athena-98/Athena-98.def",
+  "inputs": {
+    "assets/characters/Athena-98/Athena-98-2-3.cns": "7afa5eef7eb5ef74d98fb3b10a17eee1219e6d62eab9b911cce074b47f92c355",
+    "assets/characters/Athena-98/Athena-98-H.cns": "e386656f4e1fd5261bebc9ccbd4b0ae82840a4b1c90d0b7a6b8e69d774237a46",
+    "assets/characters/Athena-98/Athena-98-N.cns": "dbbf30679f43e32626559e5cf3716db0fa7c2e42934540c37983c8f2949d4ff2",
+    "assets/characters/Athena-98/Athena-98-S.cns": "f4d6abc3e778099cfdf0731b5d017bf32aa2ded57c8e63088cd652bca8aa9207",
+    "assets/characters/Athena-98/Athena-98.air": "943dbd010b506c0041118ac2980eb6ecb0d07105ec85d9b29cc26ed10bdb7315",
+    "assets/characters/Athena-98/Athena-98.cmd": "38651c1c531ba0fb518fb7b94d9c5113d80ae7de364e38652937ca69b40d495f",
+    "assets/characters/Athena-98/Athena-98.cns": "fbf6b7cfc04c9942a3e62696ef58a4b50b243ae5ec6dca63f2e8bba61630e972",
+    "assets/characters/Athena-98/Athena-98.def": "a6f416aeda7fcc7715fe517e762b3e0b1baa4217a7ddc5e86c49ebffbe2807da",
+    "assets/characters/Athena-98/Athena-98.sff": "262890b50c7e7a419f93c46a471541205a23a531c8e2733407da6a2007e11106",
+    "assets/characters/Athena-98/Athena-98.snd": "3b296a62e0f8ba17b5456b125ab32a84f528c82ba89e75c4a05451ea22c74a98",
+    "assets/characters/Athena-98/Athena_SNES.cmd": "6210885120fb292ca2a75a781f1116f28750a47d76fe9cae018609d76a571ea5",
+    "assets/characters/Athena-98/Athena_SNES.cns": "e3bb206ae99aebd75c6bfd980174f173585f65e26a1ceef7df6b7d62bf48d01d",
+    "assets/characters/Athena-98/Paletas/Athena-98-1.act": "2e8a6cac7f57d493af28101460ba678206af92e591e4e69495179f606a852706",
+    "assets/characters/Athena-98/Paletas/Athena-98-2.act": "150a33be339dc5913b3635f85ea9a8bdb4e0ac258f05a1997a021462c5fafef8",
+    "assets/characters/Athena-98/Paletas/Athena-98-3.act": "2f25bbe5bd7ac19b27aed88b01faacbcffad92939c72865253ea357c79bc45ad",
+    "assets/characters/Athena-98/Paletas/Athena-98-5.act": "20caae406e0cd796a76cc039671a33677eae54f4cf56beb9e1b7f6fbbc79927e",
+    "assets/characters/Athena-98/Paletas/Athena-98-6.act": "37cc1724df5a2822eb0472025c8fe1570c53cbffb19c33f214a0b2aa43755bed",
+    "assets/characters/Athena-98/Paletas/Athena-98-Original.act": "c1f09be45958caaeb28eedbb53969ca319817acb99af9836b4bf027ff647a25c"
+  },
+  "schema": 1
+}

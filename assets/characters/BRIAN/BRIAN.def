@@ -1,0 +1,29 @@
+[Info]
+name         ="Brian Battler"
+displayname  ="BRIAN"
+author       ="Le@n"
+versiondate  =26,10,2009    
+mugenversion =04,14,2002   
+pal.defaults =1,2,3,4
+
+[Files]
+cmd      =Brian.cmd
+cns      =Brian.cns
+st       =Brian-B.cns
+stcommon =common1.cns
+sprite   =Brian.sff
+;anim     =Brian-D.air ;This is for defaults players
+anim     =Brian.air 
+sound    =Brian.snd
+pal1=Paletas\01.act
+pal2=Paletas\02.act
+pal3=Paletas\03.act
+pal4=Paletas\04.act
+st1=Brian-N.cns
+st2=Brian-S.cns
+st3=Brian-H.cns
+st4=Brian-2.cns
+
+[Arcade]
+intro.storyboard  = 
+ending.storyboard = 

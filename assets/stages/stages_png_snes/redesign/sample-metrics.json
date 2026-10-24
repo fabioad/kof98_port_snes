@@ -1,0 +1,14 @@
+[
+  {
+    "file": "KOF98-JpnStreetStage.png",
+    "width": 512,
+    "height": 224,
+    "colors": 15,
+    "tilesBefore": 1683,
+    "tiles": 512,
+    "chrBytes": 16384,
+    "mapBytes": 4096,
+    "paletteBytes": 32,
+    "pngBytes": 17511
+  }
+]

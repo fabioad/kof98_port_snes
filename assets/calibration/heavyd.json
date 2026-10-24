@@ -1,0 +1,24 @@
+{
+  "character": "heavyd",
+  "config_hash": "f9137af12bea81bd78660e841cbedf88f175b6f768bbe3ee81a686590ce54da6",
+  "corrections": [],
+  "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/heavy-d-kofa/heavy-d-kofa.def",
+  "inputs": {
+    "assets/characters/heavy-d-kofa/HeavyD!.air": "320890b172d20fb4ca4cd8eefdabdd065eb7236dbffbc1c9e721c89d25d0a59a",
+    "assets/characters/heavy-d-kofa/HeavyD!.cmd": "4efadfbe7542e69190d1e451572094908fc6682251cc8be7c67a18f8362760ef",
+    "assets/characters/heavy-d-kofa/HeavyD!.cns": "30fd569a1c4ceb30fd753259309ec29698b03f7848e7a63ded6f934eef59a4ea",
+    "assets/characters/heavy-d-kofa/HeavyD!.sff": "c7c2c763a3262d35e1dbdbaadcd3481b51077fcbc0ede97d30b51b7d9bd542f5",
+    "assets/characters/heavy-d-kofa/HeavyD!.snd": "eed261290ac337529ecef1a96cdd131e16d80dfc45d652e17598808833596512",
+    "assets/characters/heavy-d-kofa/HeavyD!2.cns": "33f4ab77ec193658e227e0769d49fc4101e123f17e1d114f81c606dad472d559",
+    "assets/characters/heavy-d-kofa/Heavyd_SNES.cmd": "476eba17d71a2c24e14c480a26d1f6387420f763173a74c70ae86429fdf269bc",
+    "assets/characters/heavy-d-kofa/Heavyd_SNES.cns": "1f5c16bc7bfc126e545bb9141c57e2201b3703f0d531fcefdad4f54be00a2872",
+    "assets/characters/heavy-d-kofa/heavy-d-kofa.def": "c743da6531fe59765d2c25b271f7b2fae954cdc4e489096a88fc7f3bb7d8119e",
+    "assets/characters/heavy-d-kofa/pals/HeavyD!1.act": "4420a3acb85ad065016539cbc70c5e09c60f00dfe9938dc6a450c381c8426f79",
+    "assets/characters/heavy-d-kofa/pals/HeavyD!2.act": "ee4198e0bcdc0ff1919974048e7a472c90cb06fe8425d267695adb6a37cf6e04",
+    "assets/characters/heavy-d-kofa/pals/HeavyD!3.act": "21406e6d352f8e18599144a512f805f207c945b697075bf6d5a0bb7c922883f7",
+    "assets/characters/heavy-d-kofa/pals/HeavyD!4.act": "e33c2ce87517bd5a58c64b128f66825c122ede5a31be3c3acda13fac772d1230",
+    "assets/characters/heavy-d-kofa/pals/HeavyD!5.act": "015d9afb0d257feead0e902742bf07b5a280b5562ff2d45dacd059dae48ad419",
+    "assets/characters/heavy-d-kofa/pals/HeavyD!6.act": "41d895165df45e1ba577e1f44e18b9a158d68a4e67620d9fbdb0fb2412d1393b"
+  },
+  "schema": 1
+}

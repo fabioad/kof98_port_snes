@@ -1,0 +1,39 @@
+[Info]
+Name         ="Bao KOF XI"
+DisplayName  ="BAO"
+VersionDate  =03,15,2007
+MugenVersion =06,14,2003
+Author       ="Juanxoc"
+Pal.Defaults =1,2,3,4,5,6,7,8
+
+[Files]
+Cmd      =BAO-XI.cmd
+Cns      =BAO-XI.cns
+St       =BAO-XI.cns
+StCommon =common1.cns
+Sprite   =BAO-XI.sff
+Anim     =BAO-XI.air
+Sound    =BAO-XI.snd
+pal1=paletas\bao.act
+pal2=paletas\bao1.act
+pal3=paletas\bao2.act
+pal4=paletas\bao3.act
+pal5=paletas\bao4.act
+pal6=paletas\bao5.act
+pal7=paletas\bao6.act
+pal8=paletas\bao7.act
+pal9=paletas\bao8.act
+pal10=paletas\bao9.act
+pal11=paletas\bao10.act
+st1=BAO-XI-N.cns
+st2=BAO-XI-2-3.cns
+st3=BAO-XI-Hyper.cns
+
+
+
+
+
+
+[Arcade]
+intro.storyboard=
+ending.storyboard=

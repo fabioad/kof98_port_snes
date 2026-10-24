@@ -1,0 +1,34 @@
+[Info]
+name ="xi_Chunli"        
+displayname ="CHUNLI" 
+versiondate =09,20,2007   
+mugenversion =04,06,2004   
+author ="Fervicante , Edited by KamranBernstein"        
+pal.defaults =1,2,3,4,5,6,7,8,9,10,11,12 
+
+
+; Files for the player
+[Files]
+cmd      =xi_chunli.cmd.cns
+cns      =xi_chunli.cns
+st       =xi_chunli.cns
+stcommon =common1.cns
+sprite   =xi_chunli.sff
+anim     =xi_chunli.air
+sound    =xi_chunli.snd
+pal1=xi_chunli01.act
+pal2=xi_chunli02.act
+pal3=xi_chunli03.act
+pal4=xi_chunli04.act
+pal5=xi_chunli05.act
+pal6=xi_chunli06.act
+pal7=xi_chunli07.act
+pal8=xi_chunli08.act
+;pal9=xi_chunli11.act
+pal10=xi_chunli10.act
+pal11=xi_chunli09.act
+;pal12=xi_chunli12.act
+
+;[Arcade]
+;intro.storyboard=
+;ending.storyboard=

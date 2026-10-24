@@ -1,0 +1,71 @@
+# ---------------------------------------------------------------------------
+# Build e artefatos gerados
+# ---------------------------------------------------------------------------
+build/
+*.o
+*.obj
+*.sym
+*.symfull
+*.sfc
+*.msu
+*.spc
+msu1.rom
+frame.png
+linkfile.local
+
+# Bibliotecas nativas pre-compiladas (Linux x86-64); use as do seu sistema.
+assets/lib/
+
+# ---------------------------------------------------------------------------
+# Arquivos de trabalho e backups locais
+# ---------------------------------------------------------------------------
+/work/
+/backup/
+/newpic.png
+assets/stages/stages_png_snes/backups/
+*.before-*
+
+# ---------------------------------------------------------------------------
+# ROMs e BIOS de terceiros: NAO redistribuir (direitos dos detentores)
+# ---------------------------------------------------------------------------
+/*.zip
+/kof98.zip
+/neogeo.zip
+
+# ---------------------------------------------------------------------------
+# Caches de Python / testes
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.venv/
+venv/
+
+# ---------------------------------------------------------------------------
+# Configuracao e save de runtime (gerados ao rodar o jogo)
+# ---------------------------------------------------------------------------
+/assets/save/
+snd_extract/
+assets/stages/stages_png_snes/animations/references/
+
+# ---------------------------------------------------------------------------
+# Sistema operacional, editores e arquivos auxiliares
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+.vscode/
+.idea/
+
+# ---------------------------------------------------------------------------
+# Artefatos de agentes/automacao locais (nao fazem parte do jogo)
+# ---------------------------------------------------------------------------
+/.agents/
+/JULES_REPORT.md
+.aws
+*.log

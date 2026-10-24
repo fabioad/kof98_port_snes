@@ -1,0 +1,40 @@
+[Info]
+Name         = "Kyo Kusanagi"
+DisplayName  = "Kyo"
+Author       = "ikaruga"
+VersionDate  = 05,27,2018
+MugenVersion = 1.0
+Pal.Defaults = 4
+localcoord   = 320
+
+[Files]
+Cmd      = Kyo.cmd
+Cns      = Constants.cns
+St       = Ash/Ash.cns
+St1      = Kyo.cns
+St2      = Kyo-N.cns
+St3      = Kyo-S.cns
+St4      = Kyo-H.cns
+St5      = Kyo-2-3.cns
+St6      = Helper.cns
+St7      = Config.cns
+St8      = Member.cns
+StCommon = common_kof.cns
+Sprite   = Ash/Kyo.sff
+Anim     = Ash/Kyo.air
+Sound    = Kyo.snd
+
+;---カラーパレット---
+
+Pal1  = Ash/act/act02.act
+Pal2  = Ash/act/act04.act
+Pal3  = Ash/act/act06.act
+Pal4  = Ash/act/act01.act
+Pal5  = Ash/act/act03.act
+Pal6  = Ash/act/act05.act
+Pal7  = Ash/act/act10.act
+Pal8  = Ash/act/act04.act
+Pal9  = Ash/act/act12.act
+Pal10 = Ash/act/act07.act
+Pal11 = Ash/act/act09.act
+Pal12 = Ash/act/act11.act

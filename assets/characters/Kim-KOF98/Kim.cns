@@ -1,0 +1,4670 @@
+;---------------------------------------------------------------------------
+; 基本行動のステート
+;---------------------------------------------------------------------------
+; 挑発
+; CNS レベル: 基本
+[Statedef 160]
+type     = S
+movetype = I
+physics  = S
+anim     = 160
+velset   = 0,0
+ctrl     = 0
+sprpriority = 2 ;ここで表示優先度を決定できます。　範囲は-5～5、大きいほど手前に表示される
+facep2 = 1      ;相手の方を向いてから挑発（結構重要）
+
+;------------------------
+; いっしょにトレーニング
+;------------------------
+[State 160, VarSet]
+type = VarSet
+triggerall = var(40) > 0
+trigger1 = var(39) = 1
+trigger1 = time = 0
+var(40) = 0
+
+[State 160, ガード弾き値・リセット]
+type = VarSet
+triggerall = fvar(10) != 0
+trigger1 = var(39) = 1
+trigger1 = Time = 0
+fvar(10) = 0
+
+[State 160, 気絶値・リセット]
+type = VarSet
+triggerall = fvar(13) != 0
+trigger1 = var(39) = 1
+trigger1 = Time = 0
+fvar(13) = 0
+
+;------------------------
+
+[State 160, CtrlSet]
+type = CtrlSet
+triggerall = Time >= 33
+triggerall = !winko
+trigger1 = var(59) != 1
+trigger2 = var(59) = 1
+trigger2 =!(EnemyNear(var(58)),stateno = 5715 && EnemyNear(var(58)),anim = 5300 && EnemyNear(var(58)),movetype = I)
+trigger2 = InGuardDist || EnemyNear(var(58)),MoveType = A || EnemyNear(var(58)),Vel X > 0
+value = 1
+
+[State 160, ChangeState]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; 勝利ポーズ分岐
+; CNS レベル: 基本
+;
+;ここで勝利ポーズを選択する。　MatchOverは試合終了を判定するので、
+;一回目と二回目勝利を別のポーズにしたい時に便利。
+
+[Statedef 180]
+type = S
+ctrl = 0
+;anim = 180
+velset = 0,0
+
+[State 180, VarSet]
+type = VarSet
+trigger1 = command = "holdx"
+trigger2 = command != "holdx" && command != "holda" && command != "holdy" && command != "holdb"
+trigger2 = Random%4 = 0
+var(0) = 0
+
+[State 180, VarSet]
+type = VarSet
+trigger1 = command = "holda"
+trigger2 = command != "holdx" && command != "holda" && command != "holdy" && command != "holdb"
+trigger2 = Random%4 = 1
+var(0) = 1
+
+[State 180, VarSet]
+type = VarSet
+trigger1 = command = "holdy"
+trigger2 = command != "holdx" && command != "holda" && command != "holdy" && command != "holdb"
+trigger2 = Random%4 = 2
+var(0) = 2
+
+[State 180, VarSet]
+type = VarSet
+trigger1 = command = "holdb"
+trigger2 = command != "holdx" && command != "holda" && command != "holdy" && command != "holdb"
+trigger2 = Random%4 = 3
+var(0) = 3
+
+[State 180, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 180, AssertSpecial]
+type = AssertSpecial
+trigger1 = 1
+flag = roundnotover
+
+[State 180, ChangeAnim]
+type = ChangeAnim
+trigger1 = Anim != [0,1]
+value = 0 + (var(10) = 1)
+
+[State 180, Explod]
+type = Explod
+trigger1 = wintime = 0
+trigger1 = numhelper(8100) = 0
+trigger1 = teamside = 1
+anim = 8110
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 180, Explod]
+type = Explod
+trigger1 = wintime = 0
+trigger1 = numhelper(8100) = 0
+trigger1 = teamside = 2
+anim = 8111
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 180, VarSet]
+type = VarSet
+trigger1 = time = 0
+var(16) = 0
+
+[State 180, VarAdd]
+type = VarAdd
+trigger1 = wintime = 0
+trigger1 = numhelper(8100) = 0
+var(16) = 1
+
+[State 180, PlaySnd]
+type = PlaySnd
+trigger1 = wintime = 0
+trigger1 = var(16) > 16
+trigger1 = numhelper(8100) = 0
+value = s15,1
+volume = 255
+persistent = 0
+AbsPan = 0
+
+[State 180, ステート変更]
+type = ChangeState
+trigger1 = wintime = 0
+trigger1 = var(16) >= 32
+trigger2 = wintime
+trigger2 = time = 0
+trigger3 = time = 200
+value = 181 + var(0)
+
+;---------------------------------------------------------------------------
+; 勝利ポーズ1
+; CNS レベル: 基本
+
+[Statedef 181]
+type = S
+ctrl = 0
+anim = 181
+velset = 0,0
+
+[State 181, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 181, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 5
+value = s10,0
+channel = 0
+
+[State 181, VarSet]
+type = VarSet
+trigger1 = 1
+var(27) = 0
+
+;--------------------------------
+[State 181, ゲージ非表示]
+type = VarSet
+trigger1 = wintime
+trigger1 = time = [100,189]
+var(37) = 1
+
+[State 181, ゲージ非表示]
+type = AssertSpecial
+trigger1 = wintime
+trigger1 = time = [100,189]
+flag = nobardisplay
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 100
+anim = 8120
+ID = 180
+ownpal = 1
+pos = 103,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, Super A]
+type = PlaySnd
+trigger1 = wintime
+trigger1 = time = 100
+value = s15,2
+persistent = 0
+AbsPan = 0
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 189
+trigger1 = teamside = 1
+anim = 8110
+ID = 180
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 189
+trigger1 = teamside = 2
+anim = 8111
+ID = 180
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, 音を鳴らす]
+type = PlaySnd
+trigger1 = wintime
+trigger1 = time = 205
+value = s15,1
+persistent = 0
+AbsPan = 0
+
+;--------------------------------
+[State 181, 特殊効果]
+type = AssertSpecial
+trigger1 = wintime = 0
+trigger1 = Time = [0,220]
+trigger2 = wintime
+trigger2 = Time = [0,380]
+flag = roundnotover
+
+[State 181, Explod]
+type = Explod
+triggerall = teammode = single || teammode = turns
+trigger1 = wintime = 0
+trigger1 = Time = 200
+trigger2 = wintime
+trigger2 = Time = 360
+anim = 8000
+ID = 78000
+ontop = 1
+postype = left
+scale = 500.0,10.0
+ownpal = 1
+bindtime = -1
+ignorehitpause = 1
+
+[State 181, 特殊効果]
+type = AssertSpecial
+trigger1 = numexplod(78000) = 1
+flag = nobardisplay
+
+[State 181, ChangeState]
+type = ChangeState
+triggerall = matchover
+trigger1 = wintime = 0 && Time = 216
+trigger2 = wintime && Time = 376
+value = 189
+
+;---------------------------------------------------------------------------
+; 勝利ポーズ2
+; CNS レベル: 基本
+
+[Statedef 182]
+type = S
+ctrl = 0
+anim = 182
+velset = 0,0
+
+[State 182, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 182, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 16
+value = s10,1
+channel = 0
+
+[State 182, VarSet]
+type = VarSet
+trigger1 = 1
+var(27) = 0
+
+;--------------------------------
+[State 181, ゲージ非表示]
+type = VarSet
+trigger1 = wintime
+trigger1 = time = [100,189]
+var(37) = 1
+
+[State 181, ゲージ非表示]
+type = AssertSpecial
+trigger1 = wintime
+trigger1 = time = [100,189]
+flag = nobardisplay
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 100
+anim = 8120
+ID = 180
+ownpal = 1
+pos = 103,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, Super A]
+type = PlaySnd
+trigger1 = wintime
+trigger1 = time = 100
+value = s15,2
+persistent = 0
+AbsPan = 0
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 189
+trigger1 = teamside = 1
+anim = 8110
+ID = 180
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 189
+trigger1 = teamside = 2
+anim = 8111
+ID = 180
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, 音を鳴らす]
+type = PlaySnd
+trigger1 = wintime
+trigger1 = time = 205
+value = s15,1
+persistent = 0
+AbsPan = 0
+
+;--------------------------------
+[State 182, 特殊効果]
+type = AssertSpecial
+trigger1 = wintime = 0
+trigger1 = Time = [0,260]
+trigger2 = wintime
+trigger2 = Time = [0,420]
+flag = roundnotover
+
+[State 182, Explod]
+type = Explod
+triggerall = teammode = single || teammode = turns
+trigger1 = wintime = 0
+trigger1 = Time = 240
+trigger2 = wintime
+trigger2 = Time = 400
+anim = 8000
+ID = 78000
+ontop = 1
+postype = left
+scale = 500.0,10.0
+ownpal = 1
+bindtime = -1
+ignorehitpause = 1
+
+[State 182, 特殊効果]
+type = AssertSpecial
+trigger1 = numexplod(78000) = 1
+flag = nobardisplay
+
+[State 182, ChangeState]
+type = ChangeState
+triggerall = matchover
+trigger1 = wintime = 0 && Time = 256
+trigger2 = wintime && Time = 416
+value = 189
+
+;---------------------------------------------------------------------------
+; 勝利ポーズ3
+; CNS レベル: 基本
+
+[Statedef 183]
+type = S
+ctrl = 0
+anim = 183
+velset = 0,0
+
+[State 183, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 183, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 10
+value = s12,0
+
+[State 183, VarSet]
+type = VarSet
+trigger1 = 1
+var(27) = 0
+
+;--------------------------------
+[State 181, ゲージ非表示]
+type = VarSet
+trigger1 = wintime
+trigger1 = time = [100,189]
+var(37) = 1
+
+[State 181, ゲージ非表示]
+type = AssertSpecial
+trigger1 = wintime
+trigger1 = time = [100,189]
+flag = nobardisplay
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 100
+anim = 8120
+ID = 180
+ownpal = 1
+pos = 103,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, Super A]
+type = PlaySnd
+trigger1 = wintime
+trigger1 = time = 100
+value = s15,2
+persistent = 0
+AbsPan = 0
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 189
+trigger1 = teamside = 1
+anim = 8110
+ID = 180
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 189
+trigger1 = teamside = 2
+anim = 8111
+ID = 180
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, 音を鳴らす]
+type = PlaySnd
+trigger1 = wintime
+trigger1 = time = 205
+value = s15,1
+persistent = 0
+AbsPan = 0
+
+;--------------------------------
+[State 183, 特殊効果]
+type = AssertSpecial
+trigger1 = wintime = 0
+trigger1 = Time = [0,220]
+trigger2 = wintime
+trigger2 = Time = [0,380]
+flag = roundnotover
+
+[State 183, Explod]
+type = Explod
+triggerall = teammode = single || teammode = turns
+trigger1 = wintime = 0
+trigger1 = Time = 200
+trigger2 = wintime
+trigger2 = Time = 360
+anim = 8000
+ID = 78000
+ontop = 1
+postype = left
+scale = 500.0,10.0
+ownpal = 1
+bindtime = -1
+ignorehitpause = 1
+
+[State 183, 特殊効果]
+type = AssertSpecial
+trigger1 = numexplod(78000) = 1
+flag = nobardisplay
+
+[State 183, ChangeState]
+type = ChangeState
+triggerall = matchover
+trigger1 = wintime = 0 && Time = 216
+trigger2 = wintime && Time = 376
+value = 189
+
+;---------------------------------------------------------------------------
+; 勝利ポーズ4
+; CNS レベル: 基本
+
+[Statedef 184]
+type = S
+ctrl = 0
+anim = 184
+velset = 0,0
+
+[State 184, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 184, VarSet]
+type = VarSet
+trigger1 = 1
+var(27) = 0
+
+;--------------------------------
+[State 181, ゲージ非表示]
+type = VarSet
+trigger1 = wintime
+trigger1 = time = [100,189]
+var(37) = 1
+
+[State 181, ゲージ非表示]
+type = AssertSpecial
+trigger1 = wintime
+trigger1 = time = [100,189]
+flag = nobardisplay
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 100
+anim = 8120
+ID = 180
+ownpal = 1
+pos = 103,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, Super A]
+type = PlaySnd
+trigger1 = wintime
+trigger1 = time = 100
+value = s15,2
+persistent = 0
+AbsPan = 0
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 189
+trigger1 = teamside = 1
+anim = 8110
+ID = 180
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, エフェクト表示]
+type = Explod
+trigger1 = wintime
+trigger1 = time = 189
+trigger1 = teamside = 2
+anim = 8111
+ID = 180
+ownpal = 1
+pos = 8,45
+postype = left
+bindtime = -1
+ontop = 1
+persistent = 0
+
+[State 181, 音を鳴らす]
+type = PlaySnd
+trigger1 = wintime
+trigger1 = time = 205
+value = s15,1
+persistent = 0
+AbsPan = 0
+
+;--------------------------------
+[State 184, 特殊効果]
+type = AssertSpecial
+trigger1 = wintime = 0
+trigger1 = Time = [0,220]
+trigger2 = wintime
+trigger2 = Time = [0,380]
+flag = roundnotover
+
+[State 184, Explod]
+type = Explod
+triggerall = teammode = single || teammode = turns
+trigger1 = wintime = 0
+trigger1 = Time = 200
+trigger2 = wintime
+trigger2 = Time = 360
+anim = 8000
+ID = 78000
+ontop = 1
+postype = left
+scale = 500.0,10.0
+ownpal = 1
+bindtime = -1
+ignorehitpause = 1
+
+[State 184, 特殊効果]
+type = AssertSpecial
+trigger1 = numexplod(78000) = 1
+flag = nobardisplay
+
+[State 184, ChangeState]
+type = ChangeState
+triggerall = matchover
+trigger1 = wintime = 0 && Time = 216
+trigger2 = wintime && Time = 376
+value = 189
+
+;---------------------------------------------------------------------------
+; 勝利メッセージ
+; CNS レベル: 基本
+
+[Statedef 189]
+type = S
+ctrl = 0
+anim = 9999
+velset = 0,0
+
+[State 189, PalFx]
+type = PalFx
+trigger1 = time = 0
+add = 0,0,0
+time = 1
+
+[State 189, PlaySnd]
+type = PlaySnd
+trigger1 = time = 0
+value = s15,5
+AbsPan = 0
+
+[State 189, RemoveExplod]
+type = RemoveExplod
+trigger1 = time = 0
+ID = 78000
+
+[State 189, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+[State 189, Explod];背景
+type = Explod
+trigger1 = time = 0
+anim = ifelse(teamside=1,8200,8201)
+postype = left
+bindtime = -1
+removetime =-1
+ownpal = 1
+ontop = 1
+
+[State 189, Explod];一人目移動
+type = Explod
+trigger1 = time=0&&NumHelper(9900)
+trigger1 = Helper(9900),var(41)<=51&&Helper(9900),var(43)<=51
+anim = 8300+Helper(9900),var(41)
+postype = left
+vel = 15,0
+pos = -3000,0
+ownpal = 1
+ontop = 1
+[State 189, Explod];一人目停止
+type = Explod
+trigger1 = time=0&&NumHelper(9900)
+trigger1 = Helper(9900),var(41)<=51&&Helper(9900),var(43)<=51
+anim = 8400+Helper(9900),var(41)
+postype = left
+bindtime = -1
+ownpal = 1
+ontop = 1
+
+[State 189, Explod];二人目移動
+type = Explod
+trigger1 = time=0&&NumHelper(9900)
+trigger1 = Helper(9900),var(43)<=51&&Helper(9900),var(43)<=51
+anim = 8300+Helper(9900),var(43)
+postype = left
+vel = 15,0
+pos = -2803,0
+ownpal = 1
+ontop = 1
+[State 189, Explod];二人目停止
+type = Explod
+trigger1 = time=0&&NumHelper(9900)
+trigger1 = Helper(9900),var(43)<=51&&Helper(9900),var(43)<=51
+anim = 8400+Helper(9900),var(43)
+postype = left
+pos = 203,0
+bindtime = -1
+ownpal = 1
+ontop = 1
+
+[State 189, Explod];本体
+type = Explod
+trigger1 = time = 0
+anim = 8240
+postype = left
+bindtime = -1
+ownpal = 1
+ontop = 1
+[State 189, Explod];字幕
+type = Explod
+trigger1 = time = 0
+anim = ifelse(var(5),8223+var(5),8220+random%4)
+postype = left
+bindtime = -1
+ownpal = 1
+ontop = 1
+[State 189, Explod];演出
+type = Explod
+trigger1 = time = 0
+anim = 8210
+postype = left
+bindtime = -1
+ownpal = 1
+ontop = 1
+[State 189, Explod];枠
+type = Explod
+trigger1 = time = 0
+anim = 8205
+postype = left
+bindtime = -1
+removetime =-1
+ownpal = 1
+ontop = 1
+
+[State 189, AssertSpecial]
+type = AssertSpecial
+trigger1 = 1
+flag = nomusic
+flag2 = noFG
+flag3 = noBG
+
+[State 189, AssertSpecial]
+type = AssertSpecial
+trigger1 = 1
+flag = NoBarDisplay
+flag2 = globalnoshadow
+
+[State 189, AssertSpecial]
+type = AssertSpecial
+trigger1 = Time = [0,407]
+flag = roundnotover
+
+;---------------------------------------------------------------------------
+; イントロ分岐
+; CNS レベル: 基本
+;
+; ここでは変数(var)を使っていますが、詳しい説明は後ほど。
+; VarRandomはrangeで指定された範囲からひとつを選ぶので、
+; いろいろな分岐に便利です。
+
+;イントロ選択
+[Statedef 190]
+type = S
+ctrl = 0
+anim = 0
+velset = 0,0
+
+[State 190, VarRandom]
+type = VarRandom
+trigger1 = 1
+v = 0
+range = 0,1
+
+[State 190, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 190, 対悪人]
+type = ChangeState
+triggerall = Time = 1
+trigger1 = p2name = "Rugal" || P4Name = "Rugal"
+trigger2 = p2name = "Rugal Bernstein" || P4Name = "Rugal Bernstein"
+trigger3 = p2name = "Iori" || p4name = "Iori"
+trigger4 = p2name = "Iori Yagami" || p4name = "Iori Yagami"
+trigger5 = p2name = "Billy Kane" || P4Name = "Billy Kane"
+trigger6 = p2name = "Mature" || P4Name = "Mature"
+trigger7 = p2name = "Vice" || P4Name = "Vice"
+trigger8 = p2name = "Geese" || p4name = "Geese"
+trigger9 = p2name = "Geese Howard" || p4name = "Geese Howard"
+trigger10 = p2name = "Krauser" || p4name = "Krauser"
+trigger11 = p2name = "Wolfgang Krauser" || p4name = "Wolfgang Krauser"
+trigger12 = p2name = "Mr.Big" || p2name = "Mr.Big"
+trigger13 = p2name = "Goenitz" || P4Name = "Goenitz"
+trigger14 = p2name = "Yashiro" || P4Name = "Yashiro"
+trigger15 = p2name = "Yashiro Nanakase" || P4Name = "Yashiro Nanakase"
+trigger16 = p2name = "Shermie" || P4Name = "Shermie"
+trigger17 = p2name = "Chris" || P4Name = "Chris"
+trigger18 = p2name = "Yamazaki" || P4Name = "Yamazaki"
+trigger19 = p2name = "Ryuji Yamazaki" || P4Name = "Ryuji Yamazaki"
+trigger20 = p2name = "Orochi" || P4Name = "Orochi"
+trigger21 = p2name = "Krizalid" || p4name = "Krizalid"
+trigger22 = p2name = "K9999" || p4name = "K9999"
+trigger23 = p2name = "Angel" || p4name = "Angel"
+trigger24 = p2name = "Foxy" || p4name = "Foxy"
+trigger25 = p2name = "Zero" || p4name = "Zero"
+trigger26 = p2name = "OriginalZero" || p4name = "OriginalZero"
+trigger27 = p2name = "Igniz" || p4name = "Igniz"
+trigger28 = p2name = "Ash" || P4Name = "Ash"
+trigger29 = p2name = "Ash Crimson" || P4Name = "Ash Crimson"
+trigger30 = p2name = "Mukai" || P4Name = "Mukai"
+trigger31 = p2name = "Jazu" || P4Name = "Jazu"
+trigger32 = p2name = "Silver" || P4Name = "Silver"
+trigger33 = p2name = "Shion" || P4Name = "Shion"
+trigger34 = p2name = "Magaki" || P4Name = "Magaki"
+trigger35 = p2name = "Orochi Iori" || p4name = "Orochi Iori"
+trigger36 = p2name = "Orochi Leona" || p4name = "Orochi Leona"
+trigger37 = p2name = "Genjuro" || P4Name = "Genjuro"
+trigger38 = p2name = "Genjuro Kibagami" || P4Name = "Genjuro Kibagami"
+trigger39 = p2name = "Earthquake" || P4Name = "Earthquake"
+trigger40 = p2name = "Vega" || P4Name = "Vega"
+trigger41 = p2name = "Balrog" || P4Name = "Balrog"
+trigger42 = p2name = "M.Bison" || P4Name = "M.Bison"
+trigger43 = p2name = "Demitri" || P4Name = "Demitri"
+trigger44 = p2name = "Vritra" || p4name = "Vritra"
+trigger45 = p2name = "Nagar" || p4name = "Nagar"
+trigger46 = p2name = "Mara" || p4name = "Mara"
+value = 193
+
+[State 190, 対悪人]
+type = ChangeState
+triggerall = Time = 1
+trigger1=p2name="Ibuki_Suika"
+trigger2=p2name="MP-Suika"
+trigger3=p2name="Suika_Ibuki"
+trigger4=p2name="Suika Ibuki"
+trigger5=p2name="Yuyuko_Saigyouji"
+trigger6=p2name="Yuyuko Saigyouji"
+trigger7=p2name="yuyu"
+trigger8=p2name="remilia"
+trigger9=p2name="Remilia_Scarlet"
+trigger10=p2name="Yakumo Yukari"
+trigger11=p2name="Yukari_Yakumo"
+trigger12=p2name="Yukari Yakumo"
+trigger13=p2name="Sakuya Shadow Brando"
+trigger14=p2name="Mech-HISUI"
+trigger15=p2name="Mech Hisui"
+trigger16=p2name="mechhisuiex"
+trigger17=p2name="Shiki_Nanaya"
+trigger18=p2name="Nanaya_Shiki"
+trigger19=p2name="Nanaya_T"
+trigger20=p2name="Nrvnqsr_Chaos"
+trigger21=p2name="Inferis Chaos"
+trigger22=p2name="Warachia"
+trigger23=p2name="Warakia"
+trigger24=p2name="Kishima Kouma"
+trigger25=p2name="Kishima_kouma"
+trigger26=p2name="Giant_Mech-HISUI"
+trigger27=p2name="Red_Arcueid"
+trigger28=p2name="Red Arcueid"
+trigger29=p2name="Arcueid Brunestud"
+trigger30=p2name="Dark Arcueid"
+trigger31=p2name="Dark Arcueid mk2"
+trigger32=p2name="Akaitsuki"
+trigger33=p2name="Willow Rosemberg"
+trigger34=p2name="eddie"
+trigger35=p2name="Leopaldon"
+trigger36=p2name="LEOPALDON_GGI"
+trigger37=p2name="ShinEddie"
+trigger38=p2name="Toguro Ototo"
+trigger39=p2name="toguro ototo (K.ver)"
+trigger40=p2name="mukuro"
+trigger41=p2name="raizen"
+trigger42=p2name="shigure"
+trigger43=p2name="Queen Beryl"
+trigger44=p2name="Suigintou-D"
+trigger45=p2name="SuigintouF-D"
+trigger46=p2name="Barasy-D"
+trigger47=p2name="suigintou"
+trigger48=p2name="Light Yagami"
+trigger49=p2name="Makoto Shishio"
+trigger50=p2name="Shishio Makoto"
+trigger51=p2name="Dio"
+trigger52=p2name="Shadow DIO"
+trigger53=p2name="vanilla ice"
+trigger54=p2name="vanillaice"
+trigger55=p2name="Zofisu&Coco"
+trigger56=p2name="EvilFighter Vegeta"
+trigger57=p2name="[Necromancer's] Cell"
+trigger58=p2name="Cell Junior by _Vision"
+trigger59=p2name="Cell-Jr by Pextin"
+trigger60=p2name="Cell"
+trigger61=p2name="Frieza"
+trigger62=p2name="Burter"
+trigger63=p2name="Captain Ginyu"
+trigger64=p2name="Mr.Boo by OverMind"
+trigger65=p2name="Buu"
+trigger66=p2name="Fat Buu"
+trigger67=p2name="Broli Remix ver1.2"
+trigger68=p2name="[Necromancer's] Broli"
+trigger69=p2name="Broly557"
+trigger70=p2name="Bojack Enhanced 1.01"
+trigger71=p2name="Guldo by Redneck"
+trigger72=p2name="Bear T"
+trigger73=p2name="Vega"
+trigger74=p2name="cvsgouki"
+trigger75=p2name="cvsgouki_ex"
+trigger76=p2name="cvsgouki_normal"
+trigger77=p2name="Tin's S_Gouki"
+trigger78=p2name="Mech Gouki"
+trigger79=p2name="ZXAkuma"
+trigger80=p2name="MvC Akuma/Gouki By Kamekaze"
+trigger81=p2name="Poke-Akuma"
+trigger82=p2name="Shin Gouki"
+trigger83=p2name="cvsvega"
+trigger84=p2name="SVCVEGA"
+trigger85=p2name="Gill"
+trigger86=p2name="Shin Valdoll"
+trigger87=p2name="Valdoll"
+trigger88=p2name="Kongou"
+trigger89=p2name="Bishamon"
+trigger90=p2name="Zabel"
+trigger91=p2name="pyron"
+trigger92=p2name="Pyron(DS)"
+trigger93=p2name="Jedah"
+trigger94=p2name="demitri"
+trigger95=p2name="Morrigan Aensland"
+trigger96=p2name="Morrigan"
+trigger97=p2name="Rikuo"
+trigger98=p2name="Red Arremer"
+trigger99=p2name="Venom"
+trigger100=p2name="NEO-DIO"
+trigger101=p2name="NEODIO"
+trigger102=p2name="kusaregedo"
+trigger103=p2name="Tin's FERNANDEATH"
+trigger104=p2name="Tin's fdeath"
+trigger105=p2name="ALIEN WARRIOR"
+trigger106=p2name="CHRYSALIS"
+trigger107=p2name="PREDATOR WARRIOR"
+trigger108=p2name="ALIEN QUEEN"
+trigger109=p2name="RAZOR CLAWS"
+trigger110=p2name="Jyashinsai"
+trigger111=p2name="splatter rick"
+trigger112=p2name="saru"
+trigger113=p2name="Ultimate Chimera"
+trigger114=p2name="Master Hand"
+trigger115=p2name="Spoo"
+trigger116=p2name="supooo?"
+trigger117=p2name="spooo"
+trigger118=p2name="Shuma Gorath"
+trigger119=p2name="Peketo"
+trigger120=p2name="shar-makai"
+trigger121=p2name="Yoritomo"
+trigger122=p2name="KurouYoshitune Minamoto"
+trigger123=p2name="Hashi"
+trigger124=p2name="Viuda Negra"
+trigger125=p2name="Noroko"
+trigger126=p2name="Rick"
+trigger127=p2name="elque"
+trigger128=p2name="Ella"
+trigger129=p2name="Peketo"
+trigger130=p2name="OROCHI"
+trigger131=p2name="Mizuchi"
+trigger132=p2name="Baikinman"
+trigger133=p2name="Shadow Lady"
+trigger134=p2name="KUPPA GUNDAN"
+trigger135=p2name="King Koopa"
+trigger136=p2name="DEATH MAUL"
+trigger137=p2name="[o_O]'s Blackheart"
+trigger138=p2name="shuma gorath by Qkrtkf!"
+trigger139=p2name="Dr.Doom"
+trigger140=p2name="kula & eddie"
+trigger141=p2name="BlackHeart"
+trigger142=p2name="Thanos"
+trigger143=p2name="Hyper Beast"
+trigger144=p2name="Flame Demon"
+trigger145=p2name="Devil Bird Sadist"
+trigger146=p2name="Megumi The Queen Of Blades"
+trigger147=p2name="Evil Ken SF'2"
+trigger148=p2name="Rasyouzin Miduki"
+trigger149=p2name="Wario"
+trigger150=p2name="Homero el malo"
+trigger151=p2name="DrDoom"
+trigger152=p2name="Neco Chaos Black G666"
+trigger153=p2name="Slime"
+trigger154=p2name="Akuma"
+trigger155=p2name="Koopa"
+trigger156=p2name="necoarc_abyss"
+trigger157=p2name="necochaosblackG666mk2"
+trigger158=p2name="necoarc_chaos"
+trigger159=p2name="Neco-Arc"
+trigger160=p2name="Neco-Arc Chaos"
+trigger161=p2name="Neco-Arc Z"
+trigger162=p2name="hollow_pelle"
+trigger163=p2name="Giga Bowser"
+trigger164=p2name="hiei"
+trigger165=p2name="SLIME3"
+trigger166=p2name="Takano_Miyo"
+trigger167=p2name="bowser-spaceship"
+trigger168=p2name="Makamaka"
+trigger169=p2name="Arrange_Yukari"
+trigger170=p2name="miku"&&authorname="ju"
+trigger171=p2name="mizuki"&&authorname="ali"
+trigger172=p2name="Hiei by Ribeiro"
+trigger173=p2name="raigu's dracula"
+trigger174=p2name="EO"&&authorname="kozeni"
+trigger175=p2name="Flandre_Scarlet"
+trigger176=p2name="Firebrand"
+trigger177=p2name="Dabura"
+trigger178=p2name="chain combo yuyuko"
+trigger179=p2name="ore_no_ane"&&authorname="suika_no_otto"
+trigger180=p2name="ore_no_yome"&&authorname="suika_no_otto"
+trigger181=p2name="Fullmoon_Suika"
+trigger182=p2name="ONI-MIKO-REIMU"
+trigger183=p2name="KUBIKIRI BASARA"
+trigger184=p2name="Baraka"
+trigger185=p2name="sheeva"
+trigger186=p2name="efreet"
+trigger187=p2name="eye_guardian"
+trigger188=p2name="AMAKUSA"
+trigger189=p2name="Amakusa Samurai Shodown"
+trigger190=p2name="Jubocco baby"
+trigger191=p2name="ANTLAR"
+trigger192=p2name="ALIEN BALTAN"
+trigger193=p2name="BALTAN"
+trigger194=p2name="BULLTON"
+trigger195=p2name="DEATH"
+trigger196=p2name="DEATH13"
+trigger197=p2name="GELONIMON"
+trigger198=p2name="KINGJOE"
+trigger199=p2name="MEFILAS"
+trigger200=p2name="NELONGA"
+trigger201=p2name="PANDON"
+trigger202=p2name="REDKING"
+trigger203=p2name="Z-TON"
+trigger204=p2name="TIBLEKUN"
+trigger205=p2name="Alsion3rd"
+trigger206=p2name="rocky"
+trigger207=p2name="Shao Kahn"
+trigger208=p2name="Starbem Gyeron"
+trigger209=p2name="ShumaGorath"
+trigger210=p2name="KODALAR"
+trigger211=p2name="SHIRALEE"
+trigger212=p2name="MKvsSFGouki"
+trigger213=p2name="Chargin' Chuck V 2.1"
+trigger214=p2name="New_Shiki_Nanaya"&&authorname="eminanaya"
+trigger215=p2name="final dio"
+trigger216=p2name="Bisonmg"
+trigger217=p2name="Gouki by M.M.R."
+trigger218=p2name="ZATO-1"
+trigger219=p2name="MizuchiXI"
+trigger220=p2name="Hyper Mizuchi"
+trigger221=p2name="Gouki"
+trigger222=p2name="Crossover Jedah"
+trigger223=p2name="M. Bison"&&authorname="VK, Updated by Terry Kuo, Adapted by Tenebrous"
+trigger224=p2name="AKU-AMAKUSA SHIRO TOKISADA"
+trigger225=p2name="Crocodile"
+trigger226=p2name="Sevil Nahte"
+trigger227=p2name="Daichi-Sin"
+trigger228=p2name="Shiki kageya"
+trigger229=p2name="Ginyu"
+trigger230=p2name="Dr Gero"
+trigger231=p2name="Android 20"
+trigger232=p2name="Bojack"
+trigger233=p2name="Demitri-Ex"
+trigger234=p2name="Demitri Maximoff"
+trigger235=p2name="Demitri(DS)"
+trigger236=p2name="SF2'ベガ"
+trigger237=p2name="豪鬼"
+trigger238=p2name="M.Bison"&&authorname="Smoke"
+trigger239=p2name="tibigintou"
+trigger240=p2name="Back Beard"
+trigger241=p2name="garooda 2001"
+trigger242=p2name="Ristill"
+trigger243=p2name="Recoom"
+trigger244=p2name="Recoome"
+trigger245=p2name="sukeruton-supoo"
+trigger246=p2name="supooo!"
+trigger247=p2name="ogre spoo"
+trigger248=p2name="mechspoo balck G-5900"
+trigger249=p2name="Damien Armies"
+trigger250=p2name="judgment"
+trigger251=p2name="DS_Bishamon"
+trigger252=p2name="ALIEN GREEN"
+trigger253=p2name="Bad Mr Frosty"
+trigger254=p2name="mr. Burns"
+trigger255=p2name="cvsken_ex"
+trigger256=p2name="cvsryu_ex"
+trigger257=p2name="cvsvega_normal"
+trigger258=p2name="cvsvega_ex"
+trigger259=p2name="Anakaris By Third"
+trigger260=p2name="cvsanakaris"
+trigger261=p2name="Anakaris"
+trigger262=p2name="Daichi-jin"
+trigger263=p2name="Kamek the Magikoopa"
+trigger264=p2name="Sexy Turtle"
+trigger265=p2name="Spopovich"
+trigger266=p2name="Youki-so-Suika"
+trigger267=p2name="Oboro Bishamon"
+trigger268=p2name="Gouki_Cota"
+trigger269=p2name="eRYU-SvsC"
+trigger270=p2name="Nega Ryo By Kamekaze"
+trigger271=p2name="Shin M. Bison/ Shin Vega by Kamekaze"
+trigger272=p2name="Menos Gande"
+trigger273=p2name="Synn"
+trigger274=p2name="RajaaMechHisui"
+trigger275=p2name="Barbarccia"
+trigger276=p2name="SP"
+trigger277=p2name="gill_mx"
+trigger278=p2name="Chibi Suika"
+trigger279=p2name="Crowe_sail"
+trigger280=p2name="DALLY"
+trigger281=p2name="BORG"
+trigger282=p2name="Ella 2.5"
+trigger283=p2name="Arma"
+trigger284=p2name="jinmen"
+trigger285=p2name="nikukabe"
+trigger286=p2name="Anti-Gouki #1"
+trigger287=p2name="DEVIL-KFM"
+trigger288=p2name="MEKAkfm"
+trigger289=p2name="Black _Pet"
+trigger290=p2name="Black_Pet"
+trigger291=p2name="Moon Face"
+trigger292=p2name="Igniz_Scarlet"
+trigger293=p2name="MAJIN-VEGETA by BARDOCK"
+trigger294=p2name="Zarbom by EmuBoarding"
+trigger295=p2name="Zarbom"
+trigger296=p2name="DIO BRANDO"
+trigger297=p2name="remilia_h"
+trigger298=p2name="Remilia Scarlet"
+trigger299=p2name="Gray Fly"
+trigger300=p2name="Lucifeller"
+trigger301=p2name="Atomos"
+trigger302=p2name="Bonkers"
+trigger303=p2name="Dabura by DZGTEAM"
+trigger304=p2name="INFINITY PHALANX"
+trigger305=p2name="SOMULO"
+trigger306=p2name="Gig"
+trigger307=p2name="janemba by Franciynaldo"
+trigger308=p2name="KINTARO"&&authorname="OMEGAPSYCHO"
+trigger309=p2name="Spinal"
+trigger310=p2name="SSF2T Gouki"
+trigger311=p2name="Atroce"
+trigger312=p2name="ClawBear"
+trigger313=p2name="Bloodbane"
+trigger314=p2name="Ridley"
+trigger315=p2name="tyrant"
+trigger316=p2name="Evil Kung Fu Man"
+trigger317=p2name="Devil_Daigo"
+trigger318=p2name="gatanozoa"
+trigger319=p2name="Zoma"
+trigger320=p2name="gurospooo"
+trigger321=p2name="Yakumo_Ran_"
+trigger322=p2name="Yakumo_Ran"
+trigger323=p2name="ShinAkuma"
+trigger324=p2name="MOTARO"
+trigger325=p2name="J_nanaya"
+trigger326=p2name="DORAKO"
+trigger327=p2name="yugi"&&authorname="minoo"
+trigger328=p2name="Remilia_K"
+trigger329=p2name="Gemilia"
+trigger330=p2name="Ishtar"
+trigger331=p2name="EXTRA USAPI-"
+trigger332=p2name="Yukari_Yakumo_RP"
+trigger333=p2name="amiba"
+trigger334=p2name="MULCHI"
+trigger335=p2name="JACK FROST"
+trigger336=p2name="Bokuohn"
+trigger337=p2name="Cyber Akuma"
+trigger338=p2name="Pokita"
+trigger339=p2name="Xavier Pendragon"
+trigger340=p2name="Satan"
+trigger341=p2name="Dark Elf"
+trigger342=p2name="GORO"
+trigger343=p2name="Sawada Koichi"
+trigger344=p2name="Juralian"
+trigger345=p2name="Mantis beta"
+trigger346=p2name="Marco"&&authorname="Nicholas James+Cenobite 53 Update"
+trigger347=p2name="GnollW"
+trigger348=p2name="griffon"
+trigger349=p2name="Watern"
+trigger350=p2name="Broly"
+trigger351=p2name="Turles GZ- V1.0 by zero liger"
+trigger352=p2name="Turles"
+trigger353=p2name="CC"
+trigger354=p2name="Decarabia"
+trigger355=p2name="Sue-zo"
+trigger356=p2name="Hedorah"
+trigger357=p2name="BEMULAR"
+trigger358=p2name="TELESDON"
+trigger359=p2name="biohazard"
+trigger360=p2name="Franken"
+trigger361=p2name="kuromaru"
+trigger362=p2name="svcgouki"
+trigger363=p2name="Insect Cell"
+trigger364=p2name="Androide GRugal"
+trigger365=p2name="Iris"&&authorname="tokuiten"
+trigger366=p2name="Gezorah"
+trigger367=p2name="OrochimaruMR"
+trigger368=p2name="orochimaru"
+trigger369=p2name="Super-GEON"
+trigger370=p2name="GAGI"
+trigger371=p2name="VARAN"
+trigger372=p2name="Baragon"
+trigger373=p2name="Moguera"
+trigger374=p2name="Gavora"
+trigger375=p2name="Arien_Zarab"
+trigger376=p2name="Kemular"
+trigger377=p2name="reicubas"
+trigger378=p2name="z-ton 2nd"
+trigger379=p2name="dinotank"
+trigger380=p2name="GAGI_FE"
+trigger381=p2name="Garagaranda"
+trigger382=p2name="gatanothor"
+trigger383=p2name="Ikadevil"
+trigger384=p2name="MULCHI_FE"
+trigger385=p2name="silverbloome"
+trigger386=p2name="Nazrin"
+trigger387=p2name="Yukari_RP"
+trigger388=p2name="mothra"
+trigger389=p2name="Alien baltan 6th"
+trigger390=p2name="Legion"
+trigger391=p2name="GIMYLA"
+trigger392=p2name="みょメガ"
+trigger393=p2name="みょメガ 最終形態 Ver0.35 "
+trigger394=p2name="Orochi(Rance)"
+trigger395=p2name="Remilia-Brando"
+trigger396=p2name="Shadow_Final_DIO"
+trigger397=p2name="G-REMILIA"
+trigger398=p2name="S_Remilia"
+trigger399=p2name="S_Remilia-old"
+trigger400=p2name="2HM2"
+trigger401=p2name="Kefka"
+trigger402=p2name="7L|]{(L2!"&&authorname="SAIKEI"
+trigger403=p2name="Bowser"
+trigger404=p2name="Yuyuko_RP"
+trigger405=p2name="Kisume"
+trigger406=p2name="Shishiwakamaru"
+trigger407=p2name="GAMERA"
+trigger408=p2name="GIRON"
+trigger409=p2name="GYAOS"
+trigger410=p2name="Michael_Roa_Valdamjong"
+trigger411=p2name="JACK LANTERN"
+trigger412=p2name="Toguro 30%"
+trigger413=p2name="Toguro 80%"
+trigger414=p2name="Toguro 100%"
+trigger415=p2name="Toguro Ototo"
+trigger416=p2name="War"&&authorname="shimon"
+trigger417=p2name="Gulool Ja Ja"
+trigger418=p2name="Final Sigma W"
+trigger419=p2name="SALAMANDRA"
+trigger420=p2name="Destoroyah"
+trigger421=p2name="Space Godzilla"
+trigger422=p2name="Aboras"
+trigger423=p2name="Yanpeko"
+trigger424=p2name="Guardian"
+trigger425=p2name="Gouki_normal"
+trigger426=p2name="MvC2 Doom By Kamekaze"
+trigger427=p2name="Alex_suika"
+trigger428=p2name="Shin Gouki SF'2"
+trigger429=p2name="GoukiHD"
+trigger430=p2name="Shin Bishamon"
+trigger431=p2name="ogihcI ikasoruK"
+trigger432=p2name="Captain James Hook"
+trigger433=p2name="Hazama"
+trigger434=p2name="saigyouji yuyuko"
+trigger435=p2name="nanaya"
+trigger436=p2name="ELEKING"
+trigger437=p2name="PorkyMinch_IWBTG"
+trigger438=p2name="StormEX--Ogihci"
+trigger439=p2name="J_yukari"
+trigger440=p2name="Mimic"
+trigger441=p2name="ODEO-inkodaibutu"
+trigger442=p2name="BAGAN"
+trigger443=p2name="deburasu"
+trigger444=p2name="FEMINOPHOBIA"
+trigger445=p2name="ODEO-INKODAIBUTSU"
+trigger446=p2name="ODIE-OLDBRIGHT"
+trigger447=p2name="ODIWAN-LEE"
+trigger448=p2name="LOMRIA"
+trigger449=p2name="SF4 Seth"
+trigger450=p2name="haiyoru_konton"
+trigger451=p2name="toramaru syou"
+trigger452=p2name="toramaru"
+trigger453=p2name="RajaaArcueid"
+trigger454=p2name="GeckoMoriah"
+trigger455=p2name="Akuma Syogun"
+trigger456=p2name="94_Flandre"
+trigger457=p2name="MF_Flan"
+trigger458=p2name="Flaso_violet"
+trigger459=p2name="cubee"
+trigger460=p2name="QB"
+trigger461=p2name="Volcrz"
+trigger462=p2name="AnotherIgniz Scarlet_P"
+trigger463=p2name="Dark-Baltan"
+trigger464=p2name="ari"&&authorname="medesu"
+trigger465=p2name="USA-Godzilla_kaihen"
+trigger466=p2name="Elraine_Yukari"
+trigger467=p2name="Tohma_Suika"
+trigger468=p2name="Byakuya Shiki"
+trigger469=p2name="ZIGRA"
+trigger470=p2name="zhkitalice"
+trigger471=p2name="RODAN"
+trigger472=p2name="RajaaWarachia"
+trigger473=p2name="BLACKMORE-IF"
+trigger474=p2name="Suika_hsts"
+trigger475=p2name="kumonga"
+trigger476=p2name="VARAN(FC)"
+trigger477=p2name="sensui"
+trigger478=p2name="k_sensui"
+trigger479=p2name="Warachia"
+trigger480=p2name="Warakia"
+trigger481=p2name="Queen Beryl"
+trigger482=p2name="Barasy-D"
+trigger483=p2name="asakura ryouko"
+trigger484=p2name="Ryoko Asakura"
+trigger485=p2name="Baikinman"
+trigger486=p2name="Light Yagami"
+trigger487=p2name="Makoto Shishio"
+trigger488=p2name="Shishio Makoto"
+trigger489=p2name="Zofisu&Coco"
+trigger490=p2name="Lililen"
+trigger491=p2name="UMVC_Yuyuko"
+trigger492=p2name="Nrvnqsr_Chaos"
+trigger493=p2name="Inferis Chaos"
+trigger494=p2name="White_Len"
+trigger495=p2name="White Len"
+trigger496=p2name="White_Len(CPU)"
+trigger497=p2name="GILGAMESH"&&authorname="shimon"
+trigger498=p2name="I-NO"
+trigger499=p2name="Vega"
+trigger500=p2name="cvsvega"
+trigger501=p2name="SVCVEGA"
+trigger502=p2name="Magneto(MC2)"
+trigger503=p2name="Magneto"
+trigger504=p2name="cvsg_rugal"
+trigger505=p2name="S_Rugal"
+trigger506=p2name="cvsrugal"
+trigger507=p2name="Rugal B."
+trigger508=p2name="goenitz"
+trigger509=p2name="Goenitz_UM"
+trigger510=p2name="IGNIZ"
+trigger511=p2name="Shinnosuke Kagami By Third"
+trigger512=p2name="seph"
+trigger513=p2name="Barbatos Goetia"
+trigger514=p2name="Master Hand"
+trigger515=p2name="King DeDeDe"
+trigger516=p2name="King Koopa"
+trigger517=p2name="DEATH MAUL"
+trigger518=p2name="mora"
+trigger519=p2name="elque"
+trigger520=p2name="KUPPA GUNDAN"
+trigger521=p2name="Dr.Doom"
+trigger522=p2name="Rugal.B"
+trigger523=p2name="Rasyouzin Miduki"
+trigger524=p2name="Wario"
+trigger525=p2name="DrDoom"
+trigger526=p2name="Shinnosuke Kagami"
+trigger527=p2name="Koopa"
+trigger528=p2name="mizuki"&&authorname="ali"
+trigger529=p2name="Giga Bowser"
+trigger530=p2name="bowser-spaceship"
+trigger531=p2name="Makamaka"
+trigger532=p2name="Rugal2nd"
+trigger533=p2name="Bisonmg"
+trigger534=p2name="M. Bison"&&authorname="VK, Updated by Terry Kuo, Adapted by Tenebrous"
+trigger535=p2name="Weakest_R"
+trigger536=p2name="A-igniz"
+trigger537=p2name="Cocodrilo"
+trigger538=p2name="Sevil Nahte"
+trigger539=p2name="Omega Rugal"
+trigger540=p2name="Rugal94"
+trigger541=p2name="rugal B"
+trigger542=p2name="masked_dedede"
+trigger543=p2name="Leopold Goenitz"
+trigger544=p2name="Rugal"
+trigger545=p2name="SF2'ベガ"
+trigger546=p2name="M.Bison"&&authorname="Smoke"
+trigger547=p2name="omega-rugal"
+trigger548=p2name="Omega Rugal 94"
+trigger549=p2name="Shin M. Bison/ Shin Vega by Kamekaze"
+trigger550=p2name="Barbatos_Goetia"
+trigger551=p2name="gilgamesh"&&authorname="TABIBITO"
+trigger552=p2name="Moon Face"
+trigger553=p2name="kdedede"
+trigger554=p2name="Zoma"
+trigger555=p2name="Juralian"
+trigger556=p2name="Shuma-Gorath"
+trigger557=p2name="Androide GRugal"
+trigger558=p2name="Ikadevil"
+trigger559=p2name="Bowser"
+trigger560=p2name="God Rugal"
+trigger561=p2name="MvC2 Doom By Kamekaze"
+trigger562=p2name="Hazama"
+trigger563=p2name="PorkyMinch_IWBTG"
+trigger564=p2name="D-Rugal"
+trigger565=p2name="RajaaWarachia"
+trigger566=p2name="Kohaku"
+trigger567=p2name="Kohaku By Toshi"
+trigger568=p2name="Mr.Chin"
+trigger569=p2name="amber"
+trigger570=p2name="Kohaku_K"
+trigger571=p2name="China Kohaku"
+trigger572=p2name="Arcueid Brunestud"
+trigger573=p2name="Arcueid_Brunestud"
+trigger574=p2name="Dark Arcueid"
+trigger575=p2name="Dark Arcueid mk2"
+trigger576=p2name="Red_Arcueid"
+trigger577=p2name="Red Arcueid"
+trigger578=p2name="saya"&&authorname="kayui uma"
+trigger579=p2name="walpurgisnacht"
+trigger580=p2name="ELSA_MARIA"
+trigger581=p2name="Gertrud"
+trigger582=p2name="biollente"
+trigger583=p2name="BIOLLANTE"
+trigger584=p2name="GODZILLEN"
+trigger585=p2name="KN GODZILLA"
+trigger586=p2name="super godzilla"
+trigger587=p2name="SHINJIN GOUKI"
+trigger588=p2name="Magneto COTA"
+trigger589=p2name="Ichigo_InnerHollow"
+trigger590=p2name="On"&&authorname="Rien"
+trigger591=p2name="Rosemary Applefield"
+trigger592=p2name="LunaRugal"
+trigger593=p2name="powered_baltan"
+trigger594=p2name="Ms.UnKnown"
+trigger595=p2name="Flandre-Bernstein"
+trigger596=p2name="Original_Flandre"
+trigger597=p2name="J_Flan"
+trigger598=p2name="raigu's dracula_w"
+trigger599=p2name="Rachel"
+trigger600=p2name="STG Fran"
+trigger601=p2name="saigyouji yuyuko"
+trigger602=p2name="Gudea-Suika"
+trigger603=p2name="YajyuImouto"
+trigger604=p2name="A_Mizuki"
+trigger605=p2name="EX Shin Gouki"
+trigger606=p2name="MvC-EoH Gouki"
+trigger607=p2name="Gliformoth"
+trigger608=p2name="J_yukari"
+trigger609=p2name="Yukari_hsts"
+trigger610=p2name="7L|]{(L2!"
+trigger611=p2name="Mima"
+trigger612=p2name="Orochi-Yuyuko"
+trigger613=p2name="Oktavia Von Seckendorff"
+trigger614=p2name="New_Shiki_Nanaya"
+trigger615=p2name="GYERON"
+trigger616=p2name="Giran"
+trigger617=p2name="Megalon"
+trigger618=p2name="Curadoros"
+trigger619=p2name="Doirah"
+trigger620=p2name="Dygorus"
+trigger621=p2name="GaikotsuBaltan"
+trigger622=p2name="H"&&enemy(0),Authorname="Kozeni"
+trigger623=p2name="adult"&&enemy(0),Authorname="Kirbey"
+trigger624=p2name="Hedoro"
+trigger625=p2name="Himular"
+trigger626=p2name="Raco"
+trigger627=p2name="Roboes"
+trigger628=p2name="Saihatari"
+trigger629=p2name="Tohboze"
+trigger630=p2name="Whow"
+trigger631=p2name="avsb"
+trigger632=p2name="Cheaper"
+trigger633=p2name="cvsk"
+trigger634=p2name="dolphin"
+trigger635=p2name="Kudora"
+trigger636=p2name="Lafiras"
+trigger637=p2name="PiyoKong"
+trigger638=p2name="Galmyer_Corps"
+trigger639=p2name="hvso"
+trigger640=p2name="jvsb"
+trigger641=p2name="STGstd"
+trigger642=p2name="Trishula,Doragon of the Ice Barrier"
+trigger643=p2name="kVSs"
+trigger644=p2name="Militarisms&Redarmy"
+trigger645=p2name="oryx"
+trigger646=p2name="oxidoron"
+trigger647=p2name="pvsd"
+trigger648=p2name="pvsa"
+trigger649=p2name="puredon"
+trigger650=p2name="ShinoGozi"
+trigger651=p2name="svsd"
+trigger652=p2name="sumoga"
+trigger653=p2name="Tetsugorus"
+trigger654=p2name="Tetugorasu"
+trigger655=p2name="vvsc"
+trigger656=p2name="Yakobu"
+trigger657=p2name="theendoron"
+trigger658=p2name="ziptes"
+trigger659=p2name="melba"
+trigger660=p2name="zodd"
+trigger661=p2name="Allosaurus"
+trigger662=p2name="USA-Godzilla"
+trigger663=p2name="Magus"
+trigger664=p2name="Suika_pon"
+trigger665=p2name="Juralmaou"
+trigger666=p2name="Maou"
+trigger667=p2name="Scarlet Devil"
+trigger668=p2name="draculina"
+trigger669=p2name="Remilia_M"
+trigger670=p2name="UMVC_Suika"
+trigger671=p2name="Deathmask"
+trigger672=p2name="Strawbelly Jam"
+trigger673=p2name="Heart Heat Harn"
+trigger674=p2name="FERNANDEATH"
+trigger675=p2name="ANGUIRUS"
+trigger676=p2name="Destoroyah_EX"
+trigger677=p2name="Gagi_EX"
+trigger678=p2name="Godzilla_EX"
+trigger679=p2name="King_Ghidorah"
+trigger680=p2name="Nightmare-GAMERA_EX"
+trigger681=p2name="Shinryu_Zero"
+trigger682=p2name="Kamiryu"
+trigger683=p2name="MvC2 Doom By Kamekaze"
+trigger684=p2name="Shin M. Bison/ Shin Vega by Kamekaze"
+trigger685=p2name="Suzaku"
+trigger686=p2name="Scarlet Sakebi"
+trigger687=p2name="NOSFERU"
+trigger688=p2name="Earth-Suika"
+trigger689=p2name="Akuma-Shin"
+trigger690=p2name="BARUGANODON_EX"
+trigger691=p2name="BAGIRA_EX"
+trigger692=p2name="GIMYLA_typeB"
+trigger693=p2name="Megalon_A"
+trigger694=p2name="BARUGANODON"
+trigger695=p2name="BAGIRA"
+trigger696=p2name="REIZAUS"
+trigger697=p2name="Deledelon"
+trigger698=p2name="Arrange-Vega"
+trigger699=p2name="thejoker"
+trigger700=p2name="Venom_MMV"
+trigger701=p2name="Melusine"
+trigger702=p2name="Distortion"
+trigger703=p2name="DarkCornian"
+trigger704=p2name="Skelegon"
+trigger705=p2name="StegoSaurus"
+trigger706=p2name="The Legendary Giant Tyrant Triffid"
+trigger707=p2name="The Territorial Mammoth"
+trigger708=p2name="T-rex"
+trigger709=p2name="Triceratops"
+trigger710=p2name="Shiki_Nanaya(Sirius)"
+trigger711=p2name="Dies Irae"
+trigger712=p2name="Felicueid"
+trigger713=p2name="Flandre Scarlet"
+trigger714=p2name="kamikirion"
+trigger715=p2name="kraken"
+trigger716=p2name="Barney the Dinosaur"
+trigger717=p2name="MaouPriere"
+trigger718=p2name="Agni"
+trigger719=p2name="Poltergeist"
+trigger720=p2name="Shin Gouki SSF'2 Plus"
+trigger721=p2name="Kaiser Vega SSF'2 Plus"
+trigger722=p2name="Mechrisui"
+trigger723=p2name="Rob Lucci"
+trigger724=p2name="Kaku"
+trigger725=p2name="Mr1 Daz Bones"
+trigger726=p2name="Gecko Moria"
+trigger727=p2name="Evil Ken SSF'2 Plus"
+trigger728=p2name="Morilen"
+trigger729=p2name="Criaturas"
+trigger730=p2name="Kuromaru-G"
+trigger731=p2name="Vairocana"
+trigger732=p2name="Octopus"
+trigger733=p2name="ripps"
+trigger734=p2name="roper"
+trigger735=p2name="Yarimusi"
+trigger736=p2name="black_mwang95%"
+trigger737=p2name="Sucubo"
+trigger738=p2name="Tendril"
+trigger739=p2name="Rasyouzin Miduki"
+trigger740=p2name="Vebel"
+trigger741=p2name="UMVC_Gouki"
+trigger742=p2name="PEKOMARU"
+trigger743=p2name="RugalXIII"
+trigger744=p2name="shiteyannyo"
+trigger745=p2name="sendai"&&authorname="tuki"
+trigger746=p2name="Yami_No_Tiko"
+trigger747=p2name="Glasyalabolas"
+trigger748=p2name="Zarbon"
+trigger749=p2name="HSeth"
+trigger750=p2name="Y_yuyuko"
+trigger751=p2name="大首領"
+trigger752=p2name="Suika_N"
+trigger753=p2name="ULHazama"
+trigger754=p2name="Cyber Shredder"
+trigger755=p2name="Dio Brendo"
+trigger756=p2name="DEATH-STUFF"
+trigger757=p2name="HELL-CLOUDER"
+trigger758=p2name="Deimos"
+trigger759=p2name="Xavier Pendragon"
+trigger760=p2name="SvC Akuma by Duende Macabro"
+trigger761=p2name="Pocket Shin Gouki"
+trigger762=p2name="Rare Akuma"
+trigger763=p2name="AKU-AMAKUSA SHIRO TOKISADA"
+trigger764=p2name="Bojack"
+trigger765=p2name="Recoome"
+trigger766=p2name="C.Akuma_MvC"
+trigger767=p2name="night_gaunt"
+trigger768=p2name="Evil Ken"
+trigger769=p2name="Evil Ryu"
+trigger770=p2name="Alice-AS"
+trigger771=p2name="B-Flan"
+trigger772=p2name="Dracula_IWBTG"
+trigger773=p2name="KoopaClownCar_IWBTG"
+trigger774=p2name="Jason Voorhees"
+trigger775=p2name="PorkyMinch_IWBTG"
+trigger776=p2name="Yukari_IWBTG"
+trigger777=p2name="White Len_MA"
+trigger778=p2name="DekaLen_with_wonderful_slaves"
+trigger779=p2name="Fangore"
+trigger780=p2name="NecoArc_MA"
+trigger781=p2name="MvC-EoH Evil Ryu"
+trigger782=p2name="DcatShredder"
+trigger783=p2name="SF3_Ryu-Evil"
+trigger784=p2name="sephiroth_ak"
+trigger785=p2name="Super Buu"
+trigger786=p2name="BloodShed"
+trigger787=p2name="Diamond_Dust"
+trigger788=p2name="Satsujinki_Shiki"
+trigger789=p2name="Zatracenie"
+trigger790=p2name="Igniz Eagrose Version"
+trigger791=p2name="Orochi Eagrose Version"
+trigger792=p2name="Black Viper"
+trigger793=p2name="Nappa"
+trigger794=p2name="SNES-M.Bison"
+trigger795=p2name="KamenRider Ouja"
+trigger796=p2name="KamenRider Strike"
+trigger797=p2name="Kid Buu Hyper Demension"
+trigger798=p2name="Final Form Frieza Hyper Demension"
+trigger799=p2name="Perfect Cell Hyper Demension"
+trigger800=p2name="Disciple's Freeza"
+trigger801=p2name="Ganondorf"
+trigger802=p2name="ganondrf"
+trigger803=p2name="Malefica"
+trigger804=p2name="Perfect cell BY SOUZA"
+trigger805=p2name="Cyber Shredder 2.1"
+trigger806=p2name="Shredder"
+trigger807=p2name="Psycho Shredder[S]"
+trigger808=p2name="Kid Buu by Giovanni"
+trigger809=p2name="vega "
+trigger810=p2name="SS_Mizuki"
+trigger811=p2name="Miduki"&&authorname="KusareMiyabi"
+trigger812=p2name="Nero"
+trigger813=p2name="Inferis Chaos"
+trigger814=p2name="Sephiroth Kingdom Hearts"
+trigger815=p2name="Sephiroth"
+trigger816=p2name="N_Arc"
+trigger817=p2name="The Joker"
+trigger818=p2name="Oboro Bishamon Cpu"
+trigger819=p2name="Bandit"
+trigger820=p2name="Captin Hook"
+trigger821=p2name="Hyper Knight"
+trigger822=p2name="Mirror Knight"
+trigger823=p2name="Majin Dark Shneider"
+trigger824=p2name="Dark Eternal Champion"
+trigger825=p2name="Lord Raptor"
+trigger826=p2name="Qbee"
+trigger827=p2name="Ansem"
+trigger828=p2name="Aqua Tank"
+trigger829=p2name="requiem"
+trigger830=p2name="Defender"
+trigger831=p2name="Gargoyle"
+trigger832=p2name="Heartless Soilder"
+trigger833=p2name="Ice Titan"
+trigger834=p2name="Jafar Genie (JTD95)"
+trigger835=p2name="Kurt Zisa"
+trigger836=p2name="NeoShadow"
+trigger837=p2name="Screw Divers"
+trigger838=p2name="Twilight Thorn"
+trigger839=p2name="Wyvern"
+trigger840=p2name="Janga"
+trigger841=p2name="Joka"
+trigger842=p2name="Darth Maul"
+trigger843=p2name="Vader"
+trigger844=p2name="DARTHVADER"
+trigger845=p2name="NBC_Neo Dio"
+trigger846=p2name="Toguro80%"
+trigger847=p2name="Chucky"
+trigger848=p2name="Freddy Krueger"
+trigger849=p2name="Ghostface"
+trigger850=p2name="Jason Voorhees Undead"
+trigger851=p2name="Leatherface"
+trigger852=p2name="ManiacCop"
+trigger853=p2name="Venom EX"
+trigger854=p2name="Aquatiki"
+trigger855=p2name="Atsugessho"
+trigger856=p2name="Castor"
+trigger857=p2name="Jadeite"
+trigger858=p2name="Moraga"
+trigger859=p2name="Emerald"
+trigger860=p2name="Rubeus"
+trigger861=p2name="Zoicite"
+trigger862=p2name="Shin-Akuma"
+trigger863=p2name="Bonegolem"
+trigger864=p2name="ALCHEMY LAB"
+trigger865=p2name="CERBERUS"
+trigger866=p2name="DEATH-IF"
+trigger867=p2name="Frankenstein"
+trigger868=p2name="Giant Bat"
+trigger869=p2name="Medusa"
+trigger870=p2name="Minotaur"
+trigger871=p2name="rockdevil"
+trigger872=p2name="Shapeshifter Aria of Sorrow"
+trigger873=p2name="Suika Potemkin"
+trigger874=p2name="cvsmorrigan"
+trigger875=p2name="DS_Morrigan 2"
+trigger876=p2name="Tin's Charakon Morrigan"
+trigger877=p2name="DS_Demitri"
+trigger878=p2name="Remilia Slayer"
+trigger879=p2name="Warcueid"
+trigger880=p2name="W ARCUEID"
+trigger881=p2name="LeiLei"
+trigger882=p2name="CaramelManJ by talic"
+trigger883=p2name="TN-Ninja"
+trigger884=p2name="AB King"
+trigger885=p2name="Zao-Long"
+trigger886=p2name="Varnage"
+trigger887=p2name="Evil Vegeta by Diryomenssj"
+trigger888=p2name="Majin Vegeta SSJ6 by Majin Vegeta SSJ6"
+trigger889=p2name="Majin Vegeta SSJ4 HD by PACKYSSJ4"
+trigger890=p2name="Majin Vegeta SSJ3 UB22"
+trigger891=p2name="MajinVedita"
+trigger892=p2name="BOO COPYCAT"
+trigger893=p2name="Kid Buu"
+trigger894=p2name="Cell Imperfecto"
+trigger895=p2name="cell_2nd_Form"
+trigger896=p2name="Cell Perfecto By Team OS"
+trigger897=p2name="Perfect Cell SB2"
+trigger898=p2name="Cell por Ssonic"
+trigger899=p2name="Majin Bu Magro"
+trigger900=p2name="Ultimate Bu by Sniper85"
+trigger901=p2name="cell by zero liger & alien ssw2"
+trigger902=p2name="super perfect cell "
+trigger903=p2name="Beby-Vegeta by K-bum"
+trigger904=p2name="Bebi Vegeta Form 1 HD 90% beta by Forever_Zero"
+trigger905=p2name="Baby Vegeta"
+trigger906=p2name="Baby Vegeta by Dark_King"
+trigger907=p2name="Androide13 By Team DBZ OS"
+trigger908=p2name="Super C-17"
+trigger909=p2name="coola by Franciynaldo"
+trigger910=p2name="[Necromancer's] cooler"
+trigger911=p2name="BabidiRK"
+trigger912=p2name="Bojack_CS"
+trigger913=p2name="GarlicJr"
+trigger914=p2name="Janemba"
+trigger915=p2name="Puipui"
+trigger916=p2name="Saibaman"
+trigger917=p2name="Zarbon by Master"
+trigger918=p2name="Broly by ynvaser"
+trigger919=p2name="DodoriaRK"
+trigger920=p2name="Guldo by Redneck"
+trigger921=p2name="Jeice"
+trigger922=p2name="Guldo"
+trigger923=p2name="janemba by Franciynaldo"
+trigger924=p2name="KuiRK"
+trigger925=p2name="PexBuu"
+trigger926=p2name="anubis"
+trigger927=p2name="Majin Boo"
+trigger928=p2name="Bojack SNES DBZ 2"
+trigger929=p2name="Garlic Junior"
+trigger930=p2name="M-Kooler"
+trigger931=p2name="Turles by Kao"
+trigger932=p2name="Turles GZ- V1.0 by zero liger"
+trigger933=p2name="Zarbom by EmuBoarding"
+trigger934=p2name="Babidi"
+trigger935=p2name="BurterRK"
+trigger936=p2name="Koola"
+trigger937=p2name="koola-hd"
+trigger938=p2name="GuldoRK"
+trigger939=p2name="Jess by M@jin Veget@"
+trigger940=p2name="Mr.Boo by OverMind"
+trigger941=p2name="Radish ssj4 by THE VICIOUS"
+trigger942=p2name="Zarbon2"
+trigger943=p2name="Bojack Enhanced 1.2"
+trigger944=p2name="Capitan Ginyu"
+trigger945=p2name="Zangya"
+trigger946=p2name="Kars"
+trigger947=p2name="Freeza 1st Form"
+trigger948=p2name="Normal Freeza"
+trigger949=p2name="Metal Freeza"
+trigger950=p2name="Freeza_Form_2"
+trigger951=p2name="Taopaipai"
+trigger952=p2name="Tao"&&authorname="Karol-Kun"
+trigger953=p2name="babyvegeta by zero liger -Version 0.2"
+trigger954=p2name="Turles GZ- V1.0 by zero liger"
+trigger955=p2name="Broly 'le cauchemar' super saiyen nv3"
+trigger956=p2name="Bio Broly"
+trigger957=p2name="[FlowaGirl's] Broli"
+trigger958=p2name="Broli SSJ4"
+trigger959=p2name="Legendary Super Saiyan"
+trigger960=p2name="Rey Cold "
+trigger961=p2name="Meta Kooler"
+trigger962=p2name="Metal Coola"
+trigger963=p2name="FusedRobotPilaf"
+trigger964=p2name="Androide13 By Team DBZ OS"
+trigger965=p2name="Super C-17"
+trigger966=p2name="Super 17 by Szowel"
+trigger967=p2name="Super Androide 17"
+trigger968=p2name="Androide 17 Clone"
+trigger969=p2name="Androide 17 HD by GokuSSJ"
+trigger970=p2name="Android 19"
+trigger971=p2name="Android19 by Szowel"
+trigger972=p2name="Gold Oozaru"
+trigger973=p2name="Oozaru"
+trigger974=p2name="Piccolo Daimao"
+trigger975=p2name="Piccolo Daimaou by Franz-Kaioken"
+trigger976=p2name="Dabura by DZGTEAM&FRSGAMES"
+trigger977=p2name="Dr Gero-and20"
+trigger978=p2name="||>(Zerberus-:-Dante)<|| saiyajin Raditz(Son Goku Brother)"
+trigger979=p2name="Bowser-KF"
+trigger980=p2name="Dr. Wily"
+trigger981=p2name="Wily"
+trigger979=p2name="Devil_lilia"
+trigger980=p2name="Devil Jin"
+trigger981=p2name="DevilJin"
+trigger982=p2name="MEGAFURASHI"
+trigger983=p2name="Mech-Gouki"
+trigger984=p2name="millarca"
+trigger985=p2name="Cthulhu"
+trigger986=p2name="Cthugha"
+trigger987=p2name="Daoloth"
+trigger988=p2name="Eihort"
+trigger989=p2name="Glaaki"
+trigger990=p2name="Haster"
+trigger992=p2name="Nyogtha"
+trigger993=p2name="Quachil Uttaus"
+trigger994=p2name="Rhan-Tegoth"
+trigger995=p2name="Ubbo-Sathla"
+trigger996=p2name="Yog-Sothoth"
+trigger997=p2name="nyar"
+trigger998=p2name="Hazama MVC"
+trigger999=p2name="VIGA"
+trigger1000=p2name="Nyaruko"
+trigger1001=p2name="Bowser Kart Fighter"
+trigger1002=p2name="Rashoujin Mizuki"
+trigger1003=p2name="Accelerator"
+trigger1004=p2name="Dodoria Arcade style by Tomo"
+trigger1005=p2name="Guldo By Tomo"
+trigger1006=p2name="General Blue"
+trigger1007=p2name="Meta Cooler"
+trigger1008=p2name="Cervantes By CVS Artist"
+trigger1009=p2name="UMVC_RedArcueid"
+trigger1010=p2name="Yukari_RP"
+trigger1011=p2name="MONOKUMA"
+trigger1012=p2name="RugalEXXIII"
+trigger1013=p2name="Blackbeard"
+trigger1014=p2name="Mercenary Tao By Tomo"
+trigger1015=p2name="ARCHETYPE:EARTH"
+trigger1016=p2name="Archetype Earth_R"
+trigger1017=p2name="WO"&&authorname="Moiky"
+trigger1018=p2name="chinacurry"
+trigger1019=p2name="haguremetal"
+trigger1020=p2name="CvS_UnknownTAG"
+trigger1021=p2name="War M/TF"
+trigger1022=p2name="ChromeDome M/TF"
+trigger1023=p2name="Wingnut M/TF"
+trigger1024=p2name="CyberShredder M/TF"
+trigger1025=p2name="Majin Vegeta"
+trigger1026=p2name="Devilman"
+trigger1027=p2name="SSF2T Akuma"
+trigger1028=p2name="kuro"&&authorname="yameteoke"
+trigger1029=p2name="Micheal Roa Valdamjong"
+trigger1030=p2name="anguirus_A"
+trigger1031=p2name="GODZILLA_A"
+trigger1032=p2name="mothra_A"
+trigger1033=p2name="rodan_A"
+trigger1034=p2name="GERUKADON"
+trigger1035=p2name="Akito_Yamizaki"
+trigger1036=p2name="class RE"
+trigger1037=p2name="Kami_Remi_Kira"
+trigger1038=p2name="Tamamushihime"
+trigger1039=p2name="Akuma Shogun"
+trigger1040=p2name="LSSJ Broli by Ryon"
+trigger1041=p2name="Akuma"&&authorname="Ryon"
+trigger1042=p2name="RugalB"
+trigger1043=p2name="Freeza Z2"
+trigger1044=p2name="warc_R"
+trigger1045=p2name="Crazy cook"
+trigger1046=p2name="CvS_Shao_Kahn"
+trigger1047=p2name="Ultimate Man Scorpion"
+trigger1048=p2name="MVC3_EvilRyu"
+trigger1049=p2name="alien pega"
+trigger1050=p2name="Alien_z-ton"
+trigger1051=p2name="black-end"
+trigger1052=p2name="cst-gorosaurus"
+trigger1053=p2name="delusion-ultraseven"
+trigger1054=p2name="dogora"
+trigger1055=p2name="gavadon(A)"
+trigger1056=p2name="Giant-mantis"
+trigger1057=p2name="Giant-monsters"
+trigger1058=p2name="godzilla-tower"
+trigger1059=p2name="Golza"
+trigger1060=p2name="gorosaurus"
+trigger1061=p2name="guiron(K)"
+trigger1062=p2name="human-mummy"
+trigger1063=p2name="Kamakuras"
+trigger1064=p2name="kupukupu"
+trigger1065=p2name="maguma"
+trigger1066=p2name="todora"
+trigger1067=p2name="minya"
+trigger1068=p2name="Mobile Operation Godzilla Expert Robot Aero-type"
+trigger1069=p2name="pegassa"
+trigger1070=p2name="riggah"
+trigger1071=p2name="sevenger"
+trigger1072=p2name="Sudar"
+trigger1073=p2name="T-DARAMBIA"
+trigger1074=p2name="Tyrannosaurus"
+trigger1075=p2name="VARAN2nd"
+trigger1076=p2name="varava"
+trigger1077=p2name="VEROKRON"
+trigger1078=p2name="ZAMBOLAR"
+trigger1079=p2name="ZSNanaya"
+trigger1080=p2name="M.O.D.O.K"
+trigger1081=p2name="Captain Venom"
+trigger1082=p2name="Modokey"
+trigger1083=p2name="Lu_saifa"
+trigger1084=p2name="MR.MARA"
+trigger1085=p2name="K7Len"
+trigger1086=p2name="Octorok"
+trigger1087=p2name="D4miku"
+trigger1088=p2name="Remilia_MA"
+trigger1089=p2name="Evil Oak"
+trigger1090=p2name="Saber_Alter"
+trigger1091=p2name="33y_kitarou"
+trigger1092=p2name="Shinobu Sensui FINAL"
+trigger1093=p2name="Eni_BlackDragon"
+trigger1094=p2name="Saibamen"
+trigger1095=p2name="Skeleton"
+trigger1096=p2name="Oingo & Boingo"
+trigger1097=p2name="Seth USF4"
+trigger1098=p2name="Mister Sinister"
+trigger1099=p2name="Goyan"
+trigger1100=p2name="kantyo"
+trigger1101=p2name="joker"
+trigger1102=p2name="Arrange_Accelerator"
+trigger1103=p2name="CA"
+trigger1104=p2name="Abaddon-IF"
+trigger1105=p2name="hoppou_seiki"
+trigger1106=p2name="Gigan"
+trigger1107=p2name="Ridley"
+trigger1108=p2name="Babidi Z2"
+trigger1109=p2name="Master Morrigan"
+trigger1110=p2name="rider"&&authorname="rioriot"
+trigger1111=p2name="Nightmare by CVS Artist"
+trigger1112=p2name="Dark Samus"
+trigger1113=p2name="cvsakuma"
+trigger1114=p2name="Pocket Shin Lvl 2 Akuma"
+trigger1115=p2name="Azazel"
+trigger1116=p2name="Kung Fu QB Man"
+trigger1117=p2name="Akuma_Melt"
+trigger1118=p2name="Elizabeth_Remilia"
+trigger1119=p2name="Guruguru_Flan"
+trigger1120=p2name="RACHEL ALUCARD"
+trigger1121=p2name="XMVCRachelX"
+trigger1122=p2name="karera"&&authorname="anamochi"
+trigger1123=p2name="DoflamingoSP"
+trigger1124=p2name="Retro Suika"
+trigger1125=p2name="Lilith Aensland"
+trigger1126=p2name="RAIJU"
+trigger1127=p2name="GADORUFODON"
+trigger1128=p2name="VIRAS"
+trigger1129=p2name="tiny b0rf"
+trigger1130=p2name="b0rf"
+trigger1131=p2name="Gouki NES"
+trigger1132=p2name="SeyaRen"
+trigger1133=p2name="DonaiyaRen"
+trigger1134=p2name="Shiro Tokisada Amakusa"
+trigger1135=p2name="HalfOrc"
+trigger1136=p2name="Doflamingo"
+trigger1137=p2name="CvS_OLDKraid"
+trigger1138=p2name="CvS_Ridley"
+trigger1139=p2name="Draygon"
+trigger1140=p2name="BlackScaleMoussambani"
+trigger1141=p2name="DiveKick_Doom"
+trigger1142=p2name="Ryumaou"
+trigger1143=p2name="Kuroudo Akabane"
+trigger1144=p2name="adachi"
+trigger1145=p2name="tequila"
+trigger1146=p2name="papaya"
+trigger1147=p2name="FreezaMVC"
+trigger1148=p2name="Majin Buu"
+trigger1149=p2name="shishkebab"
+trigger1150=p2name="Remilia_RP"
+trigger1151=p2name="Kid Dracula"
+trigger1152=p2name="W_Len&Nanaya"
+trigger1153=p2name="Metal_Slug_Rugal"
+trigger1154=p2name="Goku Black"
+trigger1155=p2name="Mercenary Tao"
+trigger1156=p2name="Joker_Nanaya"
+trigger1157=p2name="A-Jedah"
+trigger1158=p2name="Ms.Etna"
+trigger1159=p2name="Etna"
+trigger1160=p2name="Agent venom"
+trigger1161=p2name="Zakenna"
+trigger1162=p2name="Dark Kahn"
+trigger1163=p2name="Merkava"
+trigger1164=p2name="Mittelt"
+trigger1165=p2name="Shinobu Sensui YYHF"
+trigger1166=p2name="Kathryne_Keyron"
+trigger1167=p2name="Devilch"
+trigger1168=p2name="BSKLen"
+trigger1169=p2name="FLen_d"
+trigger1170=p2name="Ace_killer"
+trigger1171=p2name="blackking"
+trigger1172=p2name="yukkuri z-ton two"
+trigger1173=p2name="twintail"
+trigger1174=p2name="ShinGodzillen"
+trigger1175=p2name="Godzilla2014"
+trigger1176=p2name="Rugal KoF '95"
+trigger1177=p2name="Stronger_Rugal"
+trigger1178=p2name="omega rugal98"
+trigger1179=p2name="Rugal2k2"
+trigger1180=p2name="Ultimate Rugal"
+trigger1181=p2name="LotF's God Rugal"
+trigger1182=p2name="Rugal_E"
+trigger1183=p2name="Rugal5th"
+trigger1184=p2name="Goenitz96"
+trigger1185=p2name="Goenitz by Deuce"
+trigger1186=p2name="SVC for Goenitz"
+trigger1187=p2name="G Magaki"
+trigger1188=p2name="S-Magaki"
+trigger1189=p2name="Satsu no Hadou Ryu"
+trigger1190=p2name="CVSEvilRyu"
+trigger1191=p2name="C Evil Ryu"
+trigger1192=p2name="DSJ_Vega"
+trigger1193=p2name="vega_mx"
+trigger1194=p2name="Shin Bison"
+trigger1195=p2name="cvsvega_ex"
+trigger1196=p2name="cvsvega_normal"
+trigger1197=p2name="Dark Vega"
+trigger1198=p2name="Classic Akuma"
+trigger1199=p2name="SSF2X豪鬼"
+trigger1200=p2name="Gouki3rd"
+trigger1201=p2name="Akuma por Eminator."
+trigger1202=p2name="Rashoujin Gouki"
+trigger1203=p2name="D-Morrigan"
+trigger1204=p2name="morrig"
+trigger1205=p2name="Ultimate Morrigan"
+trigger1206=p2name="Morrigan_EX"
+trigger1207=p2name="Morrigan by hsienthm"
+trigger1208=p2name="azufight_morrigan"
+trigger1209=p2name="sqrt_of_b0rf"
+trigger1210=p2name="Lilith Aensland MvC"
+trigger1211=p2name="KOF?_Jedah"
+trigger1212=p2name="Dr. Doom"
+trigger1213=p2name="Dr. Doom By {_Carnificina_}"
+trigger1214=p2name="Symbiote Thanos"
+trigger1215=p2name="Thanos by Whiplash"
+trigger1216=p2name="Venom by Whiplash"
+trigger1217=p2name="StormEX-Ogihci"
+trigger1218=p2name="XMVCHazamaX"
+trigger1219=p2name="Maou Nobunaga"
+trigger1220=p2name="Marshal D. Teach"
+trigger1221=p2name="Hiei by Hiei SSJ"
+trigger1222=p2name="Toguro by {[Evil_Kairi]}"
+trigger1223=p2name="Sensui_G1"
+trigger1224=p2name="hiei"
+trigger1225=p2name="toguro ototo (K.ver)"
+trigger1226=p2name="Toguro_ani"
+trigger1227=p2name="Absolute_White_Len"
+trigger1228=p2name="Dragon Lord"
+trigger1229=p2name="METRON"
+trigger1230=p2name="GUTS"&&authorname="UMA"
+trigger1231=p2name="g64EXREDKING"
+trigger1232=p2name="BEMULAR_AA"
+trigger1233=p2name="GANDER_AA"
+trigger1234=p2name="normalspoo"
+trigger1235=p2name="Detton"
+trigger1236=p2name="barrangas"
+trigger1237=p2name="bogun"
+trigger1238=p2name="degola"
+trigger1239=p2name="Gadis"
+trigger1240=p2name="GadisII"
+trigger1241=p2name="imit ultraseven"
+trigger1242=p2name="KING GHIDORAH'91"
+trigger1243=p2name="Pagos"
+trigger1244=p2name="SALAMANDRA_FE"
+trigger1245=p2name="SMB2 Wart"
+trigger1246=p2name="OLD_MECHAGODZILLA"
+trigger1247=p2name="Bokuohn"
+trigger1248=p2name="Abyss Aircraft Carrier Type-ONI"
+trigger1249=p2name="nanaya shikiSD"
+trigger1250=p2name="GM Meio"
+trigger1251=p2name="PFD Death"
+trigger1252=p2name="Giygas"
+trigger1253=p2name="Lavos Core"
+trigger1254=p2name="Suika_pokan"
+trigger1255=p2name="GG_Suika"
+trigger1256=p2name="Mima_RP"
+trigger1257=p2name="yuby"
+trigger1258=p2name="kisumechan"
+trigger1259=p2name="Koa_RP"
+trigger1260=p2name="Remilia_9jyou"
+trigger1261=p2name="Desteny Remilia"
+trigger1262=p2name="remilia_h_2"
+trigger1263=p2name="AlbertWesker"
+trigger1264=p2name="DEATH13"
+trigger1265=p2name="SSJ Three Broli"
+trigger1266=p2name="Ginew by Kuririn"
+trigger1267=p2name="Buu Z2"
+trigger1268=p2name="Golden_Frieza"
+trigger1269=p2name="Uzeusama"
+trigger1270=p2name="ALIEN_BAT"
+trigger1271=p2name="imit ultraseven"
+trigger1272=p2name="Nero Chaos"
+trigger1273=p2name="Chapoca Zoom-B"
+trigger1274=p2name="Koa-SD"
+trigger1275=p2name="cafe_au_lait-Len"
+trigger1276=p2name="A nanaya"
+trigger1277=p2name="F-nanaya"
+trigger1278=p2name="Hot_blood_nanaya"
+trigger1279=p2name="Last_satsujinsya"
+trigger1280=p2name="Satsujinsya"
+trigger1281=p2name="ZoyZoy_nanaya"
+trigger1282=p2name="life-nanaya"
+trigger1283=p2name="NES Jason Voorhees"
+trigger1284=p2name="Sanctus_Maximus_Populi_Dies_Irae_Deus"
+trigger1285=p2name="g64Doruge"
+trigger1286=p2name="g64Goa"
+trigger1287=p2name="MedamaOyaji"
+trigger1288=p2name="SMB1 NES Goomba"
+trigger1289=p2name="HiohKaede"
+trigger1290=p2name="Kaede_Hioh"
+trigger1291=p2name="Black Viper"
+trigger1292=p2name="JMR_BoneDino"
+trigger1293=p2name="Giant Snowman"
+trigger1294=p2name="Xerxes"
+trigger1295=p2name="Monster Toad"
+trigger1296=p2name="Rolling Eye"
+trigger1297=p2name="Schwartzenguard"
+trigger1298=p2name="Tau Army"
+trigger1299=p2name="Tau Beast"
+trigger1300=p2name="The Spiritual Tyrannosaurus"
+trigger1301=p2name="The Treacherous Tyrannosaurus"
+trigger1302=p2name="The Fabled Sagileocorn"
+trigger1303=p2name="The Mythical Dacentrurian"
+trigger1304=p2name="Tyrog"
+trigger1305=p2name="Black Moth Scorpion"
+trigger1306=p2name="Bubba"
+trigger1307=p2name="Combine Tentacle"
+trigger1308=p2name="Crocodile Worm"
+trigger1309=p2name="Devan Shell"
+trigger1310=p2name="Evil Spirit Incarnate"
+trigger1311=p2name="Evanescent Ferman"
+trigger1312=p2name="Jappa"
+trigger1313=p2name="Elephant Dragon"
+trigger1314=p2name="Hydra"
+trigger1315=p2name="Wyvern"
+trigger1316=p2name="The Deadly Dragon"
+trigger1317=p2name="The Dragon"
+trigger1318=p2name="Black Dragon"
+trigger1319=p2name="Blue Dragon"
+trigger1320=p2name="Gold Dragon"
+trigger1321=p2name="Dracula & Dragon"
+trigger1322=p2name="Dragon Rider"
+trigger1323=p2name="Dust Dragon"
+trigger1324=p2name="Two Headed Dragon"
+trigger1325=p2name="Ender Dragon"
+trigger1326=p2name="Gildiss"
+trigger1327=p2name="Great Dragonian"
+trigger1328=p2name="GODZILLA-T-K"
+trigger1329=p2name="Nelo Angelo"
+trigger1330=p2name="Dr Wily"
+trigger1331=p2name="Engleza_Scarlet"
+trigger1332=p2name="DoQuixote DoFlamingo"
+trigger1333=p2name="Dio by ANMC"
+trigger1334=p2name="preremi"
+trigger1335=p2name="mr. Burns"
+trigger1336=p2name="battra_adult"
+trigger1337=p2name="fw_gigan"
+trigger1338=p2name="mecha-king_ghidorah"
+trigger1339=p2name="new_mechagodzilla"
+trigger1340=p2name="Seth"&&authorname="Websta"
+trigger1341=p2name="Suika_RP"
+trigger1342=p2name="Maka-Maka"
+trigger1343=p2name="Hyper Maka-Maka"
+trigger1344=p2name="Yuuki_Terumi"
+trigger1345=p2name="Envia"
+trigger1346=p2name="Raydragoon"
+trigger1347=p2name="Kiba Daioh"
+trigger1348=p2name="MK-Paragus"
+trigger1349=p2name="TenMeNieOn_BaGenChu_ALternative"
+trigger1350=p2name="DIO_AS(Clone DIO)"
+trigger1351=p2name="Shadow Dio FC"
+trigger1352=p2name="Remilia_E"
+trigger1353=p2name="Acekiller"
+trigger1354=p2name="The Root Pack"
+trigger1355=p2name="Krookodile_G&S"
+trigger1356=p2name="VelaSherry"
+trigger1357=p2name="Grim Matchstick"
+trigger1358=p2name="ES-4039781"
+trigger1359=p2name="BurstWind-Goenitz"
+trigger1360=p2name="95_Omega_Rugal_G1"
+trigger1361=p2name="95_Omega Rugal_G2"
+trigger1362=p2name="95_Omega Rugal_G3"
+trigger1363=p2name="Rugal Bernstein_AS"
+trigger1364=p2name="Nanaya_Shiki_AS"
+trigger1365=p2name="tokka"
+trigger1366=p2name="Luciege_Capella"
+trigger1367=p2name="Maleficent"
+trigger1368=p2name="T-1000"
+trigger1369=p2name="FighterZ Freeza"
+trigger1370=p2name="Dormammu"
+trigger1371=p2name="another blood"
+trigger1372=p2name="Another Blood_AS"
+trigger1373=p2name="Azure_Y"
+trigger1374=p2name="Charisma Guard Remilia"
+trigger1375=p2name="Apolia_Scarlet"
+trigger1376=p2name="Famardy"
+trigger1377=p2name="Deezer"
+trigger1378=p2name="Magic Nanaya+ HUUNSAIKI"
+trigger1379=p2name="Arushivu"
+trigger1380=p2name="Famardy"
+trigger1381=p2name="Ego-Magaki"
+trigger1382=p2name="G Magaki_v2"
+trigger1383=p2name="Goku Black Z2i"
+trigger1384=p2name="Goku Black Z2"
+trigger1385=p2name="G Igniz"
+trigger1386=p2name="G Igniz_v2"
+trigger1387=p2name="YUtyan&REIkun"
+trigger1388=p2name="Tohru Adachi"
+trigger1389=p2name="A_Nanaya"
+trigger1390=p2name="Ba nanaya"
+trigger1391=p2name="White Phantom"
+trigger1392=p2name="IRIR_Lei-Lei"
+trigger1393=p2name="MvC2_Hsien-Ko"
+trigger1394=p2name="Yuuki Terumi"
+trigger1395=p2name="Mizuchi(Player)"
+trigger1396=p2name="Mizuchi_to_offend"
+trigger1397=p2name="Hutsu-Mizuchi"
+trigger1398=p2name="Orochi(Player)"
+trigger1399=p2name="Hutsu-Orochi"
+trigger1400=p2name="Aruaru-Orochi"
+trigger1401=p2name="Disintegrator"
+trigger1402=p2name="Omega Rugal(Player)"
+trigger1403=p2name="yukari-meio"
+trigger1404=p2name="Yukari_THIZ"
+trigger1405=p2name="Lilica_AH3LMSSS"
+trigger1406=p2name="Shin Akuma"
+trigger1407=p2name="Shin-Gouki"
+trigger1408=p2name="A-Lunathia"
+trigger1409=p2name="Lunathia"
+trigger1410=p2name="F-X-L"
+trigger1411=p2name="XANXUS"
+trigger1412=p2name="KD2Remilia-A"
+trigger1413=p2name="Vlad-Rose"
+trigger1414=p2name="Ebirah"
+trigger1415=p2name="Gabara"
+trigger1416=p2name="Ganime"
+trigger1417=p2name="Kamoebas"
+trigger1418=p2name="Kingcaesar"
+trigger1419=p2name="Manda"
+trigger1420=p2name="Manda2nd"
+trigger1421=p2name="Mothra-larva"
+trigger1422=p2name="MvC2_Thanos"
+trigger1423=p2name="仮面ライダーダークゴースト"
+trigger1424=p2name="Demitri-1zjxx"
+trigger1425=p2name="Alucard_Hellsing_JUS"
+trigger1426=p2name="Koro_Sensei_JUS"
+trigger1427=p2name="Devil Jafar"
+trigger1428=p2name="Jaffar"
+trigger1429=p2name="God Jafar"
+trigger1430=p2name="The Boss"
+trigger1431=p2name="Buu_Pocket"
+trigger1432=p2name="Semi_Perfect_Cell_Pocket"
+trigger1433=p2name="Kira(Kosaku Kawajiri)"
+trigger1434=p2name="Jafar"
+trigger1435=p2name="Skelaton the Skelet"
+trigger1436=p2name="native_negishi"
+trigger1437=p2name="warm_sanagi(Wh)"
+trigger1438=p2name="Skeleton Warrior"
+trigger1439=p2name="Superior Soldiers - Skull Reaper"
+trigger1440=p2name="PvZ Zombie by FourthRhyme"
+trigger1441=p2name="Knight Pete"
+trigger1442=p2name="Freezer_2_Form_Pocket"
+trigger1443=p2name="Frost_Form_1_Pocket"
+trigger1444=p2name="Black_Goku_Normal_JUS"
+trigger1445=p2name="Majin_Buu_Fat_Pocket"
+trigger1446=p2name="Big Ogre"
+trigger1447=p2name="Man Pig"
+trigger1448=p2name="Steamboat Pete"
+trigger1449=p2name="Beatle"
+trigger1450=p2name="Mosquito"
+trigger1451=p2name="Super Ant"
+trigger1452=p2name="Bugzzy"
+trigger1453=p2name="Tah Poxor The Dragon Turtle"
+trigger1454=p2name="Capsule P"
+trigger1455=p2name="Body Blows Galactic - Dino"
+trigger1456=p2name="Overkill - Ghoul"
+trigger1457=p2name="Planescape - Abishai"
+trigger1458=p2name="Superior Soldiers - Reptilian"
+trigger1459=p2name="TMNT TF Genesis - Triceraton"
+trigger1460=p2name="Body Blows Galactic - Dragon"
+trigger1461=p2name="Mr. Alien"
+trigger1462=p2name="Mr. Slug"
+trigger1463=p2name="Mora_SCustom"
+trigger1464=p2name="godzilla(VS)"
+trigger1465=p2name="Red vampire Remilia"
+trigger1466=p2name="KroolV3"
+trigger1467=p2name="King K. Rool SUMIN Styled"
+trigger1468=p2name="Kaptain K.Rool"
+trigger1469=p2name="King K. Rool"
+trigger1470=p2name="Bowser - YI2"
+trigger1471=p2name="Baby Bowser"
+trigger1472=p2name="Paper Mario - Koopatrol"
+trigger1473=p2name="Boss Wizard"
+trigger1474=p2name="Red Witch Calamities"
+trigger1475=p2name="Dress"
+trigger1476=p2name="Dhole"
+trigger1477=p2name="Evil-Eye-of-Balor"
+trigger1478=p2name="Eye of Cthulhu"
+trigger1479=p2name="Sarlacc&Boba_Fett"
+trigger1480=p2name="Wall-of-Flesh"
+trigger1481=p2name="Skull Soldier"
+trigger1482=p2name="Deke Cay"
+trigger1483=p2name="Igneel"
+trigger1484=p2name="DARK WARRIOR2"
+trigger1485=p2name="Red Dragon"
+trigger1486=p2name="MutantToad"
+trigger1487=p2name="Ickybod Clay"
+trigger1488=p2name="Ebifrygon"
+trigger1489=p2name="Red King"
+trigger1490=p2name="Heaven DIO"
+trigger1491=p2name="SMG_Juni"
+trigger1492=p2name="asuta"
+trigger1493=p2name="Yoshikage Kira 8"
+trigger1494=p2name="Sheer Heart Attack"
+trigger1495=p2name="Yoshikage Kira"
+trigger1496=p2name="nenaikodareda"
+trigger1497=p2name="Ogro"
+trigger1498=p2name="goldar"
+trigger1499=p2name="Dark Precure"
+trigger1500=p2name="another_suigintou"
+trigger1501=p2name="STG-Shuma Gorath"
+trigger1502=p2name="null"&&authorname="null"
+trigger1503=p2name="Vampire_Rio"
+trigger1504=p2name="Firebrand"
+trigger1505=p2name="Sefu-Sefu-Len"
+trigger1506=p2name="Conker"
+trigger1507=p2name="Oira_GF"
+trigger1508=p2name="Ultimate M. Bison"
+trigger1509=p2name="Dictator"
+trigger1510=p2name="Final Dictator"
+trigger1511=p2name="Demitri-A"
+trigger1512=p2name="Chaosroid S"
+trigger1513=p2name="Battle_Nanaya"
+trigger1514=p2name="Ultimate Venom"
+trigger1515=p2name="Colossal Attack on Titan"
+trigger1516=p2name="Youpi"
+trigger1517=p2name="Meruem"
+trigger1518=p2name="Ikai_no_Mamono"
+trigger1519=p2name="Pitou"
+trigger1520=p2name="Feitan"
+trigger1521=p2name="ILLUMI"
+trigger1522=p2name="Kuroro"
+trigger1523=p2name="Hisoka"
+trigger1524=p2name="Bartan"
+trigger1525=p2name="Greenmons"
+trigger1526=p2name="Golden Cell V2"
+trigger1527=p2name="Perfect Cell"
+trigger1528=p2name="vampy"
+trigger1529=p2name="laura"
+trigger1530=p2name="!!pafio"
+trigger1531=p2name="pafio"
+trigger1532=p2name="O-IORI-KN"
+trigger1533=p2name="Evil Dan"
+trigger1534=p2name="あたしメアリーっていうの あたしメアリーっていうの あたしメアリーっていうの"
+trigger1535=p2name="SFV_AKUMA"
+trigger1536=p2name="Gouki SF3 COTA"
+trigger1537=p2name="SSR Goku Black Z2i"
+trigger1538=p2name="Shichiten Hakki"
+trigger1539=p2name="Nanaya-KN"
+trigger1540=p2name="Holy_Night_Shiki(Nanaya)"
+trigger1541=p2name="kaShitsuKi(778)_190630"
+trigger1542=p2name="kaShitsuKi(778)"
+trigger1543=p2name="kaShitsuKi_Easy"
+trigger1544=p2name="Taima-Bananaya"
+trigger1545=p2name="P_Yukari"
+trigger1546=p2name="Lesserdemon"
+trigger1547=p2name="koakuma"
+trigger1548=p2name="STGkoakuma"
+trigger1549=p2name="koakuma_AC"
+trigger1550=p2name="koa63"
+trigger1551=p2name="Black-giras"
+trigger1552=p2name="Red-giras"
+trigger1553=p2name="Alien_cannan"
+trigger1554=p2name="Alien_temperor"
+trigger1555=p2name="Barugon"
+trigger1556=p2name="Black-dome"
+trigger1557=p2name="Absorba"
+trigger1558=p2name="Zatton"
+trigger1559=p2name="Thundergei"
+trigger1560=p2name="Littlemora"
+trigger1561=p2name="Satanmora"
+trigger1562=p2name="Silver-bloome"
+trigger1563=p2name="Silvergon"
+trigger1564=p2name="Skydon"
+trigger1565=p2name="SuperC.O.V."
+trigger1566=p2name="Magular"
+trigger1567=p2name="dada"
+trigger1568=p2name="Guigass"
+trigger1569=p2name="Jirahs"
+trigger1570=p2name="Gan-Q"
+trigger1571=p2name="Goldras"
+trigger1572=p2name="Black-telina"
+trigger1573=p2name="Bostang"
+trigger1574=p2name="Demos"
+trigger1575=p2name="Neronga"
+trigger1576=p2name="Geronga
+trigger1577=p2name="King K.Rool"
+trigger1578=p2name="Midbus"
+trigger1579=p2name="King Wart"
+trigger1580=p2name="Hipporit_Seijin"
+trigger1581=p2name="Chandlar"
+trigger1582=p2name="Peguira"
+trigger1583=p2name="yukie"&&authorname="Azu"
+trigger1584=p2name="Birdon"
+trigger1585=p2name="Hungrer"
+trigger1586=p2name="Kemjila
+trigger1587=p2name="Zoruim"
+trigger1588=p2name="Black-garon"
+trigger1589=p2name="Jumboking"
+trigger1590=p2name="La_Carcagne"
+trigger1591=p2name="Nova"
+trigger1592=p2name="Skullcrawler"
+trigger1593=p2name="Yapool"
+trigger1594=p2name="Contractor-Blackheat"
+trigger1595=p2name="Disturbed-Warcueid"
+trigger1596=p2name="Fraza Scarlet
+trigger1597=p2name="leonora"
+trigger1598=p2name="Dies_Irae-KN"
+trigger1599=p2name="AreaDetacher"
+trigger1600=p2name="Elen_Phelcetyeere"
+trigger1601=p2name="F.Overhaul.Scarlet"
+trigger1602=p2name="Superbiola"
+trigger1603=p2name="Kemur"
+trigger1604=p2name="Bemustar"
+trigger1605=p2name="Sabotendar"
+trigger1606=p2name="Zebokon"
+trigger1607=p2name="Quetzalcoatl"
+trigger1608=p2name="Majaba"
+trigger1609=p2name="Woo"
+trigger1610=p2name="Zazahn"
+trigger1611=p2name="Pestar"
+trigger1612=p2name="UMVC3_Morrigan"
+trigger1613=p2name="Sol Dae Rokker"
+trigger1614=p2name="BorderInfomater"
+trigger1615=p2name="Mini Vanilla Ice"
+trigger1616=p2name="Rockuma"
+trigger1617=p2name="Blizzard"&&Authorname="kirbey&注意力要集中"
+trigger1618=p2name="Destrudos"
+trigger1619=p2name="Killesdon"
+trigger1620=p2name="Chibi F.Death"
+trigger1621=p2name="Abyss Watcher Nanaya"
+trigger1622=p2name="DiveKick_Nanaya"
+trigger1623=p2name="Alien_Bunyo"
+value = 193
+
+[State 190, ChangeState]
+type = ChangeState
+triggerall = Time = 1
+trigger1 = var(10) = 1
+value = 195
+
+[State 190, ChangeState]
+type = ChangeState
+triggerall = Time = 1
+trigger1 = var(10) = 0
+trigger1 = prevstateno = 5902
+value = 192
+
+[State 190, ChangeState]
+type = ChangeState
+triggerall = Time = 1
+trigger1 = var(10) = 0
+value = 191+var(0)
+
+;---------------------------------------------------------------------------
+; イントロ（一番手）
+; CNS レベル: 基本
+
+[Statedef 191]
+type = S
+ctrl = 0
+anim = 191
+velset = 0,0
+
+[State 191, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 191, 特殊効果] ;「ROUND1, FIGHT!」のアナウンスが始まるまでは、このコントローラを使ってください
+type = AssertSpecial
+trigger1 = 1
+flag = Intro ;イントロの状態になります
+
+[State 191, 特殊効果]
+type = AssertSpecial
+trigger1 = numexplod(78000) = 1
+flag = nobardisplay
+
+[State 191, ChangeAnim]
+type = ChangeAnim
+;trigger1 = RoundNo = 1
+trigger1 = Time <= 48
+value = 191
+Elem = 1
+
+[State 191, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 15
+value = s10,2
+channel = 0
+
+[State 191, ChangeState]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 199
+
+;---------------------------------------------------------------------------
+; イントロ（二番手以降）
+; CNS レベル: 基本
+
+[Statedef 192]
+type = S
+ctrl = 0
+anim = 192
+velset = 0,0
+
+[State 192, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 192, 特殊効果] ;「ROUND1, FIGHT!」のアナウンスが始まるまでは、このコントローラを使ってください
+type = AssertSpecial
+trigger1 = 1
+flag = Intro ;イントロの状態になります
+
+[State 192, 特殊効果]
+type = AssertSpecial
+trigger1 = numexplod(78000) = 1
+flag = nobardisplay
+
+[State 192, ChangeAnim]
+type = ChangeAnim
+trigger1 = RoundNo = 1
+trigger1 = Time <= 48
+value = 192
+Elem = 1
+
+[State 192, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 5
+value = s10,3
+channel = 0
+
+[State 192, ChangeState]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 199
+
+;---------------------------------------------------------------------------
+; イントロ（対悪人）
+; CNS レベル: 基本
+
+[Statedef 193]
+type = S
+ctrl = 0
+anim = 193
+velset = 0,0
+
+[State 193, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 193, 特殊効果] ;「ROUND1, FIGHT!」のアナウンスが始まるまでは、このコントローラを使ってください
+type = AssertSpecial
+trigger1 = 1
+flag = Intro ;イントロの状態になります
+
+[State 193, 特殊効果]
+type = AssertSpecial
+trigger1 = numexplod(78000) = 1
+flag = nobardisplay
+
+[State 193, ChangeAnim]
+type = ChangeAnim
+;trigger1 = RoundNo = 1
+trigger1 = Time <= 48
+value = 193
+Elem = 1
+
+[State 193, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 5
+value = s10,4
+channel = 0
+
+[State 193, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 18
+value = s10,0
+channel = 0
+
+[State 193, ChangeState]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 199
+
+;---------------------------------------------------------------------------
+; イントロ（ネスツ編以降）
+; CNS レベル: 基本
+
+[Statedef 195]
+type = S
+ctrl = 0
+anim = 195
+velset = 0,0
+
+[State 195, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 195, 特殊効果] ;「ROUND1, FIGHT!」のアナウンスが始まるまでは、このコントローラを使ってください
+type = AssertSpecial
+trigger1 = 1
+flag = Intro ;イントロの状態になります
+
+[State 195, 特殊効果]
+type = AssertSpecial
+trigger1 = numexplod(78000) = 1
+flag = nobardisplay
+
+[State 195, ChangeAnim]
+type = ChangeAnim
+trigger1 = RoundNo = 1
+trigger1 = Time <= 48
+value = 195
+Elem = 1
+
+[State 191, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 20
+value = s10,2
+channel = 0
+
+[State 191, ChangeState]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 199
+
+;---------------------------------------------------------------------------
+; 待機状態
+
+[Statedef 199]
+type = S
+ctrl = 0
+velset = 0,0
+
+[State 199, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 199, 特殊効果]
+type = AssertSpecial
+trigger1 = 1
+flag = Intro
+
+[State 199, ChangeAnim]
+type = ChangeAnim
+trigger1 = 1
+value = 0 + (var(10) = 1)
+Elem = 1
+
+[State 199, 特殊効果]
+type = AssertSpecial
+trigger1 = numexplod(78000) = 1
+flag = nobardisplay
+
+[State 199, ステート変更]
+type = ChangeState
+trigger1 = Time >= 4
+trigger1 = numhelper(7600) = 0
+value = 0
+
+;==============================================================================
+; ふっとばし攻撃
+
+[Statedef 250]
+type     = S
+movetype = A
+physics  = N
+juggle   = 0
+PowerAdd = 0
+ctrl     = 0
+velset   = 0,0
+anim     = 250
+sprpriority = 3
+facep2 = 1
+
+[State 250, ChangeAnim]
+type = ChangeAnim
+trigger1 = Time = 0
+trigger1 = var(10) = 1
+value = 251
+
+[State 250, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s10,11
+channel = 0
+
+[State 250, PlaySnd]
+type = PlaySnd
+trigger1 = Anim = 250 && AnimElem = 2
+trigger2 = Anim = 251 && AnimElem = 8
+value = s0,1
+
+[State 250, ヒット定義]
+type = HitDef
+triggerall = var(12) = 0
+triggerall = !movecontact && !movereversed
+trigger1 = Anim = 250 && AnimElemTime(3) >= 0 && AnimElemTime(5) < 0
+trigger1 = var(28) := 1
+trigger2 = Anim = 251 && AnimElemTime(9) >= 0 && AnimElemTime(11) < 0
+trigger2 = var(28) := 1
+attr = S, NA
+damage    = floor((ifelse(var(6),18,15)-var(21))*fvar(7)), 0
+getpower  = floor(ifelse(var(40),0,8)*fvar(8)),floor(ifelse(var(40),0,8)*fvar(8))
+givepower = floor(1*fvar(8)),floor(1*fvar(8))
+animtype  = Hard
+air.animtype = back
+guardflag = M
+hitflag = MAF
+priority  = 4, Hit
+pausetime = 11+(Helper(40000),var(0)),13
+guard.pausetime = 11+(Helper(40000),var(0)),11
+sparkno = s6001+ifelse(var(40),3,0)
+guard.sparkno = s6011
+sparkxy = -20, -80
+hitsound = s1,4
+guardsound = s2,0
+ground.type = High
+ground.slidetime = 21
+ground.hittime = 21
+ground.velocity = -4.5-ifelse(var(40),0.5,0),-6.5-ifelse(var(40),0.5,0)
+guard.velocity = -10.5-ifelse(var(40),0.5,0)
+air.type = High
+air.hittime = 12
+air.velocity = -4.5-ifelse(var(40),0.5,0),-6.5-ifelse(var(40),0.5,0)
+airguard.velocity = -4-ifelse(var(40),0.5,0),-1-ifelse(var(40),0.5,0)
+ground.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+fall = 1
+fall.recover = 1
+fall.recovertime = 600
+fall.yvelocity = -3.5
+yaccel = .5
+ID = 30
+
+[State 250, ヒット定義消去]
+type = HitDef
+triggerall = var(12) > 0
+trigger1 = Anim = 250 && AnimElemTime(3) >= 0 && AnimElemTime(5) < 0
+trigger2 = Anim = 251 && AnimElemTime(9) >= 0 && AnimElemTime(11) < 0
+attr = 
+
+[State 250, ガード弾き値削り]
+type = VarAdd
+triggerall = RoundState = 2
+triggerall = p2movetype = H
+trigger1 = moveguarded = 1
+fvar(10) = floor((14-var(21))*fvar(12))
+ignorehitpause = 1
+persistent = 0
+
+[State 250, 気絶値削り]
+type = VarAdd
+triggerall = RoundState = 2
+triggerall = p2movetype = H
+triggerall = fvar(15) = 0
+trigger1 = movehit = 1
+fvar(13) = floor((14-var(21))*fvar(16))
+ignorehitpause = 1
+persistent = 0
+
+[State 250, MoveType]
+type = StateTypeSet
+trigger1 = Anim = 250 && AnimElem = 5
+trigger2 = Anim = 251 && AnimElem = 11
+MoveType = I
+
+[State 250, ChangeState]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; ガードキャンセルふっとばし攻撃
+
+[Statedef 255]
+type     = S
+movetype = A
+physics  = N
+juggle   = 0
+PowerAdd = 0
+ctrl     = 0
+velset   = 0,0
+anim     = 255
+sprpriority = 3
+facep2 = 1
+
+[State 255, ChangeAnim]
+type = ChangeAnim
+trigger1 = Time = 0
+trigger1 = var(10) = 1
+value = 256
+
+[State 255, PowerAdd]
+type = PowerAdd
+triggerall = var(9) = 0
+trigger1 = time = 0
+value = -1000
+
+[State 255, パワーMAX解除]
+type = VarSet
+triggerall = var(9) = 1
+triggerall = var(40) > 0
+trigger1 = time = 0
+var(40) = 0
+
+[State 255, 無敵]
+type = NotHitBy
+trigger1 = Anim = 255 && AnimElemTime (1) >= 0 && AnimElemTime (8) < 0
+trigger2 = Anim = 256 && AnimElemTime (1) >= 0 && AnimElemTime (9) < 0
+value = SCA
+
+[State 255, 時間停止]
+type = SuperPause
+trigger1 = AnimElem = 1
+anim = -1
+time = 11
+movetime = 11
+p2defmul = 1.0
+darken = 0
+
+[State 255, エフェクト表示]
+type = Explod
+trigger1 = AnimElem = 1
+anim = 6030
+pos = -12, -72
+sprpriority = 20
+ownpal = 1
+bindtime = 1
+supermove = 1
+
+[State 255, EnvColor]
+type = EnvColor
+trigger1 = time = [0,3]
+time = 1
+value = 255,255,255
+under = 1
+
+[State 255, 特殊効果]
+type = AssertSpecial
+trigger1 = time = [0,3]
+flag = NoFG
+flag2 = NOBG
+flag3 = GlobalNoShadow
+ignorehitpause = 1
+
+[State 250, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 2
+value = s10,11
+channel = 0
+
+[State 255, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 5
+value = s0,1
+
+[State 255, ヒット定義]
+type = HitDef
+triggerall = var(12) = 0
+triggerall = !movecontact && !movereversed
+trigger1 = Anim = 255 && AnimElemTime(6) >= 0 && AnimElemTime(8) < 0
+trigger1 = var(28) := 1
+trigger2 = Anim = 256 && AnimElemTime(8) >= 0 && AnimElemTime(9) < 0
+trigger2 = var(28) := 1
+attr = S, NA
+damage    = floor((7-var(21))*fvar(7)), 0
+getpower  = 0
+givepower = floor(1*fvar(8)),floor(1*fvar(8))
+animtype  = Hard
+air.animtype = back
+guardflag = M
+hitflag = MAF
+priority  = 4, Hit
+pausetime = 11+(Helper(40000),var(0)),13
+guard.pausetime = 11+(Helper(40000),var(0)),11
+sparkno = s6001+ifelse(var(40),3,0)
+guard.sparkno = s6011
+sparkxy = -20, -80
+hitsound = s1,4
+guardsound = s2,0
+ground.type = High
+ground.slidetime = 21
+ground.hittime = 21
+ground.velocity = -4.5-ifelse(var(40),0.5,0),-6.5-ifelse(var(40),0.5,0)
+guard.velocity = -10.5-ifelse(var(40),0.5,0)
+air.type = High
+air.hittime = 12
+air.velocity = -4.5-ifelse(var(40),0.5,0),-6.5-ifelse(var(40),0.5,0)
+airguard.velocity = -4-ifelse(var(40),0.5,0),-1-ifelse(var(40),0.5,0)
+ground.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+fall = 1
+fall.recover = 1
+fall.recovertime = 600
+fall.yvelocity = -3.5
+yaccel = .5
+ID = 30
+
+[State 255, ヒット定義消去]
+type = HitDef
+triggerall = var(12) > 0
+trigger1 = Anim = 255 && AnimElemTime(6) >= 0 && AnimElemTime(8) < 0
+trigger2 = Anim = 256 && AnimElemTime(8) >= 0 && AnimElemTime(9) < 0
+attr = 
+
+[State 255, ガードクラッシュ値削り]
+type = VarAdd
+triggerall = RoundState = 2
+triggerall = p2movetype = H
+trigger1 = moveguarded = 1
+fvar(10) = floor((5-var(21))*fvar(12))
+ignorehitpause = 1
+persistent = 0
+
+[State 255, スタン値削り]
+type = VarAdd
+triggerall = RoundState = 2
+triggerall = p2movetype = H
+triggerall = fvar(15) = 0
+trigger1 = movehit = 1
+fvar(13) = floor((5-var(21))*fvar(16))
+ignorehitpause = 1
+persistent = 0
+
+[State 255, MoveType]
+type = StateTypeSet
+trigger1 = Anim = 255 && AnimElem = 8
+trigger2 = Anim = 256 && AnimElem = 9
+MoveType = I
+
+[State 255, ChangeState]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; 空中ふっとばし攻撃
+
+[Statedef 650]
+type     = A
+movetype = A
+physics  = A
+juggle   = 0
+PowerAdd = 0
+ctrl     = 0
+anim     = 650
+sprpriority = 3
+
+[State 650, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s10,11
+channel = 0
+
+[State 650, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 2
+value = s0,1
+
+[State 650, ヒット定義]
+type = HitDef
+triggerall = var(12) = 0
+triggerall = !movecontact && !movereversed
+trigger1 = AnimElemTime(3) >= 0 && AnimElemTime(5) < 0
+trigger1 = var(28) := 1
+attr = A, NA
+damage    = floor((ifelse(var(6),18,15)-var(21))*fvar(7)), 0
+getpower  = floor(ifelse(var(40),0,8)*fvar(8)),floor(ifelse(var(40),0,8)*fvar(8))
+givepower = floor(1*fvar(8)),floor(1*fvar(8))
+animtype  = Hard
+air.animtype = back
+guardflag = MA
+hitflag = MAF
+priority  = 4, Hit
+pausetime = 11+(Helper(40000),var(0)),13
+guard.pausetime = 11+(Helper(40000),var(0)),11
+sparkno = s6001+ifelse(var(40),3,0)
+guard.sparkno = s6011
+sparkxy = -20, -48
+hitsound = s1,4
+guardsound = s2,0
+ground.type = High
+ground.slidetime = 21
+ground.hittime = 21
+ground.velocity = -4.5-ifelse(var(40),0.5,0),-6.5-ifelse(var(40),0.5,0)
+guard.velocity = -10.5-ifelse(var(40),0.5,0)
+air.type = High
+air.hittime = 12
+air.velocity = -4.5-ifelse(var(40),0.5,0),-6.5-ifelse(var(40),0.5,0)
+airguard.velocity = -4-ifelse(var(40),0.5,0),-1-ifelse(var(40),0.5,0)
+ground.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+fall = 1
+fall.recover = 1
+fall.recovertime = 600
+fall.yvelocity = -3.5
+yaccel = .5
+ID = 30
+
+[State 650, ヒット定義消去]
+type = HitDef
+triggerall = var(12) > 0
+trigger1 = AnimElemTime(3) >= 0 && AnimElemTime(5) < 0
+attr = 
+
+[State 650, ガード弾き値削り]
+type = VarAdd
+triggerall = RoundState = 2
+triggerall = p2movetype = H
+trigger1 = moveguarded = 1
+fvar(10) = floor((13-var(21))*fvar(12))
+ignorehitpause = 1
+persistent = 0
+
+[State 650, 気絶値削り]
+type = VarAdd
+triggerall = RoundState = 2
+triggerall = p2movetype = H
+triggerall = fvar(15) = 0
+trigger1 = movehit = 1
+fvar(13) = floor((13-var(21))*fvar(16))
+ignorehitpause = 1
+persistent = 0
+
+[State 650, MoveType]
+type = StateTypeSet
+trigger1 = AnimElem = 5
+MoveType = I
+
+;---------------------------------------------------------------------------
+; 緊急回避前
+
+[Statedef 700]
+type     = S
+movetype = I
+physics  = N
+anim     = 700
+ctrl     = 0
+velset   = 0,0
+sprpriority = -2
+
+[State 700, VarSet]
+type = VarSet
+trigger1 = time = 0
+var(16) = 0
+
+[State 700, VarSet]
+type = VarSet
+trigger1 = prevstateno = 150 || prevstateno = 152
+var(16) = 1
+
+[State 700, ChangeAnim]
+type = ChangeAnim
+trigger1 = var(16) = 1
+trigger1 = time = 0
+value = 701
+
+[State 700, Turn]
+type = Turn
+trigger1 = var(16) = 0
+trigger1 = Time = 0
+trigger1 = P2Dist X < 0
+
+[State 700, PowerAdd]
+type = PowerAdd
+triggerall = var(9) = 0
+trigger1 = var(16) = 1 && AnimElem = 1
+value = -1000
+
+[State 700, パワーMAX解除]
+type = VarSet
+triggerall = var(9) = 1
+triggerall = var(40) > 0
+trigger1 = var(16) = 1 && AnimElem = 1
+var(40) = 0
+
+[State 700, 時間停止]
+type = SuperPause
+trigger1 = var(16) = 1 && AnimElem = 1
+anim = -1
+movetime = 11
+time = 11
+p2defmul = 1.0
+darken = 0
+
+[State 700, エフェクト表示]
+type = Explod
+trigger1 = var(16) = 1 && AnimElem = 1
+anim = 6030
+pos = -12, -72
+sprpriority = 20
+ownpal = 1
+bindtime = 1
+supermove = 1
+
+[State 700, EnvColor]
+type = EnvColor
+trigger1 = var(16) = 1 && (time = [0,3])
+time = 1
+value = 255,255,255
+under = 1
+
+[State 700, 特殊効果]
+type = AssertSpecial
+trigger1 = var(16) = 1 && (time = [0,3])
+flag = NoFG
+flag2 = NOBG
+flag3 = GlobalNoShadow
+ignorehitpause = 1
+
+[State 700, 残像]
+type = AfterImage
+triggerall = var(16) = 0
+trigger1 = AnimElem = 1
+time = 10
+palbright = 30,30,30
+PalContrast = 256,256,256
+paladd = 0,0,0
+palmul = 1,1,1
+trans = none
+Length = 7
+FrameGap = 3
+
+[State 700, 残像]
+type = AfterImage
+triggerall = var(16) = 1
+trigger1 = AnimElem = 2
+time = 2
+palcolor = 0
+paladd = 60,20,100
+PalContrast = 220,200,350
+Trans = none
+TimeGap  = 1
+FrameGap = 3
+length = 11
+ignorehitpause = 1
+
+[State 700, AfterImageTime]
+type = AfterImageTime
+triggerall = var(16) = 1
+trigger1 = AnimElemTime(2) >= 0
+trigger1 = gametime%2 = 0
+time = 2
+
+[State 700, 非無敵]
+type = HitBy
+triggerall = var(16) = 0
+trigger1 = AnimElem = 8, <= 0
+value = SC, NT, ST, HT
+
+[State 700, 無敵]
+type = NotHitBy
+triggerall = var(16) = 1
+trigger1 = 1
+value = SCA
+
+[State 700, 音を鳴らす]
+type = PlaySnd
+trigger1 = Anim = 700 && AnimElem = 2
+trigger2 = Anim = 701 && AnimElem = 3
+value = s10,10
+channel = 0
+
+[State 700, 移動量]
+type = VelSet
+trigger1 = Anim = 700 && AnimElem = 3
+trigger2 = Anim = 701 && AnimElem = 4
+x = ifelse((PrevStateNo = 100 || var(16) = 1),7.5,5)
+
+[State 700, 移動終了]
+type = VelSet
+trigger1 = AnimElem = 10
+x = 0
+
+[State 700, 相手と重なった場合]
+type = PlayerPush
+trigger1 = AnimElemTime(1) > 0
+value = 0
+
+[State 700, 終了]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; 緊急回避後
+
+[Statedef 710]
+type     = S
+movetype = I
+physics  = N
+anim     = 710
+ctrl     = 0
+velset   = 0,0
+sprpriority = -2
+
+[State 710, VarSet]
+type = VarSet
+trigger1 = time = 0
+var(16) = 0
+
+[State 710, VarSet]
+type = VarSet
+trigger1 = prevstateno = 150 || prevstateno = 152
+var(16) = 1
+
+[State 710, ChangeAnim]
+type = ChangeAnim
+trigger1 = var(16) = 1
+trigger1 = time = 0
+value = 711
+
+[State 710, Turn]
+type = Turn
+trigger1 = var(16) = 0
+trigger1 = Time = 0
+trigger1 = P2Dist X < 0
+
+[State 710, PowerAdd]
+type = PowerAdd
+triggerall = var(9) = 0
+trigger1 = var(16) = 1 && AnimElem = 1
+value = -1000
+
+[State 710, パワーMAX解除]
+type = VarSet
+triggerall = var(9) = 1
+triggerall = var(40) > 0
+trigger1 = var(16) = 1 && AnimElem = 1
+var(40) = 0
+
+[State 710, 時間停止]
+type = SuperPause
+trigger1 = var(16) = 1 && AnimElem = 1
+anim = -1
+movetime = 11
+time = 11
+p2defmul = 1.0
+darken = 0
+
+[State 710, エフェクト表示]
+type = Explod
+trigger1 = var(16) = 1 && AnimElem = 1
+anim = 6030
+pos = -12, -72
+sprpriority = 20
+ownpal = 1
+bindtime = 1
+supermove = 1
+
+[State 710, EnvColor]
+type = EnvColor
+trigger1 = var(16) = 1 && (time = [0,3])
+time = 1
+value = 255,255,255
+under = 1
+
+[State 710, 特殊効果]
+type = AssertSpecial
+trigger1 = var(16) = 1 && (time = [0,3])
+flag = NoFG
+flag2 = NOBG
+flag3 = GlobalNoShadow
+ignorehitpause = 1
+
+[State 710, 残像]
+type = AfterImage
+triggerall = var(16) = 0
+trigger1 = AnimElem = 1
+time = 10
+palbright = 30,30,30
+PalContrast = 256,256,256
+paladd = 0,0,0
+palmul = 1,1,1
+trans = none
+Length = 7
+FrameGap = 3
+
+[State 710, 残像]
+type = AfterImage
+triggerall = var(16) = 1
+trigger1 = AnimElem = 2
+time = 2
+palcolor = 0
+paladd = 60,20,100
+PalContrast = 220,200,350
+Trans = none
+TimeGap  = 1
+FrameGap = 3
+length = 11
+ignorehitpause = 1
+
+[State 710, AfterImageTime]
+type = AfterImageTime
+triggerall = var(16) = 1
+trigger1 = AnimElemTime(2) >= 0
+trigger1 = gametime%2 = 0
+time = 2
+
+[State 710, 非無敵]
+type = HitBy
+triggerall = var(16) = 0
+trigger1 = AnimElem = 8, <= 0
+value = SC, NT, ST, HT
+
+[State 710, 無敵]
+type = NotHitBy
+triggerall = var(16) = 1
+trigger1 = 1
+value = SCA
+
+[State 710, 音を鳴らす]
+type = PlaySnd
+trigger1 = Anim = 710 && AnimElem = 2
+trigger2 = Anim = 711 && AnimElem = 3
+value = s10,10
+channel = 0
+
+[State 710, 移動量]
+type = VelSet
+trigger1 = Anim = 710 && AnimElem = 3
+trigger2 = Anim = 711 && AnimElem = 4
+x = ifelse(var(16) = 1,-7.5,-5)
+
+[State 710, 移動終了]
+type = VelSet
+trigger1 = AnimElem = 10
+x = 0
+
+[State 710, 相手と重なった場合]
+type = PlayerPush
+trigger1 = AnimElemTime(1) > 0
+value = 0
+
+[State 710, 終了]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; 攻撃避け
+
+[Statedef 720]
+type     = S
+movetype = I
+physics  = N
+anim     = 720
+ctrl     = 0
+velset   = 0,0
+sprpriority = -1
+
+[State 720, HitBy]
+type = HitBy
+trigger1 = 1
+value = SC, NT, ST, HT
+
+[State 720, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 0
+
+[State 720, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 1
+value = s10,10
+channel = 0
+
+[State 720, VarSet]
+type = VarSet
+trigger1 = time = 0
+var(15) = 0
+
+[State 720, VarSet]
+type = VarSet
+triggerall = var(59) != 1
+triggerall = Time >= 5
+trigger1 = command = "a"
+trigger2 = command = "b"
+trigger3 = command = "x"
+trigger4 = command = "y"
+var(15) = 1
+
+[State 720, ChangeState]
+type = ChangeState
+triggerall = var(59) != 1
+triggerall = AnimElemTime(3) >= 1 && AnimElemTime(4) < 0
+trigger1 = var(15) = 1
+value = 721
+
+[State 720, ChangeState - AI]
+type = ChangeState
+triggerall = var(59) = 1
+triggerall = AnimElemTime(3) >= 1 && AnimElemTime(4) < 0
+triggerall = Random <= var(57) * 125
+triggerall = enemynear(var(58)),statetype != A
+triggerall = enemynear(var(58)),statetype != L
+triggerall = enemy,numproj = 0
+triggerall = P2BodyDist x = [-5,80]
+trigger1 = enemynear(var(58)),ctrl = 0
+trigger1 = enemynear(var(58)),movetype != H
+trigger1 = enemynear(var(58)),stateno >= 200
+trigger1 = enemynear(var(58)),animtime <= -11
+trigger1 = Random <= 600
+trigger2 = Random <= 200
+value = 721
+
+[State 720, ChangeState]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; カウンター攻撃
+
+[Statedef 721]
+type     = S
+movetype = A
+physics  = N
+juggle   = 0
+velset   = 0,0
+ctrl     = 0
+anim     = 721
+poweradd = 0
+sprpriority = -1
+
+[State 721, VarSet]
+type = VarSet
+trigger1 = time = 0
+var(15) = 0
+
+[State 721, HitDef]
+type = HitDef
+triggerall = var(12) = 0
+triggerall =!movecontact && !movereversed
+trigger1 = AnimElemTime(4) >= 0 && AnimElemTime(5) < 0
+trigger1 = var(28) := 1
+attr = S, NA
+damage    = floor((ifelse(var(6),11,8)-var(21))*fvar(7)), 0
+getpower  = 0
+givepower = floor(1*fvar(8)),floor(1*fvar(8))
+animtype  = Hard
+air.animtype = back
+guardflag = M
+hitflag = MAF
+priority  = 4, Hit
+pausetime = 11+(Helper(40000),var(0)),13
+guard.pausetime = 11+(Helper(40000),var(0)),11
+sparkno = s6001+ifelse(var(40),3,0)
+guard.sparkno = s6011
+sparkxy = -16, -84
+hitsound = s1,var(32)
+guardsound = s2,0
+ground.type = High
+ground.slidetime = 17
+ground.hittime = 17
+ground.velocity = -10.5-ifelse(var(40),0.5,0)
+air.type = High
+air.hittime = 12
+air.velocity = -4.5-ifelse(var(40),0.5,0),-6.5-ifelse(var(40),0.5,0)
+airguard.velocity = -4-ifelse(var(40),0.5,0),-1-ifelse(var(40),0.5,0)
+ground.cornerpush.veloff = 0
+air.cornerpush.veloff = 0
+yaccel = .5
+air.fall = 1
+fall.recover = 1
+fall.recovertime = 600
+fall.yvelocity = -3.5
+ID = 20
+
+[State 721, ヒット定義消去]
+type = HitDef
+triggerall = var(12) > 0
+trigger1 = AnimElemTime(4) >= 0 && AnimElemTime(5) < 0
+attr = 
+
+[State 721, ガード弾き値削り]
+type = VarAdd
+triggerall = RoundState = 2
+triggerall = p2movetype = H
+trigger1 = moveguarded = 1
+fvar(10) = floor((4-var(21))*fvar(12))
+ignorehitpause = 1
+persistent = 0
+
+[State 721, 気絶値削り]
+type = VarAdd
+triggerall = RoundState = 2
+triggerall = p2movetype = H
+triggerall = fvar(15) = 0
+trigger1 = movehit = 1
+fvar(13) = floor((6-var(21))*fvar(16))
+ignorehitpause = 1
+persistent = 0
+
+[State 721, SprPriority]
+type = SprPriority
+trigger1 = MoveContact = 1
+trigger2 = MoveReversed = 1
+value = 1
+ignorehitpause = 1
+
+[State 721, MoveType]
+type = StateTypeSet
+trigger1 = AnimElem = 5
+MoveType = I
+
+[State 721, ChangeState]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; MAX発動
+
+[Statedef 750]
+type     = S
+movetype = I
+physics  = S
+anim     = 750
+ctrl     = 0
+velset   = 0,0
+sprpriority = 1
+
+[State 750, PowerAdd]
+type = PowerAdd
+trigger1 = Time = 0
+value = -1000
+
+[State 750, VarSet]
+type = VarSet
+trigger1 = Time = 0
+var(40) = 1200
+
+[State 750, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 5
+value = s10,0
+channel = 0
+
+[State 750, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 5
+value = s8,1
+
+[State 750 Explod]
+type = Explod
+trigger1 = AnimElem = 5
+anim = 6061
+postype = P1
+pos = 0, 0
+sprpriority = 5
+ownpal = 1
+
+[State 750, EnvShake]
+type = EnvShake
+trigger1 = AnimElem = 5
+time = 10
+ampl = -5
+freq = 95
+phase = 95
+
+[State 750, ChangeState]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; ゲージ溜め
+
+[Statedef 760]
+type     = S
+movetype = I
+physics  = S
+anim     = 760
+ctrl     = 0
+velset   = 0,0
+
+[State 760, Null]
+type = Null
+triggerall = time = 0
+trigger1 = command = "holdx" && command = "holda" && command = "holdy"
+trigger1 = var(15) := 1
+trigger2 = command = "holdc"
+trigger2 = var(15) := 2
+
+[State 760, VarAdd]
+type = VarAdd
+trigger1 = 1
+fvar(9) = 8
+
+[State 760, ChangeState]
+type = ChangeState
+trigger1 = animtime = 0
+value = 761
+
+[State 760, ChangeState]
+type = ChangeState
+triggerall = Time >= 2
+trigger1 = var(59) != 1
+trigger1 = var(15) = 1
+trigger1 = command != "holdx" && command != "holda" && command != "holdy"
+trigger2 = var(59) != 1
+trigger2 = var(15) = 2
+trigger2 = command != "holdc"
+trigger3 = fvar(9) >= 1000 || var(40)
+trigger4 = roundState != 2
+value = 762
+
+[State 760, ChangeState]
+type = ChangeState
+triggerall = var(59) = 1
+triggerall = Time >= 2
+trigger1 = P2bodydist X = [-5,200]
+trigger1 = EnemyNear(var(58)),MoveType = A
+trigger2 = P2bodydist X = [-5,60]
+trigger2 = EnemyNear(var(58)),statetype != L
+trigger3 = Enemy,numproj
+trigger4 = inguarddist
+trigger5 = roundState != 2
+value = 762
+
+[Statedef 761]
+type     = S
+movetype = I
+physics  = S
+anim     = 761
+ctrl     = 0
+velset   = 0,0
+
+[State 761, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 4
+value = s10,0
+channel = 0
+
+[State 761, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 4,= 3
+value = s8,0
+channel = 4
+
+[State 761, Explod]
+type = Explod
+trigger1 = AnimElem = 4,= 3
+anim = 6060
+ID = 6060
+postype = P1
+pos = 0, 0
+sprpriority = 5
+bindtime = -1
+removetime = -1
+ownpal = 1
+removeongethit = 1
+
+[State 761, VarAdd]
+type = VarAdd
+trigger1 = Time >= 1
+fvar(9) = 8
+
+[State 761, ChangeState]
+type = ChangeState
+trigger1 = var(59) != 1
+trigger1 = var(15) = 1
+trigger1 = command != "holdx" && command != "holda" && command != "holdy"
+trigger2 = var(59) != 1
+trigger2 = var(15) = 2
+trigger2 = command != "holdc"
+trigger3 = fvar(9) >= 1000 || var(40)
+trigger4 = roundState != 2
+value = 762
+
+[State 761, ChangeState]
+type = ChangeState
+triggerall = var(59) = 1
+trigger1 = P2bodydist X = [-5,200]
+trigger1 = EnemyNear(var(58)),MoveType = A
+trigger2 = P2bodydist X = [-5,60]
+trigger2 = EnemyNear(var(58)),statetype != L
+trigger3 = Enemy,numproj
+trigger4 = inguarddist
+trigger5 = Time >= 60
+trigger5 = EnemyNear(var(58)),statetype != L
+trigger5 = EnemyNear(var(58)),movetype != H
+trigger5 = random <= 5
+trigger6 = roundState != 2
+value = 762
+
+[Statedef 762]
+type     = S
+movetype = I
+physics  = S
+anim     = 762
+ctrl     = 0
+velset   = 0,0
+
+[State 762, ChangeAnim]
+type = ChangeAnim
+trigger1 = Time = 0
+trigger1 = prevstateno = 761
+value = 763
+
+[State 762, VarSet]
+type = VarSet
+trigger1 = time = 0
+var(15) = 0
+
+[State 762, StopSnd]
+type = StopSnd
+trigger1 = time = 0
+channel = 4
+
+[State 762, RemoveExplod]
+type = RemoveExplod
+trigger1 = time = 0
+ID = 6060
+
+[State 762, ChangeState]
+type = ChangeState
+trigger1 = animtime = 0
+value = 0
+ctrl = 1
+
+;-----------------------------------------------------------------------------
+; AI用のステート
+;-----------------------------------------------------------------------------
+; 前ジャンプ
+
+[Statedef 30]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = 1
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 50
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; 後ろジャンプ
+
+[Statedef 31]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = -1
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 50
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; 前小ジャンプ
+
+[Statedef 32]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = 1
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 55
+ctrl = 0
+
+;---------------------------------------------------------------------------
+; 後ろ小ジャンプ
+
+[Statedef 33]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = -1
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 55
+ctrl = 0
+
+;---------------------------------------------------------------------------
+; 前中ジャンプ
+
+[Statedef 34]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = 2
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 55
+ctrl = 0
+
+;---------------------------------------------------------------------------
+; 後ろ中ジャンプ
+
+[Statedef 35]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = -2
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 55
+ctrl = 0
+
+;---------------------------------------------------------------------------
+; 前大ジャンプ
+
+[Statedef 36]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = 2
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 50
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; 後ろ大ジャンプ
+
+[Statedef 37]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = -2
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 50
+ctrl = 1
+
+;---------------------------------------------------------------------------
+; 垂直ジャンプ
+
+[Statedef 38]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = 0
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 50
+ctrl = 1
+
+;---------------------------------------------------------------------------
+;垂直小ジャンプ
+
+[Statedef 39]
+type    = S
+physics = S
+anim = 40
+ctrl = 0
+sprpriority = 1
+
+[state 40, 1]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist x < 0
+
+[State 40, 2]
+type = NotHitBy
+trigger1 = 1
+value = , AT
+
+[State 40, 3]
+type = AfterImage
+trigger1 = time = 0
+time = 1
+
+[State 40, 4]
+type = VarSet
+trigger1 = 1
+sysvar(1) = 0
+
+[State 40, 5]
+type = VelSet
+trigger1 = AnimTime = 0
+x = ifelse(sysvar(1) = 0, const(velocity.jump.neu.x), ifelse(sysvar(1) >= 1, const(velocity.jump.fwd.x), const(velocity.jump.back.x))) * ifelse((sysvar(1) = 2 || sysvar(1) = -2),1.5,1)
+y = const(velocity.jump.y)
+
+[State 40, 6]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 55
+ctrl = 0
+
+;---------------------------------------------------------------------------
+; RUN_FWD(AI)
+[Statedef 98]
+type    = S
+physics = S
+anim = 100
+ctrl = 0
+velset = 0,0
+sprpriority = 1
+
+[State 100, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 2
+value = s5,0
+channel = 3
+loop = 1
+
+[State 100, 1]
+type = VelSet
+trigger1 = AnimElemtime(2) >= 0
+x = const(velocity.run.fwd.x)
+
+[State 100, 2] ;Prevent run from canceling into walk
+type = AssertSpecial
+trigger1 = 1
+flag = NoWalk
+
+[State 100, 3] ;Prevent from turning
+type = AssertSpecial
+trigger1 = 1
+flag = NoAutoTurn
+
+[State 100, 4]
+type = ChangeState
+trigger1 = time >= 14
+value = 101
+
+[State 100, AI]
+Type = ChangeState
+triggerall = RoundState = 2
+trigger1 = AnimElem = 2,= 1
+value = 1510
+
+;---------------------------------------------------------------------------
+; RUN_FWD(AI)
+[Statedef 99]
+type    = S
+physics = S
+anim = 100
+ctrl = 0
+velset = 0,0
+sprpriority = 1
+
+[State 100, 音を鳴らす]
+type = PlaySnd
+trigger1 = AnimElem = 2
+value = s5,0
+channel = 3
+loop = 1
+
+[State 100, 1]
+type = VelSet
+trigger1 = AnimElemtime(2) >= 0
+x = const(velocity.run.fwd.x)
+
+[State 100, 2] ;Prevent run from canceling into walk
+type = AssertSpecial
+trigger1 = 1
+flag = NoWalk
+
+[State 100, 3] ;Prevent from turning
+type = AssertSpecial
+trigger1 = 1
+flag = NoAutoTurn
+
+[State 100, 4]
+type = ChangeState
+trigger1 = time >= 14
+value = 101
+
+;━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+;AIヘルパー
+;━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+;==============================================================================
+;AI起動ヘルパー
+;==============================================================================
+[StateDef 30000]
+movetype = A
+ctrl = 0
+anim = 0
+
+[State 30000, 間違いで本体が来たら立ちへ移行]
+type = SelfState
+trigger1 = !IsHelper
+value = 0
+
+[State 30000, 透明化]
+type = AssertSpecial
+trigger1 = 1
+flag = Invisible
+
+[State 30000, 無敵化]
+type = hitby
+trigger1 = 1
+value =
+value2=
+
+[State 30000, 攻撃範囲消去]
+type = AttackDist
+trigger1 = 1
+value = 0
+
+[State 30000, 人操作フラグON]
+type = VarSet
+trigger1 = Command = "a" && Command = "AI"
+trigger2 = Command = "b" && Command = "AI"
+trigger3 = Command = "c" && Command = "AI"
+trigger4 = Command = "x" && Command = "AI"
+trigger5 = Command = "y" && Command = "AI"
+trigger6 = Command = "z" && Command = "AI"
+trigger7 = Command = "start" && Command = "AI"
+trigger8 = Command = "F" && Command = "AI"
+trigger9 = Command = "B" && Command = "AI"
+trigger10 = Command = "U" && Command = "AI"
+trigger11 = Command = "D" && Command = "AI"
+trigger12 = (RoundState = 0 || RoundState = 1) && Command = "/command"
+var(59) = -1
+
+[State 30000, AIフラグON]
+type = VarSet
+triggerall = !var(59) && !root,var(59)
+trigger1 = Command = "/command"
+trigger2 = Command = "AI" || Command = "F" || Command = "B" || Command = "U" || Command = "D"
+trigger3 = Command = "a" || Command = "b" || Command = "c" || Command = "x" || Command = "y" || Command = "z" || Command = "start"
+var(59) = 1
+
+[State 30000, 本体にフラグが立ったら消去]
+type = DestroySelf
+triggerall = IsHelper
+trigger1 = root,var(59)
+
+;==============================================================================
+;ガードチェックヘルパー
+;==============================================================================
+[Statedef 30100]
+type     = A
+movetype = I
+physics  = N
+anim     = 0;9999
+
+[State 30100, AssertSpecial]
+type = AssertSpecial
+Trigger1 = 1
+flag = NoShadow
+flag2 = invisible
+
+[State 30100, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 30100, PlayerPush]
+type = PlayerPush
+trigger1 = 1
+value = 0
+
+[State 30100, 間違いで本体が来たら立ちへ移行]
+type = SelfState
+trigger1 =!ishelper
+value = 0
+
+[State 30100, 目の前の敵が一番近い相手である]
+type = VarSet
+triggerall = RoundState = 2
+trigger1 = numenemy <= 1
+trigger2 = numenemy >= 2
+trigger2 = enemy(0),life <= 0 || enemy(1),life <= 0
+trigger2 = enemynear(0),life > 0
+trigger3 = numenemy >= 2
+trigger3 = enemy(0),life > 0 && enemy(1),life > 0
+trigger3 = abs(Root,pos x - enemynear(0),pos x) <= abs(Root,pos x - enemynear(1),pos x) 
+var(1) = 0
+IgnoreHitPause = 1
+
+[State 30100, 目の前の敵が一番近い相手ではない]
+type = VarSet
+triggerall = RoundState = 2
+triggerall = numenemy >= 2
+trigger1 = enemynear(0),life <= 0
+trigger2 = numenemy >= 2
+trigger2 = enemy(0),life <= 0 || enemy(1),life <= 0
+trigger2 = enemynear(0),life <= 0
+trigger3 = enemy(0),life > 0 && enemy(1),life > 0
+trigger3 = abs(Root,pos x - enemynear(0),pos x) > abs(Root,pos x - enemynear(1),pos x) 
+var(1) = 1
+IgnoreHitPause = 1
+
+;---------------------------------------------------------------------------
+;自分の後ろに設置
+[State 30100]
+type = turn
+trigger1 = facing*ifelse((enemynear(var(1)),pos x-pos x)>=0,1,-1) < 0
+IgnoreHitPause = 1
+supermovetime = 9999
+pausemovetime = 9999
+
+[State 30100]
+type = VarSet
+trigger1 = enemynear(var(1)),facing*ifelse((enemynear(var(1)),pos x-Root,pos x)>=0,1,-1)<=0
+trigger2 = !enemynear(var(1)),hitdefattr = A,NA,SA,HA
+var(2) = 0
+IgnoreHitPause = 1
+supermovetime = 9999
+pausemovetime = 9999
+
+[State 30100]
+type = VarSet
+trigger1 = enemynear(var(1)),facing*ifelse((EnemyNear(var(1)),pos x-Root,pos x)>=0,1,-1)>0
+trigger1 = enemynear(var(1)),hitdefattr = A,NA,SA,HA
+var(2) = 1
+IgnoreHitPause = 1
+supermovetime = 9999
+pausemovetime = 9999
+
+[State 30100]
+type = posset
+trigger1 = 1
+x = Root,pos x+ifelse((enemynear(var(1)),pos y<0&&var(2)=1),(enemynear(var(1)),const(size.attack.dist)),(enemynear(var(1)),const(size.proj.attack.dist)))*(enemynear(var(1)),facing)
+IgnoreHitPause = 1
+supermovetime = 9999
+pausemovetime = 9999
+
+;---------------------------------------------------------------------------
+;ガード学習
+
+[State 30100, 中段記憶]
+Type = Null
+triggerall = Root,var(59) = 1
+triggerall = Root,var(57) >= 6
+triggerall = Var(10) != p2stateno
+triggerall = Root,movetype = H &&(Root,stateno != [120,155])
+triggerall = Root,prevstateno = [120,155]
+triggerall = Root,statetype = C && p2statetype != A
+trigger1 = 0 && Var(14) := Var(13)
+trigger2 = 0 && Var(13) := Var(12)
+trigger3 = 0 && Var(12) := Var(11)
+trigger4 = 0 && Var(11) := Var(10)
+trigger5 = 0 && Var(10) := p2stateno
+IgnoreHitPause = 1
+
+[State 30100, 下段記憶]
+Type = Null
+triggerall = Root,var(59) = 1
+triggerall = Root,var(57) >= 6
+triggerall = Var(20) != p2stateno
+triggerall = Root,movetype = H &&(Root,stateno != [120,155])
+triggerall = Root,prevstateno = [120,155]
+triggerall = Root,statetype = S && p2statetype != C
+trigger1 = 0 && Var(24) := Var(23)
+trigger2 = 0 && Var(23) := Var(22)
+trigger3 = 0 && Var(22) := Var(21)
+trigger4 = 0 && Var(21) := Var(20)
+trigger5 = 0 && Var(20) := p2stateno
+IgnoreHitPause = 1
+
+[State 30100, リセット]
+Type = Null
+triggerall = enemy,authorname = "ikaruga"
+triggerall = Root,stateno = 5700
+trigger1 = Var(10) := 2
+trigger1 = Var(11) := 2
+trigger1 = Var(12) := 2
+trigger1 = Var(13) := 2
+trigger1 = Var(14) := 2
+trigger1 = Var(20) := 2
+trigger1 = Var(21) := 2
+trigger1 = Var(22) := 2
+trigger1 = Var(23) := 2
+trigger1 = Var(24) := 2
+
+;---------------------------------------------------------------------------
+[State 30100, DestroySelf]
+type = DestroySelf
+triggerall = ishelper
+triggerall = RoundState >= 3
+trigger1 = Root,stateno != [120,159]
+trigger2 = RoundState >= 4
+
+;==============================================================================
+; 飛び道具感知ヘルパー
+;==============================================================================
+[Statedef 30200];飛び道具
+anim = 0;9999
+ctrl = 0
+
+[State 30200, AssertSpecial]
+type = AssertSpecial
+Trigger1 = 1
+flag = NoShadow
+flag2 = invisible
+
+[State 30200, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 30200, 間違いで本体が来たら立ちへ移行]
+type = SelfState
+trigger1=!ishelper
+value=0
+
+[State 30200, VarSet]
+type = VarSet
+trigger1 = RoundState = 2
+var(10) = enemynear,GetHitVar(hitshaketime)+enemynear,GetHitVar(hittime)
+ignorehitpause = 1
+
+[State 30200, VarSet]
+type = VarSet
+triggerall = Var(1) = 0
+Trigger1 = EnemyNear,NumHelper > 0
+Trigger1 = RoundState <= 1 || (EnemyNear,movetype = H && EnemyNear,StateNo!=[120,159])
+var(1) = (EnemyNear,NumHelper - NumEnemy) + 1
+
+[State 30200, VarSet]
+type = VarSet
+triggerall = Var(1) > EnemyNear,NumHelper
+Trigger1 = RoundState = 2
+var(1) = (EnemyNear,NumHelper - NumEnemy) + 1
+
+[State 30200, VarSet]
+type = VarSet
+trigger1 = ishelper(30200)
+var(2) = gametime
+pausemovetime=0
+supermovetime=0
+
+[State 30200, DestroySelf]
+Type = DestroySelf
+trigger1 = RoundState > 2
+
+;---------------------------------------------------------------------------
+[Statedef 30250]
+anim = 0;9999
+ctrl = 0
+
+[State 30250, AssertSpecial]
+type = AssertSpecial
+Trigger1 = 1
+flag = NoShadow
+flag2 = invisible
+
+[State 30250, NotHitBy]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+
+[State 30250, 間違いで本体が来たら立ちへ移行]
+type = SelfState
+trigger1=!ishelper
+value=0
+
+[State 30250, ストーカー]
+type = BindtoRoot
+trigger1 = IsHelper
+time = -1
+facing = 1
+pos = 50*(ifelse(IsHelper(30250),1.5,-2)) ,0
+ignorehitpause = 1
+pausemovetime=2147483647
+supermovetime=2147483647
+
+[State 30250, Turn]
+type = Turn
+trigger1 = Root,facing != facing
+
+[State 30250, VarSet]
+type = VarSet
+trigger1 = IsHelper(30250)
+trigger1 = var(1) = 0
+var(0) = 0
+ignorehitpause = 1
+
+[State 30250, ParentVarSet]
+type = VarSet
+trigger1 = IsHelper(30250)
+trigger1 = !inguarddist
+var(0) = 1
+ignorehitpause = 1
+
+[State 30250, ParentVarSet]
+type = VarSet
+trigger1 = IsHelper(30251)
+trigger1 = !inguarddist
+var(1) = 0
+ignorehitpause = 1
+
+[State 30250, ParentVarSet]
+type = VarSet
+trigger1 = IsHelper(30251)
+trigger1 = inguarddist
+var(1) = 1
+ignorehitpause = 1
+
+[State 30250, DestroySelf]
+Type = DestroySelf
+trigger1 = RoundState > 2
+
+;この下、一行以上空ける事！

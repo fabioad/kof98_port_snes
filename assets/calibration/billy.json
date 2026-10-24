@@ -1,0 +1,24 @@
+{
+  "character": "billy",
+  "config_hash": "f54909ec993460a207fb7b20f85ee0d23a1dfdc95394678a581526851b3d0878",
+  "corrections": [],
+  "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/BILLY/BILLY.DEF",
+  "inputs": {
+    "assets/characters/BILLY/BILLY.DEF": "f077eb634c48d94bbdf87c4f0a311c8f54126ec6d817271333a3259118770562",
+    "assets/characters/BILLY/Billy_SNES.cmd": "10671ee3cb5d04fdd372cc7fad10bacb0bb523d056538798ca9a878ccfe59bf1",
+    "assets/characters/BILLY/Billy_SNES.cns": "1cf4c5295cf919d77791ca59934ef194f7500047ad852b7d78f2344730b36c7e",
+    "assets/characters/BILLY/billy-1.cns": "d07095bf840393b47ecbdb4ecd33d2da535a89a3498706d8259ace228c02c890",
+    "assets/characters/BILLY/billy-2.cns": "c4a0f9ecc8f2250f6b37a21fc9b4bb8f5e41afc37ee645c4a6f8d9c51d2c10ff",
+    "assets/characters/BILLY/billy.air": "30e857ac4be2e0639ed9e56035e20c4b1cf740a5e20d8c18feb6193e109d5e3e",
+    "assets/characters/BILLY/billy.cmd": "ac37a4d04339a6a6690faec598df430c35ee5e1a78560fcfb09e3940d4888fff",
+    "assets/characters/BILLY/billy.cns": "9034285a38464859d724bc8cb183f7d5c79d3d0a7ab4190cc3c3d3cdf805b15c",
+    "assets/characters/BILLY/billy.sff": "187e32e2232b1d57787ccf5d9a060274c13c5920b39852fc19a3e7b8d1a16817",
+    "assets/characters/BILLY/billy.snd": "704fdec484bb09e4f466047b10d9dfb55c9dea3577ea1cab3f7638823a210f47",
+    "assets/characters/BILLY/black.act": "807843016593e52e56eef097a0d225b38fd384aaf499fcb4c26a3dfed0d75c51",
+    "assets/characters/BILLY/blue.act": "c0c9f1f2ce389b92875df15959325302eba6de5159ded029e94270f141853bfa",
+    "assets/characters/BILLY/golden.act": "02d3b85dc5743918e08978cc4d477c78cf55b1d8860e21c4b1c5086e419781ae",
+    "assets/characters/BILLY/moriya.act": "6ad6dc047350851d3c412cecdcda0822233fa9811e86f7af68618e79a4424d99",
+    "assets/characters/BILLY/red.act": "6e6a3ecf8d2d0164bcf4abce94e8df6268413499bb12f0c7a7425d8613197f5e"
+  },
+  "schema": 1
+}

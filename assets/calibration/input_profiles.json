@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "description": "Reusable input-window and button-layout calibrations for the SNES command matcher. Assign a profile to another fighter in assignments to apply the same command timing policy. The buttons block is the physical pad layout: default applies to every fighter, characters overrides only the listed buttons for one fighter.",
+  "buttons": {
+    "default": {
+      "x": "Y",
+      "y": "X",
+      "a": "B",
+      "b": "A",
+      "c": "L",
+      "z": "R"
+    },
+    "characters": {}
+  },
+  "profiles": {
+    "kof98_fluida": {
+      "reference_character": "terry",
+      "special_default_frames": 18,
+      "special_prefix_frames": {
+        "MBDF": 22,
+        "DBF": 26
+      },
+      "system_command_frames": {
+        "FF": 18,
+        "BB": 18,
+        "ESQ_L": 12,
+        "ESQ_F": 14,
+        "ESQ_B": 14,
+        "DODGE": 18
+      },
+      "wire_dash": true
+    }
+  },
+  "assignments": {
+    "terry": "kof98_fluida",
+    "yuri": "kof98_fluida",
+    "rugal": "kof98_fluida",
+    "saisyu": "kof98_fluida",
+    "heidern": "kof98_fluida",
+    "takuma": "kof98_fluida",
+    "clark": "kof98_fluida",
+    "ralf": "kof98_fluida",
+    "leona": "kof98_fluida",
+    "mature": "kof98_fluida",
+    "vice": "kof98_fluida",
+    "andy": "kof98_fluida",
+    "joe": "kof98_fluida",
+    "ryo": "kof98_fluida",
+    "robert": "kof98_fluida",
+    "athena": "kof98_fluida",
+    "kensou": "kof98_fluida",
+    "chin": "kof98_fluida",
+    "king": "kof98_fluida",
+    "mai": "kof98_fluida",
+    "chizuru": "kof98_fluida",
+    "kim": "kof98_fluida",
+    "chang": "kof98_fluida",
+    "choi": "kof98_fluida",
+    "yashiro": "kof98_fluida",
+    "shermie": "kof98_fluida",
+    "chris": "kof98_fluida",
+    "yamazaki": "kof98_fluida",
+    "mary": "kof98_fluida",
+    "billy": "kof98_fluida",
+    "lucky": "kof98_fluida",
+    "heavyd": "kof98_fluida",
+    "brian": "kof98_fluida",
+    "geese": "kof98_fluida",
+    "krauser": "kof98_fluida",
+    "mrbig": "kof98_fluida",
+    "eiji": "kof98_fluida",
+    "vega": "kof98_fluida",
+    "ryu": "kof98_fluida",
+    "ken": "kof98_fluida",
+    "chunli": "kof98_fluida",
+    "sakura": "kof98_fluida"
+  }
+}

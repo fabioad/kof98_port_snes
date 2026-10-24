@@ -1,0 +1,40 @@
+[Info]
+Name         = "Vega"
+DisplayName  = "Vega"
+Author       = "ikaruga"
+VersionDate  = 05,27,2018
+MugenVersion = 1.0
+Pal.Defaults = 4
+localcoord   = 320
+
+[Files]
+Cmd      = Vega.cmd
+Cns      = Constants.cns
+St       = Vega.cns
+St1      = Vega-N.cns
+St2      = Vega-S.cns
+St3      = Vega-H.cns
+St4      = Vega-2-3.cns
+St5      = Helper.cns
+St6      = Config.cns
+St7      = Member.cns
+StCommon = common_kof.cns
+Sprite   = Vega.sff
+Anim     = Vega.air
+Sound    = Vega.snd
+
+;---カラーパレット---
+
+Pal1  = act/act02.act
+Pal2  = act/act04.act
+Pal3  = act/act06.act
+Pal4  = act/act01.act
+Pal5  = act/act03.act
+Pal6  = act/act05.act
+Pal7  = act/act08.act
+Pal8  = act/act10.act
+Pal9  = act/act08.act
+Pal10 = act/act01.act
+Pal11 = act/act07.act
+Pal12 = act/act09.act
+

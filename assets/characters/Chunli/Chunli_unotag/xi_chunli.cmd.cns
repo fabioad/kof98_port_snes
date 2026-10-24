@@ -1,0 +1,1829 @@
+[Remap]
+x = x
+y = y
+z = z
+a = a
+b = b
+c = c
+s = s
+
+[Defaults]
+command.time = 30
+command.buffer.time = 1
+
+
+[Command]
+name = "a"
+command = a
+time = 1
+
+[Command]
+name = "b"
+command = b
+time = 1
+
+[Command]
+name = "c"
+command = c
+time = 1
+
+[Command]
+name = "x"
+command = x
+time = 1
+
+[Command]
+name = "y"
+command = y
+time = 1
+
+[Command]
+name = "z"
+command = z
+time = 1
+
+[Command]
+name = "start"
+command = s
+time = 1
+
+
+[Command]
+name = "holdfwd"
+command = /$F
+time = 1
+
+[Command]
+name = "holdback"
+command = /$B
+time = 1
+
+[Command]
+name = "holdup"
+command = /$U
+time = 1
+
+[Command]
+name = "holddown"
+command = /$D
+time = 1
+
+
+
+[Command]
+name = "holda"
+command = /a
+time = 1
+
+[Command]
+name = "holdb"
+command = /b
+time = 1
+
+[Command]
+name = "holdc"
+command = /c
+time = 1
+
+[Command]
+name = "holdx"
+command = /x
+time = 1
+
+[Command]
+name = "holdy"
+command = /y
+time = 1
+
+[Command]
+name = "holdz"
+command = /z
+time = 1
+
+[Command]
+name = "holdstart"
+command = /s
+time = 1
+
+
+
+[Command]
+name = "a2"
+command = a
+time = 1
+
+[Command]
+name = "b2"
+command = b
+time = 1
+
+[Command]
+name = "c2"
+command = c
+time = 1
+
+[Command]
+name = "x2"
+command = x
+time = 1
+
+[Command]
+name = "y2"
+command = y
+time = 1
+
+[Command]
+name = "z2"
+command = z
+time = 1
+
+[Command]
+name = "start2"
+command = s
+time = 1
+
+[Command]
+name = "holdfwd2"
+command = /$F
+time = 1
+
+[Command]
+name = "holdback2"
+command = /$B
+time = 1
+
+[Command]
+name = "holdup2"
+command = /$U
+time = 1
+
+[Command]
+name = "holddown2"
+command = /$D
+time = 1
+
+[Command]
+name = "holda2"
+command = /a
+time = 1
+
+[Command]
+name = "holdb2"
+command = /b
+time = 1
+
+[Command]
+name = "holdc2"
+command = /c
+time = 1
+
+[Command]
+name = "holdx2"
+command = /x
+time = 1
+
+[Command]
+name = "holdy2"
+command = /y
+time = 1
+
+[Command]
+name = "holdz2"
+command = /z
+time = 1
+
+[Command]
+name = "holdstart2"
+command = /s
+time = 1
+
+[Command]
+name = "recovery2"
+command = x+a
+time = 1
+
+
+[Command]
+name = "HSDM"
+command = ~D, B, D, B, c
+time = 30
+
+[Command]
+name = "Hazan Tenshou Kyaku"
+command = ~D, F, D, F, c
+time = 30
+
+[Command]
+name = "Kikou Shou"
+command = ~D, F, D, F, x
+time = 30
+
+[Command]
+name = "Kikou Shou"
+command = ~D, F, D, F, y
+time = 30
+
+[Command]
+name = "Houyoku Sen"
+command = ~D, F, D, F, a
+time = 30
+
+[Command]
+name = "Houyoku Sen"
+command = ~D, F, D, F, b
+time = 30
+
+
+[Command]
+name = "Kikouken_new"
+command = ~B, D, F, x
+time = 15
+
+[Command]
+name = "Kikouken_new"
+command = ~B, D, F, y
+time = 15
+
+[Command]
+name = "Kikouken"
+command = ~30$B, F, x
+time = 15
+
+[Command]
+name = "Kikouken"
+command = ~30$B, F, y
+time = 15
+
+[Command]
+name = "Sen'en Shu"
+command = ~F, D, B, a
+time = 15
+
+[Command]
+name = "Sen'en Shu"
+command = ~F, D, B, b
+time = 15
+
+[Command]
+name = "Spinning Bird Kick"
+command = ~30$D, $U, a
+time = 15
+
+[Command]
+name = "Spinning Bird Kick"
+command = ~30$D, $U, b
+time = 15
+
+[Command]
+name = "Tenshou Kyaku"
+command = ~F, D, DF, a
+time = 15
+
+[Command]
+name = "Tenshou Kyaku"
+command = ~F, D, DF, b
+time = 15
+
+[Command]
+name = "Hyakuretsu Kyaku_a"
+command = a, a, a
+time = 25
+buffer.time = 15
+
+[Command]
+name = "Hyakuretsu Kyaku_b"
+command = b, b, b, b
+time = 30
+buffer.time = 15
+
+[Command]
+name = "Tenshin Enbu"
+command = ~F, D, B, x
+time = 15
+
+[Command]
+name = "Tenshin Enbu"
+command = ~F, D, B, y
+time = 15
+
+[Command]
+name = "longjump"
+command = ~$D, $U
+time = 2
+
+[Command]
+name = "holdx"
+command = /$x
+time = 1
+
+[Command]
+name = "holdy"
+command = /$y
+time = 1
+
+[Command]
+name = "holda"
+command = /$a
+time = 1
+
+[Command]
+name = "holdb"
+command = /$b
+time = 1
+
+
+[Command]
+name = "FF"
+command = F, F
+time = 10
+
+[Command]
+name = "BB"
+command = B, B
+time = 10
+
+
+[Command]
+name = "recovery"
+command = x+a
+time = 1
+
+
+[Command]
+name = "down_a"
+command = /$D,a
+time = 1
+
+[Command]
+name = "down_b"
+command = /$D,b
+time = 1
+
+
+
+
+
+
+;   --- Uno Tag System [Type-R] Command definition ---
+
+[Command]
+name = "aHsoNn"
+command = ~D, D, D, z+c
+Time = 25
+
+[Command]
+name = "sheoun"
+command = ~D, DF, F, z+c
+Time = 25
+
+[Command]
+name = "palit"
+command = z+c
+Time = 2
+
+[Command]
+name = "turtleuno"
+command = s
+Time = 2
+
+
+[Statedef -1]
+
+
+[State -1, Partner Assist]
+type = VarSet
+sysvar(4) = 10
+triggerall = sysvar(4) = 1 || sysvar(4) = 15
+triggerall = NumPartner
+triggerall = RoundState = 2
+triggerall = Partner, StateNo = [1251112,1251114]
+triggerall = Partner, Time >= 60 && Time > 0
+triggerall = teammode = Simul
+triggerall = StateNo != [3000,1251199]
+triggerall = hitdefattr != SCA, HA, HP, HT
+triggerAll = StateNo != [130,152]
+triggerall = !(StateNo = [5000,5500])
+triggerall = Power >= 500
+trigger1 = command = "turtleuno"
+trigger1 = var(59) <=  0
+trigger2 = var(59) >  0
+trigger2 = !ctrl && Movetype = A
+trigger2 = Random < (((2 * ifelse(MoveContact, ifelse(MoveHit, 2, 3),1)) + (UniqHitCount * 2)) *(var(59)**2/64.0))
+trigger3 = var(59) >  0
+trigger3 = StateNo = [190,199]
+trigger3 = AnimElemNo(0) = 2
+ignorehitpause = 1
+
+[State -1, Team Hyper Attack]
+type = ChangeState
+value = 1251125
+triggerall = sysvar(4) = 1 || sysvar(4) = 15
+triggerall = NumPartner
+triggerall = Partner, life > 0
+triggerall = power >= 3000
+triggerall = RoundState = 2
+triggerall = Partner, StateNo = [1251112,1251114]
+triggerall = Partner, Time >= 9		
+triggerall= (StateType != A)
+trigger1 = command = "sheoun"
+trigger1 = (Ctrl = 1)
+trigger1 = var(59) <=  0
+trigger2 = command = "sheoun"
+trigger2 = Anim = [200,1000]
+trigger2 = movetype = A
+trigger2 = hitdefattr = SC, NA
+trigger2 = MoveContact
+trigger2 = var(59) <=  0
+trigger3 = var(59) > 0 && ctrl
+trigger3 = Random < (10 + ((Life < Lifemax/6)*3))
+trigger3 = NumEnemy && enemy, pos x = [0,200]
+trigger4 = var(59) >  0
+trigger4 = Anim = [200,1000]
+trigger4 = movetype = A
+trigger4 = hitdefattr = SC, NA
+trigger4 = MoveContact
+trigger4 = Random < (11 + ((MoveHit)*5) + ((Life < Lifemax/6)*5))
+ignorehitpause = 1
+
+[State -1, Delayed Hyper]
+type = ChangeState
+value = 1251127
+triggerall = sysvar(4) = 1 || sysvar(4) = 15
+triggerall = NumPartner
+triggerall = RoundState = 2
+triggerall = Partner, life > 0
+triggerall = power >= 1000
+triggerall = Partner, StateNo = [1251112,1251114]
+triggerall = Partner, Time > 1 && Time > 45
+triggerall = movetype = A
+triggerall = StateNo = [2000,1251100]
+triggerall = hitdefattr = SCA, HA, HP, HT || (StateNo >= 2000 && StateNo < 4000 && (hitcount < 8 || NumTarget && Target, GetHitVar(hitTime) >= 0))
+trigger1 = command = "sheoun"
+trigger1 = var(59) <=  0
+trigger2 = var(59) >  0
+trigger2 = NumTarget && MoveContact
+trigger2 = Random < (10*(var(59)**2/64.0) + (Uniqhitcount*((Life < Partner,Life)*2)))
+trigger2 = Partner, Time > 35
+trigger3 = var(59) >  0
+trigger3 = Partner, Time > 30 && Time > 25
+trigger3 = HitCount >= 6
+trigger3 = Random < (2 * Uniqhitcount * ifelse(hitcount > 9, 2, 1))
+ignorehitpause = 1
+
+[State -1, UNO Mode]
+type = ChangeState
+value = 1251128
+triggerall = sysvar(4) = 1 || sysvar(4) = 15
+triggerall = NumPartner
+triggerall = RoundState = 2
+triggerall = Partner, life > 0 && Power >= 1000
+triggerall = Life <= (Lifemax/8)
+triggerall = Partner, StateNo = [1251112,1251114]
+triggerall = Partner, Time >= 20
+triggerall = (StateType != A) && ((Ctrl = 1) || StateNo = 0 || (Movetype = A && hitdefattr = SC, NA))
+trigger1 = command = "aHsoNn"
+trigger1 = var(59) <=  0
+trigger2 = var(59) >  0
+trigger2 = Partner, Life < Lifemax/4
+trigger2 = Random < ((25 + ifelse((Partner, Life < Lifemax/6), 25, 5))*(var(59)**2/64.0))
+
+[State -1, Change Attack]
+type = ChangeState
+value = 1251126
+triggerall = NumPartner
+triggerall = (sysvar(4) = 1 && power >= ifelse(((ID < Partner,ID && PowerMax <= 1000) || (ID > Partner,ID && Partner, PowerMax <= 1000)),250,500)) || (sysvar(4) = 15 && power >= ifelse(((ID < Partner,ID && PowerMax <= 1000) || (ID > Partner,ID && Partner, PowerMax <= 1000)),500,1000))
+triggerall = Partner, life > 0
+triggerall = movetype = A && !MoveReversed
+triggerall = (Partner, StateNo = 1251112 || Partner, StateNo = 1251114)  && Time > 1
+triggerall = StateNo = [200,4850]
+triggerall = StateNo != [1251102,1251105]
+triggerall = NumTarget > 0 && Target, pos Y > -160
+triggerall = (Target, StateNo != [5110,5955])
+triggerall = Hitdefattr != SCA, NT && ((Target, Statetype = A || (Hitdefattr != A, NA && Target, Statetype != A)) && ((!Target, HitOver || EnemyNear, StateNo = [5000,5900]) && (MoveContact || ProjContactTime(0) < 8)))
+trigger1 = command = "palit"
+trigger1 = var(59) <=  0
+trigger2 = var(59) >  0
+trigger2 = UniqHitCount >= 2
+trigger2 = Random < (((ifelse(sysvar(4)=15,25,50)*(var(59)**2/64.0)) + ((hitdefattr = SCA, SA, HA)*15) + ifelse(lifemax/life > 15, 15, lifemax/life)))
+trigger2 = Partner, Life > Lifemax/10 || Life <= Partner, Life
+trigger2 = Partner, Time > 25
+trigger3 = var(59) >  0
+trigger3 = Partner, Time > 27
+trigger3 = Random < (25*(2*(Life = (Lifemax/4) && Life < Partner, Life)) *(var(59)**2/64.0))
+trigger3 = MoveContact
+ignorehitpause = 1
+
+[State -1, TagIn]
+type = ChangeState
+value = 1251110
+triggerall = sysvar(4) = 1 || sysvar(4) = 15
+triggerall = NumPartner && NumEnemy
+triggerall = RoundState = 2 
+triggerall = Partner, life > 0
+triggerall = Partner, StateNo = [1251112,1251114]
+triggerall = Partner, Time >= 40	
+triggerall = (MoveType != A && StateType != A) && (Ctrl = 1) || StateNo = 0
+trigger1 = command = "palit"
+trigger1 = var(59) <=  0
+trigger2 = var(59) >  0
+trigger2 = Random < (ifelse((LifeMax/Life > 120), 120, LifeMax/Life)+((EnemyNear,statetype=L)*25))
+trigger2 = Life < Partner, Life && Partner, Time > 1 * TicksPerSecond
+trigger2 = EnemyNear, movetype != A
+trigger3 = var(59) >  0
+trigger3 = Life < Partner, Life && Partner, Time > 1 * TicksPerSecond && Life < LifeMax * (LifeMax*0.55)
+trigger3 = Random < ((ifelse(LifeMax/Life > 10, 10, LifeMax/Life) + (10+ifelse((EnemyNear, StateNo > 5000),25,1))) * ifelse((Life < Partner, Life), 1.45, 0.5))
+trigger3 = Partner, Time > 1 * TicksPerSecond
+trigger3= EnemyNear, statetype = L || p2bodydist x > 250 && EnemyNear, movetype != A
+trigger4 = var(59) >  0
+trigger4 = Life < 150 && Life < Partner, Life
+trigger4 = EnemyNear, statetype = L || p2bodydist x > 200 && EnemyNear, movetype != A
+trigger4 = Random < (125*(var(59)**2/64.0))
+
+[State -1, C_6]
+type = CtrlSet
+value = 1
+triggerall = RoundState = 2 && NumPartner
+triggerall = NumTarget && Target, StateNo != [200,4999]
+triggerall = StateNo != 1251106 && !Ctrl
+triggerall = (Partner, StateNo != [1251128,1251129]) && (Partner, PrevStateNo != [1251128,1251129])
+trigger1 = command="x"||command="y"||command="z"||command="a"||command="b"||command="c"
+trigger1 = sysvar(4) = 7
+trigger1 = Movetype = A
+trigger1 = MoveContact
+trigger1 = hitdefattr = SCA, NA, SA
+trigger1 = StateNo != PrevStateNo
+trigger1 = Time > 3
+trigger2 = PrevStateNo = 1251106
+ignorehitpause = 0
+
+; ------ Uno Tag System [Type-R] END LINE -------
+
+;  ;]
+
+
+[State -1, AI Helper Check]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+trigger1 = IsHelper(9741)
+value = 9741
+
+
+[State -1, AI Helper Check 2]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+trigger1 = IsHelper(9742)
+value = 9742
+
+
+
+
+
+[State -1, AI Jump]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerAll = var(0)
+triggerAll = random < 200
+triggerAll = statetype != A
+triggerAll = ctrl
+triggerAll = p2bodydist x >= 70
+trigger1 = EnemyNear, AnimTime < -30
+trigger1 = p2MoveType = A
+trigger1 = p2statetype != A
+trigger1 = p2stateNo = [1000,2999]
+value = 40
+
+
+[State -1, AI Jump Attacks 1]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerAll = var(0)
+triggerAll = statetype = A
+triggerAll = ctrl
+triggerAll = p2bodydist x <= 50
+triggerall = random < 600
+trigger1 = vel y > 0 && pos y = [-46,-35]
+trigger1 = p2statetype != A
+trigger1 = vel x != 0
+value = ifelse(random < 300, 610, ifelse(random < 300, 640, ifelse(random < 500, 600, 630)))
+
+
+[State -1, AI Jump Attacks 2]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerAll = var(0)
+triggerAll = statetype = A
+triggerAll = ctrl
+triggerAll = p2bodydist x <= 50
+triggerall = random < 600
+trigger1 = vel y > 0 && pos y = [-46,-35]
+trigger1 = p2statetype != A
+trigger1 = vel x = 0
+value = ifelse(random < 400, 645, ifelse(random < 500, 605, 635))
+
+
+[State -1, AI Roll Forwards]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerAll = var(0)
+triggerAll = random < 80
+triggerAll = statetype != A
+triggerAll = inguarddist
+trigger1 = p2bodydist x = [25,105]
+trigger1 = EnemyNear, AnimTime = [-53,-37]
+trigger1 = p2statetype != A
+trigger1 = ctrl || (stateno = [100,101]) || stateno = [120,131]
+trigger2 = stateno = 100
+trigger2 = p2bodydist x > 130
+value = 900
+
+
+[State -1, AI Standing Guard]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+triggerall = RoundState = 2 && var(0)
+triggerall = StateType != A
+triggerall = P2StateType != C
+triggerall = StateType = S
+triggerall = (P2Movetype = A) || (Enemy, NumProj >= 1)
+trigger1 = Ctrl && P2BodyDist X <= 90
+trigger1 = random <= 800
+value = 130
+
+
+[State -1, AI Stand to Crouch Guard]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+triggerall = RoundState = 2 && var(0)
+triggerall = StateType != A
+triggerall = P2StateType = C
+triggerall = (P2Movetype = A) || (Enemy, NumProj >= 1)
+trigger1 = StateNo = 150
+trigger1 = 1
+value = 152
+
+
+[State -1, AI Crouch Guard]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+triggerall = RoundState = 2 && var(0)
+triggerall = StateType != A
+triggerall = P2StateType = C
+triggerall = (P2Movetype = A) || (Enemy, NumProj >= 1)
+trigger1 = Ctrl
+trigger1 = random <= 800
+value = 131
+
+
+[State -1, AI Crouch to Stand Guard]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+triggerall = RoundState = 2 && var(0)
+triggerall = StateType != A
+triggerall = P2StateType != C
+triggerall = (P2Movetype = A) || (Enemy, NumProj >= 1)
+trigger1 = StateNo = 152
+trigger1 = 1
+value = 150
+
+
+[State -1, AI Jump Guard]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+triggerall = RoundState = 2 && var(0)
+triggerall = StateType = A
+triggerall = (P2Movetype = A) || (Enemy, NumProj >= 1)
+trigger1 = ctrl
+trigger1 = random <= 800
+value = 132
+
+
+[State -1, AI Koshuu Tou Wow]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+triggerall = roundstate = 2 && var(0)
+triggerall = ctrl && StateType != A
+triggerall = P2statetype != A && P2statetype != L
+triggerall = P2movetype = I && P2movetype != H
+triggerall = P2bodyDist X <= 10
+triggerall = P2stateno != 5120
+trigger1 = Random < 150
+value = ifelse(random <= 500, 800, 825)
+
+
+[State -1, AI Ryuusei Raku ]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+triggerall = roundstate = 2 && var(0)
+triggerall = ctrl && StateType = A
+triggerall = P2statetype = A
+triggerall = P2movetype != H
+triggerall = p2bodydist X <= 10 && P2bodyDist Y = [-65,15]
+trigger1 = Random < 200
+value = 850
+
+
+[State -1, AI Emergency Evade]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = roundstate = 2 && var(0)
+Triggerall = (ctrl || (stateno = 52 && animelemtime(1) > 0) || (stateno = [100, 101])) && statetype != A
+triggerall = enemynear, hitdefattr = SCA,NA,SA,HA,NP,SP,HP
+triggerall = p2bodydist x <= 70
+triggerall = P2statetype != A
+triggerall = P2MoveType = A
+trigger1 = Random < 100
+value = ifelse(random < 500, 900, 905)
+
+
+[State -1, AI Guard Cancel Blowback Attack]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+triggerall = RoundState = 2 && var(0)
+triggerall = Power >= 1000 && StateType != A
+triggerall = P2BodyDist x <= 30
+trigger1 = (stateno = 150 || stateno = 152)
+trigger1 = random < 50
+value = 915
+
+
+[State -1, AI Kikouken]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+triggerall = roundstate = 2 && var(0)
+triggerall = numproj = 0
+triggerall = ctrl && StateType != A
+triggerall = P2statetype != A
+triggerall = p2movetype != A
+trigger1 = prevstateno != 5120 || prevstateno != 1000
+trigger1 = (P2bodydist X = [80,235]) && p2stateno != 5120 && random < 50
+trigger2 = (P2bodydist X = [45,100]) && p2stateno = 5120 && random < 100
+value = 1000
+
+
+[State -1, AI Kikouken (short version)]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+triggerall = roundstate = 2 && var(0)
+triggerall = numproj = 0
+triggerall = ctrl && StateType != A
+triggerall = P2statetype != A && p2movetype != H
+triggerall = p2movetype != A
+trigger1 = prevstateno != 5120 || prevstateno != 1000
+trigger1 = (P2bodydist X = [15,80]) && p2stateno != 5120 && random < 150
+value = 1050
+
+
+[State -1, AI Hyakuretsu Kyaku]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+triggerall = roundstate = 2 && var(0)
+triggerall = numproj = 0
+triggerall = ctrl && StateType != A
+triggerall = P2statetype != A && p2movetype != H
+triggerall = p2movetype != A
+trigger1 = prevstateno != 5120 || prevstateno != 1000
+trigger1 = (P2bodydist X = [25,75]) && p2stateno != 5120 && random < 50
+value = 1100
+
+
+[State -1, AI Spinning Bird Kick]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+triggerall = roundstate = 2 && var(0)
+triggerall = numproj = 0
+triggerall = ctrl && StateType != A
+triggerall = P2statetype != A && p2movetype != H
+triggerall = p2movetype != A
+trigger1 = prevstateno != 5120 || prevstateno != 1000
+trigger1 = (P2bodydist X = [90,145]) && p2stateno != 5120 && random < 30
+value = 1200
+
+
+[State -1, AI Tenshou Kyaku]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+triggerall = roundstate = 2 && var(0)
+triggerall = (ctrl || (stateno = 130) || (stateno = [100, 101])) && StateType != A && p2movetype != H
+triggerall = FrontEdgeDist >= 40
+trigger1 = P2statetype = A && enemynear, vel x > 0 && enemynear, vel Y > 0 && (p2dist x = [15,55]) && (EnemyNear, Pos Y = [-80,-25]) && random < 500
+trigger2 = P2statetype = A && enemynear, vel x = 0 && enemynear, vel Y > 0 && (p2dist x = [20,55]) && (EnemyNear, Pos Y = [-80,-25]) && random < 500
+trigger3 = p2statetype != A && p2movetype = A && p2bodydist x <= 40 && random < 650
+value = 1400
+
+
+[State -1, AI Tenshou Kyaku]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+triggerall = roundstate = 2 && var(0)
+trigger1 = numtarget(3100) = 1 && stateno = 3105 && animtime = 0 && random < 900
+value = ifelse(random < 500, 1400, 210)
+
+
+[State -1, AI Tenshin Enbu]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+triggerall = roundstate = 2 && var(0)
+Triggerall = (ctrl || (stateno = [100, 101])) && statetype != A
+triggerall = p2statetype != A && P2statetype != L && p2movetype != H
+triggerall = P2bodyDist X <= 25
+triggerall = P2stateno != 5120
+trigger1 = Random < 400
+value = 1500
+
+
+[State -1, AI Combo Starter 1]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+Triggerall = roundstate = 2 && Var(0)
+Triggerall = (ctrl || (stateno = 52 && animelemtime(1) > 0) || (stateno = [100, 101])) && statetype != A
+triggerall = p2statetype != L && p2statetype != A
+trigger1 = p2bodydist X <= 35
+trigger1 = random < 500
+value = ifelse((random < 250 && p2bodydist x <= 25),205,ifelse(random < 500,400,430))
+
+
+[State -1, AI Combo Starter 2]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+Triggerall = roundstate = 2 && Var(0)
+Triggerall = (ctrl || (stateno = 52 && animelemtime(1) > 0) || (stateno = [100, 101])) && statetype != A
+triggerall = p2statetype != L && p2statetype != A
+trigger1 = p2bodydist X <= 35
+trigger1 = random < 900
+value = ifelse(random < 700 && p2bodydist x <= 25, 215, ifelse(random < 500 && p2bodydist x <= 25, 245, 410))
+
+
+[State -1, AI Combo A]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+Triggerall = roundstate = 2 && Var(0)
+triggerall = p2statetype != A
+triggerall = P2bodydist X <= 25
+trigger1 = movecontact && stateno = 205 && (time = [6,7]) && random < 300
+trigger2 = movecontact && stateno = 400 && (time = [7,8]) && random < 300
+trigger3 = movecontact && stateno = 430 && (time = [8,9]) && random < 300
+value = 205
+
+
+[State -1, AI Combo B]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+Triggerall = roundstate = 2 && Var(0)
+triggerall = p2statetype != A
+trigger1 = movecontact && stateno = 205 && (time = [6,7]) && random < 300
+trigger2 = movecontact && stateno = 400 && (time = [7,8]) && random < 300
+trigger3 = movecontact && stateno = 430 && (time = [8,9]) && random < 300
+value = 200
+
+
+[State -1, AI Combo C]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+Triggerall = roundstate = 2 && Var(0)
+triggerall = p2statetype != A
+triggerall = P2bodydist X <= 25
+trigger1 = movecontact && stateno = 205 && (time = [6,7]) && random < 300
+trigger2 = movecontact && stateno = 400 && (time = [7,8]) && random < 300
+value = 235
+
+
+[State -1, AI Combo D]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+Triggerall = roundstate = 2 && Var(0)
+triggerall = p2statetype != A
+trigger1 = movecontact && stateno = 205 && (time = [6,7]) && random < 300
+trigger2 = movecontact && stateno = 400 && (time = [7,8]) && random < 300
+trigger3 = movecontact && stateno = 430 && (time = [8,9]) && random < 300
+value = 400
+
+
+[State -1, AI Combo E]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+Triggerall = roundstate = 2 && Var(0)
+triggerall = p2statetype != A
+trigger1 = movecontact && stateno = 205 && (time = [6,7]) && random < 300
+trigger2 = movecontact && stateno = 400 && (time = [7,8]) && random < 300
+value = 430
+
+
+[State -1, AI Combo F]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+Triggerall = roundstate = 2 && Var(0)
+triggerall = p2statetype != A
+trigger1 = movecontact && stateno = 215 && (animelemtime(3) >= 0 && animelemtime(4) <= 0) && random < 700
+trigger2 = movecontact && stateno = 245 && (animelemtime(4) >= 0 && animelemtime(5) <= 0) && random < 700
+trigger3 = movecontact && stateno = 410 && (animelemtime(4) >= 0 && animelemtime(6) <= 0) && random < 700
+value = ifelse(random < 600, 700, ifelse(random < 600, 710, 705))
+
+
+[State -1, AI Combo G]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+Triggerall = roundstate = 2 && Var(0)
+triggerall = p2statetype != A
+triggerall = p2bodydist x <= 45
+trigger1 = movecontact && stateno = 205 && (animelemtime(2) >= 0 && animelemtime(4) <= 0) && random < 800
+trigger2 = movecontact && stateno = 235 && (animelemtime(2) >= 0 && animelemtime(4) <= 0) && random < 800
+trigger3 = movecontact && stateno = 400 && (animelemtime(2) >= 0 && animelemtime(3) <= 0) && random < 800
+trigger4 = movecontact && stateno = 430 && (animelemtime(3) >= 0 && animelemtime(4) <= 0) && random < 800
+value = ifelse(movehit && p2bodydist x <= 30 && random < 400, 1400, ifelse(p2bodydist x <= 70 && random < 600, 1050, 1000))
+
+
+[State -1, AI Combo H]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+Triggerall = roundstate = 2 && Var(0)
+triggerall = p2statetype != A
+triggerall = p2bodydist x <= 75
+trigger1 = movecontact && stateno = 215 && (animelemtime(3) >= 0 && animelemtime(4) <= 0) && random < 800
+trigger2 = movecontact && stateno = 245 && (animelemtime(4) >= 0 && animelemtime(5) <= 0) && random < 800
+trigger3 = movecontact && stateno = 410 && (animelemtime(4) >= 0 && animelemtime(6) <= 0) && random < 800
+trigger4 = movecontact && stateno = 700 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && (prevstateno = [200,499]) && random < 800
+trigger5 = movecontact && stateno = 705 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && (prevstateno = [200,499]) && random < 800
+trigger6 = movecontact && stateno = 710 && (animelemtime(8) >= 0 && animelemtime(9) <= 0) && (prevstateno = [200,499]) && random < 800
+value = ifelse(movehit && p2bodydist x <= 30 && random < 200, 1400, ifelse(p2bodydist x <= 70 && random < 300, 1050, ifelse(P2bodydist x <= 70 && random < 500, 1100, ifelse(p2statetype != C && random < 500, 1200, 1000))))
+
+
+[State -1, AI Combo I]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+Triggerall = roundstate = 2 && Var(0)
+triggerall = p2bodydist x <= 55
+triggerall = power >= 1000
+triggerall = p2statetype != A
+trigger1 = movehit && stateno = 215 && (animelemtime(3) >= 0 && animelemtime(4) <= 0) && random < 100
+trigger2 = movehit && stateno = 245 && (animelemtime(4) >= 0 && animelemtime(5) <= 0) && random < 100
+trigger3 = movehit && stateno = 410 && (animelemtime(4) >= 0 && animelemtime(6) <= 0) && random < 100
+trigger4 = movehit && stateno = 700 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && (prevstateno = [200,499]) && random < 100
+trigger5 = movehit && stateno = 705 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && (prevstateno = [200,499]) && random < 100
+trigger6 = movehit && stateno = 710 && (animelemtime(8) >= 0 && animelemtime(9) <= 0) && (prevstateno = [200,499]) && random < 100
+trigger7 = stateno = 1050 && (projhit(1050) = 1, < 15) && (animelemtime(10) >= 0 && animelemtime(12) < 0) && random < 800
+trigger8 = ((!var(2) && movehit && stateno = 1105) || (var(2) && movehit && stateno = 1105 && (animelemtime(4) > 0))) && random < 800
+value = ifelse(p2bodydist x <= 75 && random < 200, 3000, 3100)
+
+
+[State -1, AI Combo J]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+triggerall = NumEnemy
+Triggerall = roundstate = 2 && Var(0)
+triggerall = p2bodydist x <= 45
+triggerall = power >= 2000
+trigger1 = movehit && stateno = 3105 && (animelemtime(51) > 0 && animelemtime(52) <= 0) && random < 800
+value = 3200
+
+
+
+
+
+
+[State -1, HSDM]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 3300
+triggerall = !var(0)
+triggerall = Command = "HSDM"
+triggerall = power >= 2000
+trigger1 = ctrl && statetype != A
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 12
+trigger5 = movecontact && stateno = 205 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger6 = movecontact && stateno = 215 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger7 = movecontact && stateno = 235 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger8 = movecontact && stateno = 245 && (animelemtime(4) >= 0 && animelemtime(5) <= 0)
+trigger9 = movecontact && stateno = 400 && (animelemtime(2) >= 0 && animelemtime(3) <= 0)
+trigger10 = movecontact && stateno = 410 && (animelemtime(4) >= 0 && animelemtime(6) <= 0)
+trigger11 = movecontact && stateno = 430 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger12 = movecontact && stateno = 700 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger13 = movecontact && stateno = 705 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger14 = movecontact && stateno = 710 && (animelemtime(8) >= 0 && animelemtime(9) <= 0) && prevstateno = [200,499]
+trigger15 = stateno = 3000 && animelem = 27,<=0
+
+
+[State -1, Hazan Tenshou Kyaku]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 3200
+triggerall = !var(0)
+triggerall = Command = "Hazan Tenshou Kyaku"
+triggerall = power >= 2000
+trigger1 = ctrl && statetype != A
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 12
+trigger5 = movecontact && stateno = 205 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger6 = movecontact && stateno = 215 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger7 = movecontact && stateno = 235 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger8 = movecontact && stateno = 245 && (animelemtime(4) >= 0 && animelemtime(5) <= 0)
+trigger9 = movecontact && stateno = 400 && (animelemtime(2) >= 0 && animelemtime(3) <= 0)
+trigger10 = movecontact && stateno = 410 && (animelemtime(4) >= 0 && animelemtime(6) <= 0)
+trigger11 = movecontact && stateno = 430 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger12 = movecontact && stateno = 700 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger13 = movecontact && stateno = 705 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger14 = movecontact && stateno = 710 && (animelemtime(8) >= 0 && animelemtime(9) <= 0) && prevstateno = [200,499]
+trigger15 = movecontact && stateno = 1105
+trigger16 = movecontact && stateno = 3105 && (animelemtime(2) > 0 && animelemtime(52) < 0)
+trigger17 = stateno = 3000 && animelem = 27,<=0
+
+
+[State -1, Kikou Shou]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 3000
+triggerall = !var(0)
+triggerall = Command = "Kikou Shou"
+triggerall = power >= 1000
+trigger1 = ctrl && statetype != A
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 12
+trigger5 = movecontact && stateno = 205 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger6 = movecontact && stateno = 215 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger7 = movecontact && stateno = 235 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger8 = movecontact && stateno = 245 && (animelemtime(4) >= 0 && animelemtime(5) <= 0)
+trigger9 = movecontact && stateno = 400 && (animelemtime(2) >= 0 && animelemtime(3) <= 0)
+trigger10 = movecontact && stateno = 410 && (animelemtime(4) >= 0 && animelemtime(6) <= 0)
+trigger11 = movecontact && stateno = 430 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger12 = movecontact && stateno = 700 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger13 = movecontact && stateno = 705 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger14 = movecontact && stateno = 710 && (animelemtime(8) >= 0 && animelemtime(9) <= 0) && prevstateno = [200,499]
+trigger15 = stateno = 3105 && animelem = 48,<=0
+trigger16 = movecontact && stateno = 1105
+
+
+[State -1, Houyoku Sen]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 3100
+triggerall = !var(0)
+triggerall = Command = "Houyoku Sen"
+triggerall = power >= 1000
+trigger1 = ctrl && statetype != A
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 12
+trigger5 = movecontact && stateno = 205 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger6 = movecontact && stateno = 215 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger7 = movecontact && stateno = 235 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger8 = movecontact && stateno = 245 && (animelemtime(4) >= 0 && animelemtime(5) <= 0)
+trigger9 = movecontact && stateno = 400 && (animelemtime(2) >= 0 && animelemtime(3) <= 0)
+trigger10 = movecontact && stateno = 410 && (animelemtime(4) >= 0 && animelemtime(6) <= 0)
+trigger11 = movecontact && stateno = 430 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger12 = movecontact && stateno = 700 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger13 = movecontact && stateno = 705 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger14 = movecontact && stateno = 710 && (animelemtime(8) >= 0 && animelemtime(9) <= 0) && prevstateno = [200,499]
+trigger15 = movecontact && stateno = 1105
+trigger16 = stateno =1050
+
+
+
+[State -1, Kikouken (new version)]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 1050
+triggerall = !var(0)
+triggerall = Command = "Kikouken_new"
+triggerall = numproj = 0
+trigger1 = ctrl && statetype != A
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 12
+trigger5 = movecontact && stateno = 205 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger6 = movecontact && stateno = 215 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger7 = movecontact && stateno = 235 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger8 = movecontact && stateno = 245 && (animelemtime(4) >= 0 && animelemtime(5) <= 0)
+trigger9 = movecontact && stateno = 400 && (animelemtime(2) >= 0 && animelemtime(3) <= 0)
+trigger10 = movecontact && stateno = 410 && (animelemtime(4) >= 0 && animelemtime(6) <= 0)
+trigger11 = movecontact && stateno = 430 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger12 = movecontact && stateno = 700 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger13 = movecontact && stateno = 705 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger14 = movecontact && stateno = 710 && (animelemtime(8) >= 0 && animelemtime(9) <= 0) && prevstateno = [200,499]
+
+
+
+[State -1, Kikouken]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 1000
+triggerall = !var(0)
+triggerall = Command = "Kikouken"
+triggerall = numproj = 0
+trigger1 = ctrl && statetype != A
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 12
+trigger5 = movecontact && stateno = 205 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger6 = movecontact && stateno = 215 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger7 = movecontact && stateno = 235 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger8 = movecontact && stateno = 245 && (animelemtime(4) >= 0 && animelemtime(5) <= 0)
+trigger9 = movecontact && stateno = 400 && (animelemtime(2) >= 0 && animelemtime(3) <= 0)
+trigger10 = movecontact && stateno = 410 && (animelemtime(4) >= 0 && animelemtime(6) <= 0)
+trigger11 = movecontact && stateno = 430 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger12 = movecontact && stateno = 700 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger13 = movecontact && stateno = 705 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger14 = movecontact && stateno = 710 && (animelemtime(8) >= 0 && animelemtime(9) <= 0) && prevstateno = [200,499]
+
+
+
+[State -1, Tenshou Kyaku]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 1400
+triggerall = !var(0)
+triggerall = Command = "Tenshou Kyaku"
+trigger1 = ctrl && statetype != A
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 12
+trigger5 = movecontact && stateno = 205 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger6 = movecontact && stateno = 215 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger7 = movecontact && stateno = 235 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger8 = movecontact && stateno = 245 && (animelemtime(4) >= 0 && animelemtime(5) <= 0)
+trigger9 = movecontact && stateno = 400 && (animelemtime(2) >= 0 && animelemtime(3) <= 0)
+trigger10 = movecontact && stateno = 410 && (animelemtime(4) >= 0 && animelemtime(6) <= 0)
+trigger11 = movecontact && stateno = 430 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger12 = movecontact && stateno = 700 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger13 = movecontact && stateno = 705 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger14 = movecontact && stateno = 710 && (animelemtime(8) >= 0 && animelemtime(9) <= 0) && prevstateno = [200,499]
+
+
+
+[State -1, Spinning Bird Kick]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 1200
+triggerall = !var(0)
+triggerall = Command = "Spinning Bird Kick"
+trigger1 = ctrl && statetype != A
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 40
+trigger5 = stateno = 12
+trigger5 = movecontact && stateno = 205 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger6 = movecontact && stateno = 215 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger7 = movecontact && stateno = 235 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger8 = movecontact && stateno = 245 && (animelemtime(4) >= 0 && animelemtime(5) <= 0)
+trigger9 = movecontact && stateno = 400 && (animelemtime(2) >= 0 && animelemtime(3) <= 0)
+trigger10 = movecontact && stateno = 410 && (animelemtime(4) >= 0 && animelemtime(6) <= 0)
+trigger11 = movecontact && stateno = 430 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger12 = movecontact && stateno = 700 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger13 = movecontact && stateno = 705 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger14 = movecontact && stateno = 710 && (animelemtime(8) >= 0 && animelemtime(9) <= 0) && prevstateno = [200,499]
+
+
+Aerial Spinning Bird Kick
+[State -1, Aerial Spinning Bird Kick]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 1250
+
+triggerall = Command = "Spinning Bird Kick"
+trigger1 = ctrl && statetype = A
+
+
+
+[State -1, Sen'en Shu]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 1300
+
+triggerall = Command = "Sen'en Shu"
+trigger1 = ctrl && statetype != A
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 12
+trigger5 = movecontact && stateno = 205 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger6 = movecontact && stateno = 215 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger7 = movecontact && stateno = 235 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger8 = movecontact && stateno = 245 && (animelemtime(4) >= 0 && animelemtime(5) <= 0)
+trigger9 = movecontact && stateno = 400 && (animelemtime(2) >= 0 && animelemtime(3) <= 0)
+trigger10 = movecontact && stateno = 410 && (animelemtime(4) >= 0 && animelemtime(6) <= 0)
+trigger11 = movecontact && stateno = 430 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger12 = movecontact && stateno = 700 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger13 = movecontact && stateno = 705 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger14 = movecontact && stateno = 710 && (animelemtime(8) >= 0 && animelemtime(9) <= 0) && prevstateno = [200,499]
+
+
+
+[State -1, Hyakuretsu Kyaku]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 1100
+triggerall = !var(0)
+triggerall = Command = "Hyakuretsu Kyaku_a" || command = "Hyakuretsu Kyaku_b"
+trigger1 = ctrl && statetype != A
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 12
+trigger5 = movecontact && stateno = 205 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger6 = movecontact && stateno = 215 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger7 = movecontact && stateno = 235 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger8 = movecontact && stateno = 245 && (animelemtime(4) >= 0 && animelemtime(5) <= 0)
+trigger9 = movecontact && stateno = 400 && (animelemtime(2) >= 0 && animelemtime(3) <= 0)
+trigger10 = movecontact && stateno = 410 && (animelemtime(4) >= 0 && animelemtime(6) <= 0)
+trigger11 = movecontact && stateno = 430 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger12 = movecontact && stateno = 700 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger13 = movecontact && stateno = 705 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger14 = movecontact && stateno = 710 && (animelemtime(8) >= 0 && animelemtime(9) <= 0) && prevstateno = [200,499]
+
+
+
+[State -1, Tenshin Enbu]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 1500
+triggerall = !var(0)
+triggerall = Command = "Tenshin Enbu" || command = "Tenshin Enbu"
+trigger1 = ctrl && statetype != A
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 12
+trigger5 = movecontact && stateno = 205 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger6 = movecontact && stateno = 215 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger7 = movecontact && stateno = 235 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger8 = movecontact && stateno = 245 && (animelemtime(4) >= 0 && animelemtime(5) <= 0)
+trigger9 = movecontact && stateno = 400 && (animelemtime(2) >= 0 && animelemtime(3) <= 0)
+trigger10 = movecontact && stateno = 410 && (animelemtime(4) >= 0 && animelemtime(6) <= 0)
+trigger11 = movecontact && stateno = 430 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger12 = movecontact && stateno = 700 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger13 = movecontact && stateno = 705 && (animelemtime(7) >= 0 && animelemtime(8) <= 0) && prevstateno = [200,499]
+trigger14 = movecontact && stateno = 710 && (animelemtime(8) >= 0 && animelemtime(9) <= 0) && prevstateno = [200,499]
+
+
+
+
+[State -1, Emergency Evade (Backwards)]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 905
+triggerall = !var(0)
+triggerall = Command = "holdback" && command = "recovery" || Command = "holdback" && command ="z"
+trigger1 = ctrl && statetype != A
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+
+
+
+[State -1, Emergency Evade (Forwards)]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 900
+triggerall = !var(0)
+triggerall = command = "recovery" || command ="z"
+trigger1 = ctrl && statetype != A
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+
+
+
+[State -1, Quick Emergency Evade]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 900
+triggerall = !var(0)
+triggerall = power >= 1000
+triggerall = command = "recovery" || command ="z"
+trigger1 = ctrl && statetype != A
+trigger2 = movecontact && stateno = 200 && (animelemtime(2) >= 0 && animelemtime(3) <= 0)
+trigger3 = movecontact && stateno = 205 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger4 = movecontact && stateno = 210 && (animelemtime(5) >= 0 && animelemtime(7) <= 0)
+trigger5 = movecontact && stateno = 215 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger6 = movecontact && stateno = 230 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger7 = movecontact && stateno = 235 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger8 = movecontact && stateno = 240 && (animelemtime(5) >= 0 && animelemtime(6) <= 0)
+trigger9 = movecontact && stateno = 245 && (animelemtime(4) >= 0 && animelemtime(5) <= 0)
+trigger10 = movecontact && stateno = 400 && (animelemtime(2) >= 0 && animelemtime(3) <= 0)
+trigger11 = movecontact && stateno = 410 && (animelemtime(4) >= 0 && animelemtime(6) <= 0)
+trigger12 = movecontact && stateno = 430 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger13 = movecontact && stateno = 440 && (animelemtime(5) >= 0 && animelemtime(7) <= 0)
+
+
+
+[State -1, Guard Cancel Emergency Evade (Backwards)]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 905
+triggerall = !var(0)
+triggerall = Command = "holdback" && command = "recovery" || Command = "holdback" && command ="z"
+triggerall = Power >= 1000 && StateType != A
+trigger1 = (stateno = 150 || stateno = 152)
+
+
+
+[State -1, Guard Cancel Emergency Evade (Forwards)]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 900
+triggerall = !var(0)
+triggerall = command = "recovery" || command = "z"
+triggerall = Power >= 1000 && StateType != A
+trigger1 = (stateno = 150 || stateno = 152)
+
+
+
+[State -1, Blowback Attack]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 910
+triggerall = Command = "c"
+triggerall = !var(0)
+trigger1 = StateType != A && Ctrl = 1
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+
+
+
+[State -1, Guard Cancel Blowback Attack]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 915
+triggerall = !var(0)
+triggerall = Command = "c"
+triggerall = Power >= 1000 && StateType != A
+trigger1 = (stateno = 150 || stateno = 152)
+
+
+
+[State -1, Air Blowback Attack]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 920
+triggerall = command = "c"
+trigger1 = statetype = A
+trigger1 = ctrl
+
+
+
+[State -1, Run Fwd]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 100
+trigger1 = command = "FF"
+trigger1 = statetype = S
+trigger1 = ctrl
+
+
+
+[State -1, Run Back]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 105
+trigger1 = command = "BB"
+trigger1 = statetype = S
+trigger1 = ctrl
+
+
+
+[State -1, Taunt]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 195
+triggerall = command = "start"
+trigger1 = statetype != A
+trigger1 = ctrl
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+
+
+
+[State -1, Triangle Jump]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 45
+triggerall = prevstateno != 45
+triggerall = stateno = 50 || stateno = 725
+triggerall = pos y < -38
+trigger1 = frontedgebodydist <= 5 && command = "holdback"
+trigger2 = backedgebodydist <= 5 && command = "holdfwd"
+
+
+
+[State -1, Ryuusei Raku Throw]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 850
+triggerall = command = "y"
+triggerall = statetype = A
+triggerall = ctrl | stateno = 45
+trigger1 = command = "holdfwd" || command = "holdback" || command = "holddown"
+trigger1 = p2bodydist X <= 10
+trigger1 = p2statetype = A
+
+
+
+[State -1, Koshuu Tou Throw]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 800
+triggerall = command = "y"
+triggerall = statetype = S
+triggerall = ctrl
+triggerall = stateno != 100
+trigger1 = command = "holdfwd" || command = "holdback"
+trigger1 = p2bodydist X < 5
+trigger1 = (p2statetype = S) || (p2statetype = C)
+trigger1 = p2movetype != H
+
+
+
+[State -1, Koshuu Tou Throw (Backwards)]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 825
+triggerall = command = "b"
+triggerall = statetype = S
+triggerall = ctrl
+triggerall = stateno != 100
+trigger1 = command = "holdfwd" || command = "holdback"
+trigger1 = p2bodydist X < 5
+trigger1 = (p2statetype = S) || (p2statetype = C)
+trigger1 = p2movetype != H
+
+
+
+[State -1, Kakusen Rakushuu]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 700
+triggerall = !var(0)
+triggerall = command = "holdfwd" && command = "a" && command != "holddown"
+trigger1 = StateType != A && Ctrl = 1
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 12
+trigger5 = movecontact && stateno = 205 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger6 = movecontact && stateno = 215 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger7 = movecontact && stateno = 235 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger8 = movecontact && stateno = 245 && (animelemtime(4) >= 0 && animelemtime(5) <= 0)
+trigger9 = movecontact && stateno = 400 && (animelemtime(2) >= 0 && animelemtime(3) <= 0)
+trigger10 = movecontact && stateno = 410 && (animelemtime(4) >= 0 && animelemtime(6) <= 0)
+trigger11 = movecontact && stateno = 430 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+
+
+
+[State -1, Kakusen Kyaku]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 705
+triggerall = !var(0)
+triggerall = command = "holdfwd" && command = "b" && command != "holddown"
+trigger1 = StateType != A && Ctrl = 1
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 12
+trigger5 = movecontact && stateno = 205 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger6 = movecontact && stateno = 215 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger7 = movecontact && stateno = 235 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger8 = movecontact && stateno = 245 && (animelemtime(4) >= 0 && animelemtime(5) <= 0)
+trigger9 = movecontact && stateno = 400 && (animelemtime(2) >= 0 && animelemtime(3) <= 0)
+trigger10 = movecontact && stateno = 410 && (animelemtime(4) >= 0 && animelemtime(6) <= 0)
+trigger11 = movecontact && stateno = 430 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+
+
+
+[State -1, Zensou Sentai]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 710
+triggerall = !var(0)
+triggerall = command = "holdfwd" && command = "holddown" && command = "a"
+trigger1 = StateType != A && Ctrl = 1
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 12
+trigger5 = movecontact && stateno = 205 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger6 = movecontact && stateno = 215 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger7 = movecontact && stateno = 235 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger8 = movecontact && stateno = 245 && (animelemtime(4) >= 0 && animelemtime(5) <= 0)
+trigger9 = movecontact && stateno = 400 && (animelemtime(2) >= 0 && animelemtime(3) <= 0)
+trigger10 = movecontact && stateno = 410 && (animelemtime(4) >= 0 && animelemtime(6) <= 0)
+trigger11 = movecontact && stateno = 430 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+
+
+
+[State -1, Kaku Kyaku Raku]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 715
+triggerall = !var(0)
+triggerall = command = "holdfwd" && command = "holddown" && command = "b"
+trigger1 = StateType != A && Ctrl = 1
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 12
+trigger5 = movecontact && stateno = 205 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger6 = movecontact && stateno = 215 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+trigger7 = movecontact && stateno = 235 && (animelemtime(2) >= 0 && animelemtime(4) <= 0)
+trigger8 = movecontact && stateno = 245 && (animelemtime(4) >= 0 && animelemtime(5) <= 0)
+trigger9 = movecontact && stateno = 400 && (animelemtime(2) >= 0 && animelemtime(3) <= 0)
+trigger10 = movecontact && stateno = 410 && (animelemtime(4) >= 0 && animelemtime(6) <= 0)
+trigger11 = movecontact && stateno = 430 && (animelemtime(3) >= 0 && animelemtime(4) <= 0)
+
+
+
+[State -1, Yousou Kyaku]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 720
+triggerall = !var(0)
+triggerall = command = "holddown" && command = "a"
+trigger1 = statetype = A
+trigger1 = ctrl
+
+
+
+[State -1, Stand Light Punch (close)]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 205
+triggerall = P2bodydist X <= 25
+triggerall = command = "x"
+triggerall = command != "holddown"
+trigger1 = statetype = S
+trigger1 = ctrl
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 205 && animelemtime(3) > 1
+trigger5 = stateno = 400 && animelemtime(3) > 1
+trigger6 = stateno = 430 && animelemtime(4) > 1
+
+
+
+[State -1, Stand Light Punch]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 200
+triggerall = command = "x"
+triggerall = command != "holddown"
+trigger1 = statetype = S
+trigger1 = ctrl
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 200 && animelemtime(4) > 2
+trigger5 = stateno = 205 && animelemtime(3) > 1
+trigger6 = stateno = 400 && animelemtime(3) > 1
+trigger7 = stateno = 430 && animelemtime(4) > 1
+
+
+
+[State -1, Stand Strong Punch (close)]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 215
+triggerall = P2bodydist X <= 25
+triggerall = command = "y"
+triggerall = command != "holddown"
+trigger1 = statetype = S
+trigger1 = ctrl
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+
+
+
+[State -1, Stand Strong Punch]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 210
+triggerall = command = "y"
+triggerall = command != "holddown"
+trigger1 = statetype = S
+trigger1 = ctrl
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+
+
+
+
+[State -1, Stand Light Kick (close)]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 235
+triggerall = P2bodydist X <= 25
+triggerall = command = "a"
+triggerall = command != "holddown"
+trigger1 = statetype = S
+trigger1 = ctrl
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = movecontact && stateno = 205 && animelemtime(4) < 0
+trigger5 = movecontact && stateno = 400 && animelemtime(4) < 0
+trigger6 = movecontact && stateno = 430 && animelemtime(5) < 1
+
+
+
+[State -1, Stand Light Kick]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 230
+triggerall = command = "a"
+triggerall = command != "holddown"
+trigger1 = statetype = S
+trigger1 = ctrl
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+
+
+
+[State -1, Standing Strong Kick (close)]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 245
+triggerall = P2bodydist X <= 25
+triggerall = command = "b"
+triggerall = command != "holddown"
+trigger1 = statetype = S
+trigger1 = ctrl
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+
+
+
+[State -1, Standing Strong Kick]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 240
+triggerall = command = "b"
+triggerall = command != "holddown"
+trigger1 = statetype = S
+trigger1 = ctrl
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+
+
+
+[State -1, Crouching Light Punch]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 400
+triggerall = command = "x"
+triggerall = command = "holddown"
+trigger1 = statetype = C
+trigger1 = ctrl
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 200 && animelemtime(4) > 2
+trigger5 = stateno = 205 && animelemtime(3) > 1
+trigger6 = stateno = 400 && animelemtime(3) > 1
+trigger7 = stateno = 430 && animelemtime(4) > 1
+
+
+
+[State -1, Crouching Strong Punch]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 410
+triggerall = command = "y"
+triggerall = command = "holddown"
+trigger1 = statetype = C
+trigger1 = ctrl
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 430 && (animelemtime(4) > 0 && animelemtime(5) < 0)
+
+
+
+[State -1, Crouching Light Kick]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 430
+triggerall = command = "a"
+triggerall = command = "holddown"
+trigger1 = statetype = C
+trigger1 = ctrl
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+trigger4 = stateno = 200 && animelemtime(4) > 2
+trigger5 = stateno = 205 && animelemtime(3) > 1
+trigger6 = stateno = 400 && animelemtime(3) > 1
+
+
+
+
+[State -1, Crouching Strong Kick]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 440
+triggerall = command = "b"
+triggerall = command = "holddown"
+trigger1 = statetype = C
+trigger1 = ctrl
+trigger2 = stateno = 52 && animelemtime(1) > 0
+trigger3 = stateno = [100, 101]
+
+
+
+[State -1, Jump Light Punch (neutral)]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 605
+triggerall = vel x = 0
+triggerall = command = "x"
+trigger1 = statetype = A
+trigger1 = ctrl
+
+
+
+[State -1, Jump Light Punch]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 600
+triggerall = command = "x"
+trigger1 = statetype = A
+trigger1 = ctrl
+
+
+
+[State -1, Jump Strong Punch (neutral)]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 615
+triggerall = vel x = 0
+triggerall = command = "y"
+trigger1 = statetype = A
+trigger1 = ctrl
+
+
+
+[State -1, Jump Strong Punch]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 610
+triggerall = command = "y"
+trigger1 = statetype = A
+trigger1 = ctrl
+
+
+
+[State -1, Jump Light Kick (neutral)]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 635
+triggerall = vel x = 0
+triggerall = command = "a"
+trigger1 = statetype = A
+trigger1 = ctrl
+
+
+
+[State -1, Jump Light Kick]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 630
+triggerall = command = "a"
+trigger1 = statetype = A
+trigger1 = ctrl
+
+
+
+[State -1, Jump Strong Kick (neutral)]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 645
+triggerall = vel x = 0
+triggerall = command = "b"
+trigger1 = statetype = A
+trigger1 = ctrl
+
+
+
+[State -1, Jump Strong Kick]
+type = ChangeState
+triggerall = !NumPartner || (NumPartner && (sysvar(4) != [8,9]) && (sysvar(4) != 12) && (StateNo != [1251109,1251114])) 
+value = 640
+triggerall = vel x != 0
+triggerall = command = "b"
+trigger1 = statetype = A
+trigger1 = ctrl
+
+
+

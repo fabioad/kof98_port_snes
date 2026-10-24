@@ -1,0 +1,32 @@
+[Info]
+name ="Leona Heidern"
+displayname ="Leona"
+author ="Ehnyd"
+pal.defaults = 4,1
+mugenversion = 1.0
+
+[Files]
+cmd     = 98Leona.cmd
+cns     = 01_Main.cns
+st      = 01_Main.cns
+st1     = 02_Attacks.cns
+st2     = 03_Specials.cns
+st3     = 04_DMs.cns
+st4     = 05_Others.cns
+stcommon= UM.cns
+sprite  = 98Leona.sff
+anim    = 98Leona.air
+sound   = 98Leona.snd
+
+pal1    = pal/Leona04.act
+pal2    = pal/Leona05.act
+pal3    = pal/Leona06.act
+pal4    = pal/Leona01.act
+pal5    = pal/Leona02.act
+pal6    = pal/Leona03.act
+pal7    = pal/Leona14.act
+pal8    = pal/Leona15.act
+pal9    = pal/Leona16.act
+pal10   = pal/Leona11.act
+pal11   = pal/Leona12.act
+pal12   = pal/Leona13.act

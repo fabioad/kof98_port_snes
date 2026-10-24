@@ -1,0 +1,122 @@
+[
+  {
+    "file": "KOF98-JpnStreetStage.png",
+    "width": 512,
+    "height": 224,
+    "colors": 15,
+    "tilesBefore": 1683,
+    "tiles": 512,
+    "chrBytes": 16384,
+    "mapBytes": 4096,
+    "paletteBytes": 32,
+    "pngBytes": 17511
+  },
+  {
+    "file": "KOF98-RugalStage.png",
+    "width": 512,
+    "height": 224,
+    "colors": 15,
+    "tilesBefore": 1768,
+    "tiles": 512,
+    "chrBytes": 16384,
+    "mapBytes": 4096,
+    "paletteBytes": 32,
+    "pngBytes": 26205
+  },
+  {
+    "file": "KOF98-SpainStage.png",
+    "width": 512,
+    "height": 224,
+    "colors": 15,
+    "tilesBefore": 1715,
+    "tiles": 512,
+    "chrBytes": 16384,
+    "mapBytes": 4096,
+    "paletteBytes": 32,
+    "pngBytes": 15815
+  },
+  {
+    "file": "KOF98-ChinaStage.png",
+    "width": 512,
+    "height": 224,
+    "colors": 15,
+    "tilesBefore": 1621,
+    "tiles": 512,
+    "chrBytes": 16384,
+    "mapBytes": 4096,
+    "paletteBytes": 32,
+    "pngBytes": 16593
+  },
+  {
+    "file": "KOF98-JpnTempleStage.png",
+    "width": 512,
+    "height": 224,
+    "colors": 15,
+    "tilesBefore": 1769,
+    "tiles": 512,
+    "chrBytes": 16384,
+    "mapBytes": 4096,
+    "paletteBytes": 32,
+    "pngBytes": 20387
+  },
+  {
+    "file": "KOF98-KoreaStage.png",
+    "width": 512,
+    "height": 224,
+    "colors": 15,
+    "tilesBefore": 1556,
+    "tiles": 512,
+    "chrBytes": 16384,
+    "mapBytes": 4096,
+    "paletteBytes": 32,
+    "pngBytes": 18694
+  },
+  {
+    "file": "KOF98-Mid.EastStage.png",
+    "width": 512,
+    "height": 224,
+    "colors": 15,
+    "tilesBefore": 1719,
+    "tiles": 512,
+    "chrBytes": 16384,
+    "mapBytes": 4096,
+    "paletteBytes": 32,
+    "pngBytes": 24987
+  },
+  {
+    "file": "KOF98-USAWharfStage.png",
+    "width": 512,
+    "height": 224,
+    "colors": 15,
+    "tilesBefore": 1622,
+    "tiles": 512,
+    "chrBytes": 16384,
+    "mapBytes": 4096,
+    "paletteBytes": 32,
+    "pngBytes": 15259
+  },
+  {
+    "file": "KOF98-USAWharfStage-B.png",
+    "width": 512,
+    "height": 224,
+    "colors": 15,
+    "tilesBefore": 1695,
+    "tiles": 512,
+    "chrBytes": 16384,
+    "mapBytes": 4096,
+    "paletteBytes": 32,
+    "pngBytes": 18245
+  },
+  {
+    "file": "KOF98-USAYardStage.png",
+    "width": 512,
+    "height": 224,
+    "colors": 15,
+    "tilesBefore": 1692,
+    "tiles": 512,
+    "chrBytes": 16384,
+    "mapBytes": 4096,
+    "paletteBytes": 32,
+    "pngBytes": 24195
+  }
+]

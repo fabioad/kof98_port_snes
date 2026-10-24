@@ -1,0 +1,33 @@
+{
+  "character": "vice",
+  "config_hash": "4fc644de5260d2b220c99b86627a59a6978c812d63117f2e84409f4b17291b72",
+  "corrections": [],
+  "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Vice-KOF98/Vice.def",
+  "inputs": {
+    "assets/characters/Vice-KOF98/Vice-H.cns": "a5f2fecef95617f4707a1d7549d34f44e9e7041d8be006b5f869546a210f257d",
+    "assets/characters/Vice-KOF98/Vice-N.cns": "fac961911a52c1a0165e8db6b0c964470dd0bfb38d16fa96e85025b874f75f14",
+    "assets/characters/Vice-KOF98/Vice-S.cns": "21ae00be0b2731eafd82b7cb8965392d747ce1d2b8ba7b17de1e9c45e9fc5c10",
+    "assets/characters/Vice-KOF98/Vice.air": "2c8304916e2ae15e800f853ab8b9827edf631a3e5d60b13a8c9f4e3996a3b303",
+    "assets/characters/Vice-KOF98/Vice.air.orig": "48782ed7fc21645acfd361f4bbfa8c47e2b074640c6995ff00ec458031e5f15a",
+    "assets/characters/Vice-KOF98/Vice.cmd": "6363fadb0e39bd63247bdcca6f3b62129050979aafc61e76bc3f33d6ba68abee",
+    "assets/characters/Vice-KOF98/Vice.def": "ab12fdc027e079dbce7c8555a6807fd92e462b9f8f65bd70a2bc4bc917cb1e17",
+    "assets/characters/Vice-KOF98/Vice.sff": "ffbf07261c154b15d3f838bc06f9fc6eb70ae3455c284868e415febc15578811",
+    "assets/characters/Vice-KOF98/Vice.snd": "ac8c048b71ffcb97961d0fa9dcf7a2a8043dc7b71afd6b338988bc2a7bb9fc4d",
+    "assets/characters/Vice-KOF98/Vice01.act": "a085d1a3622f591f16e4ac22bf02a8ee7b4e2ab96bd54574cc3e0647eb4d821b",
+    "assets/characters/Vice-KOF98/Vice02.act": "8f501a0f4c4a973c77ae90e18e4077ee89f48f599eb6e306626ecf674ad56c40",
+    "assets/characters/Vice-KOF98/Vice03.act": "99151d5ba302b9983085ce34e96365cb47b2187524edeea87983c6fa498c5fa4",
+    "assets/characters/Vice-KOF98/Vice04.act": "cae4ce0328a348a525b66931bebdc8d28197961d49b7f6b17b8c6468fbecfac6",
+    "assets/characters/Vice-KOF98/Vice05.act": "67320cd625842d94c9f8997b1654303505492f32cbe6e000c018d5b5589b4f3f",
+    "assets/characters/Vice-KOF98/Vice06.act": "20222082243541755999089eb8ae4def1d9d8688761b1a5fa19412161c35382a",
+    "assets/characters/Vice-KOF98/Vice07.act": "7c8cb2ed807dd4173100978da75d6aa8306bbabf4e561978bb849599d5fad742",
+    "assets/characters/Vice-KOF98/Vice08.act": "ccc356b7af167c38a740a5ab5d3d684166acb67f31ea99824a8c183be4418ff8",
+    "assets/characters/Vice-KOF98/Vice09.act": "7ed34cd37afb8d24ef3f4422957e4c5fbc60b84eb68231384f7aa81b51c74bdf",
+    "assets/characters/Vice-KOF98/Vice10.act": "7d62f8ee895adfdf9a06ae4fadad2dd812753baf68133b55deb5c8391f10a9a9",
+    "assets/characters/Vice-KOF98/Vice11.act": "9fbf181f6fa1dd906789761702e09e6f5174b948c4382f2b4516b4fe073d235e",
+    "assets/characters/Vice-KOF98/Vice12.act": "25dc59238eb97ee4af82b85706019162b352d07618fec6a83823e7e4051d9174",
+    "assets/characters/Vice-KOF98/Vice_SNES.cmd": "b66fcf057b36977517083febc35b52d6a8117a084259d7bccc19e998823ceac0",
+    "assets/characters/Vice-KOF98/Vice_SNES.cns": "6e453723b0759d1ad98f2e8d61fea2d9c717df3aa0f3c9159673e17731617a91",
+    "assets/characters/Vice-KOF98/common1.cns": "3a1db66c57af1fe92acf78d7328334b385c1c230448c1c3d32d5bdf271137bfc"
+  },
+  "schema": 1
+}

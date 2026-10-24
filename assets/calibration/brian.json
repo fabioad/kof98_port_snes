@@ -1,0 +1,26 @@
+{
+  "character": "brian",
+  "config_hash": "fd6687e5396190d73571c16ce39f8a146ca49d205068dbfbcf92078f1f5321df",
+  "corrections": [],
+  "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/BRIAN/BRIAN.def",
+  "inputs": {
+    "assets/characters/BRIAN/BRIAN.def": "e64b39bf7395bab8e1fa1f7e426e82ba0bd48fd40bf3c101c3bd91fb661815f9",
+    "assets/characters/BRIAN/Brian-2.cns": "0908c30efde253d724fc487fb44cbc6deb9540083b8bf3d5709c062d9d360e5c",
+    "assets/characters/BRIAN/Brian-B.cns": "6631d92ed6dd357232d22d5351a0ba35b6b0565bfebb08f68d15eba0fec43eba",
+    "assets/characters/BRIAN/Brian-H.cns": "112d632380c34e1747f0acb7228c17e666a07d8c39f2e1cd704b7cd3a6c3376a",
+    "assets/characters/BRIAN/Brian-N.cns": "b9e172741c8347ac360d42a5644728246ad98f5855e2b443bddf802cb98f7437",
+    "assets/characters/BRIAN/Brian-S.cns": "6f79839156781c5e0a0c6c66c62bc52f9944a8218dd6ba55b71d55fe007a42d8",
+    "assets/characters/BRIAN/Brian.air": "9ff89474fa1b61c3a6800f10459512c1770040a946f36755f964e5c3d35f46d9",
+    "assets/characters/BRIAN/Brian.cmd": "cfd2ce5c47c04ac94f8296ebe8c1233637d6707aa32b6764e8da21f736445f8e",
+    "assets/characters/BRIAN/Brian.cns": "e1542b9066504fcdb16346e9518000bb1c9eb3c2bb8f1b1ce4530d97253f0544",
+    "assets/characters/BRIAN/Brian.sff": "6c8a7db963ba230e31a4d5e86f5e4998ac7b39af6a1891742fb3b41cf4a80fcc",
+    "assets/characters/BRIAN/Brian.snd": "b5778c7a8f977791f7a1f055b97e2f010312994e172b3fcd8d1fabba00fcfb69",
+    "assets/characters/BRIAN/Brian_SNES.cmd": "16e939341ba42624583a99fe68b20dbf6616a6706c9ebe508c2af4bc08468f78",
+    "assets/characters/BRIAN/Brian_SNES.cns": "cfde275637a47fe9db46088814e8d05a42a899afc17d6d37c0864d3d5740a5d1",
+    "assets/characters/BRIAN/Paletas/01.act": "1b1056e26d690475731aa723ce4206bde8d5501a17321706b7774a06a2b4d665",
+    "assets/characters/BRIAN/Paletas/02.act": "62c659a09992bceeded67abc7278984716770141f67242ccb1490115996ba443",
+    "assets/characters/BRIAN/Paletas/03.act": "c9d44b50f51e37612409251f6dd4c9d9b93da201085c011ec6568d59eb0e9855",
+    "assets/characters/BRIAN/Paletas/04.act": "10be96d0b0165fd1b08136fb15d367d97825e978feb9ae4431d34fa298df15b0"
+  },
+  "schema": 1
+}

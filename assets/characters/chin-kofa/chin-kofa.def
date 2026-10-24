@@ -1,0 +1,27 @@
+[Info]
+Name         ="Chin Gentsai"
+DisplayName  ="Chin"
+versiondate=06,02,2007
+;mugenversion=04,14,2002
+Author       ="Zelgadis"
+Pal.Defaults =1,2,3,4,5,6
+mugenversion = 1.0
+localcoord   = 320,240
+[Files]
+Cmd          =Chin-KOFM.cmd
+Cns          =Chin-KOFM.cns
+St           =Chin-KOFM.cns
+StCommon     =common1.cns
+Sprite       =Chin-KOFM.sff
+Anim         =Chin-KOFM.air
+Sound        =Chin-KOFM.snd
+pal1=Paletas\Chin-KOFM-1.act
+pal2=Paletas\Chin-KOFM-2.act
+pal3=Paletas\Chin-KOFM-3.act
+pal4=Paletas\Chin-KOFM-Original.act
+pal5=Paletas\Chin-KOFM-5.act
+pal6=paletas\Chin-KOFM-6.act
+st1=Chin-KOFM-N.cns
+st2=Chin-KOFM-S.cns
+st3=Chin-KOFM-H.cns
+st4=Chin-KOFM-2-3.cns

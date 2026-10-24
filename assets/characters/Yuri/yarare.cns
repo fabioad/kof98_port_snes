@@ -1,0 +1,4003 @@
+;やられ奪取ステート系
+;---------------------------------------------------------------------------
+;空中くらい
+[Statedef 80000]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = 1
+time = 1
+
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover = 0
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = alive
+value = 0
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = 1
+value = 5030
+
+[State 810, State End]
+type = selfState
+trigger1 = time = 1
+value = 5020
+
+;---------------------------------------------------------------------------
+; 脚払いふっとび
+[Statedef 80001]
+type    = A
+movetype= H
+physics = N
+juggle  = 1
+velset = 0,0
+ctrl = 0
+poweradd = 0
+sprpriority = 0
+
+[State 200, 1]
+type = nothitby
+trigger1 = enemy,teammode = single || enemy,teammode = turns
+value = SCA,AA,AT,AP
+time = 1
+
+[State 200, 1]
+type = playerpush
+trigger1 = 1
+value = 0
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+
+[State 200, 1]
+type = changeanim
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+value = 5070
+
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 200, 1]
+type = veladd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 200, 1]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >= 0
+y = 0
+
+[State 810, State End]
+type = changestate
+trigger1 = hitshakeover
+trigger1 = gethitvar(fall.recover) = 0
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 88000
+[State 810, State End]
+type = selfState
+trigger1 = hitshakeover
+trigger1 = gethitvar(fall.recover) = 1
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 5100
+
+;---------------------------------------------------------------------------
+;吹っ飛び
+[Statedef 80002]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = palfx
+trigger1 = time = 0
+time = 1
+add = 0,0,0
+
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = [0,3]
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = [0,3]
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = [0,3]
+trigger1 = animtime = 0
+trigger1 = anim = 5030 || anim = 5035
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5060)
+trigger1 = anim = 5050 && animtime = 0
+trigger1 = vel Y > -1
+value = 5060
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = SelfAnimExist(5051)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5051
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = !SelfAnimExist(5051)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = !SelfAnimExist(5061)
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = SelfAnimExist(5061)
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5061
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5052
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = !SelfAnimExist(5052)
+triggerall = SelfAnimExist(5051)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5051
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = !SelfAnimExist(5051)
+triggerall = !SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = !SelfAnimExist(5061)
+triggerall = !SelfAnimExist(5062)
+trigger1 = vel Y > 0 && anim = 5052
+trigger2 = anim = 5030 || anim = 5035
+trigger2 = animtime = 0
+trigger3 = vel Y > -1
+trigger3 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = SelfAnimExist(5062)
+trigger1 = vel Y > 0 && anim = 5052
+trigger2 = anim = 5030 || anim = 5035
+trigger2 = animtime = 0
+trigger3 = vel Y > -1
+trigger3 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5062
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = SelfAnimExist(5061)
+trigger1 = vel Y > 0 && anim = 5052
+trigger2 = anim = 5030 || anim = 5035
+trigger2 = animtime = 0
+trigger3 = vel Y > -1
+trigger3 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5061
+
+[State 810, State End]
+type = changestate
+trigger1 = gethitvar(fall.recover) = 0
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 88005-ifelse((GetHitVar(animtype)=[4,5]),5,0)
+
+[State 810, State End]
+type = selfState
+trigger1 = gethitvar(fall.recover) = 1
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 5100
+
+;---------------------------------------------------------------------------
+;通常吹っ飛び無敵
+[Statedef 80003]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = nothitby
+trigger1 = enemy,teammode = single || enemy,teammode = turns
+value = SCA,AA,AT,AP
+time = 1
+
+[State 200, 1]
+type = palfx
+trigger1 = time = 0
+time = 1
+add = 0,0,0
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = [0,3]
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = [0,3]
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = [0,3]
+trigger1 = animtime = 0
+trigger1 = anim = 5030 || anim = 5035
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5060)
+trigger1 = anim = 5050 && animtime = 0
+trigger1 = vel Y > -1
+value = 5060
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = SelfAnimExist(5051)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5051
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = !SelfAnimExist(5051)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = !SelfAnimExist(5061)
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = SelfAnimExist(5061)
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5061
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5052
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = !SelfAnimExist(5052)
+triggerall = SelfAnimExist(5051)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5051
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = !SelfAnimExist(5051)
+triggerall = !SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = !SelfAnimExist(5061)
+triggerall = !SelfAnimExist(5062)
+trigger1 = vel Y > 0 && anim = 5052
+trigger2 = anim = 5030 || anim = 5035
+trigger2 = animtime = 0
+trigger3 = vel Y > -1
+trigger3 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = SelfAnimExist(5062)
+trigger1 = vel Y > 0 && anim = 5052
+trigger2 = anim = 5030 || anim = 5035
+trigger2 = animtime = 0
+trigger3 = vel Y > -1
+trigger3 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5062
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = SelfAnimExist(5061)
+trigger1 = vel Y > 0 && anim = 5052
+trigger2 = anim = 5030 || anim = 5035
+trigger2 = animtime = 0
+trigger3 = vel Y > -1
+trigger3 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5061
+
+[State 810, State End]
+type = changestate
+trigger1 = gethitvar(fall.recover) = 0
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 88005-ifelse((GetHitVar(animtype)=[4,5]),5,0)
+
+[State 810, State End]
+type = selfState
+trigger1 = gethitvar(fall.recover) = 1
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 5100
+
+;---------------------------------------------------------------------------
+;スライド
+[Statedef 80004]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5060)
+trigger1 = anim = 5050 && animtime = 0
+trigger1 = vel Y > -1
+value = 5060
+
+[State 810, State End]
+type = changeState
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 80050
+
+;---------------------------------------------------------------------------
+;スライド無敵
+[Statedef 80005]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = nothitby
+trigger1 = enemy,teammode = single || enemy,teammode = turns
+value = SCA,AA,AT,AP
+time = 1
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5060)
+trigger1 = anim = 5050 && animtime = 0
+trigger1 = vel Y > -1
+value = 5060
+
+[State 810, State End]
+type = changeState
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 80050
+
+;---------------------------------------------------------------------------
+;きりもみスライド
+[Statedef 80006]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5052
+[State 810, Grab Sound]
+type = changeanim
+triggerall = !SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5060)
+trigger1 = anim = 5050 && animtime = 0
+trigger1 = vel Y > -1
+value = 5060
+
+[State 810, State End]
+type = changeState
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 80050
+
+;---------------------------------------------------------------------------
+;きりもみスライド無敵
+[Statedef 80007]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = nothitby
+trigger1 = enemy,teammode = single || enemy,teammode = turns
+value = SCA,AA,AT,AP
+time = 1
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5052
+[State 810, Grab Sound]
+type = changeanim
+triggerall = !SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5060)
+trigger1 = anim = 5050 && animtime = 0
+trigger1 = vel Y > -1
+value = 5060
+
+[State 810, State End]
+type = changeState
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 80050
+;---------------------------------------------------------------------------
+;縦きりもみ吹っ飛び
+[Statedef 80008]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+time = 1
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 200, 1]
+type = nothitby
+trigger1 = hitshakeover=0
+value = SCA,AA,AT,AP
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim2
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 80011
+
+[State 810, State End]
+type = changeState
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 88000
+
+;---------------------------------------------------------------------------
+; 脚払いふっとび追撃可能
+[Statedef 80009]
+type    = A
+movetype= H
+physics = N
+juggle  = 1
+velset = 0,0
+ctrl = 0
+poweradd = 0
+sprpriority = 0
+
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+time = 1
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+
+[State 200, 1]
+type = changeanim
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+value = 5070
+
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 200, 1]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >= 0
+y = 0
+
+[State 810, State End]
+type = changestate
+trigger1 = hitshakeover
+trigger1 = gethitvar(fall.recover) = 0
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 88000
+[State 810, State End]
+type = selfState
+trigger1 = hitshakeover
+trigger1 = gethitvar(fall.recover) = 1
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 5100
+
+
+
+;---------------------------------------------------------------------------
+;炎くらい
+[Statedef 80010]
+type    = S
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 5020, 2] ;Anim for HIT_BACK
+type = ChangeState
+trigger1 = GetHitVar(yvel) != 0
+value = 80012
+
+[State 200, 1]
+type = palfx
+trigger1 = time%6=0
+time = 4
+mul = 205,145,100
+sinadd = 168,128,100,4
+add = 245,160,100
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = time%6=3
+time = 4
+mul = 205,145,100
+sinadd = 168,128,100,4
+add = 245,160,100
+color = 0
+
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+value = ifelse((GetHitVar(groundtype)=1),5000,5010) + 2
+[State 810, Grab Sound]
+type = changeanim
+triggerall = (anim =[5000,5004])||(anim =[5010,5014])
+trigger1 = hitshakeover
+trigger1 = GetHitVar(hittime) < 12
+value = anim+5+((GetHitVar(groundtype)=1)*(GetHitVar(animtype)=2))*10
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 5030, 2]
+type = HitVelSet
+trigger1 = hitshakeover = 0
+x = 1
+[State 5001, 3] ;Stop sliding back
+type = VelMul
+trigger1 = hitshakeover
+x = Const(movement.stand.friction)
+[State 5001, 4]
+type = VelSet
+trigger1 = hitover
+x = 0
+[State 5001, 5]
+type = DefenceMulSet
+trigger1 = hitover
+value = 1
+[State 5001, 6]
+type = selfState
+trigger1 = hitover
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+;炎くらい
+[Statedef 80011]
+type    = S
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 5020, 2] ;Anim for HIT_BACK
+type = ChangeState
+trigger1 = GetHitVar(yvel) != 0
+value = 80013
+
+[State 200, 1]
+type = palfx
+trigger1 = time%6=0
+time = 4
+mul = 205,145,100
+sinadd = 168,128,100,4
+add = 245,160,100
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = time%6=3
+time = 4
+mul = 205,145,100
+sinadd = 168,128,100,4
+add = 245,160,100
+color = 0
+
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+value = ifelse((GetHitVar(groundtype)=1),5000,5010) + 2
+[State 810, Grab Sound]
+type = changeanim
+triggerall = (anim =[5000,5004])||(anim =[5010,5014])
+trigger1 = hitshakeover
+trigger1 = GetHitVar(hittime) < 12
+value = anim+5+((GetHitVar(groundtype)=1)*(GetHitVar(animtype)=2))*10
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 5030, 2]
+type = HitVelSet
+trigger1 = hitshakeover = 0
+x = 1
+[State 5001, 3] ;Stop sliding back
+type = VelMul
+trigger1 = hitshakeover
+x = Const(movement.stand.friction)
+[State 5001, 4]
+type = VelSet
+trigger1 = hitover
+x = 0
+[State 5001, 5]
+type = DefenceMulSet
+trigger1 = hitover
+value = 1
+[State 5001, 6]
+type = selfState
+trigger1 = hitover
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+;吹っ飛び炎無敵
+[Statedef 80012]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = palfx
+trigger1 = time%6=0
+time = 4
+mul = 205,145,100
+sinadd = 168,128,100,4
+add = 245,160,100
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = time%6=3
+time = 4
+mul = 205,145,100
+sinadd = 168,128,100,4
+add = 245,160,100
+color = 0
+
+[State 200, 1]
+type = nothitby
+trigger1 = enemy,teammode = single || enemy,teammode = turns
+value = SCA,AA,AT,AP
+time = 1
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >-5
+y = -5
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = [0,3]
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = [0,3]
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = [0,3]
+trigger1 = animtime = 0
+trigger1 = anim = 5030 || anim = 5035
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5060)
+trigger1 = anim = 5050 && animtime = 0
+trigger1 = vel Y > -1
+value = 5060
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = SelfAnimExist(5051)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5051
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = !SelfAnimExist(5051)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = !SelfAnimExist(5061)
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = SelfAnimExist(5061)
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5061
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5052
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = !SelfAnimExist(5052)
+triggerall = SelfAnimExist(5051)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5051
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = !SelfAnimExist(5051)
+triggerall = !SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = !SelfAnimExist(5061)
+triggerall = !SelfAnimExist(5062)
+trigger1 = vel Y > 0 && anim = 5052
+trigger2 = anim = 5030 || anim = 5035
+trigger2 = animtime = 0
+trigger3 = vel Y > -1
+trigger3 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = SelfAnimExist(5062)
+trigger1 = vel Y > 0 && anim = 5052
+trigger2 = anim = 5030 || anim = 5035
+trigger2 = animtime = 0
+trigger3 = vel Y > -1
+trigger3 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5062
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = SelfAnimExist(5061)
+trigger1 = vel Y > 0 && anim = 5052
+trigger2 = anim = 5030 || anim = 5035
+trigger2 = animtime = 0
+trigger3 = vel Y > -1
+trigger3 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5061
+
+[State 810, State End]
+type = changestate
+trigger1 = gethitvar(fall.recover) = 0
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 88005-ifelse((GetHitVar(animtype)=[4,5]),5,0)
+
+[State 810, State End]
+type = selfState
+trigger1 = gethitvar(fall.recover) = 1
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 5100
+
+;---------------------------------------------------------------------------
+;吹っ飛び炎
+[Statedef 80013]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+
+[State 200, 1]
+type = palfx
+trigger1 = time%6=0
+time = 4
+mul = 205,145,100
+sinadd = 168,128,100,4
+add = 245,160,100
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = time%6=3
+time = 4
+mul = 205,145,100
+sinadd = 168,128,100,4
+add = 245,160,100
+color = 0
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >-5
+y = -5
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = [0,3]
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = [0,3]
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = [0,3]
+trigger1 = animtime = 0
+trigger1 = anim = 5030 || anim = 5035
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5060)
+trigger1 = anim = 5050 && animtime = 0
+trigger1 = vel Y > -1
+value = 5060
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = SelfAnimExist(5051)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5051
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = !SelfAnimExist(5051)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = !SelfAnimExist(5061)
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = SelfAnimExist(5061)
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5061
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5052
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = !SelfAnimExist(5052)
+triggerall = SelfAnimExist(5051)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5051
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = !SelfAnimExist(5051)
+triggerall = !SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = !SelfAnimExist(5061)
+triggerall = !SelfAnimExist(5062)
+trigger1 = vel Y > 0 && anim = 5052
+trigger2 = anim = 5030 || anim = 5035
+trigger2 = animtime = 0
+trigger3 = vel Y > -1
+trigger3 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = SelfAnimExist(5062)
+trigger1 = vel Y > 0 && anim = 5052
+trigger2 = anim = 5030 || anim = 5035
+trigger2 = animtime = 0
+trigger3 = vel Y > -1
+trigger3 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5062
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = SelfAnimExist(5061)
+trigger1 = vel Y > 0 && anim = 5052
+trigger2 = anim = 5030 || anim = 5035
+trigger2 = animtime = 0
+trigger3 = vel Y > -1
+trigger3 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5061
+
+[State 810, State End]
+type = changestate
+trigger1 = gethitvar(fall.recover) = 0
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 88005-ifelse((GetHitVar(animtype)=[4,5]),5,0)
+
+[State 810, State End]
+type = selfState
+trigger1 = gethitvar(fall.recover) = 1
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 5100
+
+;---------------------------------------------------------------------------
+;スライド炎
+[Statedef 80014]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = palfx
+trigger1 = time%6=0
+time = 4
+mul = 205,145,100
+sinadd = 168,128,100,4
+add = 245,160,100
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = time%6=3
+time = 4
+mul = 205,145,100
+sinadd = 168,128,100,4
+add = 245,160,100
+color = 0
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5060)
+trigger1 = anim = 5050 && animtime = 0
+trigger1 = vel Y > -1
+value = 5060
+
+[State 810, State End]
+type = changeState
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 80050
+
+;---------------------------------------------------------------------------
+;スライド炎無敵
+[Statedef 80015]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = palfx
+trigger1 = time%6=0
+time = 4
+mul = 205,145,100
+sinadd = 168,128,100,4
+add = 245,160,100
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = time%6=3
+time = 4
+mul = 205,145,100
+sinadd = 168,128,100,4
+add = 245,160,100
+color = 0
+
+[State 200, 1]
+type = nothitby
+trigger1 = enemy,teammode = single || enemy,teammode = turns
+value = SCA,AA,AT,AP
+time = 1
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5060)
+trigger1 = anim = 5050 && animtime = 0
+trigger1 = vel Y > -1
+value = 5060
+
+[State 810, State End]
+type = changeState
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 80050
+
+;---------------------------------------------------------------------------
+;きりもみ炎スライド
+[Statedef 80016]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = palfx
+trigger1 = time%6=0
+time = 4
+mul = 205,145,100
+sinadd = 168,128,100,4
+add = 245,160,100
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = time%6=3
+time = 4
+mul = 205,145,100
+sinadd = 168,128,100,4
+add = 245,160,100
+color = 0
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5052
+[State 810, Grab Sound]
+type = changeanim
+triggerall = !SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5060)
+trigger1 = anim = 5050 && animtime = 0
+trigger1 = vel Y > -1
+value = 5060
+
+[State 810, State End]
+type = changeState
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 80050
+
+;---------------------------------------------------------------------------
+;きりもみ炎スライド無敵
+[Statedef 80017]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = palfx
+trigger1 = time%6=0
+time = 4
+mul = 205,145,100
+sinadd = 168,128,100,4
+add = 245,160,100
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = time%6=3
+time = 4
+mul = 205,145,100
+sinadd = 168,128,100,4
+add = 245,160,100
+color = 0
+
+[State 200, 1]
+type = nothitby
+trigger1 = enemy,teammode = single || enemy,teammode = turns
+value = SCA,AA,AT,AP
+time = 1
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5052
+[State 810, Grab Sound]
+type = changeanim
+triggerall = !SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5060)
+trigger1 = anim = 5050 && animtime = 0
+trigger1 = vel Y > -1
+value = 5060
+
+[State 810, State End]
+type = changeState
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 80050
+;---------------------------------------------------------------------------
+;縦きりもみ炎吹っ飛び
+[Statedef 80018]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = palfx
+trigger1 = time%6=0
+time = 4
+mul = 205,145,100
+sinadd = 168,128,100,4
+add = 245,160,100
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = time%6=3
+time = 4
+mul = 205,145,100
+sinadd = 168,128,100,4
+add = 245,160,100
+color = 0
+
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+time = 1
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 200, 1]
+type = nothitby
+trigger1 = hitshakeover=0
+value = SCA,AA,AT,AP
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim2
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 80011
+
+[State 810, State End]
+type = changeState
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 88000
+
+
+
+
+
+
+
+
+
+
+
+;---------------------------------------------------------------------------
+;電撃くらい
+[Statedef 80020]
+type    = S
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 5020, 2] ;Anim for HIT_BACK
+type = ChangeState
+trigger1 = GetHitVar(yvel) != 0
+value = 80022
+
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 0
+time = 1
+add = 20,20,40
+mul = 210,230,255
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 1
+time = 1
+add = 50,60,80
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 2
+time = 1
+add = 127,127,127
+
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover = 0
+value = ifelse((GetHitVar(groundtype)=1),5000,5010) + 2
+[State 810, Grab Sound]
+type = changeanim
+triggerall = (anim =[5000,5004])||(anim =[5010,5014])
+trigger1 = hitshakeover
+trigger1 = GetHitVar(hittime) < 12
+trigger2 = time > 12 && animelem = 1
+value = anim+5
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 5030, 2]
+type = HitVelSet
+trigger1 = hitshakeover = 0
+x = 1
+[State 5001, 3] ;Stop sliding back
+type = VelMul
+trigger1 = hitshakeover
+x = Const(movement.stand.friction)
+[State 5001, 4]
+type = VelSet
+trigger1 = hitover
+x = 0
+[State 5001, 5]
+type = DefenceMulSet
+trigger1 = hitover
+value = 1
+[State 5001, 6]
+type = selfState
+trigger1 = hitover
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+;電撃くらい
+[Statedef 80021]
+type    = S
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 5020, 2] ;Anim for HIT_BACK
+type = ChangeState
+trigger1 = GetHitVar(yvel) != 0
+value = 80023
+
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 0
+time = 1
+add = 20,20,40
+mul = 210,230,255
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 1
+time = 1
+add = 50,60,80
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 2
+time = 1
+add = 127,127,127
+
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover = 0
+value = ifelse((GetHitVar(groundtype)=1),5000,5010) + 2
+[State 810, Grab Sound]
+type = changeanim
+triggerall = (anim =[5000,5004])||(anim =[5010,5014])
+trigger1 = hitshakeover
+trigger1 = GetHitVar(hittime) < 12
+trigger2 = time > 12 && animelem = 1
+value = anim+5
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 5030, 2]
+type = HitVelSet
+trigger1 = hitshakeover = 0
+x = 1
+[State 5001, 3] ;Stop sliding back
+type = VelMul
+trigger1 = hitshakeover
+x = Const(movement.stand.friction)
+[State 5001, 4]
+type = VelSet
+trigger1 = hitover
+x = 0
+[State 5001, 5]
+type = DefenceMulSet
+trigger1 = hitover
+value = 1
+[State 5001, 6]
+type = selfState
+trigger1 = hitover
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+;吹っ飛び電撃無敵
+[Statedef 80022]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 0
+time = 1
+add = 20,20,40
+mul = 210,230,255
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 1
+time = 1
+add = 50,60,80
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 2
+time = 1
+add = 127,127,127
+
+[State 200, 1]
+type = nothitby
+trigger1 = enemy,teammode = single || enemy,teammode = turns
+value = SCA,AA,AT,AP
+time = 1
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >-5
+y = -5
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = [0,3]
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = [0,3]
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = [0,3]
+trigger1 = animtime = 0
+trigger1 = anim = 5030 || anim = 5035
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5060)
+trigger1 = anim = 5050 && animtime = 0
+trigger1 = vel Y > -1
+value = 5060
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = SelfAnimExist(5051)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5051
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = !SelfAnimExist(5051)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = !SelfAnimExist(5061)
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = SelfAnimExist(5061)
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5061
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5052
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = !SelfAnimExist(5052)
+triggerall = SelfAnimExist(5051)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5051
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = !SelfAnimExist(5051)
+triggerall = !SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = !SelfAnimExist(5061)
+triggerall = !SelfAnimExist(5062)
+trigger1 = vel Y > 0 && anim = 5052
+trigger2 = anim = 5030 || anim = 5035
+trigger2 = animtime = 0
+trigger3 = vel Y > -1
+trigger3 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = SelfAnimExist(5062)
+trigger1 = vel Y > 0 && anim = 5052
+trigger2 = anim = 5030 || anim = 5035
+trigger2 = animtime = 0
+trigger3 = vel Y > -1
+trigger3 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5062
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = SelfAnimExist(5061)
+trigger1 = vel Y > 0 && anim = 5052
+trigger2 = anim = 5030 || anim = 5035
+trigger2 = animtime = 0
+trigger3 = vel Y > -1
+trigger3 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5061
+
+[State 810, State End]
+type = changestate
+trigger1 = gethitvar(fall.recover) = 0
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 88005-ifelse((GetHitVar(animtype)=[4,5]),5,0)
+
+[State 810, State End]
+type = selfState
+trigger1 = gethitvar(fall.recover) = 1
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 5100
+
+;---------------------------------------------------------------------------
+;通常吹っ飛び電撃
+[Statedef 80023]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 0
+time = 1
+add = 20,20,40
+mul = 210,230,255
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 1
+time = 1
+add = 50,60,80
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 2
+time = 1
+add = 127,127,127
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >-5
+y = -5
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = [0,3]
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = [0,3]
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = [0,3]
+trigger1 = animtime = 0
+trigger1 = anim = 5030 || anim = 5035
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5060)
+trigger1 = anim = 5050 && animtime = 0
+trigger1 = vel Y > -1
+value = 5060
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = SelfAnimExist(5051)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5051
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = !SelfAnimExist(5051)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = !SelfAnimExist(5061)
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 4
+triggerall = SelfAnimExist(5061)
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5061
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5052
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = !SelfAnimExist(5052)
+triggerall = SelfAnimExist(5051)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5051
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = !SelfAnimExist(5051)
+triggerall = !SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = !SelfAnimExist(5061)
+triggerall = !SelfAnimExist(5062)
+trigger1 = vel Y > 0 && anim = 5052
+trigger2 = anim = 5030 || anim = 5035
+trigger2 = animtime = 0
+trigger3 = vel Y > -1
+trigger3 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = SelfAnimExist(5062)
+trigger1 = vel Y > 0 && anim = 5052
+trigger2 = anim = 5030 || anim = 5035
+trigger2 = animtime = 0
+trigger3 = vel Y > -1
+trigger3 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5062
+[State 810, Grab Sound]
+type = changeanim
+triggerall = GetHitVar(animtype) = 5
+triggerall = SelfAnimExist(5061)
+trigger1 = vel Y > 0 && anim = 5052
+trigger2 = anim = 5030 || anim = 5035
+trigger2 = animtime = 0
+trigger3 = vel Y > -1
+trigger3 = anim = 5030 || anim = 5035 || anim = 5051
+value = 5061
+
+[State 810, State End]
+type = changestate
+trigger1 = gethitvar(fall.recover) = 0
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 88005-ifelse((GetHitVar(animtype)=[4,5]),5,0)
+
+[State 810, State End]
+type = selfState
+trigger1 = gethitvar(fall.recover) = 1
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 5100
+;---------------------------------------------------------------------------
+;スライド電撃
+[Statedef 80024]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 0
+time = 1
+add = 20,20,40
+mul = 210,230,255
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 1
+time = 1
+add = 50,60,80
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 2
+time = 1
+add = 127,127,127
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5060)
+trigger1 = anim = 5050 && animtime = 0
+trigger1 = vel Y > -1
+value = 5060
+
+[State 810, State End]
+type = changeState
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 80050
+
+;---------------------------------------------------------------------------
+;スライド電撃無敵
+[Statedef 80025]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 0
+time = 1
+add = 20,20,40
+mul = 210,230,255
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 1
+time = 1
+add = 50,60,80
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 2
+time = 1
+add = 127,127,127
+
+[State 200, 1]
+type = nothitby
+trigger1 = enemy,teammode = single || enemy,teammode = turns
+value = SCA,AA,AT,AP
+time = 1
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5060)
+trigger1 = anim = 5050 && animtime = 0
+trigger1 = vel Y > -1
+value = 5060
+
+[State 810, State End]
+type = changeState
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 80050
+
+;---------------------------------------------------------------------------
+;きりもみ電撃スライド
+[Statedef 80026]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 0
+time = 1
+add = 20,20,40
+mul = 210,230,255
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 1
+time = 1
+add = 50,60,80
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 2
+time = 1
+add = 127,127,127
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5052
+[State 810, Grab Sound]
+type = changeanim
+triggerall = !SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5060)
+trigger1 = anim = 5050 && animtime = 0
+trigger1 = vel Y > -1
+value = 5060
+
+[State 810, State End]
+type = changeState
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 80050
+
+;---------------------------------------------------------------------------
+;きりもみ電撃スライド無敵
+[Statedef 80027]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 0
+time = 1
+add = 20,20,40
+mul = 210,230,255
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 1
+time = 1
+add = 50,60,80
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 2
+time = 1
+add = 127,127,127
+
+[State 200, 1]
+type = nothitby
+trigger1 = enemy,teammode = single || enemy,teammode = turns
+value = SCA,AA,AT,AP
+time = 1
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5052
+[State 810, Grab Sound]
+type = changeanim
+triggerall = !SelfAnimExist(5052)
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = anim = 5030 || anim = 5035
+trigger1 = animtime = 0
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5060)
+trigger1 = anim = 5050 && animtime = 0
+trigger1 = vel Y > -1
+value = 5060
+
+[State 810, State End]
+type = changeState
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 80050
+;---------------------------------------------------------------------------
+;縦きりもみ電撃吹っ飛び
+[Statedef 80028]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 0
+time = 1
+add = 20,20,40
+mul = 210,230,255
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 1
+time = 1
+add = 50,60,80
+color = 0
+invertall = 1
+[State 200, 1]
+type = palfx
+trigger1 = (time%4) = 2
+time = 1
+add = 127,127,127
+
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+time = 1
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+[State 200, 1]
+type = nothitby
+trigger1 = hitshakeover=0
+value = SCA,AA,AT,AP
+[State 5030, 2]
+type = HitVelSet
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = 1
+y = 1
+[State 5030, 2]
+type = VelSet
+triggerall = vel Y = 0
+trigger1 = time = 0
+trigger2 = hitshakeover = 0
+x = -3
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = GetHitVar(yaccel)
+
+[State 5030, 2]
+type = HitFallSet
+trigger1 = 1
+value = 1
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim2
+trigger1 = hitshakeover = 0
+trigger2 = time = 0
+value = 80011
+
+[State 810, State End]
+type = changeState
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 88000
+
+
+
+
+
+
+
+
+
+;---------------------------------------------------------------------------
+; スライドダウン
+[Statedef 80050]
+type    = L
+movetype= H
+physics = N
+juggle  = 1
+ctrl = 0
+poweradd = 0
+sprpriority = 0
+
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+time = 1
+
+[State 200, 1]
+type = changeanim2
+trigger1 = time < 15
+trigger1 != SelfAnimExist(5100)
+trigger1 != SelfAnimExist(5110)
+trigger1 != SelfAnimExist(5170)
+value = 8800
+
+[State 200, 1]
+type = changeanim
+trigger1 = SelfAnimExist(5100)
+trigger1 = SelfAnimExist(5110)
+trigger1 = SelfAnimExist(5170)
+trigger1 = time < 20
+value = 5100
+[State 200, 1]
+type = changeanim
+trigger1 = SelfAnimExist(5100)
+trigger1 = SelfAnimExist(5110)
+trigger1 = SelfAnimExist(5170)
+trigger1 = time = 20
+value = 5170
+[State 200, 1]
+type = changeanim
+triggerall = time = 20
+trigger1 = name = "Shigen_naoe" && authorname = "ohgaki"
+trigger2 = name = "sanada_ani" && authorname = "ohgaki"
+trigger3 = name = "kaede" && authorname = "ohgaki"
+value = 5160
+[State 200, 1]
+type = changeanim
+trigger1 = anim = 5170 || anim = 5160
+trigger1 = animtime = 0
+value = 5110
+
+[State 200, 1]
+type = velset
+trigger1 = time = 0
+x = vel X*1.25
+y = 0
+[State 200, 1]
+type = posset
+trigger1 = 1
+y = 0
+[State 200, 1]
+type = velmul
+trigger1 = 1
+x = 0.8
+
+[State 200, 7]
+type = selfState
+trigger1 = life = 0
+trigger1 = time = 42
+value = 5110
+[State 200, 7]
+type = selfState
+trigger1 = time = 42
+value = 5120
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+;---------------------------------------------------------------------------
+;気絶吹っ飛び
+[Statedef 80099]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = nothitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+time = 1
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+
+[State 5030, 2]
+type = VelSet
+trigger1 = hitshakeover = 0
+x = -6
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = 0.75
+
+[State 5030, 2]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist X < 0
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >=0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = animtime = 0
+trigger1 = anim = 5030 || anim = 5035
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+[State 810, Grab Sound]
+type = changeanim
+triggerall = SelfAnimExist(5060)
+trigger1 = anim = 5050 && animtime = 0
+trigger1 = vel Y > -1
+value = 5060
+
+[State 810, State End]
+type = changestate
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 80101
+;---------------------------------------------------------------------------
+;気絶吹っ飛び
+[Statedef 80100]
+type    = A
+movetype= H
+physics = N
+ctrl = 0
+poweradd = 0
+velset = 0,0
+
+[State 200, 1]
+type = nothitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+time = 1
+
+[State 5030, 2]
+type = posfreeze
+trigger1 = hitshakeover = 0
+time = 1
+
+[State 5030, 2]
+type = VelSet
+trigger1 = hitshakeover = 0
+x = -4
+y = -8
+
+[State 5030, 1]
+type = VelAdd
+trigger1 = hitshakeover
+y = 0.5
+
+[State 5030, 2]
+type = turn
+trigger1 = time = 0
+trigger1 = p2dist X < 0
+
+[State 52, 4]
+type = posset
+trigger1 = time = 0
+trigger1 = pos Y >=0
+y = 0
+
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover = 0
+value = 5030
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = hitshakeover
+trigger1 = anim = 5030
+trigger1 = SelfAnimExist(5035)
+value = 5035
+[State 810, Grab Sound]
+type = changeanim
+trigger1 = animtime = 0
+trigger1 = anim = 5030 || anim = 5035
+trigger2 = vel Y > -1
+trigger2 = anim = 5030 || anim = 5035
+value = 5050
+
+[State 810, State End]
+type = changestate
+trigger1 = pos Y >= 0
+trigger1 = vel Y > 0
+value = 80101
+;---------------------------------------------------------------------------
+; 気絶ダウン
+[Statedef 80101]
+type    = L
+movetype= H
+physics = N
+juggle  = 1
+velset = -6,0
+ctrl = 0
+poweradd = 0
+sprpriority = 0
+
+[State 200, 1]
+type = nothitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+time = 1
+
+[State 200, 1]
+type = changeanim2
+trigger1 = time < 15
+trigger1 != SelfAnimExist(5100)
+trigger1 != SelfAnimExist(5110)
+trigger1 != SelfAnimExist(5170)
+value = 8800
+
+[State 200, 1]
+type = changeanim
+trigger1 = SelfAnimExist(5100)
+trigger1 = SelfAnimExist(5110)
+trigger1 = SelfAnimExist(5170)
+trigger1 = time < 20
+value = 5100
+[State 200, 1]
+type = changeanim
+trigger1 = SelfAnimExist(5100)
+trigger1 = SelfAnimExist(5110)
+trigger1 = SelfAnimExist(5170)
+trigger1 = time = 20
+value = 5170
+[State 200, 1]
+type = changeanim
+triggerall = time = 20
+trigger1 = name = "Shigen_naoe" && authorname = "ohgaki"
+trigger2 = name = "sanada_ani" && authorname = "ohgaki"
+trigger3 = name = "kaede" && authorname = "ohgaki"
+value = 5160
+[State 200, 1]
+type = changeanim
+trigger1 = anim = 5170 || anim = 5160
+trigger1 = animtime = 0
+value = 5110
+
+[State 200, 1]
+type = posset
+trigger1 = 1
+y = 0
+[State 200, 1]
+type = velmul
+trigger1 = 1
+x = 0.8
+
+[State 200, 7]
+type = selfState
+trigger1 = life = 0
+trigger1 = time = 42
+value = 5110
+[State 200, 7]
+type = changestate
+trigger1 = time = 42
+value = 80102
+
+;---------------------------------------------------------------------------
+; 気絶起き上がり
+[Statedef 80102]
+type    = L
+movetype= H
+physics = N
+juggle  = 1
+velset = 0,0
+ctrl = 0
+poweradd = 0
+sprpriority = 0
+
+[State 200, 1]
+type = nothitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+time = 1
+
+[State 200, 1]
+type = nothitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+
+[State 200, 1]
+type = changeanim
+trigger1 = time = 0
+trigger1 = SelfAnimExist(5120)
+value = 5120
+[State 200, 1]
+type = changeanim2
+trigger1 = time = 0
+trigger1 = SelfAnimExist(5120)=0
+value = 8801
+
+[State 200, 7]
+type = changeState
+trigger1 = animtime = 0
+value = 80103
+
+;---------------------------------------------------------------------------
+; 気絶
+[Statedef 80103]
+type    = S
+movetype= I
+physics = N
+juggle  = 1
+velset = 0,0
+ctrl = 0
+poweradd = 0
+sprpriority = 0
+
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+
+[State 200, 1]
+type = changeanim
+trigger1 = time = 0
+trigger1 = SelfAnimExist(5300)
+value = 5300
+[State 200, 1]
+type = changeanim2
+trigger1 = time = 0
+trigger1 = SelfAnimExist(5300)=0
+value = 8802
+
+[State 200, 7]
+type = selfState
+trigger1 = teammode = single || teammode = turns
+trigger1 = enemy,teammode = single || enemy,teammode = turns
+trigger1 = time = 180 - enemy,var(15)
+trigger2 = time = 180
+value = 0
+ctrl = 1
+
+;---------------------------------------------------------------------------
+;ガクラ
+[Statedef 80200]
+type    = U
+movetype= H
+physics = N
+poweradd= 0
+ctrl = 0
+velset = 0,0
+sprpriority = 0
+
+[State 200, 1]
+type = changeanim
+trigger1 = SelfAnimExist(150)
+trigger1 = SelfAnimExist(151)
+value = 150+(statetype=C)
+[State 200, 1]
+type = changeanim2
+trigger1 = !SelfAnimExist(150)
+trigger1 = !SelfAnimExist(151)
+value = 8810
+
+[State 200, 1]
+type = nothitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+
+[State 200, 1]
+type = changestate
+trigger1 = hitshakeover
+value = 80201
+
+;---------------------------------------------------------------------------
+;ガクラ
+[Statedef 80201]
+type    = S
+movetype= I
+physics = N
+poweradd= 0
+ctrl = 0
+velset = 0,0
+sprpriority = 0
+
+[State 191, 3]
+type = playsnd
+trigger1 = time = 0
+trigger1 = authorname = "ohgaki"
+value = 5910,0
+persistent=0
+[State 191, 3]
+type = playsnd
+trigger1 = time = 0
+trigger1 = authorname = "HAL"
+value = 5005,0
+persistent=0
+[State 1000]
+type = PlaySnd
+trigger1 = time = 0
+trigger1 = authorname = "abuhachi" && name = "Lee Rekka"
+value = 0,14
+persistent=0
+[State 1000]
+type = PlaySnd
+trigger1 = time = 0
+trigger1 = authorname = "abuhachi" && name = "Hyo Amano"
+value = 0,16
+persistent=0
+[State 1000]
+type = PlaySnd
+trigger1 = time = 0
+trigger1 = authorname = "abuhachi" && name = "Musashi Akatsuki"
+value = 5000,4
+persistent=0
+[State 1000]
+type = PlaySnd
+trigger1 = time = 0
+trigger1 = authorname = "abuhachi" && name = "Kouryu"
+value = 0,22
+persistent=0
+
+[State 200, 1]
+type = changeanim
+trigger1 = SelfAnimExist(5910)
+trigger1 = SelfAnimExist(5911)
+trigger1 = time = 0
+value = 5910
+persistent=0
+[State 200, 1]
+type = changeanim2
+trigger1 = !SelfAnimExist(5910)
+trigger1 = !SelfAnimExist(5911)
+trigger1 = time = 0
+value = 8811
+persistent=0
+
+[State 230, 1]
+type = BGpalfx
+trigger1 = time = 0
+add = 256,256,256
+time = 2
+persistent=0
+
+[State 200, 1]
+type = hitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+
+[State 200, 1]
+type = changeanim
+trigger1 = anim = 5910
+trigger1 = time = 18
+value = 5911
+
+[State 200, 1]
+type = changeanim
+trigger1 = anim = 5911
+trigger1 = animtime = 0
+value = 0
+
+[State 200, 1]
+type = selfstate
+trigger1 = anim = 8811
+trigger1 = animtime = 0
+trigger2 = time >= 30
+value = 0
+ctrl = 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+;---------------------------------------------------------------------------
+; うつぶせダウン接触
+[Statedef 88000]
+type    = L
+movetype= H
+physics = N
+juggle  = 1
+ctrl = 0
+poweradd = 0
+sprpriority = 0
+
+[State 5100, EnvShake]
+type = FallEnvShake
+trigger1 = Time = 0
+[State 5100, 9]
+type = HitFallDamage
+trigger1 = Time = 0
+
+[State 200, 1]
+type = changeanim
+triggerall = time = 0
+trigger1 = SelfAnimExist(5101)
+value = 5101
+
+[State 200, 1]
+type = changeanim
+triggerall = time = 0
+trigger1 = anim != 5101
+value = 5100
+
+[State 200, 1]
+type = posfreeze
+trigger1 = 1
+time = 1
+[State 200, 1]
+type = posset
+trigger1 = 1
+y = 0
+
+[State 200, 7]
+type = changeState
+trigger1 = time = 6
+value = 88001
+
+;---------------------------------------------------------------------------
+; うつぶせダウンバウンド
+[Statedef 88001]
+type    = L
+movetype= H
+physics = N
+juggle  = 1
+ctrl = 0
+poweradd = 0
+sprpriority = 0
+
+[State 200, 1]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[State 200, 1]
+type = changeanim
+triggerall = time = 0
+trigger1 = SelfAnimExist(5161)
+value = 5161
+[State 200, 1]
+type = changeanim
+trigger1 = time = 0
+trigger1 = Anim !=5161
+value = 5160
+
+[State 5101, 3]
+type = HitFallVel
+trigger1 = Time = 0
+
+[State 5100, 6] ;Reduce speed
+type = VelMul
+trigger1 = time = 0
+x = 0.75
+
+[State 5100, 6] ;Reduce speed
+type = veladd
+trigger1 = 1
+y = 0.5
+
+[State 200, 7]
+type = ChangeState
+trigger1 = pos y >= 0
+trigger1 = vel y > 0
+value = 88002
+
+;---------------------------------------------------------------------------
+; うつぶせダウン
+[Statedef 88002]
+type    = L
+movetype= H
+physics = N
+juggle  = 1
+velset = 0,0
+ctrl = 0
+poweradd = 0
+sprpriority = 0
+
+[State 200, 1]
+type = changeanim
+triggerall = time = 0
+trigger1 = SelfAnimExist(5171)
+value = 5171
+
+[State 200, 1]
+type = changeanim
+trigger1 = !SelfAnimExist(5171)
+trigger1 = SelfAnimExist(5111)
+trigger1 = time = 0 
+trigger2 = time = 10 || animtime = 0
+trigger2 = anim = 5171
+value = 5111
+
+[State 200, 1]
+type = posset
+trigger1 = 1
+y = 0
+
+[State 200, 1]
+type = changeanim
+triggerall = !SelfAnimExist(5171)
+trigger1 = anim != 5171
+trigger1 = anim != 5111
+trigger1 = SelfAnimExist(5170)
+trigger1 = time = 0
+value = 5170
+[State 200, 1]
+type = changeanim
+triggerall = anim != 5171
+triggerall = anim != 5111
+triggerall = anim != 5110
+trigger1 = anim = 5170
+trigger1 = animtime = 0
+trigger2 = SelfAnimExist(5170)=0
+value = 5110
+
+[State 200, 1]
+type = posset
+trigger1 = 1
+y = 0
+[State 200, 1]
+type = velset
+trigger1 = 1
+x = 0
+y = 0
+
+[State 200, 7]
+type = selfState
+trigger1 = time >= 1 && !alive
+trigger1 = (anim!=[5110,5111])&&(anim!=[5170,5171])
+value = 5110
+[State 200, 7]
+type = selfState
+trigger1 = time >= 1 && !alive
+trigger1 = anim = [5110,5111]
+value = 5150
+[State 200, 7]
+type = selfState
+trigger1 = time = 20
+value = 5120
+
+
+;---------------------------------------------------------------------------
+; ダウン接触
+[Statedef 88005]
+type    = L
+movetype= H
+physics = N
+juggle  = 1
+ctrl = 0
+poweradd = 0
+sprpriority = 0
+
+[State 5100, EnvShake]
+type = FallEnvShake
+trigger1 = Time = 0
+[State 5100, 9]
+type = HitFallDamage
+trigger1 = Time = 0
+
+[State 200, 1]
+type = changeanim
+trigger1 = time = 0
+value = 5100
+
+[State 200, 1]
+type = posfreeze
+trigger1 = 1
+time = 1
+[State 200, 1]
+type = posset
+trigger1 = 1
+y = 0
+
+[State 200, 7]
+type = changeState
+trigger1 = time = 6
+value = 88006
+
+;---------------------------------------------------------------------------
+; ダウンバウンド
+[Statedef 88006]
+type    = L
+movetype= H
+physics = N
+juggle  = 1
+ctrl = 0
+poweradd = 0
+sprpriority = 0
+
+[State 200, 1]
+type = posset
+trigger1 = time = 0
+y = 0
+
+[State 200, 1]
+type = changeanim
+trigger1 = time = 0
+value = 5160
+
+[State 5101, 3]
+type = HitFallVel
+trigger1 = Time = 0
+
+[State 5100, 6] ;Reduce speed
+type = VelMul
+trigger1 = time = 0
+x = 0.75
+
+[State 5100, 6] ;Reduce speed
+type = veladd
+trigger1 = 1
+y = 0.5
+
+[State 200, 7]
+type = ChangeState
+trigger1 = pos y >= 0
+trigger1 = vel y > 0
+value = 88007
+
+;---------------------------------------------------------------------------
+; ダウン
+[Statedef 88007]
+type    = L
+movetype= H
+physics = N
+juggle  = 1
+velset = 0,0
+ctrl = 0
+poweradd = 0
+sprpriority = 0
+
+[State 200, 1]
+type = posset
+trigger1 = 1
+y = 0
+
+[State 200, 1]
+type = changeanim
+trigger1 = SelfAnimExist(5170)
+trigger1 = time = 0
+value = 5170
+[State 200, 1]
+type = changeanim
+triggerall = anim != 5110
+trigger1 = anim = 5170
+trigger1 = animtime = 0
+trigger2 = !SelfAnimExist(5170)
+value = 5110
+
+[State 200, 1]
+type = posset
+trigger1 = 1
+y = 0
+[State 200, 1]
+type = velset
+trigger1 = 1
+x = 0
+y = 0
+
+[State 200, 7]
+type = selfState
+trigger1 = time >= 1 && !alive
+trigger1 = (anim!=[5110,5111])&&(anim!=[5170,5171])
+value = 5110
+[State 200, 7]
+type = selfState
+trigger1 = time >= 1 && !alive
+trigger1 = anim = [5110,5111]
+value = 5150
+[State 200, 7]
+type = selfState
+trigger1 = time = 20
+value = 5120

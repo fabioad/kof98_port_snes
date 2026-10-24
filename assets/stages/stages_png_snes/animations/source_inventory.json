@@ -1,0 +1,5130 @@
+[
+  {
+    "stage": "KOF98-JpnStreetStage",
+    "group": 20,
+    "def_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-JpnStreetStage.def",
+    "sff_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-JpnStreetStage.sff",
+    "def_sha256": "10cad730bba1527e99e203e2a12eaa3e99397e10c829b0852b53a5f2a3d14dbd",
+    "sff_sha256": "4a968e36ab1543e6557c9c5f2001b9fd833fe282c50fd9a201cc0f597037d091",
+    "action": [
+      {
+        "section": "Begin action 20",
+        "line": 234,
+        "comment": "背景・左・アニメーション",
+        "values": {},
+        "frames": [
+          {
+            "group": 20,
+            "number": 0,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 235
+          },
+          {
+            "group": 20,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 236
+          },
+          {
+            "group": 20,
+            "number": 2,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 237
+          },
+          {
+            "group": 20,
+            "number": 3,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 238
+          },
+          {
+            "group": 20,
+            "number": 4,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 239
+          },
+          {
+            "group": 20,
+            "number": 5,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 240
+          },
+          {
+            "group": 20,
+            "number": 6,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 241
+          },
+          {
+            "group": 20,
+            "number": 7,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 242
+          }
+        ]
+      }
+    ],
+    "bgs": [
+      {
+        "section": "BG 20",
+        "line": 225,
+        "comment": "背景・左",
+        "values": {
+          "type": "anim",
+          "actionno": "20",
+          "layerno": "0",
+          "start": "1,240",
+          "delta": "1,.8",
+          "trans": "none",
+          "mask": "1"
+        },
+        "frames": []
+      }
+    ],
+    "sprites": [
+      {
+        "group": 20,
+        "number": 0,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          377,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          34,
+          304,
+          190
+        ],
+        "reference": "references/JpnStreet/20-0.png"
+      },
+      {
+        "group": 20,
+        "number": 1,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          377,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          34,
+          304,
+          190
+        ],
+        "reference": "references/JpnStreet/20-1.png"
+      },
+      {
+        "group": 20,
+        "number": 2,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          377,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          34,
+          304,
+          190
+        ],
+        "reference": "references/JpnStreet/20-2.png"
+      },
+      {
+        "group": 20,
+        "number": 3,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          377,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          34,
+          304,
+          190
+        ],
+        "reference": "references/JpnStreet/20-3.png"
+      },
+      {
+        "group": 20,
+        "number": 4,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          377,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          34,
+          304,
+          190
+        ],
+        "reference": "references/JpnStreet/20-4.png"
+      },
+      {
+        "group": 20,
+        "number": 5,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          377,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          34,
+          304,
+          190
+        ],
+        "reference": "references/JpnStreet/20-5.png"
+      },
+      {
+        "group": 20,
+        "number": 6,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          377,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          34,
+          304,
+          190
+        ],
+        "reference": "references/JpnStreet/20-6.png"
+      },
+      {
+        "group": 20,
+        "number": 7,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          377,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          34,
+          304,
+          190
+        ],
+        "reference": "references/JpnStreet/20-7.png"
+      }
+    ]
+  },
+  {
+    "stage": "KOF98-JpnStreetStage",
+    "group": 25,
+    "def_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-JpnStreetStage.def",
+    "sff_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-JpnStreetStage.sff",
+    "def_sha256": "10cad730bba1527e99e203e2a12eaa3e99397e10c829b0852b53a5f2a3d14dbd",
+    "sff_sha256": "4a968e36ab1543e6557c9c5f2001b9fd833fe282c50fd9a201cc0f597037d091",
+    "action": [
+      {
+        "section": "Begin action 25",
+        "line": 254,
+        "comment": "背景・中央・アニメーション",
+        "values": {},
+        "frames": [
+          {
+            "group": 25,
+            "number": 0,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 255
+          },
+          {
+            "group": 25,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 256
+          },
+          {
+            "group": 25,
+            "number": 2,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 257
+          },
+          {
+            "group": 25,
+            "number": 3,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 258
+          },
+          {
+            "group": 25,
+            "number": 4,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 259
+          },
+          {
+            "group": 25,
+            "number": 5,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 260
+          },
+          {
+            "group": 25,
+            "number": 6,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 261
+          },
+          {
+            "group": 25,
+            "number": 7,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 262
+          }
+        ]
+      }
+    ],
+    "bgs": [
+      {
+        "section": "BG 25",
+        "line": 245,
+        "comment": "背景・中央",
+        "values": {
+          "type": "anim",
+          "actionno": "25",
+          "layerno": "0",
+          "start": "1,240",
+          "delta": "1,.8",
+          "trans": "none",
+          "mask": "1"
+        },
+        "frames": []
+      }
+    ],
+    "sprites": [
+      {
+        "group": 25,
+        "number": 0,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          80,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          77,
+          296,
+          167
+        ],
+        "reference": "references/JpnStreet/25-0.png"
+      },
+      {
+        "group": 25,
+        "number": 1,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          80,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          77,
+          295,
+          167
+        ],
+        "reference": "references/JpnStreet/25-1.png"
+      },
+      {
+        "group": 25,
+        "number": 2,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          80,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          77,
+          295,
+          167
+        ],
+        "reference": "references/JpnStreet/25-2.png"
+      },
+      {
+        "group": 25,
+        "number": 3,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          80,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          77,
+          295,
+          167
+        ],
+        "reference": "references/JpnStreet/25-3.png"
+      },
+      {
+        "group": 25,
+        "number": 4,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          80,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          77,
+          296,
+          167
+        ],
+        "reference": "references/JpnStreet/25-4.png"
+      },
+      {
+        "group": 25,
+        "number": 5,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          80,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          77,
+          296,
+          167
+        ],
+        "reference": "references/JpnStreet/25-5.png"
+      },
+      {
+        "group": 25,
+        "number": 6,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          80,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          77,
+          296,
+          167
+        ],
+        "reference": "references/JpnStreet/25-6.png"
+      },
+      {
+        "group": 25,
+        "number": 7,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          80,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          77,
+          296,
+          167
+        ],
+        "reference": "references/JpnStreet/25-7.png"
+      }
+    ]
+  },
+  {
+    "stage": "KOF98-JpnStreetStage",
+    "group": 30,
+    "def_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-JpnStreetStage.def",
+    "sff_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-JpnStreetStage.sff",
+    "def_sha256": "10cad730bba1527e99e203e2a12eaa3e99397e10c829b0852b53a5f2a3d14dbd",
+    "sff_sha256": "4a968e36ab1543e6557c9c5f2001b9fd833fe282c50fd9a201cc0f597037d091",
+    "action": [
+      {
+        "section": "Begin action 30",
+        "line": 274,
+        "comment": "背景・右・アニメーション",
+        "values": {},
+        "frames": [
+          {
+            "group": 30,
+            "number": 0,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 275
+          },
+          {
+            "group": 30,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 276
+          },
+          {
+            "group": 30,
+            "number": 2,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 277
+          },
+          {
+            "group": 30,
+            "number": 3,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 278
+          },
+          {
+            "group": 30,
+            "number": 4,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 279
+          },
+          {
+            "group": 30,
+            "number": 5,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 280
+          },
+          {
+            "group": 30,
+            "number": 6,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 281
+          },
+          {
+            "group": 30,
+            "number": 7,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 282
+          }
+        ]
+      }
+    ],
+    "bgs": [
+      {
+        "section": "BG 30",
+        "line": 265,
+        "comment": "背景・右",
+        "values": {
+          "type": "anim",
+          "actionno": "30",
+          "layerno": "0",
+          "start": "1,240",
+          "delta": "1,.8",
+          "trans": "none",
+          "mask": "1"
+        },
+        "frames": []
+      }
+    ],
+    "sprites": [
+      {
+        "group": 30,
+        "number": 0,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          -71,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          85,
+          304,
+          171
+        ],
+        "reference": "references/JpnStreet/30-0.png"
+      },
+      {
+        "group": 30,
+        "number": 1,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          -71,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          85,
+          304,
+          171
+        ],
+        "reference": "references/JpnStreet/30-1.png"
+      },
+      {
+        "group": 30,
+        "number": 2,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          -71,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          85,
+          304,
+          171
+        ],
+        "reference": "references/JpnStreet/30-2.png"
+      },
+      {
+        "group": 30,
+        "number": 3,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          -71,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          85,
+          304,
+          171
+        ],
+        "reference": "references/JpnStreet/30-3.png"
+      },
+      {
+        "group": 30,
+        "number": 4,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          -71,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          86,
+          304,
+          171
+        ],
+        "reference": "references/JpnStreet/30-4.png"
+      },
+      {
+        "group": 30,
+        "number": 5,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          -71,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          85,
+          304,
+          171
+        ],
+        "reference": "references/JpnStreet/30-5.png"
+      },
+      {
+        "group": 30,
+        "number": 6,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          -71,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          85,
+          304,
+          171
+        ],
+        "reference": "references/JpnStreet/30-6.png"
+      },
+      {
+        "group": 30,
+        "number": 7,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          -71,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          85,
+          304,
+          171
+        ],
+        "reference": "references/JpnStreet/30-7.png"
+      }
+    ]
+  },
+  {
+    "stage": "KOF98-JpnStreetStage",
+    "group": 45,
+    "def_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-JpnStreetStage.def",
+    "sff_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-JpnStreetStage.sff",
+    "def_sha256": "10cad730bba1527e99e203e2a12eaa3e99397e10c829b0852b53a5f2a3d14dbd",
+    "sff_sha256": "4a968e36ab1543e6557c9c5f2001b9fd833fe282c50fd9a201cc0f597037d091",
+    "action": [
+      {
+        "section": "Begin action 45",
+        "line": 428,
+        "comment": "背景・学生・アニメーション",
+        "values": {},
+        "frames": [
+          {
+            "group": 45,
+            "number": 0,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 11,
+            "flags": [],
+            "line": 429
+          },
+          {
+            "group": 45,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 11,
+            "flags": [],
+            "line": 430
+          },
+          {
+            "group": 45,
+            "number": 2,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 11,
+            "flags": [],
+            "line": 431
+          },
+          {
+            "group": 45,
+            "number": 3,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 11,
+            "flags": [],
+            "line": 432
+          }
+        ]
+      }
+    ],
+    "bgs": [
+      {
+        "section": "BG 45",
+        "line": 419,
+        "comment": "背景・学生",
+        "values": {
+          "type": "anim",
+          "actionno": "45",
+          "layerno": "0",
+          "start": "1,240",
+          "delta": "1,.8",
+          "trans": "none",
+          "mask": "1"
+        },
+        "frames": []
+      }
+    ],
+    "sprites": [
+      {
+        "group": 45,
+        "number": 0,
+        "width": 116,
+        "height": 126,
+        "axis": [
+          -145,
+          163
+        ],
+        "opaque_bbox": [
+          15,
+          19,
+          92,
+          107
+        ],
+        "reference": "references/JpnStreet/45-0.png"
+      },
+      {
+        "group": 45,
+        "number": 1,
+        "width": 116,
+        "height": 126,
+        "axis": [
+          -145,
+          163
+        ],
+        "opaque_bbox": [
+          14,
+          19,
+          92,
+          107
+        ],
+        "reference": "references/JpnStreet/45-1.png"
+      },
+      {
+        "group": 45,
+        "number": 2,
+        "width": 116,
+        "height": 126,
+        "axis": [
+          -145,
+          163
+        ],
+        "opaque_bbox": [
+          14,
+          18,
+          92,
+          107
+        ],
+        "reference": "references/JpnStreet/45-2.png"
+      },
+      {
+        "group": 45,
+        "number": 3,
+        "width": 116,
+        "height": 126,
+        "axis": [
+          -145,
+          163
+        ],
+        "opaque_bbox": [
+          16,
+          19,
+          92,
+          107
+        ],
+        "reference": "references/JpnStreet/45-3.png"
+      }
+    ]
+  },
+  {
+    "stage": "KOF98-Mid.EastStage",
+    "group": 20,
+    "def_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-Mid.EastStage.def",
+    "sff_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-Mid.EastStage.sff",
+    "def_sha256": "7a28ca57d811ecc4bd50c9a3cdffe231db4c52b1813bdce7c308522fc1f0a538",
+    "sff_sha256": "cf7b7194b1d599f671efbfc656a4b1be6400e79b2d43488d992ef38a204441b6",
+    "action": [
+      {
+        "section": "Begin action 20",
+        "line": 140,
+        "comment": "背景・店の親父・アニメーション",
+        "values": {},
+        "frames": [
+          {
+            "group": 20,
+            "number": 0,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 141
+          },
+          {
+            "group": 20,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 142
+          },
+          {
+            "group": 20,
+            "number": 2,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 143
+          },
+          {
+            "group": 20,
+            "number": 3,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 144
+          },
+          {
+            "group": 20,
+            "number": 4,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 145
+          },
+          {
+            "group": 20,
+            "number": 5,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 146
+          },
+          {
+            "group": 20,
+            "number": 6,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 147
+          },
+          {
+            "group": 20,
+            "number": 7,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 148
+          }
+        ]
+      }
+    ],
+    "bgs": [
+      {
+        "section": "BG 20",
+        "line": 131,
+        "comment": "背景・店の親父",
+        "values": {
+          "type": "anim",
+          "actionno": "20",
+          "layerno": "0",
+          "start": "0,240",
+          "delta": "1,.8",
+          "trans": "none",
+          "mask": "1"
+        },
+        "frames": []
+      }
+    ],
+    "sprites": [
+      {
+        "group": 20,
+        "number": 0,
+        "width": 99,
+        "height": 128,
+        "axis": [
+          -226,
+          169
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          99,
+          128
+        ],
+        "reference": "references/Mid.East/20-0.png"
+      },
+      {
+        "group": 20,
+        "number": 1,
+        "width": 99,
+        "height": 128,
+        "axis": [
+          -226,
+          169
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          99,
+          128
+        ],
+        "reference": "references/Mid.East/20-1.png"
+      },
+      {
+        "group": 20,
+        "number": 2,
+        "width": 99,
+        "height": 128,
+        "axis": [
+          -226,
+          169
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          99,
+          128
+        ],
+        "reference": "references/Mid.East/20-2.png"
+      },
+      {
+        "group": 20,
+        "number": 3,
+        "width": 99,
+        "height": 128,
+        "axis": [
+          -226,
+          169
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          99,
+          128
+        ],
+        "reference": "references/Mid.East/20-3.png"
+      },
+      {
+        "group": 20,
+        "number": 4,
+        "width": 99,
+        "height": 128,
+        "axis": [
+          -226,
+          169
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          99,
+          128
+        ],
+        "reference": "references/Mid.East/20-4.png"
+      },
+      {
+        "group": 20,
+        "number": 5,
+        "width": 99,
+        "height": 128,
+        "axis": [
+          -226,
+          169
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          99,
+          128
+        ],
+        "reference": "references/Mid.East/20-5.png"
+      },
+      {
+        "group": 20,
+        "number": 6,
+        "width": 99,
+        "height": 128,
+        "axis": [
+          -226,
+          169
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          99,
+          128
+        ],
+        "reference": "references/Mid.East/20-6.png"
+      },
+      {
+        "group": 20,
+        "number": 7,
+        "width": 99,
+        "height": 128,
+        "axis": [
+          -226,
+          169
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          99,
+          128
+        ],
+        "reference": "references/Mid.East/20-7.png"
+      }
+    ]
+  },
+  {
+    "stage": "KOF98-Mid.EastStage",
+    "group": 25,
+    "def_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-Mid.EastStage.def",
+    "sff_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-Mid.EastStage.sff",
+    "def_sha256": "7a28ca57d811ecc4bd50c9a3cdffe231db4c52b1813bdce7c308522fc1f0a538",
+    "sff_sha256": "cf7b7194b1d599f671efbfc656a4b1be6400e79b2d43488d992ef38a204441b6",
+    "action": [
+      {
+        "section": "Begin action 25",
+        "line": 160,
+        "comment": "背景・観客・左・アニメーション",
+        "values": {},
+        "frames": [
+          {
+            "group": 25,
+            "number": 0,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 161
+          },
+          {
+            "group": 25,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 162
+          },
+          {
+            "group": 25,
+            "number": 2,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 163
+          },
+          {
+            "group": 25,
+            "number": 3,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 164
+          },
+          {
+            "group": 25,
+            "number": 4,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 165
+          },
+          {
+            "group": 25,
+            "number": 5,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 166
+          },
+          {
+            "group": 25,
+            "number": 6,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 167
+          },
+          {
+            "group": 25,
+            "number": 7,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 168
+          }
+        ]
+      }
+    ],
+    "bgs": [
+      {
+        "section": "BG 25",
+        "line": 151,
+        "comment": "背景・観客・左",
+        "values": {
+          "type": "anim",
+          "actionno": "25",
+          "layerno": "0",
+          "start": "0,240",
+          "delta": "1,.8",
+          "trans": "none",
+          "mask": "1"
+        },
+        "frames": []
+      }
+    ],
+    "sprites": [
+      {
+        "group": 25,
+        "number": 0,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          376,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          80,
+          304,
+          176
+        ],
+        "reference": "references/Mid.East/25-0.png"
+      },
+      {
+        "group": 25,
+        "number": 1,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          376,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          80,
+          304,
+          176
+        ],
+        "reference": "references/Mid.East/25-1.png"
+      },
+      {
+        "group": 25,
+        "number": 2,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          376,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          80,
+          304,
+          176
+        ],
+        "reference": "references/Mid.East/25-2.png"
+      },
+      {
+        "group": 25,
+        "number": 3,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          376,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          80,
+          304,
+          176
+        ],
+        "reference": "references/Mid.East/25-3.png"
+      },
+      {
+        "group": 25,
+        "number": 4,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          376,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          80,
+          304,
+          176
+        ],
+        "reference": "references/Mid.East/25-4.png"
+      },
+      {
+        "group": 25,
+        "number": 5,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          376,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          80,
+          304,
+          176
+        ],
+        "reference": "references/Mid.East/25-5.png"
+      },
+      {
+        "group": 25,
+        "number": 6,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          376,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          80,
+          304,
+          176
+        ],
+        "reference": "references/Mid.East/25-6.png"
+      },
+      {
+        "group": 25,
+        "number": 7,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          376,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          80,
+          304,
+          176
+        ],
+        "reference": "references/Mid.East/25-7.png"
+      }
+    ]
+  },
+  {
+    "stage": "KOF98-Mid.EastStage",
+    "group": 30,
+    "def_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-Mid.EastStage.def",
+    "sff_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-Mid.EastStage.sff",
+    "def_sha256": "7a28ca57d811ecc4bd50c9a3cdffe231db4c52b1813bdce7c308522fc1f0a538",
+    "sff_sha256": "cf7b7194b1d599f671efbfc656a4b1be6400e79b2d43488d992ef38a204441b6",
+    "action": [
+      {
+        "section": "Begin action 30",
+        "line": 180,
+        "comment": "背景・観客・中央・アニメーション",
+        "values": {},
+        "frames": [
+          {
+            "group": 30,
+            "number": 0,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 181
+          },
+          {
+            "group": 30,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 182
+          },
+          {
+            "group": 30,
+            "number": 2,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 183
+          },
+          {
+            "group": 30,
+            "number": 3,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 184
+          },
+          {
+            "group": 30,
+            "number": 4,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 185
+          },
+          {
+            "group": 30,
+            "number": 5,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 186
+          },
+          {
+            "group": 30,
+            "number": 6,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 187
+          },
+          {
+            "group": 30,
+            "number": 7,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 188
+          }
+        ]
+      }
+    ],
+    "bgs": [
+      {
+        "section": "BG 30",
+        "line": 171,
+        "comment": "背景・観客・中央",
+        "values": {
+          "type": "anim",
+          "actionno": "30",
+          "layerno": "0",
+          "start": "0,240",
+          "delta": "1,.8",
+          "trans": "none",
+          "mask": "1"
+        },
+        "frames": []
+      }
+    ],
+    "sprites": [
+      {
+        "group": 30,
+        "number": 0,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          123,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          80,
+          251,
+          176
+        ],
+        "reference": "references/Mid.East/30-0.png"
+      },
+      {
+        "group": 30,
+        "number": 1,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          123,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          80,
+          251,
+          176
+        ],
+        "reference": "references/Mid.East/30-1.png"
+      },
+      {
+        "group": 30,
+        "number": 2,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          123,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          80,
+          251,
+          176
+        ],
+        "reference": "references/Mid.East/30-2.png"
+      },
+      {
+        "group": 30,
+        "number": 3,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          123,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          80,
+          251,
+          176
+        ],
+        "reference": "references/Mid.East/30-3.png"
+      },
+      {
+        "group": 30,
+        "number": 4,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          123,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          80,
+          251,
+          176
+        ],
+        "reference": "references/Mid.East/30-4.png"
+      },
+      {
+        "group": 30,
+        "number": 5,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          123,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          80,
+          251,
+          176
+        ],
+        "reference": "references/Mid.East/30-5.png"
+      },
+      {
+        "group": 30,
+        "number": 6,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          123,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          80,
+          251,
+          176
+        ],
+        "reference": "references/Mid.East/30-6.png"
+      },
+      {
+        "group": 30,
+        "number": 7,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          123,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          80,
+          251,
+          176
+        ],
+        "reference": "references/Mid.East/30-7.png"
+      }
+    ]
+  },
+  {
+    "stage": "KOF98-ChinaStage",
+    "group": 15,
+    "def_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-ChinaStage.def",
+    "sff_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-ChinaStage.sff",
+    "def_sha256": "3ea31f26de9e14954c4532a0d3745c41f43b13eac5fd077b1e5a357ea907a8a0",
+    "sff_sha256": "53e79f6120ae6bf007760120eb3053b8a6b2d5ec74011a0ef5721465b7261985",
+    "action": [
+      {
+        "section": "Begin action 15",
+        "line": 132,
+        "comment": "船頭・アニメーション",
+        "values": {},
+        "frames": [
+          {
+            "group": 15,
+            "number": 0,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 133
+          },
+          {
+            "group": 15,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 134
+          },
+          {
+            "group": 15,
+            "number": 2,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 135
+          },
+          {
+            "group": 15,
+            "number": 3,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 136
+          },
+          {
+            "group": 15,
+            "number": 4,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 137
+          },
+          {
+            "group": 15,
+            "number": 5,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 138
+          },
+          {
+            "group": 15,
+            "number": 6,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 139
+          },
+          {
+            "group": 15,
+            "number": 7,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 140
+          },
+          {
+            "group": 15,
+            "number": 8,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 141
+          },
+          {
+            "group": 15,
+            "number": 9,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 142
+          },
+          {
+            "group": 15,
+            "number": 10,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 20,
+            "flags": [],
+            "line": 143
+          },
+          {
+            "group": 15,
+            "number": 11,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 14,
+            "flags": [],
+            "line": 144
+          },
+          {
+            "group": 15,
+            "number": 12,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 14,
+            "flags": [],
+            "line": 145
+          },
+          {
+            "group": 15,
+            "number": 13,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 17,
+            "flags": [],
+            "line": 146
+          },
+          {
+            "group": 15,
+            "number": 14,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 19,
+            "flags": [],
+            "line": 147
+          },
+          {
+            "group": 15,
+            "number": 15,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 11,
+            "flags": [],
+            "line": 148
+          },
+          {
+            "group": 15,
+            "number": 16,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 149
+          },
+          {
+            "group": 15,
+            "number": 17,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 150
+          },
+          {
+            "group": 15,
+            "number": 18,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 151
+          },
+          {
+            "group": 15,
+            "number": 19,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 152
+          }
+        ]
+      }
+    ],
+    "bgs": [
+      {
+        "section": "BG 15",
+        "line": 122,
+        "comment": "背景・船頭",
+        "values": {
+          "type": "anim",
+          "actionno": "15",
+          "layerno": "0",
+          "start": "-300,232",
+          "delta": "1,.8",
+          "trans": "none",
+          "mask": "1",
+          "sin.y": "-3, 220"
+        },
+        "frames": []
+      }
+    ],
+    "sprites": [
+      {
+        "group": 15,
+        "number": 0,
+        "width": 109,
+        "height": 112,
+        "axis": [
+          74,
+          165
+        ],
+        "opaque_bbox": [
+          13,
+          16,
+          85,
+          92
+        ],
+        "reference": "references/China/15-0.png"
+      },
+      {
+        "group": 15,
+        "number": 1,
+        "width": 100,
+        "height": 100,
+        "axis": [
+          68,
+          159
+        ],
+        "opaque_bbox": [
+          7,
+          11,
+          87,
+          86
+        ],
+        "reference": "references/China/15-1.png"
+      },
+      {
+        "group": 15,
+        "number": 2,
+        "width": 100,
+        "height": 100,
+        "axis": [
+          71,
+          159
+        ],
+        "opaque_bbox": [
+          10,
+          13,
+          86,
+          86
+        ],
+        "reference": "references/China/15-2.png"
+      },
+      {
+        "group": 15,
+        "number": 3,
+        "width": 88,
+        "height": 100,
+        "axis": [
+          70,
+          157
+        ],
+        "opaque_bbox": [
+          9,
+          19,
+          80,
+          84
+        ],
+        "reference": "references/China/15-3.png"
+      },
+      {
+        "group": 15,
+        "number": 4,
+        "width": 91,
+        "height": 97,
+        "axis": [
+          71,
+          154
+        ],
+        "opaque_bbox": [
+          10,
+          23,
+          79,
+          81
+        ],
+        "reference": "references/China/15-4.png"
+      },
+      {
+        "group": 15,
+        "number": 5,
+        "width": 88,
+        "height": 83,
+        "axis": [
+          71,
+          142
+        ],
+        "opaque_bbox": [
+          10,
+          14,
+          76,
+          69
+        ],
+        "reference": "references/China/15-5.png"
+      },
+      {
+        "group": 15,
+        "number": 6,
+        "width": 83,
+        "height": 88,
+        "axis": [
+          74,
+          146
+        ],
+        "opaque_bbox": [
+          13,
+          19,
+          70,
+          73
+        ],
+        "reference": "references/China/15-6.png"
+      },
+      {
+        "group": 15,
+        "number": 7,
+        "width": 72,
+        "height": 83,
+        "axis": [
+          73,
+          141
+        ],
+        "opaque_bbox": [
+          12,
+          19,
+          62,
+          68
+        ],
+        "reference": "references/China/15-7.png"
+      },
+      {
+        "group": 15,
+        "number": 8,
+        "width": 79,
+        "height": 84,
+        "axis": [
+          74,
+          142
+        ],
+        "opaque_bbox": [
+          13,
+          20,
+          64,
+          69
+        ],
+        "reference": "references/China/15-8.png"
+      },
+      {
+        "group": 15,
+        "number": 9,
+        "width": 78,
+        "height": 81,
+        "axis": [
+          73,
+          142
+        ],
+        "opaque_bbox": [
+          12,
+          19,
+          64,
+          69
+        ],
+        "reference": "references/China/15-9.png"
+      },
+      {
+        "group": 15,
+        "number": 10,
+        "width": 80,
+        "height": 87,
+        "axis": [
+          73,
+          144
+        ],
+        "opaque_bbox": [
+          12,
+          21,
+          64,
+          71
+        ],
+        "reference": "references/China/15-10.png"
+      },
+      {
+        "group": 15,
+        "number": 11,
+        "width": 76,
+        "height": 87,
+        "axis": [
+          73,
+          146
+        ],
+        "opaque_bbox": [
+          12,
+          23,
+          64,
+          73
+        ],
+        "reference": "references/China/15-11.png"
+      },
+      {
+        "group": 15,
+        "number": 12,
+        "width": 78,
+        "height": 82,
+        "axis": [
+          73,
+          143
+        ],
+        "opaque_bbox": [
+          12,
+          20,
+          64,
+          70
+        ],
+        "reference": "references/China/15-12.png"
+      },
+      {
+        "group": 15,
+        "number": 13,
+        "width": 75,
+        "height": 84,
+        "axis": [
+          71,
+          142
+        ],
+        "opaque_bbox": [
+          10,
+          19,
+          62,
+          69
+        ],
+        "reference": "references/China/15-13.png"
+      },
+      {
+        "group": 15,
+        "number": 14,
+        "width": 86,
+        "height": 81,
+        "axis": [
+          74,
+          143
+        ],
+        "opaque_bbox": [
+          13,
+          20,
+          65,
+          70
+        ],
+        "reference": "references/China/15-14.png"
+      },
+      {
+        "group": 15,
+        "number": 15,
+        "width": 93,
+        "height": 99,
+        "axis": [
+          76,
+          157
+        ],
+        "opaque_bbox": [
+          15,
+          23,
+          63,
+          84
+        ],
+        "reference": "references/China/15-15.png"
+      },
+      {
+        "group": 15,
+        "number": 16,
+        "width": 93,
+        "height": 105,
+        "axis": [
+          73,
+          161
+        ],
+        "opaque_bbox": [
+          12,
+          16,
+          75,
+          88
+        ],
+        "reference": "references/China/15-16.png"
+      },
+      {
+        "group": 15,
+        "number": 17,
+        "width": 101,
+        "height": 102,
+        "axis": [
+          75,
+          160
+        ],
+        "opaque_bbox": [
+          14,
+          13,
+          77,
+          87
+        ],
+        "reference": "references/China/15-17.png"
+      },
+      {
+        "group": 15,
+        "number": 18,
+        "width": 97,
+        "height": 108,
+        "axis": [
+          73,
+          169
+        ],
+        "opaque_bbox": [
+          12,
+          16,
+          76,
+          96
+        ],
+        "reference": "references/China/15-18.png"
+      },
+      {
+        "group": 15,
+        "number": 19,
+        "width": 100,
+        "height": 104,
+        "axis": [
+          73,
+          165
+        ],
+        "opaque_bbox": [
+          12,
+          14,
+          83,
+          92
+        ],
+        "reference": "references/China/15-19.png"
+      }
+    ]
+  },
+  {
+    "stage": "KOF98-KoreaStage",
+    "group": 15,
+    "def_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-KoreaStage.def",
+    "sff_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-KoreaStage.sff",
+    "def_sha256": "25fe919bf929a2517963b49dac12e13a338e29b578957168fe477de7486055f8",
+    "sff_sha256": "882593181afefdb8ed6c757f8ae0e90cd05cc24735abbc5b404a3c1290d72168",
+    "action": [
+      {
+        "section": "Begin action 15",
+        "line": 138,
+        "comment": "最背景・鳥・アニメーション",
+        "values": {},
+        "frames": [
+          {
+            "group": 15,
+            "number": 0,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 139
+          },
+          {
+            "group": 15,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 140
+          },
+          {
+            "group": 15,
+            "number": 2,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 141
+          },
+          {
+            "group": 15,
+            "number": 3,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 142
+          },
+          {
+            "group": 15,
+            "number": 4,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 143
+          },
+          {
+            "group": 15,
+            "number": 5,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 144
+          },
+          {
+            "group": 15,
+            "number": 6,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 145
+          },
+          {
+            "group": 15,
+            "number": 7,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 146
+          },
+          {
+            "group": 15,
+            "number": 8,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 147
+          },
+          {
+            "group": 15,
+            "number": 9,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 148
+          },
+          {
+            "group": 15,
+            "number": 10,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 149
+          },
+          {
+            "group": 15,
+            "number": 11,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 150
+          },
+          {
+            "group": 15,
+            "number": 12,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 151
+          },
+          {
+            "group": 15,
+            "number": 13,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 152
+          },
+          {
+            "group": 15,
+            "number": 14,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 153
+          },
+          {
+            "group": 15,
+            "number": 15,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 154
+          },
+          {
+            "group": 15,
+            "number": 16,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 155
+          },
+          {
+            "group": 15,
+            "number": 17,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 156
+          },
+          {
+            "group": 15,
+            "number": 18,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 157
+          },
+          {
+            "group": 15,
+            "number": 19,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 158
+          },
+          {
+            "group": 15,
+            "number": 20,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 159
+          },
+          {
+            "group": 15,
+            "number": 21,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 160
+          },
+          {
+            "group": 15,
+            "number": 22,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 161
+          },
+          {
+            "group": 15,
+            "number": 23,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 162
+          },
+          {
+            "group": 15,
+            "number": 24,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 163
+          },
+          {
+            "group": 15,
+            "number": 25,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 164
+          },
+          {
+            "group": 15,
+            "number": 26,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 165
+          },
+          {
+            "group": 15,
+            "number": 27,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 166
+          },
+          {
+            "group": 15,
+            "number": 28,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 167
+          },
+          {
+            "group": 15,
+            "number": 29,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 168
+          },
+          {
+            "group": 15,
+            "number": 30,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 169
+          },
+          {
+            "group": 15,
+            "number": 31,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 170
+          },
+          {
+            "group": 15,
+            "number": 32,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 171
+          },
+          {
+            "group": 15,
+            "number": 33,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 172
+          },
+          {
+            "group": 15,
+            "number": 34,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 173
+          },
+          {
+            "group": 15,
+            "number": 35,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 174
+          },
+          {
+            "group": 15,
+            "number": 36,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 175
+          },
+          {
+            "group": 15,
+            "number": 37,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 176
+          },
+          {
+            "group": 15,
+            "number": 38,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 177
+          },
+          {
+            "group": 15,
+            "number": 39,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 178
+          },
+          {
+            "group": 15,
+            "number": 40,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 179
+          },
+          {
+            "group": 15,
+            "number": 41,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 180
+          },
+          {
+            "group": 15,
+            "number": 42,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 181
+          },
+          {
+            "group": 15,
+            "number": 43,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 182
+          },
+          {
+            "group": 15,
+            "number": 44,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 183
+          },
+          {
+            "group": 15,
+            "number": 45,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 184
+          },
+          {
+            "group": 15,
+            "number": 46,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 185
+          },
+          {
+            "group": 15,
+            "number": 47,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 4,
+            "flags": [],
+            "line": 186
+          }
+        ]
+      }
+    ],
+    "bgs": [
+      {
+        "section": "BG 15",
+        "line": 129,
+        "comment": "最背景・鳥",
+        "values": {
+          "type": "anim",
+          "actionno": "15",
+          "layerno": "0",
+          "start": "0,200",
+          "delta": ".4,.8",
+          "trans": "none",
+          "mask": "1"
+        },
+        "frames": []
+      }
+    ],
+    "sprites": [
+      {
+        "group": 15,
+        "number": 0,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-0.png"
+      },
+      {
+        "group": 15,
+        "number": 1,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-1.png"
+      },
+      {
+        "group": 15,
+        "number": 2,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-2.png"
+      },
+      {
+        "group": 15,
+        "number": 3,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-3.png"
+      },
+      {
+        "group": 15,
+        "number": 4,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-4.png"
+      },
+      {
+        "group": 15,
+        "number": 5,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-5.png"
+      },
+      {
+        "group": 15,
+        "number": 6,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-6.png"
+      },
+      {
+        "group": 15,
+        "number": 7,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-7.png"
+      },
+      {
+        "group": 15,
+        "number": 8,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-8.png"
+      },
+      {
+        "group": 15,
+        "number": 9,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-9.png"
+      },
+      {
+        "group": 15,
+        "number": 10,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-10.png"
+      },
+      {
+        "group": 15,
+        "number": 11,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-11.png"
+      },
+      {
+        "group": 15,
+        "number": 12,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-12.png"
+      },
+      {
+        "group": 15,
+        "number": 13,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-13.png"
+      },
+      {
+        "group": 15,
+        "number": 14,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-14.png"
+      },
+      {
+        "group": 15,
+        "number": 15,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-15.png"
+      },
+      {
+        "group": 15,
+        "number": 16,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-16.png"
+      },
+      {
+        "group": 15,
+        "number": 17,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-17.png"
+      },
+      {
+        "group": 15,
+        "number": 18,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-18.png"
+      },
+      {
+        "group": 15,
+        "number": 19,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-19.png"
+      },
+      {
+        "group": 15,
+        "number": 20,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-20.png"
+      },
+      {
+        "group": 15,
+        "number": 21,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-21.png"
+      },
+      {
+        "group": 15,
+        "number": 22,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-22.png"
+      },
+      {
+        "group": 15,
+        "number": 23,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-23.png"
+      },
+      {
+        "group": 15,
+        "number": 24,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-24.png"
+      },
+      {
+        "group": 15,
+        "number": 25,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-25.png"
+      },
+      {
+        "group": 15,
+        "number": 26,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-26.png"
+      },
+      {
+        "group": 15,
+        "number": 27,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-27.png"
+      },
+      {
+        "group": 15,
+        "number": 28,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-28.png"
+      },
+      {
+        "group": 15,
+        "number": 29,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-29.png"
+      },
+      {
+        "group": 15,
+        "number": 30,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-30.png"
+      },
+      {
+        "group": 15,
+        "number": 31,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-31.png"
+      },
+      {
+        "group": 15,
+        "number": 32,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-32.png"
+      },
+      {
+        "group": 15,
+        "number": 33,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-33.png"
+      },
+      {
+        "group": 15,
+        "number": 34,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-34.png"
+      },
+      {
+        "group": 15,
+        "number": 35,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-35.png"
+      },
+      {
+        "group": 15,
+        "number": 36,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-36.png"
+      },
+      {
+        "group": 15,
+        "number": 37,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-37.png"
+      },
+      {
+        "group": 15,
+        "number": 38,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-38.png"
+      },
+      {
+        "group": 15,
+        "number": 39,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-39.png"
+      },
+      {
+        "group": 15,
+        "number": 40,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-40.png"
+      },
+      {
+        "group": 15,
+        "number": 41,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-41.png"
+      },
+      {
+        "group": 15,
+        "number": 42,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-42.png"
+      },
+      {
+        "group": 15,
+        "number": 43,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-43.png"
+      },
+      {
+        "group": 15,
+        "number": 44,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-44.png"
+      },
+      {
+        "group": 15,
+        "number": 45,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-45.png"
+      },
+      {
+        "group": 15,
+        "number": 46,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-46.png"
+      },
+      {
+        "group": 15,
+        "number": 47,
+        "width": 108,
+        "height": 67,
+        "axis": [
+          27,
+          178
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          108,
+          67
+        ],
+        "reference": "references/Korea/15-47.png"
+      }
+    ]
+  },
+  {
+    "stage": "KOF98-KoreaStage",
+    "group": 35,
+    "def_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-KoreaStage.def",
+    "sff_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-KoreaStage.sff",
+    "def_sha256": "25fe919bf929a2517963b49dac12e13a338e29b578957168fe477de7486055f8",
+    "sff_sha256": "882593181afefdb8ed6c757f8ae0e90cd05cc24735abbc5b404a3c1290d72168",
+    "action": [
+      {
+        "section": "Begin action 35",
+        "line": 240,
+        "comment": "おっさん・アニメーション",
+        "values": {},
+        "frames": [
+          {
+            "group": 35,
+            "number": 0,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 241
+          },
+          {
+            "group": 35,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 242
+          },
+          {
+            "group": 35,
+            "number": 2,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 243
+          },
+          {
+            "group": 35,
+            "number": 3,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 244
+          },
+          {
+            "group": 35,
+            "number": 4,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 245
+          },
+          {
+            "group": 35,
+            "number": 5,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 246
+          },
+          {
+            "group": 35,
+            "number": 6,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 247
+          },
+          {
+            "group": 35,
+            "number": 7,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 248
+          },
+          {
+            "group": 35,
+            "number": 8,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 249
+          },
+          {
+            "group": 35,
+            "number": 9,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 250
+          },
+          {
+            "group": 35,
+            "number": 10,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 80,
+            "flags": [],
+            "line": 252
+          },
+          {
+            "group": 35,
+            "number": 11,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 253
+          },
+          {
+            "group": 35,
+            "number": 10,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 80,
+            "flags": [],
+            "line": 254
+          },
+          {
+            "group": 35,
+            "number": 11,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 255
+          },
+          {
+            "group": 35,
+            "number": 10,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 80,
+            "flags": [],
+            "line": 256
+          },
+          {
+            "group": 35,
+            "number": 11,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 257
+          },
+          {
+            "group": 35,
+            "number": 10,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 80,
+            "flags": [],
+            "line": 258
+          },
+          {
+            "group": 35,
+            "number": 11,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 259
+          },
+          {
+            "group": 35,
+            "number": 10,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 80,
+            "flags": [],
+            "line": 260
+          },
+          {
+            "group": 35,
+            "number": 11,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 261
+          },
+          {
+            "group": 35,
+            "number": 10,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 80,
+            "flags": [],
+            "line": 262
+          },
+          {
+            "group": 35,
+            "number": 11,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 263
+          },
+          {
+            "group": 35,
+            "number": 10,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 80,
+            "flags": [],
+            "line": 264
+          },
+          {
+            "group": 35,
+            "number": 11,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 265
+          },
+          {
+            "group": 35,
+            "number": 10,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 80,
+            "flags": [],
+            "line": 266
+          },
+          {
+            "group": 35,
+            "number": 11,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 267
+          },
+          {
+            "group": 35,
+            "number": 10,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 80,
+            "flags": [],
+            "line": 268
+          },
+          {
+            "group": 35,
+            "number": 11,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 269
+          },
+          {
+            "group": 35,
+            "number": 12,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 271
+          },
+          {
+            "group": 35,
+            "number": 13,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 15,
+            "flags": [],
+            "line": 273
+          },
+          {
+            "group": 35,
+            "number": 14,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 274
+          },
+          {
+            "group": 35,
+            "number": 13,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 15,
+            "flags": [],
+            "line": 275
+          },
+          {
+            "group": 35,
+            "number": 14,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 276
+          },
+          {
+            "group": 35,
+            "number": 13,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 15,
+            "flags": [],
+            "line": 277
+          },
+          {
+            "group": 35,
+            "number": 14,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 278
+          },
+          {
+            "group": 35,
+            "number": 13,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 15,
+            "flags": [],
+            "line": 279
+          },
+          {
+            "group": 35,
+            "number": 14,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 280
+          },
+          {
+            "group": 35,
+            "number": 13,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 15,
+            "flags": [],
+            "line": 281
+          },
+          {
+            "group": 35,
+            "number": 14,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 282
+          },
+          {
+            "group": 35,
+            "number": 13,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 15,
+            "flags": [],
+            "line": 283
+          },
+          {
+            "group": 35,
+            "number": 14,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 284
+          },
+          {
+            "group": 35,
+            "number": 13,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 15,
+            "flags": [],
+            "line": 285
+          },
+          {
+            "group": 35,
+            "number": 14,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 286
+          },
+          {
+            "group": 35,
+            "number": 13,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 15,
+            "flags": [],
+            "line": 287
+          },
+          {
+            "group": 35,
+            "number": 14,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 288
+          },
+          {
+            "group": 35,
+            "number": 13,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 15,
+            "flags": [],
+            "line": 289
+          },
+          {
+            "group": 35,
+            "number": 14,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 290
+          },
+          {
+            "group": 35,
+            "number": 13,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 15,
+            "flags": [],
+            "line": 291
+          },
+          {
+            "group": 35,
+            "number": 14,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 10,
+            "flags": [],
+            "line": 292
+          },
+          {
+            "group": 35,
+            "number": 12,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 294
+          },
+          {
+            "group": 35,
+            "number": 10,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 80,
+            "flags": [],
+            "line": 296
+          },
+          {
+            "group": 35,
+            "number": 9,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 298
+          },
+          {
+            "group": 35,
+            "number": 8,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 299
+          },
+          {
+            "group": 35,
+            "number": 7,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 300
+          },
+          {
+            "group": 35,
+            "number": 6,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 301
+          },
+          {
+            "group": 35,
+            "number": 5,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 302
+          },
+          {
+            "group": 35,
+            "number": 4,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 303
+          },
+          {
+            "group": 35,
+            "number": 3,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 304
+          },
+          {
+            "group": 35,
+            "number": 2,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 305
+          },
+          {
+            "group": 35,
+            "number": 2,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 306
+          },
+          {
+            "group": 35,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 307
+          },
+          {
+            "group": 35,
+            "number": 0,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 7,
+            "flags": [],
+            "line": 308
+          },
+          {
+            "group": 99,
+            "number": 0,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 300,
+            "flags": [],
+            "line": 310
+          }
+        ]
+      }
+    ],
+    "bgs": [
+      {
+        "section": "BG 35",
+        "line": 231,
+        "comment": "背景・おっさん",
+        "values": {
+          "type": "anim",
+          "actionno": "35",
+          "layerno": "0",
+          "start": "0,240",
+          "delta": "1,.8",
+          "trans": "none",
+          "mask": "1"
+        },
+        "frames": []
+      }
+    ],
+    "sprites": [
+      {
+        "group": 35,
+        "number": 0,
+        "width": 76,
+        "height": 77,
+        "axis": [
+          -297,
+          204
+        ],
+        "opaque_bbox": [
+          23,
+          28,
+          55,
+          50
+        ],
+        "reference": "references/Korea/35-0.png"
+      },
+      {
+        "group": 35,
+        "number": 1,
+        "width": 76,
+        "height": 77,
+        "axis": [
+          -297,
+          204
+        ],
+        "opaque_bbox": [
+          23,
+          15,
+          55,
+          50
+        ],
+        "reference": "references/Korea/35-1.png"
+      },
+      {
+        "group": 35,
+        "number": 2,
+        "width": 76,
+        "height": 77,
+        "axis": [
+          -297,
+          204
+        ],
+        "opaque_bbox": [
+          23,
+          13,
+          55,
+          50
+        ],
+        "reference": "references/Korea/35-2.png"
+      },
+      {
+        "group": 35,
+        "number": 3,
+        "width": 76,
+        "height": 77,
+        "axis": [
+          -297,
+          204
+        ],
+        "opaque_bbox": [
+          23,
+          14,
+          55,
+          50
+        ],
+        "reference": "references/Korea/35-3.png"
+      },
+      {
+        "group": 35,
+        "number": 4,
+        "width": 76,
+        "height": 77,
+        "axis": [
+          -297,
+          204
+        ],
+        "opaque_bbox": [
+          23,
+          15,
+          55,
+          50
+        ],
+        "reference": "references/Korea/35-4.png"
+      },
+      {
+        "group": 35,
+        "number": 5,
+        "width": 76,
+        "height": 77,
+        "axis": [
+          -297,
+          204
+        ],
+        "opaque_bbox": [
+          23,
+          14,
+          55,
+          50
+        ],
+        "reference": "references/Korea/35-5.png"
+      },
+      {
+        "group": 35,
+        "number": 6,
+        "width": 76,
+        "height": 77,
+        "axis": [
+          -297,
+          204
+        ],
+        "opaque_bbox": [
+          23,
+          13,
+          55,
+          50
+        ],
+        "reference": "references/Korea/35-6.png"
+      },
+      {
+        "group": 35,
+        "number": 7,
+        "width": 76,
+        "height": 77,
+        "axis": [
+          -297,
+          204
+        ],
+        "opaque_bbox": [
+          23,
+          14,
+          55,
+          50
+        ],
+        "reference": "references/Korea/35-7.png"
+      },
+      {
+        "group": 35,
+        "number": 8,
+        "width": 76,
+        "height": 77,
+        "axis": [
+          -297,
+          204
+        ],
+        "opaque_bbox": [
+          23,
+          14,
+          55,
+          50
+        ],
+        "reference": "references/Korea/35-8.png"
+      },
+      {
+        "group": 35,
+        "number": 9,
+        "width": 76,
+        "height": 77,
+        "axis": [
+          -297,
+          204
+        ],
+        "opaque_bbox": [
+          22,
+          14,
+          51,
+          50
+        ],
+        "reference": "references/Korea/35-9.png"
+      },
+      {
+        "group": 35,
+        "number": 10,
+        "width": 76,
+        "height": 77,
+        "axis": [
+          -297,
+          204
+        ],
+        "opaque_bbox": [
+          20,
+          14,
+          51,
+          50
+        ],
+        "reference": "references/Korea/35-10.png"
+      },
+      {
+        "group": 35,
+        "number": 11,
+        "width": 76,
+        "height": 77,
+        "axis": [
+          -297,
+          204
+        ],
+        "opaque_bbox": [
+          20,
+          14,
+          51,
+          50
+        ],
+        "reference": "references/Korea/35-11.png"
+      },
+      {
+        "group": 35,
+        "number": 12,
+        "width": 76,
+        "height": 77,
+        "axis": [
+          -297,
+          204
+        ],
+        "opaque_bbox": [
+          20,
+          14,
+          51,
+          50
+        ],
+        "reference": "references/Korea/35-12.png"
+      },
+      {
+        "group": 35,
+        "number": 13,
+        "width": 76,
+        "height": 77,
+        "axis": [
+          -297,
+          204
+        ],
+        "opaque_bbox": [
+          20,
+          14,
+          51,
+          50
+        ],
+        "reference": "references/Korea/35-13.png"
+      },
+      {
+        "group": 35,
+        "number": 14,
+        "width": 76,
+        "height": 77,
+        "axis": [
+          -297,
+          204
+        ],
+        "opaque_bbox": [
+          20,
+          14,
+          51,
+          50
+        ],
+        "reference": "references/Korea/35-14.png"
+      }
+    ]
+  },
+  {
+    "stage": "KOF98-KoreaStage",
+    "group": 40,
+    "def_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-KoreaStage.def",
+    "sff_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-KoreaStage.sff",
+    "def_sha256": "25fe919bf929a2517963b49dac12e13a338e29b578957168fe477de7486055f8",
+    "sff_sha256": "882593181afefdb8ed6c757f8ae0e90cd05cc24735abbc5b404a3c1290d72168",
+    "action": [
+      {
+        "section": "Begin action 40",
+        "line": 339,
+        "comment": "鳥１・アニメーション",
+        "values": {},
+        "frames": [
+          {
+            "group": 40,
+            "number": 0,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 15,
+            "flags": [],
+            "line": 340
+          },
+          {
+            "group": 40,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 341
+          },
+          {
+            "group": 40,
+            "number": 2,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 15,
+            "flags": [],
+            "line": 342
+          },
+          {
+            "group": 40,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 343
+          }
+        ]
+      }
+    ],
+    "bgs": [
+      {
+        "section": "BG 40",
+        "line": 313,
+        "comment": "背景・鳥１",
+        "values": {
+          "type": "anim",
+          "actionno": "40",
+          "layerno": "1",
+          "start": "-500,50",
+          "delta": "1.1,.8",
+          "trans": "none",
+          "mask": "1",
+          "id": "40"
+        },
+        "frames": []
+      }
+    ],
+    "sprites": [
+      {
+        "group": 40,
+        "number": 0,
+        "width": 71,
+        "height": 66,
+        "axis": [
+          34,
+          26
+        ],
+        "opaque_bbox": [
+          11,
+          10,
+          60,
+          60
+        ],
+        "reference": "references/Korea/40-0.png"
+      },
+      {
+        "group": 40,
+        "number": 1,
+        "width": 65,
+        "height": 62,
+        "axis": [
+          31,
+          25
+        ],
+        "opaque_bbox": [
+          8,
+          12,
+          57,
+          55
+        ],
+        "reference": "references/Korea/40-1.png"
+      },
+      {
+        "group": 40,
+        "number": 2,
+        "width": 72,
+        "height": 60,
+        "axis": [
+          34,
+          25
+        ],
+        "opaque_bbox": [
+          11,
+          13,
+          60,
+          50
+        ],
+        "reference": "references/Korea/40-2.png"
+      }
+    ]
+  },
+  {
+    "stage": "KOF98-KoreaStage",
+    "group": 45,
+    "def_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-KoreaStage.def",
+    "sff_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-KoreaStage.sff",
+    "def_sha256": "25fe919bf929a2517963b49dac12e13a338e29b578957168fe477de7486055f8",
+    "sff_sha256": "882593181afefdb8ed6c757f8ae0e90cd05cc24735abbc5b404a3c1290d72168",
+    "action": [
+      {
+        "section": "Begin action 45",
+        "line": 372,
+        "comment": "鳥２・アニメーション",
+        "values": {},
+        "frames": [
+          {
+            "group": 45,
+            "number": 0,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 15,
+            "flags": [],
+            "line": 373
+          },
+          {
+            "group": 45,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 374
+          },
+          {
+            "group": 45,
+            "number": 2,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 15,
+            "flags": [],
+            "line": 375
+          },
+          {
+            "group": 45,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 376
+          }
+        ]
+      }
+    ],
+    "bgs": [
+      {
+        "section": "BG 45",
+        "line": 346,
+        "comment": "背景・鳥２",
+        "values": {
+          "type": "anim",
+          "actionno": "45",
+          "layerno": "1",
+          "start": "500,220",
+          "delta": "1.1,.8",
+          "trans": "none",
+          "mask": "1",
+          "id": "45"
+        },
+        "frames": []
+      }
+    ],
+    "sprites": [
+      {
+        "group": 45,
+        "number": 0,
+        "width": 71,
+        "height": 66,
+        "axis": [
+          36,
+          25
+        ],
+        "opaque_bbox": [
+          11,
+          10,
+          60,
+          60
+        ],
+        "reference": "references/Korea/45-0.png"
+      },
+      {
+        "group": 45,
+        "number": 1,
+        "width": 65,
+        "height": 62,
+        "axis": [
+          33,
+          24
+        ],
+        "opaque_bbox": [
+          8,
+          12,
+          57,
+          55
+        ],
+        "reference": "references/Korea/45-1.png"
+      },
+      {
+        "group": 45,
+        "number": 2,
+        "width": 72,
+        "height": 60,
+        "axis": [
+          37,
+          24
+        ],
+        "opaque_bbox": [
+          12,
+          13,
+          61,
+          50
+        ],
+        "reference": "references/Korea/45-2.png"
+      }
+    ]
+  },
+  {
+    "stage": "KOF98-KoreaStage",
+    "group": 50,
+    "def_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-KoreaStage.def",
+    "sff_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-KoreaStage.sff",
+    "def_sha256": "25fe919bf929a2517963b49dac12e13a338e29b578957168fe477de7486055f8",
+    "sff_sha256": "882593181afefdb8ed6c757f8ae0e90cd05cc24735abbc5b404a3c1290d72168",
+    "action": [
+      {
+        "section": "Begin action 50",
+        "line": 405,
+        "comment": "鳥３・アニメーション",
+        "values": {},
+        "frames": [
+          {
+            "group": 50,
+            "number": 0,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 406
+          },
+          {
+            "group": 50,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 407
+          },
+          {
+            "group": 50,
+            "number": 2,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 408
+          },
+          {
+            "group": 50,
+            "number": 3,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 409
+          },
+          {
+            "group": 50,
+            "number": 2,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 410
+          },
+          {
+            "group": 50,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 411
+          }
+        ]
+      }
+    ],
+    "bgs": [
+      {
+        "section": "BG 50",
+        "line": 379,
+        "comment": "背景・鳥３",
+        "values": {
+          "type": "anim",
+          "actionno": "50",
+          "layerno": "1",
+          "start": "-500,220",
+          "delta": "1.1,.8",
+          "trans": "none",
+          "mask": "1",
+          "id": "50"
+        },
+        "frames": []
+      }
+    ],
+    "sprites": [
+      {
+        "group": 50,
+        "number": 0,
+        "width": 67,
+        "height": 65,
+        "axis": [
+          35,
+          19
+        ],
+        "opaque_bbox": [
+          8,
+          13,
+          58,
+          58
+        ],
+        "reference": "references/Korea/50-0.png"
+      },
+      {
+        "group": 50,
+        "number": 1,
+        "width": 68,
+        "height": 62,
+        "axis": [
+          35,
+          26
+        ],
+        "opaque_bbox": [
+          8,
+          13,
+          59,
+          47
+        ],
+        "reference": "references/Korea/50-1.png"
+      },
+      {
+        "group": 50,
+        "number": 2,
+        "width": 70,
+        "height": 75,
+        "axis": [
+          36,
+          55
+        ],
+        "opaque_bbox": [
+          10,
+          10,
+          60,
+          60
+        ],
+        "reference": "references/Korea/50-2.png"
+      },
+      {
+        "group": 50,
+        "number": 3,
+        "width": 66,
+        "height": 69,
+        "axis": [
+          32,
+          48
+        ],
+        "opaque_bbox": [
+          8,
+          11,
+          56,
+          54
+        ],
+        "reference": "references/Korea/50-3.png"
+      }
+    ]
+  },
+  {
+    "stage": "KOF98-KoreaStage",
+    "group": 55,
+    "def_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-KoreaStage.def",
+    "sff_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-KoreaStage.sff",
+    "def_sha256": "25fe919bf929a2517963b49dac12e13a338e29b578957168fe477de7486055f8",
+    "sff_sha256": "882593181afefdb8ed6c757f8ae0e90cd05cc24735abbc5b404a3c1290d72168",
+    "action": [
+      {
+        "section": "Begin action 55",
+        "line": 440,
+        "comment": "鳥４・アニメーション",
+        "values": {},
+        "frames": [
+          {
+            "group": 55,
+            "number": 0,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 441
+          },
+          {
+            "group": 55,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 442
+          },
+          {
+            "group": 55,
+            "number": 2,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 443
+          },
+          {
+            "group": 55,
+            "number": 3,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 444
+          },
+          {
+            "group": 55,
+            "number": 2,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 445
+          },
+          {
+            "group": 55,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 446
+          }
+        ]
+      }
+    ],
+    "bgs": [
+      {
+        "section": "BG 55",
+        "line": 414,
+        "comment": "背景・鳥４",
+        "values": {
+          "type": "anim",
+          "actionno": "55",
+          "layerno": "1",
+          "start": "500,50",
+          "delta": "1.1,.8",
+          "trans": "none",
+          "mask": "1",
+          "id": "55"
+        },
+        "frames": []
+      }
+    ],
+    "sprites": [
+      {
+        "group": 55,
+        "number": 0,
+        "width": 67,
+        "height": 65,
+        "axis": [
+          32,
+          19
+        ],
+        "opaque_bbox": [
+          9,
+          13,
+          59,
+          58
+        ],
+        "reference": "references/Korea/55-0.png"
+      },
+      {
+        "group": 55,
+        "number": 1,
+        "width": 68,
+        "height": 62,
+        "axis": [
+          32,
+          26
+        ],
+        "opaque_bbox": [
+          9,
+          13,
+          60,
+          47
+        ],
+        "reference": "references/Korea/55-1.png"
+      },
+      {
+        "group": 55,
+        "number": 2,
+        "width": 70,
+        "height": 75,
+        "axis": [
+          33,
+          55
+        ],
+        "opaque_bbox": [
+          10,
+          10,
+          60,
+          60
+        ],
+        "reference": "references/Korea/55-2.png"
+      },
+      {
+        "group": 55,
+        "number": 3,
+        "width": 66,
+        "height": 69,
+        "axis": [
+          33,
+          48
+        ],
+        "opaque_bbox": [
+          10,
+          11,
+          58,
+          54
+        ],
+        "reference": "references/Korea/55-3.png"
+      }
+    ]
+  },
+  {
+    "stage": "KOF98-USAYardStage",
+    "group": 20,
+    "def_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-USAYardStage.def",
+    "sff_file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/stages/KOF98-USAYardStage.sff",
+    "def_sha256": "2e83add3c957e298c7e39d11f96ffd24136639c20307d3e17da266ae4f17e72f",
+    "sff_sha256": "1a3e7cd29c23cab9528afa41c74903187cd882461c31c39347a11ebf298e2ad7",
+    "action": [
+      {
+        "section": "Begin action 20",
+        "line": 159,
+        "comment": "中央・アニメーション",
+        "values": {},
+        "frames": [
+          {
+            "group": 20,
+            "number": 0,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 160
+          },
+          {
+            "group": 20,
+            "number": 1,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 161
+          },
+          {
+            "group": 20,
+            "number": 2,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 162
+          },
+          {
+            "group": 20,
+            "number": 3,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 163
+          },
+          {
+            "group": 20,
+            "number": 4,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 164
+          },
+          {
+            "group": 20,
+            "number": 5,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 165
+          },
+          {
+            "group": 20,
+            "number": 6,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 166
+          },
+          {
+            "group": 20,
+            "number": 7,
+            "dx": 0,
+            "dy": 0,
+            "ticks": 9,
+            "flags": [],
+            "line": 167
+          }
+        ]
+      }
+    ],
+    "bgs": [
+      {
+        "section": "BG 20",
+        "line": 150,
+        "comment": "背景・中央",
+        "values": {
+          "type": "anim",
+          "actionno": "20",
+          "layerno": "0",
+          "start": "0,240",
+          "delta": "1,.8",
+          "trans": "none",
+          "mask": "1"
+        },
+        "frames": []
+      }
+    ],
+    "sprites": [
+      {
+        "group": 20,
+        "number": 0,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          137,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          304,
+          224
+        ],
+        "reference": "references/USAYard/20-0.png"
+      },
+      {
+        "group": 20,
+        "number": 1,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          137,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          304,
+          224
+        ],
+        "reference": "references/USAYard/20-1.png"
+      },
+      {
+        "group": 20,
+        "number": 2,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          137,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          304,
+          224
+        ],
+        "reference": "references/USAYard/20-2.png"
+      },
+      {
+        "group": 20,
+        "number": 3,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          137,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          304,
+          224
+        ],
+        "reference": "references/USAYard/20-3.png"
+      },
+      {
+        "group": 20,
+        "number": 4,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          137,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          304,
+          224
+        ],
+        "reference": "references/USAYard/20-4.png"
+      },
+      {
+        "group": 20,
+        "number": 5,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          137,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          304,
+          224
+        ],
+        "reference": "references/USAYard/20-5.png"
+      },
+      {
+        "group": 20,
+        "number": 6,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          137,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          304,
+          224
+        ],
+        "reference": "references/USAYard/20-6.png"
+      },
+      {
+        "group": 20,
+        "number": 7,
+        "width": 304,
+        "height": 224,
+        "axis": [
+          137,
+          224
+        ],
+        "opaque_bbox": [
+          0,
+          0,
+          304,
+          224
+        ],
+        "reference": "references/USAYard/20-7.png"
+      }
+    ]
+  }
+]

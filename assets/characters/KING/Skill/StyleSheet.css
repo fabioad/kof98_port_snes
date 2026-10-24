@@ -1,0 +1,135 @@
+/*	bodyタグ基本スタイル	*/
+body.base_j {
+	background-color:Black;
+	background-image:url(ProjectM.gif);
+	background-repeat:no-repeat;
+	color:White;
+	font-family:ＭＳ ゴシック;
+	font-size:9pt;
+}
+
+body.base_e {
+	background-color:Black;
+	background-image:url(ProjectM.gif);
+	background-repeat:no-repeat;
+	color:White;
+	font-family:Times New Roman;
+	font-size:9pt;
+}
+
+/*	BigPortlait用スタイル	*/
+table.portlait {
+	border:10px solid #714A28;
+	padding:3px 3px 3px 3px;
+}
+
+td.portlait {
+	border: 1px solid #714A28;
+	padding:1px 1px 1px 1px;
+}
+
+/*	メインテーブル用スタイル	*/
+table.main {
+	border:2px solid #714A28;
+	width:700px;
+}
+
+tr.main {
+	border:1px solid white;
+	padding:0px 0px 0px 0px;
+}
+
+td.title {
+	border:1px solid #714A28;
+	text-align:center;
+	vertical-align:middle;
+	height:50px;
+	background-color:#714A28;
+	font-family:ＭＳ ゴシック;
+	font-size:12pt;
+	font-weight:bold;
+	color:#FFCC99;
+}
+
+td.title2 {
+	border:1px solid #714A28;
+	text-align:center;
+	vertical-align:middle;
+	height:50px;
+	background-color:#714A28;
+	font-family:Times New Roman;
+	font-size:12pt;
+	font-weight:bold;
+	color:#FFCC99;
+}
+
+td.name {
+	border:1px solid #714A28;
+	text-align:left;
+	vertical-align:middle;
+	width:350px;
+	height:35px;
+	background-color:black;
+	font-family:ＭＳ ゴシック;
+	font-size:9pt;
+	font-weight:bold;
+	color:white;
+}
+
+td.name2 {
+	border:1px solid #714A28;
+	text-align:left;
+	vertical-align:middle;
+	width:350px;
+	height:35px;
+	background-color:black;
+	font-family:Times New Roman;
+	font-size:10pt;
+	font-weight:bold;
+	color:white;
+}
+
+td.command {
+	border:1px solid #714A28;
+	text-align:right;
+	vertical-align:middle;
+	width:350px;
+	height:35px;
+	background-color:black;
+	font-family:ＭＳ ゴシック;
+	font-size:9pt;
+	font-weight:bold;
+	color:white;
+}
+
+td.command2 {
+	border:1px solid #714A28;
+	text-align:right;
+	vertical-align:middle;
+	width:350px;
+	height:35px;
+	background-color:black;
+	font-family:Times New Roman;
+	font-size:10pt;
+	font-weight:bold;
+	color:white;
+}
+
+/*	Footer用スタイル	*/
+table.footer {
+	width:700px;
+	border:0px;
+}
+
+td.footer {
+	border:0px;
+	text-align:right;
+	vertical-align:middle;
+	background-color:black;
+	font-family:Times New Roman;
+	font-size:12pt;
+	font-weight:bold;
+	font-style:italic;
+	color:white;
+}
+

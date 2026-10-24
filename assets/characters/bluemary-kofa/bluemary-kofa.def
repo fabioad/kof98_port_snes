@@ -1,0 +1,40 @@
+[Info]
+name="Blue Mary"
+displayname="B.MARY"
+versiondate=10,28,2009
+;mugenversion=04,14,2002
+author="TESTP, Jerzy, 119way"
+pal.defaults=1
+mugenversion = 1.0
+localcoord   = 320,240
+
+; Files for the player
+[Files]
+cmd=Mary.cmd
+cns=Mary.cns
+st=Mary.cns
+st1=Mary-s.cns
+st2=mary-h.cns
+st3=02um-max2.txt
+stcommon=common1.cns
+sprite=Mary.sff
+anim=Mary.air
+sound=Mary.snd
+;---------------------正常模式
+pal1=pal/mary01.act
+pal2=pal/mary02.act
+pal3=pal/mary03.act
+pal4=pal/mary04.act
+pal5=pal/mary05.act
+pal6=pal/mary06.act
+;---------------------EXTRA模式
+pal7=pal/ex01.act
+pal8=pal/ex02.act
+pal9=pal/ex03.act
+pal10=pal/ex04.act
+pal11=pal/ex05.act
+pal12=pal/ex06.act
+
+[Arcade]
+intro.storyboard=
+ending.storyboard=

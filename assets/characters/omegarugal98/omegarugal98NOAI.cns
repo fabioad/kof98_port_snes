@@ -1,0 +1,866 @@
+;-----------------------------------------------------------
+[Statedef -3]
+
+[State -3, 5]
+type = varset
+trigger1 = roundstate = 0
+trigger1 = palno = [7,12]
+var(58) = 1
+
+[State -3, 5]
+type = varrandom
+trigger1 = 1
+v = 2
+range = 1,2
+
+[State -3, 3]
+type = PlaySnd
+triggerall = Time = 1
+trigger1 = stateno = 52 || stateno = 1011 || stateno = 1016 || stateno = 3023 || stateno = 3028
+value = S1,1
+
+[State -3, 5]
+type = PlaySnd
+triggerall = alive = 1
+trigger1 = Time = 1 && stateno = 5000 && (anim = 5000 || anim = 5010)
+triggerall = var(2) = 1
+value = S40,0
+
+[State -3, 5]
+type = PlaySnd
+triggerall = alive = 1
+trigger1 = Time = 1 && stateno = 5000 && (anim = 5001 || anim = 5011)
+triggerall = var(2) = 1
+value = S5,0
+
+[State -3, 5]
+type = PlaySnd
+triggerall = alive = 1
+trigger1 = Time = 1 && stateno = 5101
+triggerall = var(2) = 1
+value = S6,0
+
+[State -3]
+type = stopsnd
+trigger1 = stateno != 100
+trigger1 = stateno != 8000
+Trigger1 = stateno != [8000,8005]
+channel = 2
+
+[State 107, 1]
+type = null;PlaySnd
+trigger1 = p2stateno = 813
+trigger1 = Vel Y > 0
+trigger1 = Pos Y >= 0
+value = S0,18
+
+[State 4100,1]
+type = Helper
+trigger1 = projhit = 1
+trigger1 = numprojid(2900) = 0
+;trigger1 = numhelper(3010) = 0
+triggerall = stateno != 2000 && stateno != 2001 && stateno != 2002
+trigger1 = p2movetype = H
+ID = 1060
+name = "elec"
+sprpriority = -3
+pos = 0,0
+postype = back
+stateno = 1060
+helpertype = normal
+keyctrl = 0
+;persistent = 0
+ignorehitpause = 1
+
+[state 195]
+type = Explod
+trigger1 = projhit = 1
+trigger1 = numhelper(3010) = 0
+trigger1 = p2movetype = H
+trigger1 = numprojid(2900) = 0
+triggerall = stateno != 2000 && stateno != 2001 && stateno != 2002
+anim = 1038
+postype = p2
+pos = 5,-60
+sprpriority = 3
+persistent = 0
+ignorehitpause = 1
+
+[State -3, 5]
+type = PlaySnd
+trigger1 = stateno = 50
+trigger1 = Time = 2
+value = S0,36
+
+[State 840, 2]
+type = afterimagetime
+trigger1 = movetype = H
+time = 0
+;---------------------------------------------------------------------------
+[State 4100,1]
+type = Helper
+triggerall = var(58) = 0
+triggerall = command = "striker"
+triggerall = numhelper(2900) = 0
+trigger1 = statetype = S
+trigger1 = ctrl
+ID = 2900
+name = "krizalid"
+sprpriority = 5
+pos = -250,-100
+postype = p1
+stateno = 2900
+helpertype = normal
+keyctrl = 0
+persistent = 0
+ignorehitpause = 1
+ownpal = 1
+
+;---------------------------------------------------------------------------
+[State 4100,1]
+type = Helper
+triggerall = command = "striker"
+triggerall = numhelper(3010) = 0
+triggerall = var(58) = 1
+trigger1 = statetype = S
+trigger1 = ctrl
+ID = 3010
+name = "ignis"
+sprpriority = 5
+pos = -250,0
+postype = back
+stateno = 3010
+helpertype = normal
+keyctrl = 0
+persistent = 0
+ignorehitpause = 1
+ownpal = 1
+
+;-------------------------------------------------------
+;AI
+;立ちガード(相手立ち)
+[State -3]
+type = ChangeState
+value = 130
+triggerall = p2movetype = A
+triggerall = P2Life > 0
+triggerall = statetype != A
+triggerall = var(59) = 1
+triggerall = ctrl
+triggerall = stateno != 191
+trigger1 = p2statetype = S
+trigger1 = random <= 900
+trigger1 = Enemy, Numproj = 1 && P2MoveType = A
+
+;攻撃を避ける
+[State -3]
+type = ChangeState
+value = 1010
+triggerall = p2movetype = A
+;triggerall = P2bodydist X <= 90
+;triggerall = P2Life > 0
+triggerall = statetype != A
+triggerall = var(59) = 1
+triggerall = ctrl
+triggerall = stateno != [150,153]
+;triggerall = stateno != 191
+;trigger1 = p2statetype = S
+triggerall = random <= 17
+trigger1   = p2dist X < 30 && p2movetype = A && ctrl
+trigger2   = p2dist X < 100 && p2movetype = A && ctrl
+trigger3   = p2dist Y > -40 && p2bodydist X < 10 && p2movetype = A && ctrl
+trigger4   = P2dist X > 70 && p2movetype != H && ctrl
+trigger5   = enemy, numproj >= 1 && enemy, backedgedist <= 30 && ctrl
+trigger6   = p2movetype = A && ctrl && enemy, ishelper
+trigger7   = (enemy, p2bodydist X = [-10, 40]) && enemy, hitdefattr = SCA, AA, AT, AP
+trigger8 = Enemy, Numproj = 1 && P2MoveType = A
+
+;立ちガード(相手空中)
+[State -3]
+type = ChangeState
+value = 130
+triggerall = p2movetype = A
+triggerall = P2bodydist X <= 60
+triggerall = P2Life > 0
+triggerall = statetype != A
+triggerall = var(59) = 1
+triggerall = ctrl
+triggerall = stateno != 191
+trigger1 = p2statetype = A
+trigger1 = random <= 800
+trigger1 = Enemy, Numproj = 1 && P2MoveType = A
+
+;--------------------------
+;しゃがみガード
+[State -3]
+type = ChangeState
+value = 131
+triggerall = p2movetype = A
+triggerall = P2bodydist X <= 60
+triggerall = P2Life > 0
+triggerall = statetype != A
+triggerall = var(59) = 1
+triggerall = ctrl
+triggerall = stateno != 191
+trigger1 = p2statetype = C
+triggerall = random <= 800
+trigger1 = Enemy, Numproj = 1 && P2MoveType = A
+trigger2   = (enemy, p2bodydist X = [-10, 40]) && enemy, hitdefattr = SCA, AA, AT, AP
+
+;---------------------------------------------------------------------------
+;受身
+[State -1]
+type = ChangeState
+value = 5201
+triggerall = var(59) = 1
+triggerall = random <= 400
+triggerall = Vel Y > 0
+triggerall = Pos Y >= 0
+trigger1 = alive
+trigger1 = CanRecover
+trigger1 = stateno = 5050
+
+
+;ダークジェノサイド弱
+[State -1]
+type = ChangeState
+value = 1000
+triggerall = var(59) = 1
+triggerall = random <= 15
+triggerall = p2statetype != L
+trigger1 = P2BodyDist X < 30
+trigger1 = P2movetype = A
+trigger1 = ctrl && statetype != A
+trigger1 = p2movetype != H
+trigger2 = movecontact && stateno = 201
+trigger3 = movecontact && stateno = 211
+trigger4 = movecontact && stateno = 231
+trigger5 = movecontact && stateno = 243
+trigger5 = animelem = 5, >= 0
+trigger5 = animelem = 6, <= 3
+trigger6 = movecontact && stateno = 242
+trigger7 = movecontact && stateno = 400
+trigger8 = movecontact && stateno = 410
+trigger9 = movecontact && stateno = 430
+trigger10 = movecontact && stateno = 440
+trigger11 = movecontact && stateno = 421
+trigger11 = animelem = 3, >= 0
+trigger11 = animelem = 3, <= 3
+trigger12 = movecontact && stateno = 244
+trigger12 = animelem = 5, >= 0
+trigger12 = animelem = 6, <= 3
+trigger13 = movecontact && stateno = 241
+trigger13 = animelem = 3, >= 0
+trigger13 = animelem = 4, <= 3
+
+;---------------------------------------------------------------------------
+;ダークジェノサイド強
+[State -1]
+type = ChangeState
+value = 1005
+triggerall = var(59) = 1
+triggerall = random <= 20
+trigger1 = P2BodyDist X < 30
+trigger1 = P2BodyDist Y < 30
+trigger1 = ctrl && statetype != A
+trigger1 = p2movetype != H
+trigger2 = movecontact && stateno = 201
+trigger3 = movecontact && stateno = 211
+trigger4 = movecontact && stateno = 231
+trigger5 = movecontact && stateno = 243
+trigger5 = animelem = 5, >= 0
+trigger5 = animelem = 6, <= 3
+trigger6 = movecontact && stateno = 242
+trigger7 = movecontact && stateno = 400
+trigger8 = movecontact && stateno = 410
+trigger9 = movecontact && stateno = 430
+trigger10 = movecontact && stateno = 440
+trigger11 = movecontact && stateno = 421
+trigger11 = animelem = 3, >= 0
+trigger11 = animelem = 3, <= 3
+trigger12 = movecontact && stateno = 244
+trigger12 = animelem = 5, >= 0
+trigger12 = animelem = 6, <= 3
+trigger13 = movecontact && stateno = 241
+trigger13 = animelem = 3, >= 0
+trigger13 = animelem = 4, <= 3
+
+;---------------------------------------------------------------------------
+;スコーピオンデスロック
+[State -1]
+type = ChangeState
+value = 800
+triggerall = var(59) = 1
+triggerall = random <= 20
+triggerall = P2statetype != A
+triggerall = p2stateno != [150,153]
+trigger1 = enemynear,movetype != H
+trigger1 = P2BodyDist X < 15
+trigger1 = statetype != A && ctrl
+;---------------------------------------------------------------------------
+;スコーピオンブロウ
+[State -1]
+type = ChangeState
+value = 810
+triggerall = var(59) = 1
+triggerall = random <= 20
+triggerall = P2statetype != A
+triggerall = p2stateno != [150,153]
+trigger1 = enemynear,movetype != H
+trigger1 = P2BodyDist X < 15
+trigger1 = statetype != A && ctrl
+
+;---------------------------------------------------------------------------
+;羅生門
+[State -1]
+type = ChangeState
+value = 2600
+triggerall = var(59) = 1
+triggerall = p2life > 0
+triggerall = power >= 1000
+triggerall = random <= 32
+triggerall = P2statetype != A
+triggerall = p2stateno != [150,153]
+triggerall = var(58) = 1
+trigger1 = enemynear,movetype != H
+trigger1 = P2BodyDist X < 26
+trigger1 = statetype != A && ctrl
+trigger2 = movecontact && stateno = 201
+trigger3 = movecontact && stateno = 211
+trigger4 = movecontact && stateno = 231
+trigger5 = movecontact && stateno = 243
+trigger5 = animelem = 5, >= 0
+trigger5 = animelem = 6, <= 3
+trigger6 = movecontact && stateno = 242
+trigger7 = movecontact && stateno = 400
+trigger8 = movecontact && stateno = 410
+trigger9 = movecontact && stateno = 430
+trigger10 = movecontact && stateno = 440
+trigger11 = movecontact && stateno = 421
+trigger11 = animelem = 3, >= 0
+trigger11 = animelem = 3, <= 3
+trigger12 = movecontact && stateno = 244
+trigger12 = animelem = 5, >= 0
+trigger12 = animelem = 6, <= 3
+trigger13 = movecontact && stateno = 241
+trigger13 = animelem = 3, >= 0
+trigger13 = animelem = 4, <= 3
+
+;---------------------------------------------------------------------------
+;ギガンテックプレッシャーS
+[State -1]
+type = ChangeState
+value = 1070
+triggerall = var(59) = 1
+triggerall = random <= 30
+triggerall = power >= 1000
+triggerall = p2statetype != L
+triggerall = p2life > 0
+trigger1 = P2BodyDist X < 30
+trigger1 = P2BodyDist Y < 30
+trigger1 = P2movetype = A
+trigger1 = ctrl && statetype != A
+trigger1 = p2movetype != H
+trigger2 = movecontact && stateno = 201
+trigger3 = movecontact && stateno = 211
+trigger4 = movecontact && stateno = 231
+trigger5 = movecontact && stateno = 243
+trigger5 = animelem = 5, >= 0
+trigger5 = animelem = 6, <= 3
+trigger6 = movecontact && stateno = 242
+trigger7 = movecontact && stateno = 400
+trigger8 = movecontact && stateno = 410
+trigger9 = movecontact && stateno = 430
+trigger10 = movecontact && stateno = 440
+trigger11 = movecontact && stateno = 421
+trigger11 = animelem = 3, >= 0
+trigger11 = animelem = 3, <= 3
+trigger12 = movecontact && stateno = 244
+trigger12 = animelem = 5, >= 0
+trigger12 = animelem = 6, <= 3
+trigger13 = movecontact && stateno = 241
+trigger13 = animelem = 3, >= 0
+trigger13 = animelem = 4, <= 3
+
+;---------------------------------------------------------------------------
+;デストラクション・オメガ
+[State -1]
+type = ChangeState
+value = 2100
+triggerall = p2life > 0
+triggerall = var(59) = 1
+triggerall = random <= 30
+triggerall = power >= 1000
+triggerall = p2statetype != L
+triggerall = var(58) = 0
+trigger1 = P2BodyDist X < 40
+trigger1 = ctrl && statetype != A
+trigger1 = p2movetype != H
+trigger2 = movecontact && stateno = 201
+trigger3 = movecontact && stateno = 211
+trigger4 = movecontact && stateno = 231
+trigger5 = movecontact && stateno = 243
+trigger5 = animelem = 5, >= 0
+trigger5 = animelem = 6, <= 3
+trigger6 = movecontact && stateno = 242
+trigger7 = movecontact && stateno = 400
+trigger8 = movecontact && stateno = 410
+trigger9 = movecontact && stateno = 430
+trigger10 = movecontact && stateno = 440
+trigger11 = movecontact && stateno = 421
+trigger11 = animelem = 3, >= 0
+trigger11 = animelem = 3, <= 3
+trigger12 = movecontact && stateno = 244
+trigger12 = animelem = 5, >= 0
+trigger12 = animelem = 6, <= 3
+trigger13 = movecontact && stateno = 241
+trigger13 = animelem = 3, >= 0
+trigger13 = animelem = 4, <= 3
+
+;---------------------------------------------------------------------------
+;リーサルインパクト
+[State -1]
+type = ChangeState
+value = 2700
+triggerall = var(59) = 1
+triggerall = random <= 6
+triggerall = p2statetype != L
+triggerall = var(58) = 1
+triggerall = p2life > 0
+trigger1 = P2BodyDist X < 50
+trigger1 = ctrl && statetype != A
+trigger2 = movecontact && stateno = 201
+trigger3 = movecontact && stateno = 211
+trigger4 = movecontact && stateno = 231
+trigger5 = movecontact && stateno = 243
+trigger5 = animelem = 5, >= 0
+trigger5 = animelem = 6, <= 3
+trigger6 = movecontact && stateno = 242
+trigger7 = movecontact && stateno = 400
+trigger8 = movecontact && stateno = 410
+trigger9 = movecontact && stateno = 430
+trigger10 = movecontact && stateno = 440
+trigger11 = movecontact && stateno = 421
+trigger11 = animelem = 3, >= 0
+trigger11 = animelem = 3, <= 3
+trigger12 = movecontact && stateno = 244
+trigger12 = animelem = 5, >= 0
+trigger12 = animelem = 6, <= 3
+trigger13 = movecontact && stateno = 241
+trigger13 = animelem = 3, >= 0
+trigger13 = animelem = 4, <= 3
+
+;---------------------------------------------------------------------------
+;グラビティスマッシュ強
+[State -1]
+type = ChangeState
+value = 1045
+triggerall = var(59) = 1
+triggerall = p2life > 0
+triggerall = var(58) = 0
+triggerall = random <= 10
+triggerall = statetype != A
+trigger1 = p2statetype != L
+trigger1 = P2BodyDist X > 60
+trigger1 = ctrl && statetype != A
+triggerall = numhelper(1040) = 0
+triggerall = numhelper(1053) = 0
+triggerall = numprojID(1040) = 0
+trigger2 = movecontact && stateno = 201
+trigger3 = movecontact && stateno = 211
+trigger4 = movecontact && stateno = 231
+trigger5 = movecontact && stateno = 243
+trigger5 = animelem = 5, >= 0
+trigger5 = animelem = 6, <= 3
+trigger6 = movecontact && stateno = 242
+trigger7 = movecontact && stateno = 400
+trigger8 = movecontact && stateno = 410
+trigger9 = movecontact && stateno = 430
+trigger10 = movecontact && stateno = 440
+trigger11 = movecontact && stateno = 421
+trigger11 = animelem = 3, >= 0
+trigger11 = animelem = 3, <= 3
+trigger12 = movecontact && stateno = 244
+trigger12 = animelem = 5, >= 0
+trigger12 = animelem = 6, <= 3
+trigger13 = movecontact && stateno = 241
+trigger13 = animelem = 3, >= 0
+trigger13 = animelem = 4, <= 3
+trigger14 = Enemy, Numproj = 1 && P2MoveType = A
+
+;---------------------------------------------------------------------------
+;ビーム
+[State -1]
+type = ChangeState
+value = 7100
+triggerall = var(59) = 1
+triggerall = p2life > 0
+triggerall = var(58) = 1
+triggerall = random <= 15
+trigger1 = p2statetype != L
+trigger1 = P2BodyDist X > 60
+trigger1 = ctrl && statetype != A
+trigger2 = movecontact && stateno = 201
+trigger3 = movecontact && stateno = 211
+trigger4 = movecontact && stateno = 231
+trigger5 = movecontact && stateno = 243
+trigger5 = animelem = 5, >= 0
+trigger5 = animelem = 6, <= 3
+trigger6 = movecontact && stateno = 242
+trigger7 = movecontact && stateno = 400
+trigger8 = movecontact && stateno = 410
+trigger9 = movecontact && stateno = 430
+trigger10 = movecontact && stateno = 440
+trigger11 = movecontact && stateno = 421
+trigger11 = animelem = 3, >= 0
+trigger11 = animelem = 3, <= 3
+trigger12 = movecontact && stateno = 244
+trigger12 = animelem = 5, >= 0
+trigger12 = animelem = 6, <= 3
+trigger13 = movecontact && stateno = 241
+trigger13 = animelem = 3, >= 0
+trigger13 = animelem = 4, <= 3
+
+;---------------------------------------------------------------------------
+;バニシングラッシュ強
+[State -1]
+type = ChangeState
+value = 1025
+triggerall = var(59) = 1
+triggerall = p2life > 0
+triggerall = var(58) = 0
+triggerall = random <= 10
+trigger1 = p2statetype != L
+trigger1 = P2BodyDist X > 60
+trigger1 = ctrl && statetype != A
+triggerall = numhelper(1040) = 0
+triggerall = numhelper(1053) = 0
+triggerall = numprojID(1040) = 0
+trigger2 = movecontact && stateno = 201
+trigger3 = movecontact && stateno = 211
+trigger4 = movecontact && stateno = 231
+trigger5 = movecontact && stateno = 243
+trigger5 = animelem = 5, >= 0
+trigger5 = animelem = 6, <= 3
+trigger6 = movecontact && stateno = 242
+trigger7 = movecontact && stateno = 400
+trigger8 = movecontact && stateno = 410
+trigger9 = movecontact && stateno = 430
+trigger10 = movecontact && stateno = 440
+trigger11 = movecontact && stateno = 421
+trigger11 = animelem = 3, >= 0
+trigger11 = animelem = 3, <= 3
+trigger12 = movecontact && stateno = 244
+trigger12 = animelem = 5, >= 0
+trigger12 = animelem = 6, <= 3
+trigger13 = movecontact && stateno = 241
+trigger13 = animelem = 3, >= 0
+trigger13 = animelem = 4, <= 3
+
+;---------------------------------------------------------------------------
+;無に還れ
+[State -1]
+type = ChangeState
+value = 3000
+triggerall = p2life > 0
+triggerall = var(58) = 1
+triggerall = var(59) = 1
+triggerall = power >= 1000
+triggerall = random <= 3
+trigger1 = p2statetype != L
+trigger1 = P2BodyDist X > 60
+trigger1 = statetype != A
+trigger1 = ctrl
+trigger2 = movecontact && stateno = 201
+trigger3 = movecontact && stateno = 211
+trigger4 = movecontact && stateno = 231
+trigger5 = movecontact && stateno = 243
+trigger5 = animelem = 5, >= 0
+trigger5 = animelem = 6, <= 3
+trigger6 = movecontact && stateno = 242
+trigger7 = movecontact && stateno = 400
+trigger8 = movecontact && stateno = 410
+trigger9 = movecontact && stateno = 430
+trigger10 = movecontact && stateno = 440
+trigger11 = movecontact && stateno = 421
+trigger11 = animelem = 3, >= 0
+trigger11 = animelem = 3, <= 3
+trigger12 = movecontact && stateno = 244
+trigger12 = animelem = 5, >= 0
+trigger12 = animelem = 6, <= 3
+trigger13 = movecontact && stateno = 241
+trigger13 = animelem = 3, >= 0
+trigger13 = animelem = 4, <= 3
+
+;---------------------------------------------------------------------------
+;腕が暴走
+[State -1]
+type = ChangeState
+value = 7000
+triggerall = p2life > 0
+triggerall = var(58) = 1
+triggerall = var(59) = 1
+triggerall = power >= 3000
+triggerall = random <= 30
+trigger1 = p2statetype != L
+trigger1 = P2BodyDist X > 30
+trigger1 = statetype != A
+trigger1 = ctrl
+trigger2 = movecontact && stateno = 201
+trigger3 = movecontact && stateno = 211
+trigger4 = movecontact && stateno = 231
+trigger5 = movecontact && stateno = 243
+trigger5 = animelem = 5, >= 0
+trigger5 = animelem = 6, <= 3
+trigger6 = movecontact && stateno = 242
+trigger7 = movecontact && stateno = 400
+trigger8 = movecontact && stateno = 410
+trigger9 = movecontact && stateno = 430
+trigger10 = movecontact && stateno = 440
+trigger11 = movecontact && stateno = 421
+trigger11 = animelem = 3, >= 0
+trigger11 = animelem = 3, <= 3
+trigger12 = movecontact && stateno = 244
+trigger12 = animelem = 5, >= 0
+trigger12 = animelem = 6, <= 3
+trigger13 = movecontact && stateno = 241
+trigger13 = animelem = 3, >= 0
+trigger13 = animelem = 4, <= 3
+
+;---------------------------------------------------------------------------
+;禊
+[State -1]
+type = ChangeState
+value = 2800
+triggerall = p2life > 0
+triggerall = var(58) = 1
+triggerall = var(59) = 1
+triggerall = power >= 3000
+triggerall = random <= 40
+trigger1 = p2statetype != L
+trigger1 = statetype != A
+trigger1 = ctrl
+trigger2 = movecontact && stateno = 201
+trigger3 = movecontact && stateno = 211
+trigger4 = movecontact && stateno = 231
+trigger5 = movecontact && stateno = 243
+trigger5 = animelem = 5, >= 0
+trigger5 = animelem = 6, <= 3
+trigger6 = movecontact && stateno = 242
+trigger7 = movecontact && stateno = 400
+trigger8 = movecontact && stateno = 410
+trigger9 = movecontact && stateno = 430
+trigger10 = movecontact && stateno = 440
+trigger11 = movecontact && stateno = 421
+trigger11 = animelem = 3, >= 0
+trigger11 = animelem = 3, <= 3
+trigger12 = movecontact && stateno = 244
+trigger12 = animelem = 5, >= 0
+trigger12 = animelem = 6, <= 3
+trigger13 = movecontact && stateno = 241
+trigger13 = animelem = 3, >= 0
+trigger13 = animelem = 4, <= 3
+trigger14 = enemy,numproj = 1
+trigger14 = p2movetype = A
+trigger14 = statetype != A
+trigger14 = ctrl
+
+;---------------------------------------------------------------------------
+;Stand Light Kick
+;近距離立ち弱キック
+[State -1, Stand Light Kick]
+type = ChangeState
+value = 231
+triggerall = var(59) = 1
+triggerall = p2bodydist X <= 30
+triggerall = var(58) = 1
+triggerall = random <= 20
+trigger1 = statetype = S
+trigger1 = ctrl
+trigger2 = movecontact
+trigger2 = stateno = 201
+trigger3 = movecontact
+trigger3 = stateno = 400
+trigger4 = movecontact
+trigger4 = stateno = 430
+
+;Standing Strong Kick
+;近距離立ち強キック
+[State -1, Standing Strong Kick]
+type = ChangeState
+value = 241
+triggerall = var(59) = 1
+triggerall = p2bodydist X <= 30
+triggerall = var(58) = 1
+triggerall = random <= 20
+trigger1 = statetype = S
+trigger1 = ctrl
+trigger2 = movecontact
+trigger2 = stateno = 201
+trigger3 = movecontact
+trigger3 = stateno = 231
+trigger4 = movecontact
+trigger4 = stateno = 211
+
+;Stand Light Punch
+;近距離立ち弱パンチ
+[State -1, Stand Light Punch]
+type = ChangeState
+value = 201
+triggerall = var(59) = 1
+triggerall = p2bodydist X <= 30
+triggerall = var(58) = 1
+triggerall = random <= 40
+trigger1 = statetype = S
+trigger1 = ctrl
+trigger2 = movecontact
+trigger2 = stateno = 231
+trigger3 = movecontact
+trigger3 = stateno = 400
+trigger4 = movecontact
+trigger4 = stateno = 430
+
+;Stand Light Punch
+;近距離立ち強パンチ
+[State -1, Stand Light Punch]
+type = ChangeState
+value = 211
+triggerall = var(59) = 1
+triggerall = p2bodydist X <= 30
+triggerall = var(58) = 1
+triggerall = random <= 30
+trigger1 = statetype = S
+trigger1 = ctrl
+trigger2 = movecontact
+trigger2 = stateno = 201
+trigger3 = movecontact
+trigger3 = stateno = 231
+
+;Crouching Light Punch
+;しゃがみ弱パンチ
+[State -1, Crouching Light Punch]
+type = ChangeState
+value = 400
+triggerall = var(59) = 1
+trigger1 = p2bodydist X <= 30
+triggerall = var(58) = 1
+triggerall = random <= 40
+trigger1 = statetype = C
+trigger1 = ctrl
+trigger2 = movecontact
+trigger2 = stateno = 201
+trigger3 = movecontact
+trigger3 = stateno = 231
+
+;Crouching Strong Punch
+;しゃがみ強パンチ
+[State -1, Crouching Strong Punch]
+type = ChangeState
+value = 410
+triggerall = var(59) = 1
+trigger1 = p2bodydist X <= 30
+triggerall = var(58) = 1
+triggerall = random <= 30
+trigger1 = statetype = C
+trigger1 = ctrl
+trigger2 = movecontact
+trigger2 = stateno = 201
+trigger3 = movecontact
+trigger3 = stateno = 231
+trigger4 = movecontact
+trigger4 = stateno = 400
+trigger5 = movecontact
+trigger5 = stateno = 430
+
+;Crouching Strong Kick
+;しゃがみ強キック
+[State -1, Crouching Strong Kick]
+type = ChangeState
+value = 440
+triggerall = var(59) = 1
+triggerall = p2life > 0
+trigger1 = p2bodydist X <= 30
+triggerall = var(58) = 1
+triggerall = random <= 30
+trigger1 = statetype = C
+trigger1 = ctrl
+trigger2 = movecontact
+trigger2 = stateno = 201
+trigger3 = movecontact
+trigger3 = stateno = 231
+trigger4 = movecontact
+trigger4 = stateno = 400
+trigger5 = movecontact
+trigger5 = stateno = 410
+trigger6 = movecontact
+trigger6 = stateno = 211
+trigger7 = movecontact
+trigger7 = stateno = 430
+
+;---------------------------------------------------------------------------
+;ストライカー
+[State -1]
+type = ChangeState
+value = 2899
+triggerall = var(59) = 1
+triggerall = p2life > 0
+triggerall = numhelper(2900) = 0
+triggerall = numhelper(3010) = 0
+triggerall = numhelper(7200) = 0
+trigger1 = p2bodydist X >= 30
+triggerall = random <= 5
+trigger1 = statetype != A
+trigger1 = ctrl
+
+;---------------------------------------------------------------------------
+;ストライカー2
+[State -1]
+type = ChangeState
+value = 7200
+triggerall = var(59) = 1
+triggerall = var(58) = 1
+triggerall = p2life > 0
+triggerall = numhelper(2900) = 0
+triggerall = numhelper(3010) = 0
+triggerall = numhelper(7200) = 0
+trigger1 = p2bodydist X <= 150
+triggerall = random <= 5
+trigger1 = statetype != A
+trigger1 = ctrl
+
+;---------------------------------------------------------------------------
+;ガイアブレス
+[State -1]
+type = ChangeState
+value = 8100
+triggerall = p2life > 0
+triggerall = var(58) = 1
+triggerall = var(59) = 1
+triggerall = power >= 1000
+triggerall = random <= 30
+trigger1 = p2statetype != L
+trigger1 = P2BodyDist X <= 30
+trigger1 = statetype != A
+trigger1 = ctrl
+trigger2 = movecontact && stateno = 201
+trigger3 = movecontact && stateno = 211
+trigger4 = movecontact && stateno = 231
+trigger5 = movecontact && stateno = 243
+trigger5 = animelem = 5, >= 0
+trigger5 = animelem = 6, <= 3
+trigger6 = movecontact && stateno = 242
+trigger7 = movecontact && stateno = 400
+trigger8 = movecontact && stateno = 410
+trigger9 = movecontact && stateno = 430
+trigger10 = movecontact && stateno = 440
+trigger11 = movecontact && stateno = 421
+trigger11 = animelem = 3, >= 0
+trigger11 = animelem = 3, <= 3
+trigger12 = movecontact && stateno = 244
+trigger12 = animelem = 5, >= 0
+trigger12 = animelem = 6, <= 3
+trigger13 = movecontact && stateno = 241
+trigger13 = animelem = 3, >= 0
+trigger13 = animelem = 4, <= 3
+
+

@@ -1,0 +1,1526 @@
+;---------------------------------------------------------------------------
+; 加ガード用ヘルパー
+[Statedef 1210]
+type    = A
+movetype= A
+physics = N
+juggle  = 1
+velset = 0,0
+ctrl = 0
+anim = 9999
+poweradd = 0
+
+[State -1, Taunt]
+type = nothitby
+trigger1 = 1
+value = SCA,AA,AT,AP
+ignorehitpause = 1 
+
+[State 200, 2]
+type = assertspecial
+trigger1 = 1
+flag = invisible
+
+[State 181, 1]
+type = turn
+trigger1 = parent,facing != facing
+[State 181, 1]
+type = posset
+trigger1 = parent,facing = 1
+x = parent,pos X
+y = 0
+[State 181, 1]
+type = posset
+trigger1 = parent,facing = -1
+x = parent,pos X
+y = 0
+
+[State 200, 1]
+type = varset
+trigger1 = parent,var(4) > 0
+var(1) = 2
+[State 200, 1]
+type = varadd
+trigger1 = parent,var(4) <= 0
+var(1) = -1
+
+[State 200, 5]
+type = destroyself
+trigger1 = var(1) <= 0
+
+
+
+
+
+
+;-------------------------------------------------------------------------------
+;-------------------------------------------------------------------------------
+[Statedef 10000];コマンドヘルパー
+type    = S
+movetype= I
+physics = S
+anim = 9999
+ctrl = 0
+
+;7　暗転判別
+;8　暗転中コマンド解除
+;10～11　A連打
+;12～13　C連打
+;14～15　後ろ溜め
+;16～17　下溜め
+;20　先行入力
+;25～28　やられエフェクト用
+
+[State 200, 1];後ろ溜めリセット
+type = varset
+trigger1 = ((parent,stateno=[410,419])||(parent,stateno=[430,431]))&&time=1
+var(15) = 0
+[State 200, 1]
+type = varset
+trigger1 = var(15)=0
+var(14) = 0
+[State 200, 1]
+type = varadd
+trigger1 = var(15)>0
+var(15) = -1
+[State 200, 1]
+type = varset
+triggerall = parent,var(59)=0
+trigger1 = command="holdback"&&(var(15)=0||var(15)>=5)
+var(15) = 10
+[State 200, 1]
+type = varadd
+triggerall = parent,var(59)=0
+trigger1 = command="holdback"&&var(15)>=5
+var(14) = 1
+
+[State 200, 1];下溜めリセット
+type = varset
+trigger1 = (parent,stateno=[450,451])&&time=1
+var(17) = 0
+[State 200, 1]
+type = varset
+trigger1 = var(17)=0
+var(16) = 0
+[State 200, 1]
+type = varadd
+trigger1 = var(17)>0
+var(17) = -1
+[State 200, 1]
+type = varset
+triggerall = parent,var(59)=0
+trigger1 = command="holddown"&&(var(17)=0||var(17)>=5)
+var(17) = 12
+[State 200, 1]
+type = varadd
+triggerall = parent,var(59)=0
+trigger1 = command="holddown"&&var(17)>=5
+var(16) = 1
+
+[State 200, 1]
+type = varset
+trigger1 = var(11)=0
+var(10) = 0
+[State 200, 1]
+type = varadd
+trigger1 = var(11)>0
+var(11) = -1
+[State 200, 1]
+type = varadd
+triggerall = parent,var(59)=0
+trigger1 = command = "a"
+var(10) = 1
+[State 200, 1]
+type = varset
+triggerall = parent,var(59)=0
+trigger1 = command = "a"
+var(11) = 8
+[State 200, 1]
+type = varset
+trigger1 = var(13)=0
+var(12) = 0
+[State 200, 1]
+type = varadd
+trigger1 = var(13)>0
+var(13) = -1
+[State 200, 1]
+type = varadd
+triggerall = parent,var(59)=0
+trigger1 = command = "x"
+var(12) = 1
+[State 200, 1]
+type = varset
+triggerall = parent,var(59)=0
+trigger1 = command = "x"
+var(13) = 8
+
+
+[State 200, 1]
+type = varset
+trigger1 = 1
+var(7) = ifelse(numexplod(1)<2,0,1)
+[State 200, 1]
+type = explod
+trigger1 = numexplod(1)<5
+anim = 9999
+id = 1
+removetime = 1
+[State -1, 1000];暗転後誤コマンド中止
+type = varadd
+triggerall =parent,var(59)=0
+trigger1 = command="holdback"&&var(7)=1
+var(8) = 1
+
+[State 181, 1]
+type = posset
+trigger1 = 1
+x = parent,pos X
+y = parent,pos Y
+
+[State 200, 5]
+type = parentvarset
+trigger1 = p2dist X<0&&((parent,var(21)=[100,105])||(parent,var(21)=[250,251]))
+var(21) = 0
+
+[State 200, 5]
+type = turn
+trigger1 = enemy,teammode = simul
+trigger1 = parent,facing!=facing
+trigger2 = p2dist X < 0
+
+[State 200, 5]
+type = parentvarset
+triggerall=command="a"&&command="holdup"
+trigger1 = parent,var(59)=0
+var(21) = 230
+[State 200, 5]
+type = parentvarset
+triggerall=command="x"&&command="holdup"
+trigger1 = parent,var(59)=0
+var(21) = 231
+[State 200, 5]
+type = parentvarset
+triggerall=command="b"&&command="holdup"
+trigger1 = parent,var(59)=0
+var(21) = 232
+[State 200, 5]
+type = parentvarset
+triggerall=command="y"&&command="holdup"
+trigger1 = parent,var(59)=0
+var(21) = 233
+[State 200, 5]
+type = parentvarset
+triggerall=command="xy"&&command="holdup"
+trigger1 = parent,var(59)=0
+var(21) = 234
+
+[State 200, 5]
+type = parentvarset
+triggerall=command="a"&&((parent,statetype=A&&parent,movecontact)||parent,stateno=151||parent,stateno=153||parent,stateno=200||parent,stateno=220)
+trigger1 = parent,var(59)=0
+var(21) = 200
+[State 200, 5]
+type = parentvarset
+triggerall=command="x"&&((parent,statetype=A&&parent,movecontact)||parent,stateno=151||parent,stateno=153)
+trigger1 = parent,var(59)=0
+var(21) = 202
+[State 200, 5]
+type = parentvarset
+triggerall=command="b"&&((parent,statetype=A&&parent,movecontact)||parent,stateno=151||parent,stateno=153)
+trigger1 = parent,var(59)=0
+var(21) = 204
+[State 200, 5]
+type = parentvarset
+triggerall=command="y"&&((parent,statetype=A&&parent,movecontact)||parent,stateno=151||parent,stateno=153)
+trigger1 = parent,var(59)=0
+var(21) = 206
+
+[State 200, 5]
+type = parentvarset
+triggerall=command="xy"&&((parent,statetype = A&&parent,movecontact)||parent,stateno=151||parent,stateno=153)
+trigger1 = parent,var(59)=0
+var(21) = 210
+
+
+[State 200, 5]
+type = parentvarset
+triggerall=command="holddown"&&command="a"&&((parent,statetype=A&&parent,movecontact)||parent,stateno=151||parent,stateno=153||parent,stateno=220||parent,stateno=222)
+trigger1 = parent,var(59)=0
+var(21) = 220
+[State 200, 5]
+type = parentvarset
+triggerall=command="holddown"&&command="x"&&((parent,statetype=A&&parent,movecontact)||parent,stateno=151||parent,stateno=153)
+trigger1 = parent,var(59)=0
+var(21) = 221
+[State 200, 5]
+type = parentvarset
+triggerall=command="holddown"&&command="b"&&((parent,statetype=A&&parent,movecontact)||parent,stateno=151||parent,stateno=153||parent,stateno=222)
+trigger1 = parent,var(59)=0
+var(21) = 222
+[State 200, 5]
+type = parentvarset
+triggerall=command="holddown"&&command="y"&&((parent,statetype=A&&parent,movecontact)||parent,stateno=151||parent,stateno=153)
+trigger1 = parent,var(59)=0
+var(21) = 223
+[State 200, 5]
+type = parentvarset
+triggerall=command="x"&(command="holdfwd"||command="holdback")&((parent,statetype = A&&parent,movecontact)||parent,stateno=151||parent,stateno=153)
+triggerall=p2bodydist X <=15&&p2movetype!=H
+trigger1 = parent,var(59)=0
+var(21) = 300
+[State 200, 5]
+type = parentvarset
+triggerall=command="y"&(command="holdfwd"||command="holdback")&((parent,statetype = A&&parent,movecontact)||parent,stateno=151||parent,stateno=153)
+triggerall=p2bodydist X <=15&&p2movetype!=H
+trigger1 = parent,var(59)=0
+var(21) = 310
+[State 200, 5]
+type = parentvarset
+triggerall=command="ab"&&command!="holdback"
+trigger1 = parent,var(59)=0
+var(21) = 250
+[State 200, 5]
+type = parentvarset
+triggerall=command="ab"&&command="holdback"
+trigger1 = parent,var(59)=0
+var(21) = 251
+[State 200, 5]
+type = parentvarset
+triggerall=command="abx"
+trigger1 = parent,var(59)=0&&parent,var(17)=0&&power>=1000
+var(21) = 700
+
+[State 200, 5]
+type = parentvarset
+triggerall=command = "FF"
+trigger1 = parent,var(59)=0
+var(21) = 100
+[State 200, 5]
+type = parentvarset
+triggerall=command = "BB"
+trigger1 = parent,var(59)=0
+var(21) = 105
+[State 200, 5]
+type = parentvarset
+triggerall=command="236x"||command="236a"
+trigger1 = parent,var(59)=0
+var(21) = 455
+[State 200, 5]
+type = parentvarset
+triggerall=command="214x"
+trigger1 = parent,var(59)=0
+var(21) = 421
+[State 200, 5]
+type = parentvarset
+triggerall=command="214a"
+trigger1 = parent,var(59)=0
+var(21) = 420
+[State 200, 5]
+type = parentvarset
+triggerall=command="x"&&command="holdup"&&var(16)>=30
+trigger1 = parent,var(59)=0
+var(21) = 451
+[State 200, 5]
+type = parentvarset
+triggerall=command="a"&&command="holdup"&&var(16)>=30
+trigger1 = parent,var(59)=0
+var(21) = 450
+[State 200, 5]
+type = parentvarset
+triggerall=command="y"&&command="holdfwd"&&var(14)>=30
+trigger1 = parent,var(59)=0
+var(21) = 431
+[State 200, 5]
+type = parentvarset
+triggerall=command="b"&&command="holdfwd"&&var(14)>=30
+trigger1 = parent,var(59)=0
+var(21) = 430
+[State 200, 5]
+type = parentvarset
+triggerall=command="x"&&command="holdfwd"&&var(14)>=30
+trigger1 = parent,var(59)=0
+var(21) = 411
+[State 200, 5]
+type = parentvarset
+triggerall=command="a"&&command="holdfwd"&&var(14)>=30
+trigger1 = parent,var(59)=0
+var(21) = 410
+[State 200, 5]
+type = parentvarset
+triggerall=command="41236b"||command="41236y"
+trigger1 = parent,var(59)=0
+var(21) = 440
+
+[State 200, 5]
+type = parentvarset
+triggerall=command="41236a"&&command="holdup"
+triggerall=parent,stateno=40||parent,stateno=102
+trigger1 = parent,var(59)=0
+var(21) = 460
+[State 200, 5]
+type = parentvarset
+triggerall=command="41236x"&&command="holdup"
+triggerall=parent,stateno=40||parent,stateno=102
+trigger1 = parent,var(59)=0
+var(21) = 461
+
+[State 200, 5]
+type = parentvarset
+triggerall=command ="46P"&&var(14)>=30&&var(16)>=30&&parent,power>=1000
+trigger1 = parent,var(59)=0
+var(21) = 501+(parent,var(17)*49)
+[State 200, 5]
+type = parentvarset
+triggerall=(command="2363214x"||command="2363214a")&&parent,power>=1000
+trigger1 = parent,var(59)=0
+var(21) = 500+(parent,var(17)*50)
+[State 200, 5]
+type = parentvarset
+triggerall=command="2141236y"&&parent,power>=1000
+trigger1 = parent,var(59)=0
+var(21) = 511+(parent,var(17)*49)
+[State 200, 5]
+type = parentvarset
+triggerall=command="2141236b"&&parent,power>=1000
+trigger1 = parent,var(59)=0
+var(21) = 510+(parent,var(17)*50)
+[State 200, 5]
+type = parentvarset
+triggerall=command="236236x"&&parent,power>=1000
+trigger1 = parent,var(59)=0
+var(21) = 521+(parent,var(17)*49)
+[State 200, 5]
+type = parentvarset
+triggerall=command="236236a"&&parent,power>=1000
+trigger1 = parent,var(59)=0
+var(21) = 520+(parent,var(17)*50)
+
+[State 200, 5]
+type = parentvarset
+triggerall=command = "xy"
+trigger1 = parent,var(59)=0
+trigger1 = (parent,stateno=150||parent,stateno=152)&&parent,power>=1000
+var(21) = 260
+[State 200, 5]
+type = parentvarset
+triggerall = command = "ab"
+triggerall = command != "holdback"
+trigger1 = parent,var(59)=0
+trigger1 = (parent,stateno=150||parent,stateno=152)&&parent,power>=1000
+var(21) = 261
+[State 200, 5]
+type = parentvarset
+triggerall = command = "ab"
+triggerall = command = "holdback"
+trigger1 = parent,var(59)=0
+trigger1 = (parent,stateno=150||parent,stateno=152)&&parent,power>=1000
+var(21) = 262
+
+[State 3000, Width]
+type = varadd
+triggerall = var(7)=0
+trigger1 = var(20) >= 0
+trigger1 = (parent,stateno!=[150,153])&&parent,hitshakeover&&parent,movecontact=0
+trigger2 = var(20) >= 0 && gametime%2 = 0
+trigger2 = parent,stateno=151||parent,stateno=153
+trigger3 = parent,movecontact && var(20) >= 0 && gametime%2 = 0
+var(20) = -1
+[State 200, 5]
+type = varset
+trigger1 = parent,stateno=parent,var(21)&&parent,var(21)>=0&&parent,time=1
+trigger2 = var(8)>=10
+var(20) = 0
+[State 200, 5]
+type = parentvarset
+triggerall = var(20) = 0
+trigger1 = parent,var(21)!=0
+var(21) = 0
+[State -1, 1000]
+type = varset
+trigger1 = var(20)=0
+var(8) = 0
+[State 200, 5]
+type = varset
+trigger1 = var(20) = 0
+var(20) = -1
+ignorehitpause=1
+[State 200, 5]
+type = varset
+trigger1 = (parent,var(21) =[200,210])||(parent,var(21) =[220,229])
+trigger1 = var(20) = -1
+var(20) = floor(parent,var(20)*0.75)
+ignorehitpause=1
+[State 200, 5]
+type = varset
+trigger1 = parent,var(21) != 0
+trigger1 = var(20) = -1
+var(20) = parent,var(20)
+ignorehitpause=1
+
+[State -2]
+type = DisplayToClipboard 
+trigger1 = 1
+text = "%d,%d,%d,%d,%d"
+params = var(20),var(21),var(7),var(8),(parent,var(21))
+ignorehitpause = 1
+
+[State -2]
+type = palfx
+trigger1 = time%24=[0,2]
+add = -190,-190,-0
+time = 1
+[State -2]
+type = palfx
+trigger1 = time%24=[3,5]
+trigger2 = time%24=[21,23]
+add = -190,-132,-0
+time = 1
+[State -2]
+type = palfx
+trigger1 = time%24=[6,8]
+trigger2 = time%24=[18,20]
+add = -190,-33,-0
+time = 1
+[State -2]
+type = palfx
+trigger1 = time%24=[9,11]
+trigger2 = time%24=[15,17]
+add = -190,-0,-132
+time = 1
+[State -2]
+type = palfx
+trigger1 = time%24=[12,14]
+add = -132,-0,-190
+time = 1
+
+[State -2]
+type = null;palfx
+trigger1 = time%24=[0,7]
+add = -8,-8,-176
+time = 1
+[State -2]
+type = null;palfx
+trigger1 = time%24=[8,11]
+trigger2 = time%24=[20,23]
+add = -45,-7,-179
+time = 1
+[State -2]
+type = null;palfx
+trigger1 = time%24=[12,19]
+add = -98,-6,-180
+time = 1
+
+;やられエフェクト
+[State 200, 1]
+type = playsnd
+triggerall = var(7)=0
+trigger1 = numenemy >= 1
+trigger1 = (enemy(0),stateno=88000||enemy(0),stateno=88002||enemy(0),stateno=88005||enemy(0),stateno=88007)&&enemy(0),movetype=H&&enemy(0),time=teamside
+trigger2 = numenemy = 2
+trigger2 = (enemy(1),stateno=88000||enemy(1),stateno=88002||enemy(1),stateno=88005||enemy(1),stateno=88007)&&enemy(1),movetype=H&&enemy(1),time=teamside
+value = 6,4
+volume = 100
+ignorehitpause = 1
+[State 200, 1]
+type = playsnd
+triggerall = var(7)=0
+trigger1 = numenemy >= 1
+trigger1 = enemy(0),stateno=80101||enemy(0),stateno=80050
+trigger1 = enemy(0),movetype = H && enemy(0),time = teamside
+trigger2 = numenemy = 2
+trigger2 = enemy(1),stateno=80101||enemy(1),stateno=80050
+trigger2 = enemy(1),movetype = H && enemy(1),time = teamside
+value = 6,7
+volume = 100
+ignorehitpause = 1
+[State 200, 1]
+type = playsnd
+triggerall = var(7)=0
+trigger1 = numenemy >= 1
+trigger1 = enemy(0),stateno=80103
+trigger1 = enemy(0),movetype = I && enemy(0),time = teamside
+trigger2 = numenemy = 2
+trigger2 = enemy(1),stateno=80103
+trigger2 = enemy(1),movetype = I && enemy(1),time = teamside
+value = 6,8
+volume = 100
+ignorehitpause = 1
+
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+trigger1 = numenemy >= 1
+trigger1 = enemy(0),stateno=88000||enemy(0),stateno=88005
+trigger1 = enemy(0),movetype = H
+trigger1 = enemy(0),time = teamside
+anim = 11001
+postype = left
+ownpal = 1
+sprpriority = -2
+pos = floor(enemy(0),screenpos X),floor(enemy(0),screenpos Y)
+ignorehitpause = 1 
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+trigger1 = numenemy = 2
+trigger1 = enemy(1),stateno=88000||enemy(1),stateno=88005
+trigger1 = enemy(1),movetype = H
+trigger1 = enemy(1),time = teamside
+anim = 11001
+postype = left
+ownpal = 1
+sprpriority = -2
+pos = floor(enemy(1),screenpos X),floor(enemy(1),screenpos Y)
+ignorehitpause = 1 
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+trigger1 = numenemy >= 1
+trigger1 = enemy(0),stateno=88002||enemy(0),stateno=88007
+trigger1 = enemy(0),movetype = H
+trigger1 = enemy(0),time = teamside
+anim = 11003
+facing = enemy(0),facing
+postype = left
+ownpal = 1
+sprpriority = 3
+pos = floor(enemy(0),screenpos X),floor(enemy(0),screenpos Y)
+ignorehitpause = 1 
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+trigger1 = numenemy = 2
+trigger1 = enemy(1),stateno=88002||enemy(1),stateno=88007
+trigger1 = enemy(1),movetype = H
+trigger1 = enemy(1),time = teamside
+anim = 11003
+facing = enemy(0),facing
+postype = left
+ownpal = 1
+sprpriority = 3
+pos = floor(enemy(1),screenpos X),floor(enemy(1),screenpos Y)
+ignorehitpause = 1 
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+trigger1 = numenemy >= 1
+trigger1 = enemy(0),stateno=80101||enemy(0),stateno=80050
+trigger1 = enemy(0),movetype = H
+trigger1 = enemy(0),time = teamside
+anim = 11003
+postype = left
+ownpal = 1
+facing = enemy(0),facing*-1
+sprpriority = 3
+pos = floor(enemy(0),screenpos X),floor(enemy(0),screenpos Y)
+ignorehitpause = 1 
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+trigger1 = numenemy = 2
+trigger1 = enemy(1),stateno=80101||enemy(1),stateno=80050
+trigger1 = enemy(1),movetype = H
+trigger1 = enemy(1),time = teamside
+anim = 11003
+postype = left
+ownpal = 1
+facing = enemy(1),facing*-1
+sprpriority = 3
+pos = floor(enemy(1),screenpos X),floor(enemy(1),screenpos Y)
+ignorehitpause = 1
+
+;炎やられエフェクト
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+triggerall = gametime%10=0
+trigger1 = numenemy >= 1
+trigger1 = enemy(0),stateno=[80010,80019]
+trigger1 = enemy(0),movetype = H && enemy(0),time <10
+anim = 10081
+postype = left
+ownpal = 1
+random = 40,60+(enemy(0),statetype=S)*40
+facing = enemy(0),facing*-1
+sprpriority = 5
+pos = floor(enemy(0),screenpos X),floor(enemy(0),screenpos Y)-40-(enemy(0),statetype=S)*20
+ignorehitpause = 1 
+pausemovetime = 123456789
+supermovetime = 123456789
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+triggerall = gametime%10=0
+trigger1 = numenemy = 2
+trigger1 = enemy(1),stateno=[80010,80019]
+trigger1 = enemy(1),movetype = H && enemy(1),time <10
+anim = 10081
+postype = left
+ownpal = 1
+random = 40,60+(enemy(1),statetype=S)*40
+facing = enemy(1),facing*-1
+sprpriority = 5
+pos = floor(enemy(1),screenpos X),floor(enemy(1),screenpos Y)-40-(enemy(1),statetype=S)*20
+ignorehitpause = 1 
+pausemovetime = 123456789
+supermovetime = 123456789
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+triggerall = gametime%12=0
+trigger1 = numenemy >= 1
+trigger1 = enemy(0),stateno=[80010,80019]
+trigger1 = enemy(0),movetype = H
+anim = 10082
+postype = left
+ownpal = 1
+random = 40,60+(enemy(0),statetype=S)*40
+facing = enemy(0),facing*-1
+sprpriority = 5
+pos = floor(enemy(0),screenpos X),floor(enemy(0),screenpos Y)-40-(enemy(0),statetype=S)*20
+ignorehitpause = 1 
+pausemovetime = 123456789
+supermovetime = 123456789
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+triggerall = gametime%12=0
+trigger1 = numenemy = 2
+trigger1 = enemy(1),stateno=[80010,80019]
+trigger1 = enemy(1),movetype = H
+anim = 10082
+postype = left
+ownpal = 1
+random = 40,60
+facing = enemy(1),facing*-1
+sprpriority = 5
+pos = floor(enemy(1),screenpos X),floor(enemy(1),screenpos Y)-40
+ignorehitpause = 1 
+pausemovetime = 123456789
+supermovetime = 123456789
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+triggerall = gametime%12=4
+trigger1 = numenemy >= 1
+trigger1 = enemy(0),stateno=[80010,80019]
+trigger1 = enemy(0),movetype = H
+anim = 10083
+postype = left
+ownpal = 1
+random = 40,60+(enemy(0),statetype=S)*40
+facing = enemy(0),facing*-1
+sprpriority = 5
+pos = floor(enemy(0),screenpos X),floor(enemy(0),screenpos Y)-40-(enemy(0),statetype=S)*20
+ignorehitpause = 1 
+pausemovetime = 123456789
+supermovetime = 123456789
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+triggerall = gametime%12=4
+trigger1 = numenemy = 2
+trigger1 = enemy(1),stateno=[80010,80019]
+trigger1 = enemy(1),movetype = H
+anim = 10083
+postype = left
+ownpal = 1
+random = 40,60+(enemy(1),statetype=S)*40
+facing = enemy(1),facing*-1
+sprpriority = 5
+pos = floor(enemy(1),screenpos X),floor(enemy(1),screenpos Y)-40-(enemy(1),statetype=S)*20
+ignorehitpause = 1 
+pausemovetime = 123456789
+supermovetime = 123456789
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+triggerall = gametime%12=8
+trigger1 = numenemy >= 1
+trigger1 = enemy(0),stateno=[80010,80019]
+trigger1 = enemy(0),movetype = H
+anim = 10084
+postype = left
+ownpal = 1
+random = 40,60+(enemy(0),statetype=S)*40
+facing = enemy(0),facing*-1
+sprpriority = 5
+pos = floor(enemy(0),screenpos X),floor(enemy(0),screenpos Y)-40-(enemy(0),statetype=S)*20
+ignorehitpause = 1 
+pausemovetime = 123456789
+supermovetime = 123456789
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+triggerall = gametime%12=8
+trigger1 = numenemy = 2
+trigger1 = enemy(1),stateno=[80010,80019]
+trigger1 = enemy(1),movetype = H
+anim = 10084
+postype = left
+ownpal = 1
+random = 40,60+(enemy(1),statetype=S)*40
+facing = enemy(1),facing*-1
+sprpriority = 5
+pos = floor(enemy(1),screenpos X),floor(enemy(1),screenpos Y)-40-(enemy(1),statetype=S)*20
+ignorehitpause = 1 
+pausemovetime = 123456789
+supermovetime = 123456789
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+triggerall = gametime%12=8
+trigger1 = numenemy >= 1
+trigger1 = enemy(0),stateno=[80010,80019]
+trigger1 = enemy(0),movetype = H
+anim = 10084
+postype = left
+ownpal = 1
+random = 40,60+(enemy(0),statetype=S)*40
+facing = enemy(0),facing*-1
+sprpriority = 5
+pos = floor(enemy(0),screenpos X),floor(enemy(0),screenpos Y)-40-(enemy(0),statetype=S)*20
+ignorehitpause = 1 
+pausemovetime = 123456789
+supermovetime = 123456789
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+triggerall = gametime%12=8
+trigger1 = numenemy = 2
+trigger1 = enemy(1),stateno=[80010,80019]
+trigger1 = enemy(1),movetype = H
+anim = 10084
+postype = left
+ownpal = 1
+random = 40,60+(enemy(1),statetype=S)*40
+facing = enemy(1),facing*-1
+sprpriority = 5
+pos = floor(enemy(1),screenpos X),floor(enemy(1),screenpos Y)-40-(enemy(1),statetype=S)*20
+ignorehitpause = 1 
+pausemovetime = 123456789
+supermovetime = 123456789
+
+[State 5110, exp]
+type = varset
+triggerall = var(7)=0
+trigger1 = numenemy >= 1
+trigger1 = enemy(0),stateno=[80010,80019]
+var(27) = 1
+[State 5110, exp]
+type = varset
+triggerall = var(7)=0
+trigger1 = numenemy = 2
+trigger1 = enemy(1),stateno=[80010,80019]
+var(28) = 1
+
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+trigger1 = numenemy >= 1
+trigger1 = var(27) = 1
+trigger1 = enemy(0),statetype = L
+anim = 10085
+id = 10081
+postype = left
+ownpal = 1
+facing = enemy(0),facing*-1
+sprpriority = 5
+pos = floor(enemy(0),screenpos X),floor(enemy(0),screenpos Y)
+ignorehitpause = 1
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+trigger1 = numenemy = 2
+trigger1 = var(28) = 1
+trigger1 = enemy(1),statetype = L
+anim = 10085
+id = 10082
+postype = left
+ownpal = 1
+facing = enemy(1),facing*-1
+sprpriority = 5
+pos = floor(enemy(1),screenpos X),floor(enemy(1),screenpos Y)
+ignorehitpause = 1
+
+[State 5110, exp]
+type = varset
+triggerall = var(7)=0
+trigger1 = numenemy >= 1
+trigger1 = enemy(0),movetype != H 
+trigger2 = numexplod(10081) > 0
+var(27) = 0
+[State 5110, exp]
+type = varset
+triggerall = var(7)=0
+trigger1 = numenemy = 2
+trigger1 = enemy(1),movetype != H
+trigger2 = numexplod(10082) > 0
+var(28) = 0
+
+;電撃やられエフェクト
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+triggerall = gametime%6=1
+trigger1 = numenemy >= 1
+trigger1 = enemy(0),stateno=[80020,80029]
+trigger1 = enemy(0),movetype = H
+anim = 10072+random%4
+postype = left
+ownpal = 1
+random = 80,80
+facing = enemy(0),facing*-1
+sprpriority = 5
+pos = floor(enemy(0),screenpos X),floor(enemy(0),screenpos Y)-60
+ignorehitpause = 1 
+pausemovetime = 123456789
+supermovetime = 123456789
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+triggerall = gametime%6=1
+trigger1 = numenemy = 2
+trigger1 = enemy(1),stateno=[80020,80029]
+trigger1 = enemy(1),movetype = H && enemy(0),hitover
+anim = 10072+random%4
+postype = left
+ownpal = 1
+random = 80,80
+facing = enemy(1),facing*-1
+sprpriority = 5
+pos = floor(enemy(1),screenpos X),floor(enemy(1),screenpos Y)-60
+ignorehitpause = 1 
+pausemovetime = 123456789
+supermovetime = 123456789
+
+[State 5110, exp]
+type = varset
+triggerall = var(7)=0
+trigger1 = numenemy >= 1
+trigger1 = enemy(0),stateno=[80022,80029]
+var(25) = 1
+[State 5110, exp]
+type = varset
+triggerall = var(7)=0
+trigger1 = numenemy = 2
+trigger1 = enemy(1),stateno=[80022,80029]
+var(26) = 1
+
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+trigger1 = numenemy >= 1
+trigger1 = var(25) = 1
+trigger1 = enemy(0),statetype = L
+anim = 10071
+id = 10071
+postype = left
+ownpal = 1
+facing = enemy(0),facing*-1
+sprpriority = 5
+pos = floor(enemy(0),screenpos X),floor(enemy(0),screenpos Y)
+ignorehitpause = 1
+[State 5110, exp]
+type = Explod
+triggerall = var(7)=0
+trigger1 = numenemy = 2
+trigger1 = var(26) = 1
+trigger1 = enemy(1),statetype = L
+anim = 10071
+id = 10072
+postype = left
+ownpal = 1
+facing = enemy(1),facing*-1
+sprpriority = 5
+pos = floor(enemy(1),screenpos X),floor(enemy(1),screenpos Y)
+ignorehitpause = 1
+
+[State 5110, exp]
+type = varset
+triggerall = var(7)=0
+trigger1 = numenemy >= 1
+trigger1 = enemy(0),movetype != H 
+trigger2 = numexplod(10071) > 0
+var(25) = 0
+[State 5110, exp]
+type = varset
+triggerall = var(7)=0
+trigger1 = numenemy = 2
+trigger1 = enemy(1),movetype != H
+trigger2 = numexplod(10072) > 0
+var(26) = 0
+
+
+
+;-------------------------------------------------------------------------------
+;-------------------------------------------------------------------------------
+
+1Pゲージ下地
+[State -2]
+type = explod 
+trigger1 = TeamSide = 1&&(roundstate=2&&parent,alive)
+anim = 11200
+postype = left
+ontop = 1
+ID = 80011
+facing = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = 35+parent,var(19),parent,var(22)
+ownpal = 1
+pausemovetime = -1
+supermovetime = -1
+
+1Pスタンゲージ下地
+[State -2]
+type = explod 
+trigger1 = TeamSide = 1&&(roundstate=2&&parent,alive)
+anim = 11050+floor(time%18/3)
+postype = left
+ontop = 1
+ID = 80011
+facing = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = 35+parent,var(19),parent,var(22)
+ownpal = 1
+pausemovetime = -1
+supermovetime = -1
+[State -2]
+type = explod 
+trigger1 = parent,var(10)=[0,100]
+trigger1 = TeamSide = 1&&(roundstate=2&&parent,alive)
+anim = 11099+floor(parent,var(10)/2)
+postype = left
+ontop = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = 35+parent,var(19),parent,var(22)
+pausemovetime = -1
+supermovetime = -1
+[State -2]
+type = explod 
+triggerall = TeamSide = 1&&(roundstate=2&&parent,alive)
+trigger1 = parent,var(10)=-100
+trigger2 = parent,var(10)>100
+anim = 11149
+postype = left
+ontop = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = 35+parent,var(19),parent,var(22)
+pausemovetime = -1
+supermovetime = -1
+
+1Pガクラゲージ下地
+[State -2]
+type = explod 
+trigger1 = TeamSide = 1&&(roundstate=2&&parent,alive)
+anim = 11060+floor(time%18/3)
+postype = left
+ontop = 1
+ID = 80011
+facing = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = 35+parent,var(19),parent,var(22)+5
+ownpal = 1
+pausemovetime = -1
+supermovetime = -1
+[State -2]
+type = explod 
+trigger1 = parent,var(11)=[0,100]
+trigger1 = TeamSide = 1&&(roundstate=2&&parent,alive)
+anim = 11099+floor(parent,var(11)/2)
+postype = left
+ontop = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = 35+parent,var(19),parent,var(22)+5
+pausemovetime = -1
+supermovetime = -1
+[State -2]
+type = explod 
+triggerall = TeamSide = 1&&(roundstate=2&&parent,alive)
+trigger1 = parent,var(11)=-100
+trigger2 = parent,var(11)>100
+anim = 11149
+postype = left
+ontop = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = 35+parent,var(19),parent,var(22)+5
+pausemovetime = -1
+supermovetime = -1
+
+1PPゲージ下地
+[State -2]
+type = explod 
+trigger1 = TeamSide = 1&&(roundstate=2&&parent,alive)
+anim = (11070+parent,var(17)*10)+floor(time%18/3)
+postype = left
+ontop = 1
+ID = 80011
+facing = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = 35+parent,var(19),parent,var(22)+10
+ownpal = 1
+pausemovetime = -1
+supermovetime = -1
+[State -2]
+type = explod 
+trigger1 = parent,var(18)=[0,1000]
+trigger1 = TeamSide = 1&&(roundstate=2&&parent,alive)
+anim = 11099+floor(parent,var(18)/20)
+postype = left
+ontop = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = 35+parent,var(19),parent,var(22)+10
+pausemovetime = -1
+supermovetime = -1
+[State -2]
+type = explod 
+triggerall = TeamSide = 1&&(roundstate=2&&parent,alive)
+trigger1 = parent,var(18)<0
+anim = 11099
+postype = left
+ontop = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = 35+parent,var(19),parent,var(22)+10
+pausemovetime = -1
+supermovetime = -1
+
+;-------------------------------------------------------------------------------
+
+2Pゲージ下地
+[State -2]
+type = explod 
+trigger1 = TeamSide = 2 &&(roundstate=2&&parent,alive)
+anim = 11200
+postype = right
+ontop = 1
+ID = 80011
+facing = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = -40-parent,var(19),parent,var(22)
+ownpal = 1
+pausemovetime = -1
+supermovetime = -1
+
+2Pスタンゲージ下地
+[State -2]
+type = explod 
+trigger1 = TeamSide = 2 &&(roundstate=2&&parent,alive)
+anim = 11050+floor(time%18/3)
+postype = right
+ontop = 1
+ID = 80011
+facing = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = -40-parent,var(19),parent,var(22)
+ownpal = 1
+pausemovetime = -1
+supermovetime = -1
+[State -2]
+type = explod 
+trigger1 = parent,var(10)=[0,100]
+trigger1 = TeamSide = 2 &&(roundstate=2&&parent,alive)
+anim = 11099+floor(parent,var(10)/2)
+postype = right
+ontop = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = -40-parent,var(19),parent,var(22)
+pausemovetime = -1
+supermovetime = -1
+[State -2]
+type = explod 
+triggerall = TeamSide = 2 &&(roundstate=2&&parent,alive)
+trigger1 = parent,var(10)=-100
+trigger2 = parent,var(10)>100
+anim = 11149
+postype = right
+ontop = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = -40-parent,var(19),parent,var(22)
+pausemovetime = -1
+supermovetime = -1
+
+1Pガクラゲージ下地
+[State -2]
+type = explod 
+trigger1 = TeamSide = 2 &&(roundstate=2&&parent,alive)
+anim = 11060+floor(time%18/3)
+postype = right
+ontop = 1
+ID = 80011
+facing = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = -40-parent,var(19),parent,var(22)+5
+ownpal = 1
+pausemovetime = -1
+supermovetime = -1
+[State -2]
+type = explod 
+trigger1 = parent,var(11)=[0,100]
+trigger1 = TeamSide = 2 &&(roundstate=2&&parent,alive)
+anim = 11099+floor(parent,var(11)/2)
+postype = right
+ontop = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = -40-parent,var(19),parent,var(22)+5
+pausemovetime = -1
+supermovetime = -1
+[State -2]
+type = explod 
+triggerall = TeamSide = 2 &&(roundstate=2&&parent,alive)
+trigger1 = parent,var(11)=-100
+trigger2 = parent,var(11)>100
+anim = 11149
+postype = right
+ontop = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = -40-parent,var(19),parent,var(22)+5
+pausemovetime = -1
+supermovetime = -1
+
+1PPゲージ下地
+[State -2]
+type = explod 
+trigger1 = TeamSide = 2 &&(roundstate=2&&parent,alive)
+anim = (11070+parent,var(17)*10)+floor(time%18/3)
+postype = right
+ontop = 1
+ID = 80011
+facing = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = -40-parent,var(19),parent,var(22)+10
+ownpal = 1
+pausemovetime = -1
+supermovetime = -1
+[State -2]
+type = explod 
+trigger1 = parent,var(18)=[0,1000]
+trigger1 = TeamSide = 2 &&(roundstate=2&&parent,alive)
+anim = 11099+floor(parent,var(18)/20)
+postype = right
+ontop = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = -40-parent,var(19),parent,var(22)+10
+pausemovetime = -1
+supermovetime = -1
+[State -2]
+type = explod 
+triggerall = TeamSide = 2 &&(roundstate=2&&parent,alive)
+trigger1 = parent,var(18)<0
+anim = 11099
+postype = right
+ontop = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = -40-parent,var(19),parent,var(22)+10
+pausemovetime = -1
+supermovetime = -1
+
+;-------------------------------------------------------------------------------
+
+
+;AIアイコン
+[State -2]
+type = explod 
+trigger1 = TeamSide = 1&&(roundstate=2&&parent,alive)&&parent,var(59)>0
+anim = 11090+floor(time%18/3)
+postype = left
+ontop = 1
+ID = 80011
+facing = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = 35+parent,var(19),parent,var(22)
+ownpal = 1
+pausemovetime = -1
+supermovetime = -1
+
+[State -2]
+type = explod 
+trigger1 = TeamSide = 2 &&(roundstate=2&&parent,alive)&&parent,var(59)>0
+anim = 11090+floor(time%18/3)
+postype = right
+ontop = 1
+ID = 80011
+facing = 1
+scale = 0.5,0.5;ifelse(parent,var(19),0.5,1),ifelse(parent,var(19),0.5,1)
+pos = -40-parent,var(19),parent,var(22)
+ownpal = 1
+pausemovetime = -1
+supermovetime = -1
+
+;----------------------------------------------------------------------
+; 壁感知ヘルパー
+[Statedef 10001]
+type = A
+movetype = I
+physics = N
+anim = 9999
+ctrl = 0
+velset = 0, 0
+
+[State 6001, Stage Forward]
+type = Helper
+trigger1 = !var(10)
+trigger1 = !numhelper(100000)
+trigger1 = roundstate = 2
+helpertype = normal
+name = "Stage Forward"
+stateno = 100000
+id = 100000
+persistent = 0
+pausemovetime = 99999999
+supermovetime = 99999999
+
+[State 6001, Stage Backward]
+type = Helper
+trigger1 = !var(11)
+trigger1 = !numhelper(110000)
+trigger1 = roundstate = 2
+helpertype = normal
+name = "Stage Backward"
+stateno = 110000
+id = 110000
+pausemovetime = 99999999
+supermovetime = 99999999
+persistent = 0
+
+[State 6001, Stage Helper]
+type = VarSet
+trigger1 = numhelper(100000) > 0
+var(12) = ceil(helper(100000),rootdist x)
+[State 6001, Stage Helper]
+type = VarSet
+trigger1 = numhelper(110000) > 0
+var(13) = ceil(helper(110000),rootdist x)
+[State 6001, Stage Helper]
+type = VarSet
+trigger1 = 1
+var(10) = ifelse((rootdist x < p2dist x), ceil(var(12)+(rootdist x))*(ifelse(root,facing = 0, 1, -1)), ceil(var(13)+(rootdist x))*(ifelse(root,facing = 0, -1, 1)))
+[State 6001, Stage Helper]
+type = VarSet
+trigger1 = 1
+var(11) = ifelse((rootdist x < p2dist x), ceil(var(13)+(rootdist x))*(ifelse(root,facing = 0, 1, -1)), ceil(var(12)+(rootdist x))*(ifelse(root,facing = 0, -1, 1)))
+;----------------------------------------------------------------------
+; A.I. Learning (Stage Forward)
+[Statedef 100000]
+type = A
+movetype = I
+physics = N
+anim = 9999
+ctrl = 0
+velset = 10, 0
+
+[State 100000]
+type = SelfState
+trigger1 = !ishelper
+value = 0
+
+[State 100000]
+type = Projectile
+trigger1 = time = 0
+trigger1 = numprojID(100000) < 1
+projID = 100000
+projanim = 9999
+projstagebound = enemynear(root,var(55)),const(size.ground.front)*-2
+projedgebound = 100000
+projremovetime = -1
+projpriority = 9999
+velocity = 10, 0
+offset = 0, 0
+supermovetime = 99999999
+pausemovetime = 99999999
+
+[state 100000]
+type = VelSet
+trigger1 = vel x > 0
+trigger1 = root,numprojID(100000) = 0
+x = 0
+
+[state 100000]
+type = VarSet
+trigger1 = time > 0
+trigger1 = vel x = 0
+trigger1 = numhelper(100000) > 0
+trigger1 = root,numprojID(100000) = 0
+var(0) = ceil(rootdist x)
+
+[state 110000]
+type = DestroySelf
+trigger1 = time > 0
+trigger1 = var(0)
+trigger1 = numhelper(10001) > 0
+trigger1 = helper(10001),var(10)
+
+;----------------------------------------------------------------------
+; A.I. Learning (Stage Backward)
+
+[Statedef 110000]
+type = A
+movetype = I
+physics = N
+anim = 9999
+ctrl = 0
+velset = -10, 0
+
+[State 110000]
+type = SelfState
+trigger1 = !ishelper
+value = 0
+
+[State 110000]
+type = Projectile
+trigger1 = time = 0
+trigger1 = numprojID(110000) < 1
+projID = 110000
+projanim = 9999
+projstagebound = enemynear(root,var(55)),const(size.ground.front)*-2
+projedgebound = 110000
+projremovetime = -1
+projpriority = 9999
+velocity = -10, 0
+offset = 0, 0
+supermovetime = 99999999
+pausemovetime = 99999999
+
+[State 110000]
+type = VelSet
+trigger1 = vel x < 0
+trigger1 = root,numprojID(110000) = 0
+x = 0
+
+[State 110000]
+type = VarSet
+trigger1 = time > 0
+trigger1 = vel x = 0
+trigger1 = numhelper(110000) > 0
+trigger1 = root,numprojID(110000) = 0
+var(0) = ceil(rootdist x)
+
+[State 110000]
+type = DestroySelf
+trigger1 = time > 0
+trigger1 = var(0)
+trigger1 = numhelper(10001) > 0
+trigger1 = helper(10001),var(11)
+
+
+
+
+
+
+
+;-------------------------------------------------------------------------------
+;-------------------------------------------------------------------------------
+[Statedef 10010] ;KO演出
+type    = S
+movetype= I
+physics = S
+anim = 9999
+
+[State 3000, Super A]
+type = changestate
+trigger1 = parent,WINKO
+value = 10011
+
+[State 3000, Super A]
+type = destroyself
+trigger1 = parent,WinTime
+
+[State 3000, Super A]
+type = playsnd
+trigger1 = parent,Wintime||parent,Losetime
+trigger2 = parent,drawgame&&parent,alive
+value = 25,4
+persistent=0
+
+[Statedef 10011] ;KO演出
+type    = S
+movetype= I
+physics = S
+anim = 9999
+
+[State 3000, Super A]
+type = BGpalfx
+trigger1 = parent,teammode = simul
+trigger1 = (time%4) = [0,1]
+trigger1 = time < 36
+add = 1000,-1000,-1000
+time = 2
+[State 3000, Super A]
+type = BGpalfx
+trigger1 = parent,teammode = simul
+trigger1 = (time%4) = [2,3]
+trigger1 = time < 36
+add = 1000,1000,1000
+time = 2
+
+[State 3000, Super A]
+type = envcolor
+trigger1 = parent,teammode = single || parent,teammode = turns
+trigger1 = (time%4) = [0,1]
+trigger1 = time < 36
+value = 255,0,0
+under = 1
+[State 3000, Super A]
+type = envcolor
+trigger1 = parent,teammode = single || parent,teammode = turns
+trigger1 = (time%4) = [2,3]
+trigger1 = time < 36
+value = 255,255,255
+under = 1
+
+[State 3000, Super A]
+type = playsnd
+trigger1 = time = 0
+value = 7,2
+volume = 255
+
+[State 3000, Super A]
+type = AssertSpecial
+trigger1 = time < 36
+flag = noFG
+flag2 = globalnoshadow
+
+[State 3000, Super A]
+type = AssertSpecial
+trigger1 = 1
+flag = NoBarDisplay
+
+[State 3000, Super A]
+type = explod
+trigger1 = time = 38
+trigger1 = parent,var(14) = 0
+anim = 8011
+id = 10010
+ownpal = 1
+pos = 8,55
+postype = left
+bindtime = -1
+ontop = 1
+[State 3000, Super A]
+type = explod
+trigger1 = time = 38
+trigger1 = parent,var(14) = 1
+anim = 8010
+id = 10010
+ownpal = 1
+pos = 8,55
+postype = left
+bindtime = -1
+ontop = 1
+[State 3000, Super A]
+type = playsnd
+trigger1 = time = 38
+value = 25,0
+volume = 255
+persistent=0
+[State 3000, Super A]
+type = playsnd
+trigger1 = parent,var(14) = 0
+trigger1 = time = 96
+value = 25,3
+volume = 255
+persistent=0
+
+[State 3000, Super A]
+type = destroyself
+trigger1 = time > 38
+trigger1 = numexplod(10010) = 0
