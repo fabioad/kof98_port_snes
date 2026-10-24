@@ -51,8 +51,79 @@ OamCacheRam dsb $0800
 .RAMSECTION ".fight_stream_cache" BANK $7F SLOT 3 ORGA $0000 FORCE
 FightStreamingCache dsb $3000
 .ENDS
+; MSU CHR staging buffer: one 512-byte sector prefix + one 1280-byte chunk.
+; The seek is always aligned to a 512-byte file sector; the prefix is read
+; into this buffer and skipped by the VRAM DMA source address.
+.RAMSECTION ".msu_stage" BANK $7F SLOT 3 ORGA $5000 FORCE
+MsuStageBuf dsb $0800
+.ENDS
 
 .INCLUDE "engine/fight.asm"
 .INCLUDE "engine/voice_queue.asm"       ; incremental MSU voice loader
 .INCLUDE "engine/menus.asm"
 .INCLUDE "engine/options.asm"
+.IFDEF MSU_DIAG
+.IFDEF MSU_DIAG2
+.RAMSECTION ".msu_diag_buffers" BANK $7F SLOT 3 ORGA $3000 FORCE
+.IFDEF MSU_DIAG3
+MsuDiagBuffers dsb $1900
+.ELSE
+MsuDiagBuffers dsb $1800
+.ENDIF
+.ENDS
+.ENDIF
+.INCLUDE "engine/msu_diag.asm"
+.ENDIF
+
+; MSU CHR staging, kept out of the full 32 KiB Fight bank.  The caller has
+; already written VMADDL with the hidden-page destination and staged the
+; 512-byte-aligned seek.  A16/X16 on entry and exit.
+.BASE $C0
+.BANK 126 SLOT 0
+.ORGA $CF00
+.SECTION "MsuStageCode" FORCE
+MsuStageUploadFar:
+    rep #$20
+    .ACCU 16
+    ; 1) MSU -> WRAM: sector prefix + payload from the fixed data port.
+    lda #(MsuStageBuf & $FFFF).w
+    sta.l $2181
+    lda #$8008.w                        ; mode 0, fixed A source -> WMDATA
+    sta.l $4350
+    lda #$2001.w
+    sta.l $4352
+    lda.w MSU_PREFIX
+    clc
+    adc scr3
+    sta.l $4355
+    sep #$20
+    .ACCU 8
+    lda #$7F.b
+    sta.l $2183
+    lda #$00.b
+    sta.l $4354
+    lda #$20.b
+    sta.l MDMAEN
+    ; 2) WRAM -> VRAM: skip the prefix, write only the requested payload.
+    lda #$80.b
+    sta.l VMAIN
+    rep #$20
+    .ACCU 16
+    lda #$1801.w                        ; mode 1: alternate $2118/$2119
+    sta.l $4350
+    lda #(MsuStageBuf & $FFFF).w
+    clc
+    adc.w MSU_PREFIX
+    sta.l $4352
+    lda scr3
+    sta.l $4355
+    sep #$20
+    .ACCU 8
+    lda #$7F.b
+    sta.l $4354
+    lda #$20.b
+    sta.l MDMAEN
+    rep #$20
+    .ACCU 16
+    rtl
+.ENDS

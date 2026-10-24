@@ -368,6 +368,9 @@
 .DEFINE msuf        $3F                 ; chr src flags for pending sprite
 .DEFINE MSU_STAT    $002000             ; MSU-1 status/read-flags reg
 .DEFINE MSU_DATA    $002001             ; MSU-1 sequential data byte
+; Bytes between the 512-byte-aligned sector and the requested CHR chunk.
+; Unused diag word at $543E (MD_RES starts at $5440).
+.DEFINE MSU_PREFIX  $543E
 
 ; Generated MSU-1 slice constants are used by tables below, so define them
 ; before those tables are assembled.
@@ -884,6 +887,9 @@ FightMain:
     sep #$20
     .ACCU 8
     jsr PpuInit
+.IFDEF MSU_DIAG
+    jsl MsuDiagBoot
+.ENDIF
     jsr LoadStaticGfx
     jsr StagePick                         ; stage for the select backdrop
     inc.b audiordy                      ; BootAudio (C) already ran SNESMOD
@@ -15088,6 +15094,9 @@ FP_dma_p1done:
     jsr SprDmaP
 FP_dma_done:
     .ACCU 8
+.IFDEF MSU_DIAG
+    jsl MsuDiagOverlay
+.ENDIF
     lda FP+F_DMAREQ                     ; a fighter upload is still in flight:
     ora FP+F_DMAREQ+FP2OFS              ;   don't start a second DMA engine
     bne +                               ;   transfer in this vblank
@@ -16369,7 +16378,21 @@ SD_msu:
     sta scr0
     bcc +
     inc scr4                            ; carry into byte 2 of the seek
-+   sep #$20
++
+    ; The sd2snes MSU extension refills its data cache from a 512-byte
+    ; aligned file sector and points the SNES read pointer at the in-sector
+    ; offset.  Live CHR chunks are only 32-byte aligned, so every chunk used
+    ; to depend on a non-zero in-sector pointer (and on page-2 cache hits).
+    ; Align the seek to the sector and stage prefix+payload; the VRAM DMA
+    ; then starts at the saved prefix.  This starts every transfer at
+    ; buffer offset 0 and keeps the whole read inside one 8 KiB cache page.
+    lda scr0
+    and #$01FF.w
+    sta.w MSU_PREFIX
+    lda scr0
+    and #$FE00.w
+    sta scr0                            ; sector-aligned seek address
+    sep #$20
     .ACCU 8
     lda scr0
     sta.l MSU_STAT                      ; seek byte 0
@@ -16379,6 +16402,12 @@ SD_msu:
     sta.l $2002                         ; seek byte 2
     lda scr4+1
     sta.l $2003                         ; seek byte 3 (starts the seek)
+.IFDEF MSU_DIAG
+    jsl MsuDiagSpriteWait
+    bcc SD_diag_ready
+    jmp SD_ret
+SD_diag_ready:
+.ELSE
     ldx #MSU_POLL_LIMIT.w               ; bounded wait: retry next frame
 -   lda.l MSU_STAT
     bpl +
@@ -16388,36 +16417,17 @@ SD_msu:
     .ACCU 16
     inc.w RT_MSUFAIL
     jmp SD_ret                          ; never commit an incomplete page
-+   lda #$80.b
-    sta.l VMAIN                         ; inc after $2119 (word writes)
-    ; GPDMA ch7: MSU-1 data port ($00:2001) -> VMDATA.  The source address
-    ; stays fixed (mode $09): the MSU-1 advances its own 4 GB pointer on
-    ; every read, exactly like the sd2snes MSU-1 video demo does.
-    ; A CPU copy here costs ~10 cycles/byte and forced blank, so the old
-    ; path was capped at 192 B/frame; a 2.6 KB attack pose then needed 14
-    ; vblanks and the fighter froze on stale frames.  DMA moves the whole
-    ; 1536-byte chunk during vblank and lets MSU fighters animate at the
-    ; same rate as ROM-resident ones.
-    lda #$09.b                          ; mode 1 + fixed A-bus source
-    sta.l $4350                         ; ch5: ch7 is PVSnesLib's OAM DMA
-    lda #$18.b
-    sta.l $4351
-    rep #$20
-    .ACCU 16
-    lda #$2001.w
-    sta.l $4352
-    sep #$20
-    .ACCU 8
-    lda #$00.b                          ; bank 00 -> MSU-1 registers
-    sta.l $4354
-    rep #$20
-    .ACCU 16
-    lda scr3                            ; byte count (even, <= DMACHUNK)
-    sta.l $4355
-    sep #$20
-    .ACCU 8
-    lda #$20.b
-    sta.l MDMAEN                        ; fire ch5
++
+.ENDIF
+.IFDEF MSU_DIAG2
+    jsl MsuDiagStagedUpload
+    jmp SD_advance
+.ELSE
+    ; Stage the aligned MSU window in WRAM, then DMA the payload to VRAM.
+    ; Kept out of this 32 KiB bank (Fight section) to leave ROM room here.
+    jsl MsuStageUploadFar
+.IFDEF MSU_DIAG
+    jsl MsuDiagTransferred
     rep #$20
     .ACCU 16
     ; retain the stream probe used by the MSU diagnostics
@@ -16425,7 +16435,11 @@ SD_msu:
     sta.l $7E0910
     lda scr4
     sta.l $7E0912
+.ENDIF
+    rep #$20
+    .ACCU 16
     jmp SD_advance
+.ENDIF
 SD_commit:
     ldx fofs
     sep #$20
