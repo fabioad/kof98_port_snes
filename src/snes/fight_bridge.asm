@@ -58,6 +58,17 @@ FightStreamingCache dsb $3000
 MsuStageBuf dsb $0800
 .ENDS
 
+; Arguments for the sector-aligned MSU reader used by the voice streamer.
+; Kept in the free top of WRAM next to the select scratch bytes ($7F10/$7F20
+; are already used by the select screen and the voice fallback).
+.RAMSECTION ".msu_read" BANK $7E SLOT 2 ORGA $7F30 FORCE
+MsuReadVars dsb $10
+.ENDS
+.DEFINE MRD_SRC $7E7F30                 ; 32-bit .msu file offset
+.DEFINE MRD_DST $7E7F34                 ; 24-bit destination
+.DEFINE MRD_LEN $7E7F37                 ; bytes still to read
+.DEFINE MRD_POS $7E7F39                 ; bytes already copied
+
 .INCLUDE "engine/fight.asm"
 .INCLUDE "engine/voice_queue.asm"       ; incremental MSU voice loader
 .INCLUDE "engine/menus.asm"
@@ -125,5 +136,146 @@ MsuStageUploadFar:
     sta.l MDMAEN
     rep #$20
     .ACCU 16
+    rtl
+.ENDS
+
+; Sector-aligned MSU reader for streamed voices.  The CHR path was already
+; aligned to 512 bytes because the SD2SNES data cache is refilled per sector;
+; the voice streamer still read 512-byte chunks from arbitrary offsets, so a
+; chunk could start at a non-zero in-sector pointer (or cross a cache page)
+; and stall the console inside the byte-copy loop.  Keep every MSU read on a
+; sector boundary and copy only the payload out of the staging buffer.
+;
+; In:  MRD_SRC = 32-bit .msu offset
+;      MRD_DST = 24-bit destination
+;      MRD_LEN = number of bytes
+; Out: C=1 when everything was copied, C=0 after an MSU timeout (nothing is
+;      advanced by the caller, so it can retry on the next frame).
+; A16/X16 on exit.
+.BANK 126 SLOT 0
+.ORGA $CF80
+.SECTION "MsuAlignedRead" FORCE
+MsuReadAlignedFar:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    sep #$20
+    .ACCU 8
+    lda #0
+    sta.l MRD_POS
+    sta.l MRD_POS+1
+    rep #$20
+    .ACCU 16
+MRA_loop:
+    lda.l MRD_POS
+    cmp.l MRD_LEN
+    bcc MRA_more
+    jmp MRA_done
+MRA_more:
+    ; count = min(512, remaining)
+    lda.l MRD_LEN
+    sec
+    sbc.l MRD_POS
+    cmp #VOICE_CHUNK.w
+    bcc +
+    lda #VOICE_CHUNK.w
++   sta scr3
+    ; 32-bit source offset for this chunk
+    lda.l MRD_SRC
+    clc
+    adc.l MRD_POS
+    sta scr0
+    lda.l MRD_SRC+2
+    adc #0.w
+    sta scr2
+    ; align the seek down to a 512-byte sector
+    lda scr0
+    and #$01FF.w
+    sta.w MSU_PREFIX
+    lda scr0
+    and #$FE00.w
+    sta scr0
+    sep #$20
+    .ACCU 8
+    lda scr0
+    sta.l MSU_STAT
+    lda scr0+1
+    sta.l MSU_DATA
+    lda scr2
+    sta.l $2002
+    lda scr2+1
+    sta.l $2003
+    ldx #MSU_POLL_LIMIT.w               ; bounded: caller retries next frame
+MRA_poll:
+    lda.l MSU_STAT
+    bpl MRA_ready
+    dex
+    bne MRA_poll
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    clc
+    rtl
+MRA_ready:
+    ; MSU -> WRAM through the CPU data port.  Do not use a second MSU DMA
+    ; here: the CHR uploader owns the DMA/cache path, and interleaving two
+    ; MSU DMA consumers left the SD2SNES cache serving stale CHR sectors on
+    ; some cards (MSU fighters showed garbled tiles again).  A voice chunk
+    ; is only 512 bytes, so the CPU copy is cheap enough.
+    rep #$20
+    .ACCU 16
+    lda #(MsuStageBuf & $FFFF).w
+    sta scr0
+    lda.w MSU_PREFIX
+    clc
+    adc scr3
+    sta scr5                            ; prefix + payload bytes
+    sep #$20
+    .ACCU 8
+    lda #$7F.b
+    sta scr0+2
+    ldy #0
+MRA_copy_in:
+    lda.l MSU_DATA
+    sta [scr0],y
+    iny
+    cpy scr5
+    bcc MRA_copy_in
+    ; copy only the requested payload, skipping the sector prefix
+    rep #$20
+    .ACCU 16
+    lda #(MsuStageBuf & $FFFF).w
+    clc
+    adc.w MSU_PREFIX
+    sta scr0
+    lda.l MRD_DST
+    clc
+    adc.l MRD_POS
+    sta scr2
+    sep #$20
+    .ACCU 8
+    lda #$7F.b
+    sta scr0+2
+    lda.l MRD_DST+2
+    sta scr2+2
+    rep #$20
+    .ACCU 16
+    ldy #0
+MRA_copy:
+    lda [scr0],y
+    sta [scr2],y
+    iny
+    cpy scr3
+    bcc MRA_copy
+    lda.l MRD_POS
+    clc
+    adc scr3
+    sta.l MRD_POS
+    jmp MRA_loop
+MRA_done:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    sec
     rtl
 .ENDS

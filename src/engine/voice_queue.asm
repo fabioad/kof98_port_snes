@@ -134,34 +134,17 @@ VQTF_meta:
     lda #1.w
     sta.w VQ_BUSY
 VQTF_chunk:
+    ; The SD2SNES MSU cache is refilled from 512-byte sectors.  Read each
+    ; voice chunk through the sector-aligned staging path used by CHR: an
+    ; unaligned 512-byte read can cross the cache page and leave the CPU
+    ; spinning on MSU_DATA (fighters and clock stop, music keeps playing).
     lda.w VQ_MSUOFS
     clc
     adc.w VQ_POS
-    sta scr0
+    sta.l MRD_SRC
     lda.w VQ_MSUOFS+2
     adc #0.w
-    sta scr2
-    sep #$20
-    .ACCU 8
-    lda scr0
-    sta.l MSU_STAT
-    lda scr0+1
-    sta.l MSU_DATA
-    lda scr2
-    sta.l $2002
-    lda scr2+1
-    sta.l $2003
-    ldx #MSU_POLL_LIMIT.w
--   lda.l MSU_STAT
-    bpl +
-    dex
-    bne -
-    rep #$20
-    .ACCU 16
-    inc.w RT_MSUFAIL
-    rtl
-+   rep #$20
-    .ACCU 16
+    sta.l MRD_SRC+2
     lda.w VQ_TOTAL
     sec
     sbc.w VQ_POS
@@ -169,24 +152,24 @@ VQTF_chunk:
     bcc +
     lda #VOICE_CHUNK.w
 +   sta.w VQ_COUNT
+    sta.l MRD_LEN
     lda.w VQ_POS
     ldx.w VQ_SLOT
     beq +
     clc
     adc #VQ_CACHE1.w
-+   tax
-    ldy.w VQ_COUNT
++   sta.l MRD_DST
     sep #$20
     .ACCU 8
-VQTF_copy:
-    lda.l MSU_DATA
-    sta.l $7F0000,x
-    inx
-    dey
-    bne VQTF_copy
+    lda #$7F.b
+    sta.l MRD_DST+2
     rep #$20
     .ACCU 16
-    lda.w VQ_POS
+    jsl MsuReadAlignedFar
+    bcs +
+    inc.w RT_MSUFAIL                    ; keep cursor: retry next frame
+    jmp VQTF_ret
++   lda.w VQ_POS
     clc
     adc.w VQ_COUNT
     sta.w VQ_POS

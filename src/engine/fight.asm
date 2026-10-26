@@ -15602,7 +15602,11 @@ RoundVoice:
     sta.l NMITIMEN
     tcd                                 ; snesmod uses direct page zero
     jsl SpcFlushSafe                        ; retire queued music/effects first
-    lda 7,s                             ; stacked A: voice index 0..8
+    lda.l $00015A                       ; still streaming?  spcLoadEffect would
+    and #$00FF.w                        ;   spin forever on a missed APU ack,
+    beq +                               ;   freezing the fight with music alive
+    jmp RV_skip                         ;   (drop the callout, retry no voice)
++   lda 7,s                             ; stacked A: voice index 0..8
     and #$00FF.w
     clc
     adc #7                              ; -> soundbank source 7..15
@@ -15626,6 +15630,19 @@ RoundVoice:
     pla
     pla
     sep #$20
+    .ACCU 8
+    lda #$81.b
+    sta.l NMITIMEN
+    rep #$20
+    .ACCU 16
+    pld
+    ply
+    plx
+    pla
+    plp
+    rts
+RV_skip:                                ; stream still active: leave NMI/stack
+    sep #$20                            ;   exactly as the played path does
     .ACCU 8
     lda #$81.b
     sta.l NMITIMEN
@@ -19589,7 +19606,16 @@ FxDrainFar:
     .ACCU 16
     rtl
 FD_ready:
-    rep #$20
+    ; A character voice can still be streaming even when spc_v matches the
+    ; APU port.  spcLoadEffect's message handshake has no timeout, so loading
+    ; an effect now can leave the CPU waiting forever (music keeps playing,
+    ; fighters and the round clock stop).  Keep the pending reload for the
+    ; next frame and only start it once the streamer is idle.
+    lda.l $00015A
+    and #$00FF.b
+    beq +
+    rtl
++   rep #$20
     .ACCU 16
     lda.l $7E46F8
     dec a                               ;   the fifo drains between syncs
