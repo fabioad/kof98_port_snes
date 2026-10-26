@@ -3053,9 +3053,29 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None):
                         if xv is not None:
                             m = re.match(r"(-?\d+(?:\.\d+)?)", xv)
                             if not m:
-                                continue      # expression -> skip
-                            vx = int(round(float(m.group(1))
-                                           / coord_scale))
+                                # System dodges spell the normal speed in an
+                                # ifelse(): e.g. Ralf/Clark
+                                #   ifelse((PrevStateNo=100 || var(16)=1),7.5,5)
+                                #   ifelse(var(16)=1,-7.5,-5)
+                                # The condition selects a powered-up/extra
+                                # dodge; use the else branch for the normal
+                                # ESQ_F/ESQ_B path instead of dropping the
+                                # velocity and leaving the roll stationary.
+                                if not re.search(
+                                        r"prevstateno|var\s*\(\s*16\s*\)",
+                                        xv, re.I):
+                                    continue  # jump/gethit expression
+                                m = re.search(
+                                    r",\s*(-?\d+(?:\.\d+)?)\s*,"
+                                    r"\s*(-?\d+(?:\.\d+)?)\s*\)\s*$",
+                                    xv)
+                                if not m:
+                                    continue  # complex expression -> skip
+                                vx = int(round(float(m.group(2))
+                                               / coord_scale))
+                            else:
+                                vx = int(round(float(m.group(1))
+                                               / coord_scale))
                             acts.setdefault(state, []).append(
                                 (fr, 5, vx & 0xFF, cond))
                         yv = ctrl.get("y")
@@ -4239,7 +4259,7 @@ def emit_command_pool():
 LAND_SID = 17                           # S_LAND: grounded recovery -> stand
 
 
-def trans_rules(statedefs, headers, state_to_sid, buttons):
+def trans_rules(statedefs, headers, state_to_sid, buttons, state_to_sids=None):
     """ChangeState controllers inside wired statedefs -> TransTab rows.
 
     (from_sid, to_sid, kind, arg):
@@ -4278,11 +4298,32 @@ def trans_rules(statedefs, headers, state_to_sid, buttons):
     elemtime_ge = re.compile(
         r"animelemtime\s*\(\s*(\d+)\s*\)\s*>=\s*(-?\d+(?:\.\d+)?)", re.I)
     elem_eq = re.compile(r"^\s*animelem\s*=\s*(\d+)\s*$", re.I)
+    # Window guards such as `AnimElem = 5,> 0` or `AnimElemTime(5) > 0`
+    # accompany a landing/ChangeState rule.  They do not define the rule and
+    # must not mark the controller as unsupported: dropping it left Choi
+    # (1500/1510 -> 1505) and other rising anti-airs on the animation's
+    # 255-tick trailing hold after touching the floor.
+    elem_window = re.compile(
+        r"^\s*animelem\s*=\s*\d+\s*,\s*[<>]=?\s*-?\d+(?:\.\d+)?\s*$",
+        re.I)
+    elemtime_window = re.compile(
+        r"^\s*animelemtime\s*\(\s*\d+\s*\)\s*[<>]\s*"
+        r"-?\d+(?:\.\d+)?\s*$", re.I)
+    if state_to_sids is None:
+        state_to_sids = {st: [sid] for st, sid in state_to_sid.items()}
     rows = []
     for mstate, ctrls in statedefs.items():
-        from_sid = state_to_sid.get(mstate)
-        if from_sid is None:
+        from_sids = state_to_sids.get(mstate)
+        if not from_sids:
             continue
+        def emit(to_sid, kind, arg):
+            # A MUGEN state can own several runtime sids: slices and
+            # alternate/MAX versions.  The old first-sid-only mapping left
+            # the MAX/duplicate versions without landing rows, so a rising
+            # anti-air on those sids stayed on its 255-tick hold after
+            # touching the floor.
+            for fsid in from_sids:
+                rows.append((fsid, to_sid, kind, arg))
         for c in ctrls:
             if c.get("type", "").lower() != "changestate":
                 continue
@@ -4360,6 +4401,8 @@ def trans_rules(statedefs, headers, state_to_sid, buttons):
                 if ee:
                     elem_frame = max(0, int(ee.group(1)) - 1)
                     continue
+                if elem_window.match(t) or elemtime_window.match(t):
+                    continue                  # window guard, not a rule
                 m = vel.search(t)
                 if m:
                     if m.group(1) == "<":
@@ -4409,11 +4452,11 @@ def trans_rules(statedefs, headers, state_to_sid, buttons):
                 for nm in names:
                     if nm not in buttons:
                         continue
-                    rows.append((from_sid, to_sid, 2, buttons[nm]))
+                    emit(to_sid, 2, buttons[nm])
                 continue
             if kind is None:
                 continue
-            rows.append((from_sid, to_sid, kind, arg))
+            emit(to_sid, kind, arg)
     return rows
 
 
@@ -5506,7 +5549,17 @@ def build_char(name, cfg, global_pal=None):
                     # AnimElem actions inside an animation's loop are replayed
                     # every time that element comes around. Voices are one-shot
                     # events, so schedule them at the matching state tick.
-                    times.append(sum(max(1, d) for d in durs[:frame]))
+                    tick = sum(max(1, d) for d in durs[:frame])
+                    if tick < 0x7F:
+                        times.append(tick)
+                    elif frame < 0x7F:
+                        # State-time triggers only carry seven bits.  Long
+                        # supers (Ralf's Galactica Phantom weak runs 182
+                        # ticks) used to lose their voice silently.  Keep an
+                        # element trigger as a fallback: the move does not
+                        # loop, so it still fires once.
+                        cns_acts.setdefault(state, []).append(
+                            (frame, 7, sfxid, 2 if voice_random else 0))
                 else:
                     cns_acts.setdefault(state, []).append(
                         (frame, 7, sfxid, 2 if voice_random else 0))
@@ -6677,6 +6730,12 @@ def build_char(name, cfg, global_pal=None):
         if tier == 0 and move.get("active", 0) > 0:
             tier = 1
         flags |= (tier & 3) << 14
+        if sid in cfg.get("slice_no_fall", ()):
+            # Mid-combo slices: keep the victim in hitstun so the next
+            # contact can connect.  The source marks intermediate hits with
+            # fall=1, but the native victim would go straight to S_DOWN and
+            # become unhittable, dropping the final launcher.
+            flags &= ~1
         inc.append(f"    .dw {flags}\n")
     # TargetTab records (4 bytes): {runtime p2 state, victim hit-pause,
     # runtime p1 state on hit ($FF = stay), flags}.  flags bit0 = victim
@@ -6901,8 +6960,11 @@ def build_char(name, cfg, global_pal=None):
     #   .db from_sid, to_sid, kind ; .dw arg.  kind 0 anim-end, 1 land at
     #   y<=arg px while falling, 2 air follow-up on pad arg while rising,
     #   3 MoveHit.  Sliced states chain through synthetic kind-0 rows.
+    state_to_sids = {}
+    for sid, mstate in move_ids.items():
+        state_to_sids.setdefault(mstate, []).append(sid)
     trows = trans_rules(cns_statedefs, cns_headers, state_to_sid,
-                        cfg["buttons"])
+                        cfg["buttons"], state_to_sids)
     # a sliced sid's statedef-derived "anim end -> stand" row is the
     # ORIGINAL mugen state's end-of-move; each slice exits through its
     # chain row instead.  TransEnd takes the first kind-0 match and
