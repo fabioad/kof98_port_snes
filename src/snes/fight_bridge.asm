@@ -96,6 +96,16 @@ MsuDiagBuffers dsb $1800
 MsuStageUploadFar:
     rep #$20
     .ACCU 16
+    ; Both DMAs below write through the PPU ports ($2181 WMDATA and
+    ; $2118/$2119 VRAM).  On the SD2SNES those transfers are not reliable
+    ; while the display is rendering, so blank around them.  The caller has
+    ; already waited for the SD sector with the screen on.
+    sep #$20
+    .ACCU 8
+    lda #$8F.b
+    sta.l INIDISP
+    rep #$20
+    .ACCU 16
     ; 1) MSU -> WRAM: sector prefix + payload from the fixed data port.
     lda #(MsuStageBuf & $FFFF).w
     sta.l $2181
@@ -134,6 +144,9 @@ MsuStageUploadFar:
     sta.l $4354
     lda #$20.b
     sta.l MDMAEN
+    ; Restore the display after the VRAM write.
+    lda #$0F.b
+    sta.l INIDISP
     rep #$20
     .ACCU 16
     rtl

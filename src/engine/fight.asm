@@ -15097,27 +15097,39 @@ FP_dma_done:
 .IFDEF MSU_DIAG
     jsl MsuDiagOverlay
 .ENDIF
+    ; The MSU poll above runs with the display on and may have used the whole
+    ; vblank.  Only re-blank for the visible HUD/stage writes while HVBJOY
+    ; still reports vblank; otherwise leave the screen on and retry the dirty
+    ; bands next frame.  No loop here, so this cannot stall the fight.
+    lda.l $4212
+    and #$80.b
+    beq FP_present_on
+    lda #$8F.b
+    sta.l INIDISP
     lda FP+F_DMAREQ                     ; a fighter upload is still in flight:
     ora FP+F_DMAREQ+FP2OFS              ;   don't start a second DMA engine
-    bne +                               ;   transfer in this vblank
+    bne FP_present_vis_done             ;   transfer in this vblank
     lda.w RT_FXUPLOAD                   ; a spark/projectile page already used
-    bne +                               ;   this vblank's DMA budget
+    bne FP_present_vis_done             ;   this vblank's DMA budget
     lda huddirty
-    beq +
+    beq FP_present_vis_done
     jsr FlushHud
-+   jsr StageAnimTick                     ; crowd pose commits (map only)
+FP_present_vis_done:
+    jsr StageAnimTick                     ; crowd pose commits (map only)
     jsr ShakeScroll                       ; EnvShake on BG1 (stage)
     lda gamestate                         ; intro/ending screens take over
     cmp #7.b                              ;   mode/M7 regs + palette fades;
-    beq ++                                ;   run them last so they win
+    beq FP_present_opn                    ;   run them last so they win
     cmp #8.b                              ;   over the fight setup
-    beq ++
+    beq FP_present_opn
     cmp #10.b                             ; SURVIVOR ending also uses the
-    bne +                                 ;   shared fade/palette flush
-++  jsr OpnApply                          ;   (IN_FX==6 -> OpnFade flush)
+    bne FP_present_on                     ;   shared fade/palette flush
+FP_present_opn:
+    jsr OpnApply                          ;   (IN_FX==6 -> OpnFade flush)
+FP_present_on:
     sep #$20
     .ACCU 8
-+   lda #$0F.b
+    lda #$0F.b
     sta.l INIDISP
     inc framecnt
     .ACCU 8
@@ -16411,6 +16423,11 @@ SD_msu:
     sta scr0                            ; sector-aligned seek address
     sep #$20
     .ACCU 8
+    ; The seek wait is the only variable part of this upload.  Hold it with
+    ; the display on; only the CPU polls MSU_STAT here (no VRAM/WRAM DMA).
+    ; The staging/VRAM DMAs below run under forced blank as validated 24/10.
+    lda #$0F.b
+    sta.l INIDISP
     lda scr0
     sta.l MSU_STAT                      ; seek byte 0
     lda scr0+1
@@ -16427,14 +16444,32 @@ SD_diag_ready:
 .ELSE
     ldx #MSU_POLL_LIMIT.w               ; bounded wait: retry next frame
 -   lda.l MSU_STAT
-    bpl +
+    bpl SD_msu_ready
     dex
     bne -
     rep #$20
     .ACCU 16
     inc.w RT_MSUFAIL
     jmp SD_ret                          ; never commit an incomplete page
-+
+SD_msu_ready:
+    ; The wait ran with the display on.  If it was short and we are still in
+    ; vblank, the two DMAs fit right now.  Otherwise keep the sector we just
+    ; fetched and wait for the next vblank start with the display on; the
+    ; DMAs then run at the top of a fresh window.  Never discard and re-seek.
+    cpx #800.w                          ; <=224 poll iterations (~0.78 ms)
+    bcc SD_msu_wait_vb
+    lda.l $4212
+    bmi SD_msu_dma                      ; still in vblank: do it now
+SD_msu_wait_vb:
+    ; Wait for the current vblank to end (if it has not), then for the next
+    ; one to start.  Screen stays on; only HVBJOY is read here.
+SD_msu_wait_end:
+    lda.l $4212
+    bmi SD_msu_wait_end
+SD_msu_wait_start:
+    lda.l $4212
+    bpl SD_msu_wait_start
+SD_msu_dma:
 .ENDIF
 .IFDEF MSU_DIAG2
     jsl MsuDiagStagedUpload
@@ -16442,6 +16477,8 @@ SD_diag_ready:
 .ELSE
     ; Stage the aligned MSU window in WRAM, then DMA the payload to VRAM.
     ; Kept out of this 32 KiB bank (Fight section) to leave ROM room here.
+    ; The far routine blanks the display around both DMAs (WMDATA/VRAM do
+    ; not tolerate active display on the SD2SNES) and restores it after.
     jsl MsuStageUploadFar
 .IFDEF MSU_DIAG
     jsl MsuDiagTransferred
