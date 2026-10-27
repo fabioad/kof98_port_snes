@@ -123,7 +123,7 @@ PROJECTILE_FX_ALIAS = {
     # windows, so point them at the closest compiled clip.  The per-character
     # PROJECTILE_ACTIONS rows above still document the source action.
     "benimaru": "athena",   # electric orb
-    "andy": "kyo",          # Hishou Ken flame
+    "andy": "yuri",         # Hishou Ken uses Yuri's Ko'ou Ken animation
     "geese": "terry",       # ground wave
     "leona": "terry",       # ground wave
     "mrbig": "heavyd",      # beam

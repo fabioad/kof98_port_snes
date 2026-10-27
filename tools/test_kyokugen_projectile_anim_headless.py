@@ -25,8 +25,9 @@ F_STATE = 0x4008
 SPARKS = 0x4200
 SPK_SIZE = 20
 OAM = 0x1800
-START, A, DOWN, RIGHT = 3, 8, 5, 7
-# SNES Y = MUGEN x (weak punch); SNES X = MUGEN y (strong punch).
+START, A, DOWN, RIGHT, L = 3, 8, 5, 7, 10
+# SNES Y = MUGEN x (weak punch); SNES X = MUGEN y (strong punch);
+# SNES L = MUGEN c (Andy's Hishou Ken command is QCF+c).
 WEAK, STRONG = 1, 9
 EXPECTED_FRAMES = set(range(6))
 
@@ -35,7 +36,9 @@ EXPECTED_FRAMES = set(range(6))
 # Robert keep the weak shot on their original sid and the strong one on the
 # next free special slot (61 and 59); Takuma already had both wired (48/49).
 CASES = (("yuri", 48, WEAK), ("ryo", 61, STRONG),
-         ("robert", 59, STRONG), ("takuma", 49, STRONG))
+         ("robert", 59, STRONG), ("takuma", 49, STRONG),
+         # Andy's Hishou Ken was aliased from Kyo's flame to Yuri's Ko'ou Ken.
+         ("andy", 58, L))
 
 
 def step_buttons(core, buttons, ticks=2):
@@ -106,7 +109,7 @@ def main():
             print(f"PASS {name}")
     finally:
         core.close()
-    print("PASS: Kyokugen projectiles share Yuri's six-cel animation")
+    print("PASS: Kyokugen/Andy projectiles share Yuri's six-cel animation")
 
 
 if __name__ == "__main__":
