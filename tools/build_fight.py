@@ -5103,7 +5103,20 @@ def wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers):
     attempt = cfg.get("moves", {}).get(74)
     row = cns_moves.get(attempt)
     if row is None or not row.get("throw"):
+        # Some source sets put the bind state first (Chin 810 has no
+        # p1stateno); prefer a throw row that owns a real bind and whose
+        # attempt art exists.
         attempt = throws[0][0]
+        for st2, row2 in throws:
+            if row2.get("p1mugen", -1) < 0:
+                continue
+            try:
+                a2 = int(cns_headers.get(st2, {}).get("anim", "-1"))
+            except (TypeError, ValueError):
+                a2 = -1
+            if a2 in air and air[a2][0]:
+                attempt = st2
+                break
         cfg.setdefault("moves", {})[74] = attempt
         try:
             a = int(cns_headers.get(attempt, {}).get("anim", "-1"))
@@ -6816,6 +6829,17 @@ def build_char(name, cfg, global_pal=None):
     apply_half_circle_shortcuts(cmddefs)
     rules = cmd_rules(os.path.join(ROOT, cfg["cmd"]), cmddefs, wired)
     rules = add_shortcut_rules(rules, cmddefs)
+    # A few source packages have a throw state but no [State -1, Throw]
+    # command (Billy) or point it at a non-throw state (Chin 900).  Give
+    # every fighter a standard close-range x+y throw when sid 74 exists.
+    if 74 in move_ids and not any(r["state"] == 74 for r in rules):
+        _xy = btn_token("x") | btn_token("y")
+        if _xy:
+            cmddefs.setdefault("x+y", (0, [(0, _xy)], 15))
+            display_defs.setdefault("x+y", cmddefs["x+y"])
+            rules.append({"motion": "x+y", "held": 0, "nheld": 0,
+                          "posture": 1, "dist": 0x80 | 40,
+                          "nstate": 0, "state": 74})
     rules.sort(key=lambda rule: motion_rank(rule, cmddefs), reverse=True)
     # Explicit priority for commands whose motion is a subset of another
     # rule's tail (Lucky's SHOOT = DP+kick also completes the DP special).
@@ -6848,8 +6872,12 @@ def build_char(name, cfg, global_pal=None):
     # order, so put the throw first and gate it by range; the blowback row
     # still fires when the opponent is farther away.
     for r in rules:
-        if r["state"] == 74 and r["dist"] == 0:
-            r["dist"] = 40
+        if r["state"] == 74 and (r["dist"] & 0x7F) == 0:
+            # Keep the throwable-victim gate in bit7, but give the
+            # close-range command a usable distance.  Source throws without
+            # p2bodydist were emitted as distance 0 (just the bit7 gate) and
+            # never matched at normal grab range.
+            r["dist"] = (r["dist"] & 0x80) | 40
             r["vgate"] = 1
     rules.sort(key=lambda r: r["state"] != 74)
     mot_ids = {}

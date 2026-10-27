@@ -84,7 +84,7 @@ do port.
 
 - Build PVSnesLib + `make verify`: OK. O checksum final desta rodada,
   já incluindo as correções da esquiva do Clark e da California Romance
-  do Mr. Big, é `$D550`.
+  do Mr. Big, é `$17BE`.
 - Novo teste `tools/test_msu_voice_alignment_headless.py`: transmite as 21
   vozes do Clark e compara byte a byte com o `.msu`, incluindo amostras
   ímpares e com vários blocos (até 3.375 bytes). PASS.
@@ -93,7 +93,7 @@ do port.
 - MSU atual: SHA-256
   `3e8945c3…868de386` (mudou depois que a California Romance do Mr. Big
   passou a usar uma amostra de voz).
-- ROM: SHA-256 `1e1da4b7…df5fea4`, checksum `$D550`.
+- ROM: SHA-256 `7f25f094…df648669`, checksum `$17BE`.
 
 ## Teste no console
 
