@@ -160,11 +160,24 @@ GROUND_PROJECTILES = {
     "andy", "daimon", "geese", "leona", "mrbig", "ralf", "shingo",
 }
 
-# Projectiles that are thrown from an airborne move (Lucky's fadeaway shot)
-# keep a fixed upper-torso screen height instead of inheriting the caster's
-# jump height.  Otherwise the ball spawns above a standing opponent's
-# projectile hit window and flies over their head.
-TORSO_PROJECTILES = {"lucky"}
+# Character-level fixed upper-torso spawn height.  Lucky's basketball uses
+# the ballistic profile below instead, so this set is currently empty; the
+# per-shot PROJECTILE_TORSO_SIDS switch below still covers Geese's air shot.
+TORSO_PROJECTILES = set()
+
+# Source-verified ballistic projectiles.  The ProjFxTab header gets three
+# extra bytes at offsets 5-7: spawn height above the floor, gravity in 1/16
+# px/tick^2, and flags (bit0 = ballistic, bits4-7 = ticks of forward drift
+# before VX is zeroed).
+# Lucky's SHOOT: the MUGEN helpers (states 2100 -> 2102 -> 2107 -> 2103)
+# launch the ball up/forward and then zero its horizontal speed so it drops
+# almost vertically about 60 px ahead.  State 2103 is the only phase with a
+# HitDef.  Modelling it as a high drop with a short forward drift keeps the
+# source's "ball from the sky" trajectory; after landing the ball bounces
+# backward three times (states 2105/2108/2112).
+PROJECTILE_BALLISTIC = {
+    "lucky": {"height": 200, "gravity": 7, "drift": 7},
+}
 
 # Per-sid airborne shots for characters that also have ground projectiles.
 # The character-level TORSO_PROJECTILES switch above cannot express this:
@@ -210,10 +223,11 @@ PROJECTILE_CALIBRATION = {
     # Lucky SHOOT: the basketball is a helper HitDef in state 2103, reached
     # only through 2100 -> 2101/2102 -> 2107/2103, which the one-level
     # helper walk cannot resolve.  Sid 87 is state 2100 (release pose);
-    # source damage 109 on the 100-HP scale -> 22 HUD points, and the ball
-    # travels forward like the other specials instead of the helper's
-    # near-zero placeholder velocity.
-    "lucky": {87: (0x0400, 22)},
+    # source damage 109 on the 100-HP scale -> 22 HUD points.  The ball gets
+    # a short 7 px/tick forward drift (zeroed after 7 ticks by the ballistic
+    # descriptor) and then drops vertically, instead of crossing the screen
+    # like a fireball.
+    "lucky": {87: (0x0700, 22)},
     # Heavy D! D. Magnum: state 2105 is the release pose, helper 2120 is a
     # stationary beam with the HitDef.  Give the native shot a forward
     # speed so it reads as the travelling blast, with super-level damage.

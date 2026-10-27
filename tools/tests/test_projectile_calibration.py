@@ -1,6 +1,7 @@
 import os
 import sys
 import unittest
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import build_fight
@@ -98,6 +99,25 @@ class ProjectileCalibrationTests(unittest.TestCase):
                          {48: (0x02C0, 12), 49: (0x03C0, 16)})
         self.assertEqual(projectiles.PROJECTILE_CALIBRATION["kyo"],
                          {48: (0x0300, 14), 49: (0x0400, 18)})
+
+    def test_lucky_basketball_is_a_high_vertical_drop(self):
+        # Source states 2100 -> 2102 -> 2107 move the ball ~47 px forward
+        # over seven ticks, then state 2103 zeroes VX and drops it.  The
+        # native shot must not be another horizontal fireball.
+        self.assertEqual(projectiles.PROJECTILE_BALLISTIC["lucky"],
+                         {"height": 200, "gravity": 7, "drift": 7})
+        self.assertEqual(projectiles.PROJECTILE_CALIBRATION["lucky"],
+                         {87: (0x0700, 22)})
+        self.assertNotIn("lucky", projectiles.TORSO_PROJECTILES)
+        root = Path(build_fight.ROOT)
+        meta = (root / "build/gen_fight/projectiles_meta.inc").read_text()
+        self.assertIn(
+            "luckyProjFxTab: .dw luckyProjFxAnim, luckyProjFxAnim\n"
+            "    .db 0\n"
+            "    .db 200,7,$71\n", meta)
+        spr = (root / "build/gen_fight/lucky_spr.inc").read_text()
+        # sid 87: vx $0700, damage 22, HitDef sound 5, guard $A0, present
+        self.assertIn("    .db $00,$07,22,5,$A0,1\n", spr)
 
     def test_projectile_guard_mask_is_per_shot(self):
         # Projectile controllers carry a plain guardflag (MUGEN's default is

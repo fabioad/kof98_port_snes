@@ -29,6 +29,7 @@ from calibration.projectiles import (PROJECTILE_ACTIONS,
                                      PROJECTILE_TORSO_SIDS,
                                      PROJECTILE_ZOOM_BY_CHAR,
                                      PROJECTILE_CALIBRATION,
+                                     PROJECTILE_BALLISTIC,
                                      PROJECTILE_RECOVERY,
                                      PROJECTILE_RECOVERY_TICKS,
                                      PROJECTILE_FX_ALIAS,
@@ -9259,9 +9260,19 @@ def emit_newchars_inc(new_keys, msu_slices):
         # ProjFxTab header: primary anim, alternate anim, then the spawn
         # height byte at offset 4.  ProjSpawn reads the height from offset 4
         # regardless of which clip is selected; keep this layout in sync.
+        # Offsets 5-7 are the optional ballistic profile (spawn height,
+        # gravity in 1/16 px/tick^2, flags).  Ordinary characters emit zeros.
         proj_meta.append(f"{k}ProjFxTab: .dw {k}ProjFxAnim, {second}\n")
         spawn_row = 2 if k in TORSO_PROJECTILES else int(k in GROUND_PROJECTILES)
         proj_meta.append(f"    .db {spawn_row}\n")
+        ball = PROJECTILE_BALLISTIC.get(k)
+        if ball:
+            flags = 0x01 | ((int(ball["drift"]) & 0x0F) << 4)
+            proj_meta.append(
+                f"    .db {int(ball['height']) & 0xFF},"
+                f"{int(ball['gravity']) & 0x0F},${flags:02X}\n")
+        else:
+            proj_meta.append("    .db 0,0,0\n")
         proj_meta.append(f"{k}ProjFxAnim: .db {len(frames)}\n")
         for fi in range(len(frames)):
             proj_meta.append(f"    .dw {k}ProjFxF{fi}\n")

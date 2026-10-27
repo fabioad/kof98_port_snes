@@ -13677,6 +13677,7 @@ PS_ground:
     lda #GROUND_Y.w
     sta.w SPARKS+2,x
 +
+    jsl ProjBallisticSetup              ; high-drop profiles (Lucky's ball)
     ldy #0
     lda.w RT_PROJFX2                    ; 0 = primary ProjFxAnim,
     and #$0001.w                        ; 1 = the alternate geyser clip
@@ -14031,26 +14032,23 @@ TS_slot:
 +   clc
     adc.w SPARKS+2,x
     sta.w SPARKS+2,x
-    lda.w SPARKS+SPK_ATTR,x             ; projectile AY stores damage, not gravity
-    and #$0080.w
-    bne TS_no_gravity
-    lda.w SPARKS+SPK_VY,x
-    clc
-    adc.w SPARKS+SPK_AY,x
-    sta.w SPARKS+SPK_VY,x
+    jsl SparkGravity                    ; explod gravity / ballistic projectile
 TS_no_gravity:
     sep #$20                            ; FUSION: projectile flag -> range
     .ACCU 8                             ;   check vs the victim's hurtbox
     lda.w SPARKS+SPK_ATTR,x
     bpl +
+    and #$0E.b                          ; bouncing ball: hitbox already spent
+    bne TS_nohit
     jsr ProjReflect                    ; opponent shield: bounce it back
     bcc +
     jmp TS_next8                       ; reflected this tick
 +   jsr ProjHit
-    beq +                               ; miss: keep flying
+    beq TS_nohit                       ; miss: keep flying
     ; ProjHit already replaced the projectile with its impact spark.
     jmp TS_next8
-+   sep #$20
+TS_nohit:
+    sep #$20
     .ACCU 8
     dec.w SPARKS+SPK_FTIM,x
     bne TS_next8
@@ -19333,6 +19331,182 @@ PC_out8:
     .ACCU 16
 PC_out:
     rts
+.ENDS
+
+; Ballistic projectile helpers.  They live in bank 126's free tail (same
+; 24-bit bank as the select-cursor helpers) and are reached with jsl; the
+; Fight bank is full.
+.BANK 126 SLOT 0
+.ORGA $D100
+.SECTION "ProjectileBallistic" FORCE
+; ProjFxTab offsets 5-7: spawn height above the floor, gravity (1/16
+; px/tick^2), flags (bit0 = ballistic, bits4-7 = ticks of forward drift).
+; sptr -> ProjFxTab, X = spark slot.  Always initialises the pad byte so an
+; ordinary projectile cannot inherit a stale ballistic profile.
+ProjBallisticSetup:
+    rep #$20
+    .ACCU 16
+    ldy #7
+    lda [sptr],y
+    and #$00FF.w
+    and #$0001.w
+    beq PBL_clear
+    ldy #5
+    sep #$20
+    .ACCU 8
+    lda [sptr],y
+    rep #$20
+    .ACCU 16
+    and #$00FF.w
+    sta scr6
+    lda #GROUND_Y.w
+    sec
+    sbc scr6
+    sta.w SPARKS+2,x
+    sep #$20
+    .ACCU 8
+    ldy #7
+    lda [sptr],y
+    and #$F0.b
+    sta scr6
+    ldy #6
+    lda [sptr],y
+    and #$0F.b
+    ora scr6
+    sta.w SPARKS+SPK_GRD+1,x
+    rep #$20
+    .ACCU 16
+    rtl
+PBL_clear:
+    sep #$20
+    .ACCU 8
+    stz.w SPARKS+SPK_GRD+1,x
+    rep #$20
+    .ACCU 16
+    rtl
+
+; Called from TickSpark after the position update.  Explods keep using AY
+; as gravity; a projectile with a non-zero ballistic pad uses the low nibble
+; (1/16 px/tick^2), stops its forward drift after the high-nibble tick, and
+; bounces on the floor.  ATTR bits1-2 hold the bounce count (0 = descending).
+SparkGravity:
+    rep #$20
+    .ACCU 16
+    lda.w SPARKS+SPK_ATTR,x
+    and #$0080.w
+    bne +
+    jmp PBL_expl
++   sep #$20
+    .ACCU 8
+    lda.w SPARKS+SPK_GRD+1,x
+    bne +
+    jmp PBL_out8
++    sta scr6
+    and #$0F.b
+    rep #$20
+    .ACCU 16
+    and #$00FF.w
+    asl a
+    asl a
+    asl a
+    asl a
+    clc
+    adc.w SPARKS+SPK_VY,x
+    sta.w SPARKS+SPK_VY,x
+    sep #$20
+    .ACCU 8
+    lda scr6
+    and #$F0.b
+    beq PBL_ground8
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    sta scr5
+    lda #90.b
+    sec
+    sbc.w SPARKS+SPK_TTL,x
+    cmp scr5
+    bcc PBL_ground8
+    rep #$20
+    .ACCU 16
+    stz.w SPARKS+SPK_VX,x
+PBL_ground8:
+    rep #$20
+    .ACCU 16
+    lda.w SPARKS+2,x
+    bpl +
+    jmp PBL_out                        ; negative screen Y: still above floor
++   cmp #GROUND_Y.w
+    bcs +
+    jmp PBL_out
++    sep #$20
+    .ACCU 8
+    lda.w SPARKS+SPK_ATTR,x
+    lsr a
+    and #$03.b
+    cmp #3.b
+    bcs PBL_free8
+    inc a
+    sta scr5
+    lda.w SPARKS+SPK_ATTR,x
+    and #$F9.b
+    sta scr6
+    lda scr5
+    asl a
+    ora scr6
+    sta.w SPARKS+SPK_ATTR,x
+    rep #$20
+    .ACCU 16
+    lda #GROUND_Y.w
+    sta.w SPARKS+2,x
+    lda scr5
+    and #$00FF.w
+    dec a
+    asl a
+    phx
+    tax
+    lda.l BallBounceVY,x
+    plx
+    sta.w SPARKS+SPK_VY,x
+    sep #$20
+    .ACCU 8
+    lda.w SPARKS+SPK_ATTR,x
+    and #$10.b
+    beq PBL_bounce_left
+    rep #$20
+    .ACCU 16
+    lda #$0200.w                       ; left-facing shot bounces right
+    bra PBL_bounce_store
+PBL_bounce_left:
+    rep #$20
+    .ACCU 16
+    lda #$FE00.w                       ; right-facing shot bounces left
+PBL_bounce_store:
+    sta.w SPARKS+SPK_VX,x
+    rep #$20
+    .ACCU 16
+    rtl
+PBL_free8:
+    stz.w SPARKS+SPK_ANIM,x
+    stz.w SPARKS+SPK_ANIM+1,x
+    rep #$20
+    .ACCU 16
+    rtl
+PBL_expl:
+    lda.w SPARKS+SPK_AY,x
+    clc
+    adc.w SPARKS+SPK_VY,x
+    sta.w SPARKS+SPK_VY,x
+    bra PBL_out
+PBL_out8:
+    rep #$20
+    .ACCU 16
+PBL_out:
+    rtl
+
+BallBounceVY:
+    .dw $FB00, $FC00, $FE00            ; -5, -4, -2 px/tick
 .ENDS
 
 ; Frequently-called Fight helpers that need no code changes when relocated:
