@@ -5570,12 +5570,13 @@ def build_char(name, cfg, global_pal=None):
                          2 if voice_random else 0))
     if voices:
         CHAR_VOICES[name] = voices
-    # KOF98 forward dash and directional evasions do not use afterimage
-    # trails.  Their source CNS files sometimes enable AfterImage in these
-    # states; omit those controllers to keep their SNES animations lighter.
-    for state in (100, 250, 251, 710):
-        cns_acts[state] = [row for row in cns_acts.get(state, ())
-                           if row[1] != 9]
+    # The SNES port does not use AfterImage trails.  Ghost snapshots reuse
+    # the ping-pong tile pages (they can point at retired graphics) and add
+    # OAM pressure on top of both fighters.  Drop every AfterImage controller
+    # for every character and move -- dashes, evasions, rolls, specials and
+    # supers -- so no source CNS can re-enable a shadow.
+    for state in cns_acts:
+        cns_acts[state] = [row for row in cns_acts[state] if row[1] != 9]
     for state in cns_acts:
         cns_acts[state].sort()
     # Resolve the calibrator before parse_cmd so a per-character button
