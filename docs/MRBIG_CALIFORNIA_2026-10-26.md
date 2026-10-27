@@ -63,7 +63,7 @@ Teste de tabelas `tools/tests/test_mrbig_california.py`: PASS.
 
 ## Build
 
-- ROM: checksum **`$DA94`**,
-  SHA-256 `a1928fdd…240f2f88`.
+- ROM: checksum **`$E047`**,
+  SHA-256 `b0433796…c7dc89`.
 - MSU: SHA-256 `3e8945c3…868de386` — **mudou**, porque a nova sequência
   passou a usar uma amostra de voz do Big. Copie ROM e MSU juntos.

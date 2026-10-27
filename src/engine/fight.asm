@@ -2759,7 +2759,7 @@ SDO_fnext:
     sta.b scr0
     lda #212
     sta.b scr1
-    lda #$30.b
+    lda #$30.w
     sta.b scr4
     jsr MtCell
     rep #$20
@@ -4370,9 +4370,9 @@ DrawBars:
     .ACCU 16
     ldx #((2*32+28)*2).w
     jsr FillBar
-    rep #$20                            ; power bars on the row below the
-    .ACCU 16                            ;   life bars
-    lda FP+F_POWER
+    ; FillBar returns with A=16; no need to rep again here.
+    .ACCU 16                            ; power bars on the row below the
+    lda FP+F_POWER                      ;   life bars
     jsr PowToPx
     sta scr5
     sep #$20
@@ -6681,7 +6681,9 @@ MM_powok:
     bcs CMC_next
     bra CMC_take
 CMC_roll:
-    ldx fofs
+    rep #$20                            ; F_POWER is a 16-bit meter: this
+    .ACCU 16                            ;   path arrives in 8-bit mode from
+    ldx fofs                            ;   the sid comparisons above.
     lda FP+F_POWER,x
     cmp #1000.w                       ; one stock, like arcade attack cancel
     bcc CMC_next
@@ -9597,15 +9599,17 @@ GCancelGo:
     pla
     pha
     jsr EnterState                      ; guard cancel consumes one stock
+    rep #$20                            ; EnterState returns with A=8; this
+    .ACCU 16                            ;   path pushes/pops a 16-bit sid
     pla                                 ; A = target sid
     cmp #94.w
     bcc GC_done                         ; 67: blowback
     cmp #96.w
     bcs GC_done
     ldx fofs
-    lda #14.b                           ; GC roll: no vulnerable startup
+    lda #14.w                           ; GC roll: no vulnerable startup
     sta FP+F_INVUL,x
-    lda #4.b
+    lda #4.w
     sta FP+F_PFX,x
     bra GC_done
 GC_done:
