@@ -13189,7 +13189,7 @@ ProjHit:
     beq +
     jmp PH_miss
 +
-    lda #24.w
+    jsl ProjRadius
     sta scr5
 .IFNDEF BASE4
     lda.w SPARKS+SPK_ANIM,x
@@ -13677,7 +13677,13 @@ PS_ground:
     lda #GROUND_Y.w
     sta.w SPARKS+2,x
 +
-    jsl ProjBallisticSetup              ; high-drop profiles (Lucky's ball)
+    sep #$20
+    .ACCU 8
+    lda #90.b                           ; normal projectile lifetime
+    sta.w SPARKS+SPK_TTL,x
+    rep #$20
+    .ACCU 16
+    jsl ProjBallisticSetup              ; per-shot offset / high-drop profile
     ldy #0
     lda.w RT_PROJFX2                    ; 0 = primary ProjFxAnim,
     and #$0001.w                        ; 1 = the alternate geyser clip
@@ -13729,8 +13735,6 @@ PS_ground:
     .ACCU 8
     lda [sptr]
     sta.w SPARKS+SPK_FTIM,x
-    lda #90.b                           ; 1.5 seconds max flight, even on whiff
-    sta.w SPARKS+SPK_TTL,x
     lda #$80.b                          ; projectile flag; OAM palette is per side
     ldy fofs
     cpy #FP2OFS.w                       ; Y remains 16-bit even with acc8
@@ -19344,6 +19348,46 @@ PC_out:
 ; sptr -> ProjFxTab, X = spark slot.  Always initialises the pad byte so an
 ; ordinary projectile cannot inherit a stale ballistic profile.
 ProjBallisticSetup:
+    ; Per-shot forward spawn offset: the guard byte's low nibble is a code
+    ; in 8 px units (0 = the default 14 px).  QCB+P Hishou Ken uses it to
+    ; put the short-range palm burst at the source Clsn1 centre.
+    sep #$20
+    .ACCU 8
+    lda scr3
+    and #$0F.b
+    beq PBL_no_x
+    sta scr5
+    cmp #8.b
+    bcc PBL_x_off
+    lda #12.b                          ; short-range burst lifetime
+    sta.w SPARKS+SPK_TTL,x
+PBL_x_off:
+    ldy fofs
+    rep #$20
+    .ACCU 16
+    lda FP+F_X,y
+    xba
+    and #$00FF.w
+    sta scr6
+    lda scr5
+    and #$00FF.w
+    asl a
+    asl a
+    asl a
+    sta scr5
+    lda FP+F_FACING,y
+    bmi PBL_x_left
+    lda scr6
+    clc
+    adc scr5
+    bra PBL_x_store
+PBL_x_left:
+    lda scr6
+    sec
+    sbc scr5
+PBL_x_store:
+    sta.w SPARKS,x
+PBL_no_x:
     rep #$20
     .ACCU 16
     ldy #7
@@ -19503,6 +19547,26 @@ PBL_out8:
     rep #$20
     .ACCU 16
 PBL_out:
+    rtl
+
+; A(16) = horizontal hit radius for this shot.  The ProjTab guard byte's low
+; nibble 8-15 marks a short-range burst (QCB+P Hishou Ken): its centre is
+; 80 px ahead and the source Clsn1 spans 32..127, so 48 px matches both the
+; near and far edges.  Ordinary shots keep the 24 px radius.
+ProjRadius:
+    sep #$20
+    .ACCU 8
+    lda.w SPARKS+SPK_GRD,x
+    and #$0F.b
+    cmp #8.b
+    bcc +
+    rep #$20
+    .ACCU 16
+    lda #48.w
+    rtl
++   rep #$20
+    .ACCU 16
+    lda #24.w
     rtl
 
 BallBounceVY:

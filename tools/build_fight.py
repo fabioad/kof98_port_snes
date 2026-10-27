@@ -34,6 +34,8 @@ from calibration.projectiles import (PROJECTILE_ACTIONS,
                                      PROJECTILE_RECOVERY_TICKS,
                                      PROJECTILE_FX_ALIAS,
                                      PROJECTILE_ALT_EFFECTS,
+                                     PROJECTILE_X_OFFSET,
+                                     PROJECTILE_RELEASE,
                                      BODY_ANIMATIONS as
                                      PROJECTILE_BODY_ANIMATIONS)
 
@@ -6548,8 +6550,10 @@ def build_char(name, cfg, global_pal=None):
             PROJECTILE_BLOBS2[name] = proj_fx_alt[2]
             PROJECTILE_TABLES2[name] = proj_fx_alt[1]
             PROJECTILE_ALT_SIDS[name] = set(alt_spec.get("sids", ()))
+            _rel = alt_spec.get("release", 2)
             PROJECTILE_ALT_RELEASE[name] = {
-                sid: int(alt_spec.get("release", 2))
+                sid: (int(_rel.get(sid, 2)) if isinstance(_rel, dict)
+                      else int(_rel))
                 for sid in PROJECTILE_ALT_SIDS[name]}
 
     # Box IDs index 16-bit record pointers in this table. ID 0 is no box.
@@ -6976,12 +6980,19 @@ def build_char(name, cfg, global_pal=None):
             present |= 0x02             # per-shot upper-torso spawn height
         if sid in PROJECTILE_ALT_SIDS.get(name, ()):
             present |= 0x04             # select the alternate ProjFx clip
-        release = PROJECTILE_ALT_RELEASE.get(name, {}).get(sid)
+        release = PROJECTILE_RELEASE.get(name, {}).get(sid)
+        if release is None:
+            release = PROJECTILE_ALT_RELEASE.get(name, {}).get(sid)
         if release is not None:
             # Bits 3-7 carry a 1-based release frame (0 = engine default).
             present |= ((release + 1) & 0x1F) << 3
+        # The guard byte's low nibble carries a per-shot forward spawn
+        # offset in 8 px units (0 = the engine's default 14 px).  GuardCheck
+        # only reads the high nibble.
+        _xoff = PROJECTILE_X_OFFSET.get(name, {}).get(sid, 0)
+        _xcode = max(0, min(15, int(round(_xoff / 8.0))))
         inc.append(f"    .db ${vx&0xFF:02X},${vx>>8:02X},{dmg},{hit_sfx},"
-                   f"${(guard & 0x0F) << 4:02X},{present}\n")
+                   f"${((guard & 0x0F) << 4) | _xcode:02X},{present}\n")
 
     # AiTab: header (count, style, aggression, defense, special rate,
     # super rate, preferred range, anti-air/throw/mixup rates, personality

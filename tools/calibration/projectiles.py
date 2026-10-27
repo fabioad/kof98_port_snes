@@ -123,7 +123,7 @@ PROJECTILE_FX_ALIAS = {
     # windows, so point them at the closest compiled clip.  The per-character
     # PROJECTILE_ACTIONS rows above still document the source action.
     "benimaru": "athena",   # electric orb
-    "andy": "yuri",         # Hishou Ken uses Yuri's Ko'ou Ken animation
+    "andy": "yuri",         # Hishou Ken reuses the compiled Ko'ou Ken orb
     "geese": "terry",       # ground wave
     "leona": "terry",       # ground wave
     "mrbig": "heavyd",      # beam
@@ -198,6 +198,25 @@ PROJECTILE_TORSO_SIDS = {
 PROJECTILE_RECOVERY_TICKS = 24
 PROJECTILE_RECOVERY = {}
 
+# Per-shot forward spawn offset in pixels (multiples of 8, 0-120).  The low
+# nibble of the ProjTab guard byte carries the code (px / 8); ProjSpawn uses
+# it to place short-range helper shots at the palm instead of 14 px ahead.
+# Codes 8-15 also select a 12-tick lifetime, so a short-range burst does not
+# leave a stationary orb lingering for the normal 90-tick projectile TTL.
+PROJECTILE_X_OFFSET = {
+    # QCB+P Hishou Ken: the helper's Clsn1 is at x=32..127 (centre ~80), so
+    # centre the burst 80 px in front of Andy.
+    "andy": {52: 80, 53: 80},
+}
+
+# Per-shot release frame override (0-based source animation frame).  Used
+# when the source spawns the helper later than the engine's default third
+# frame.  QCB+P Hishou Ken spawns helper 1105 on anim 1100 frame 4 and on
+# anim 1110 frame 5.
+PROJECTILE_RELEASE = {
+    "andy": {52: 4, 53: 5},
+}
+
 # Character-level projectile calibration, in 8.8 px/tick and HUD damage.
 # The source CNS is used for every other move; these rows override generic
 # conversions where the imported controls had only a shared placeholder.
@@ -232,10 +251,11 @@ PROJECTILE_CALIBRATION = {
     # stationary beam with the HitDef.  Give the native shot a forward
     # speed so it reads as the travelling blast, with super-level damage.
     "heavyd": {87: (0x0400, 22), 88: (0x0500, 26)},
-    # Andy's Hishou Ken (state 1150) reaches a helper whose Projectile
-    # velocity is inherited from the helper VelSet; the native row needs an
-    # explicit speed.
-    "andy": {58: (0x0400, 14)},
+    # Andy's QCB+P Hishou Ken (states 1100/1110, sids 52/53) is the
+    # short-range palm burst: stationary at the 80 px spawn offset, damage
+    # 13/14 on the source's 100-HP scale -> 26/28 HUD points.  The QCF+c back
+    # version (state 1150, sid 58) is the travelling shot.
+    "andy": {52: (0x0000, 26), 53: (0x0000, 28), 58: (0x0400, 14)},
     # Daimon's Jiraishin shockwave is the source state-300 projectile; its
     # velocity is also inherited, so use a slow forward wave.
     "daimon": {58: (0x0200, 14)},

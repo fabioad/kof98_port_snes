@@ -64,6 +64,6 @@ foi o hold de 255 ticks.
 
 ## Build
 
-- ROM: checksum **`$7CA2`**,
-  SHA-256 `abb3afb7…221c263`.
+- ROM: checksum **`$A129`**,
+  SHA-256 `3f19aa78…1dc1f9b`.
 - MSU: SHA-256 `3e8945c3…868de386` (inalterado nesta rodada).

@@ -100,6 +100,26 @@ class ProjectileCalibrationTests(unittest.TestCase):
         self.assertEqual(projectiles.PROJECTILE_CALIBRATION["kyo"],
                          {48: (0x0300, 14), 49: (0x0400, 18)})
 
+    def test_andy_qcb_hishouken_is_a_short_range_burst(self):
+        # QCB+P is states 1100/1110 (sids 52/53).  The helper 1105 HitDef is
+        # a stationary palm burst ~80 px ahead, not the QCF+c travelling
+        # projectile (sid 58).  The guard low nibble carries the 80/8 = 10
+        # spawn-offset code; 8-15 also mark the short 12-tick lifetime.
+        self.assertEqual(projectiles.PROJECTILE_X_OFFSET["andy"],
+                         {52: 80, 53: 80})
+        self.assertEqual(projectiles.PROJECTILE_RELEASE["andy"],
+                         {52: 4, 53: 5})
+        self.assertEqual(projectiles.PROJECTILE_CALIBRATION["andy"],
+                         {52: (0x0000, 26), 53: (0x0000, 28),
+                          58: (0x0400, 14)})
+        # The ROM budget keeps the compiled Ko'ou Ken orb; only the front
+        # shot's range/timing differ from the back projectile.
+        self.assertEqual(projectiles.PROJECTILE_FX_ALIAS["andy"], "yuri")
+        spr = (Path(build_fight.ROOT) / "build/gen_fight/andy_spr.inc").read_text()
+        self.assertIn("    .db $00,$00,26,5,$AA,41\n", spr)  # sid 52
+        self.assertIn("    .db $00,$00,28,5,$AA,49\n", spr)  # sid 53
+        self.assertIn("    .db $00,$04,14,5,$A0,1\n", spr)   # sid 58
+
     def test_lucky_basketball_is_a_high_vertical_drop(self):
         # Source states 2100 -> 2102 -> 2107 move the ball ~47 px forward
         # over seven ticks, then state 2103 zeroes VX and drops it.  The
