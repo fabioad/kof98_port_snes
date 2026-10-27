@@ -69,7 +69,7 @@ prefere atravessar o ataque, não recuar.
 
 ## Build
 
-- ROM `kof98-snes.sfc`: checksum **`$C33F`**,
-  SHA-256 `4dd2ed86…71edf80`.
+- ROM `kof98-snes.sfc`: checksum **`$D550`**,
+  SHA-256 `1e1da4b7…df5fea4`.
 - MSU atual (mudou com a voz da California Romance):
   SHA-256 `3e8945c3…868de386`.

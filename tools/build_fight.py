@@ -2778,6 +2778,12 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None):
                 dx, dy = ((int(round(float(m.group(1)) / coord_scale)),
                            int(round(float(m.group(2)) / coord_scale)))
                           if m else (0, 0))
+                # The SNES playfield is only 190 px above the floor; a source
+                # TargetBind y below -80 would hold the victim up into the
+                # HUD (or off the top).  Clamp the hold height for every
+                # throw/grab bind.
+                if dy < -80:
+                    dy = -80
                 lo, hi = elem_window(trig)
                 binds.setdefault(state, []).append((lo, hi, dx, dy))
             elif ctype == "playsnd":
@@ -6668,6 +6674,16 @@ def build_char(name, cfg, global_pal=None):
             row = dict(move_rows[sid])
             row["damage"] = int(dmg)
             move_rows[sid] = row
+    # Guard-cancel blowback: the engine enters sid 67 for the X+A cancel.
+    # Some source states mapped there are launchers with a very high vertical
+    # HitVel; clamp it so the victim stays inside the 190 px playfield
+    # (gravity 0.44 peaks near 48 px at -6.5 px/tick).
+    if 67 < len(move_rows):
+        row = dict(move_rows[67])
+        for key in ("gvy", "avy"):
+            if row.get(key, 0) < -1664:
+                row[key] = -1664
+        move_rows[67] = row
     # first-wins: one mugen state mapped to several sids (slices) resolves
     # to the first slice for command/state lookups
     state_to_sid = {}

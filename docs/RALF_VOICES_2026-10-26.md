@@ -41,5 +41,5 @@ do port.
 
 - `tools/tests/test_ralf_voice_rows.py`: PASS (garante as linhas de voz).
 - `test_ai_headless.py`: PASS.
-- ROM atual: checksum **`$C33F`**,
-  SHA-256 `4dd2ed86…71edf80`.
+- ROM atual: checksum **`$D550`**,
+  SHA-256 `1e1da4b7…df5fea4`.
