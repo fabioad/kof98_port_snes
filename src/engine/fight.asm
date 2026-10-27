@@ -1899,18 +1899,22 @@ WriteStrData:
     lda tblbank
     sta scr2+2
 WriteStr:
-    sep #$20
-    .ACCU 8
-    ldy #0
-    lda [scr2],y
-    sta scr4
-    iny
+    ; scr4 is a shared scratch: the hit path keeps the attacker state index
+    ; there and reads Damage/Shake/Pause/HTTime tables after calling
+    ; CounterDraw->WriteStr.  Use scr0 as the loop counter instead (it is
+    ; dead once the HUD offset has been copied to X) so a counter hit does
+    ; not read the wrong table entry (the reversal follow-up dropped from
+    ; 26 to 1 damage).
     rep #$20
     .ACCU 16
     lda scr0
     tax
     sep #$20
     .ACCU 8
+    ldy #0
+    lda [scr2],y
+    sta scr0
+    iny
 -   lda [scr2],y
     sta HUDMAP,x
     lda #$2C.b
@@ -1918,7 +1922,7 @@ WriteStr:
     iny
     inx
     inx
-    dec scr4
+    dec scr0
     bne -
     rep #$20
     .ACCU 16

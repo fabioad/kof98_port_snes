@@ -147,6 +147,18 @@ class CounterGrabTests(unittest.TestCase):
         state = text[text.index("StateTab:"):text.index("StateRet:")]
         self.assertIn(".dw StSpecial, StSpecial, StSpecial, StSpecial", state)
 
+    def test_counter_hit_keeps_damage_table_index(self):
+        # CounterDraw->WriteStr runs inside the hit path while scr4 holds
+        # the attacker-state offset for DamageTab/ShakeTab/PauseTab/HTTimeTab.
+        # WriteStr must use another scratch for its loop counter or counter
+        # hits (e.g. Yamazaki's reversal follow-up) read the wrong entry.
+        text = (ROOT / "src/engine/fight.asm").read_text()
+        body = text[text.index("WriteStr:"):text.index("; scr0 = top-row")]
+        for op in ("sta scr4", "dec scr4", "inc scr4", "lda scr4"):
+            self.assertNotIn(op, body)
+        self.assertIn("sta scr0", body)
+        self.assertIn("dec scr0", body)
+
     def test_generated_revtab_rows_point_at_counter_slots(self):
         expected = {"yamazaki": 48, "kyo": 52, "shingo": 54, "billy": 48}
         for key, sid in expected.items():
