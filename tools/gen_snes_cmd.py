@@ -216,7 +216,10 @@ SPECS = {
             ("Ultra Argentine MAX", 3050, "MAX_SUPER", GND),
             ("Running Three MAX", 3150, "SUPER_X", GND),
             ("Ultra Argentine weak", 3000, "HCBHCB_X", GND),
-            ("Ultra Argentine strong", 3010, "HCBHCB_Y", GND),
+            # Clark state 3010 is the throw follow-up, not a starter: both
+            # Ultra Argentine strength buttons enter 3000 (the source CNS has
+            # two value=3000 entries).
+            ("Ultra Argentine strong", 3000, "HCBHCB_Y", GND),
             ("Running Three weak", 3100, "HCFHCF_A", GND),
             ("Running Three strong", 3110, "HCFHCF_B", GND),
             ("Napalm Stretch weak", 1500, "DP_X", GND),

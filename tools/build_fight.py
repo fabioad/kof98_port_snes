@@ -2717,15 +2717,51 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None):
         """Trigger list -> inclusive 0-based frame window for TargetBind."""
         lo, hi = 0, 254
         for x in triggers:
-            m = re.search(r"animelemtime\((\d+)\)\s*>=\s*0", x, re.I)
+            # Every element-based guard names the ONE animation element
+            # that should carry the bind.  A guard that only bounded the
+            # window at its start used to leave hi at the default 254, so a
+            # single-element hold pinned the victim for the rest of the
+            # state and shadowed every later window.  That is what glued
+            # Clark's Mount victim (clarkBind53) and Vice's throw victims
+            # to one wrong offset.
+            #
+            # `AnimElemTime(N)` may be spelled with a space before the
+            # parenthesis (Mary, Heidern); `AnimElemNo(0) = N` names the
+            # element currently on screen (Vice, King).  Both are the same
+            # single-element window as `AnimElem = N`.
+            single = None
+            m = re.search(r"animelemtime\s*\(\s*(\d+)\s*\)\s*=\s*\d+",
+                          x, re.I)
             if m:
+                single = int(m.group(1)) - 1
+            else:
+                # `AnimElemTime(N) < M` with M>0 stays inside element N for
+                # the first M ticks, i.e. the whole time element N is on
+                # screen.  `= M` and `< 0` are handled by the branches
+                # below; only a positive M collapses to element N.
+                m = re.search(r"animelemtime\s*\(\s*(\d+)\s*\)\s*<\s*"
+                              r"(\d+)", x, re.I)
+                if m and int(m.group(2)) > 0:
+                    single = int(m.group(1)) - 1
+            m = re.search(r"animelemtime\s*\(\s*(\d+)\s*\)\s*>=\s*0",
+                          x, re.I)
+            if m and single is None:
                 lo = max(lo, int(m.group(1)) - 1)
-            m = re.search(r"animelemtime\((\d+)\)\s*<\s*0", x, re.I)
+            m = re.search(r"animelemtime\s*\(\s*(\d+)\s*\)\s*<\s*0",
+                          x, re.I)
             if m:
                 hi = min(hi, int(m.group(1)) - 2)
-            m = re.search(r"\banimelem\s*=\s*(\d+)", x, re.I)
-            if m:
-                lo = hi = int(m.group(1)) - 1
+            if single is None:
+                m = re.search(r"animelemno\s*\(\s*0\s*\)\s*="
+                              r"\s*\[?\s*(\d+)", x, re.I)
+                if m:
+                    single = int(m.group(1)) - 1
+            if single is None:
+                m = re.search(r"\banimelem\s*=\s*(\d+)", x, re.I)
+                if m:
+                    single = int(m.group(1)) - 1
+            if single is not None:
+                lo = hi = single
         return lo, hi
 
     # TargetBind -> per-state (lo,hi,dx,dy) windows; elem-gated actor/target
@@ -7110,12 +7146,41 @@ def build_char(name, cfg, global_pal=None):
 
     # TargetBind windows: BindTab[sid] -> {lo.b, hi.b, dx.s8, dy.s8}*,
     # $FF terminated.  dy is mugen-space (negative = up).
+    #
+    # MUGEN runs every matching TargetBind controller and the LAST one wins
+    # the position.  The engine keeps the FIRST window that matches, so a
+    # broad early row (an unconditional `0,254` or a `time`-less long hold)
+    # used to shadow every specific row after it: Chang/Joe/Terry/Heidern
+    # throw victims and Clark's Mount stuck to a single wrong offset for the
+    # whole state.  Resolve the per-frame winner at build time and emit runs.
+    def canon_bind(rows):
+        frames = [None] * 255
+        for lo, hi, dx, dy in rows:
+            if hi < lo:
+                continue                  # reversed window never matches
+            for f in range(max(0, lo), min(hi, 254) + 1):
+                frames[f] = (dx & 0xFF, dy & 0xFF)
+        out = []
+        f = 0
+        while f < 255:
+            if frames[f] is None:
+                f += 1
+                continue
+            g = f
+            while g + 1 < 255 and frames[g + 1] == frames[f]:
+                g += 1
+            out.append((f, g, frames[f][0], frames[f][1]))
+            f = g + 1
+        return out
+
+    bind_rows = {sid: canon_bind(cns_binds.get(move_ids.get(sid, -1)) or ())
+                 for sid in range(nsid)}
     inc.append(f"{name}BindTab:\n")
     for sid in range(nsid):
-        rows = cns_binds.get(move_ids.get(sid, -1))
+        rows = bind_rows[sid]
         inc.append(f"    .dw {name}Bind{sid}\n" if rows else "    .dw 0\n")
     for sid in range(nsid):
-        rows = cns_binds.get(move_ids.get(sid, -1))
+        rows = bind_rows[sid]
         if rows:
             inc.append(f"{name}Bind{sid}:\n")
             for lo, hi, dx, dy in rows:
