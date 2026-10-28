@@ -189,9 +189,12 @@
 .DEFINE S_EXT_LAST 111                  ; 107-111 = imported extended
                                         ;   follow-ups (Blue Mary); treated as
                                         ;   specials by HitOne/AI/survivor
-.DEFINE S_EXT_GRAB 109                  ; 109-111 = throw/grab follow-ups:
+.DEFINE S_EXT_GRAB 103                  ; 103-111 = grab/throw follow-ups:
                                         ;   StVictimHeld keeps the victim
-                                        ;   bound while the owner is here
+                                        ;   bound while the owner is here.
+                                        ;   103-106 double as reversal
+                                        ;   follow-ups and as Clark's Ultra
+                                        ;   Argentine lift/slam chain.
 .DEFINE S_DIZZY     11                  ; FUSION dizzy/stun (reuses S_WIN slot)
 .DEFINE S_AIRTHROW  44                  ; FUSION air-throw (reuses spare AnimTab slot)
 
@@ -7744,7 +7747,9 @@ StateTab:
     .dw StSpecial, StSpecial, StSpecial, StSpecial
     ; 107+ per-character extended follow-ups.  Blue Mary uses these for the
     ;   Vertical Arrow air phases (107/108), the Goodnight throw (109) and
-    ;   the Typhoon grabs (110/111).  They dispatch like ordinary specials.
+    ;   the Typhoon grabs (110/111).  Clark's Ultra Argentine chain uses
+    ;   109-111 plus the free parry-counter slots 103-106.  They dispatch
+    ;   like ordinary specials.
     .dw StAirSpec, StAirSpec, StSpecial, StSpecial, StAirSpec
 
 StateRet:
@@ -7758,6 +7763,12 @@ StateRet:
     ; state kept its looping animation on the last frame forever.
     jsr TransAir
     jsr AnimTick
+    ; Imported cinematic grabs (Mary 109-111, Clark's Ultra Argentine
+    ; 103-111) run as ordinary specials but own a bound victim, so the
+    ; attacker must keep re-seating it from the generated BindTab every
+    ; tick.  ThrowBind returns immediately when nobody is held or the
+    ; current state has no bind rows.
+    jsr ThrowBind
     rts                                 ; ClampX lives in the FightMenuTail
 
 ; BodySep: grounded, non-grabbed fighters keep BODY_SEP pixels between

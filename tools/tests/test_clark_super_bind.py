@@ -72,12 +72,34 @@ class ClarkUltraArgentineTests(unittest.TestCase):
                              f"motion {motion} must enter sid 85 (3000)")
 
     def test_followup_bind_has_no_catch_all_hold(self):
-        rows = rows_of(self.text, "clarkBind86")
-        self.assertIsNotNone(rows, "clarkBind86 missing")
+        # 3010 now lives in the imported grab slot 109 (the chain below),
+        # not in the generic success-pose slot 86.
+        rows = rows_of(self.text, "clarkBind109")
+        self.assertIsNotNone(rows, "clarkBind109 missing")
         self.assertNotIn((0, 254), [r[:2] for r in rows])
         self.assertEqual(rows, [(0, 1, 40, 0), (2, 2, 32, 0),
                                 (3, 3, 36, 176), (4, 4, 20, 176),
                                 (5, 5, 8, 176), (255,)])
+
+    def test_full_hold_chain_is_wired(self):
+        """3010 -> 3011 -> 3012 -> 3013 -> 3014 -> 3015 -> 3016 -> stand."""
+        target = rows_of(self.text, "clarkTargetTab")
+        self.assertIsNotNone(target, "clarkTargetTab missing")
+        # On hit the attacker goes to sid 109 (state 3010) and the victim
+        # stays in the generic held slot 76.
+        self.assertEqual(target[85][0], 76)
+        self.assertEqual(target[85][2], 109)
+
+        seg = self.text.split("clarkTransTab:", 1)[1]
+        trans = [(int(a), int(b), int(c)) for a, b, c
+                 in re.findall(r"\.db\s+(\d+),(\d+),(\d+)\n\s*\.dw", seg)]
+        self.assertEqual(
+            [(a, b) for a, b, _k in trans if a >= 103],
+            [(103, 104), (104, 105), (105, 106), (106, 0),
+             (109, 110), (110, 111), (111, 103)])
+        for sid in (109, 110, 111, 103, 104, 105, 106):
+            self.assertTrue(rows_of(self.text, f"clarkAct{sid}"),
+                            f"clarkAct{sid} missing")
 
     def test_mount_bind_follows_each_element(self):
         """clarkBind53 (state 1210) used to glue the victim to one offset."""

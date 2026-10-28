@@ -1029,7 +1029,15 @@ CHARS = {
             74: 800, 75: 800, 76: 5000, 77: 5050,
             78: 720, 79: 720, 80: 720, 81: 720,
             82: 720, 83: 720, 84: 47,
-            85: 3000, 86: 3010, 87: 3000,  # Ultra Argentine w/s/MAX
+            85: 3000, 87: 3000,          # Ultra Argentine weak / MAX
+            # Ultra Argentine hold chain: 3010 (the grab) then the lift and
+            # slam follow-ups.  109-111 are the imported grab slots and
+            # 103-106 the free parry-counter slots (Clark has no reversal),
+            # so the victim stays bound (S_EXT_GRAB..S_EXT_LAST) and
+            # ThrowBind keeps re-seating it every tick.  3013/3014 replay the
+            # 3011/3012 poses.
+            109: 3010, 110: 3011, 111: 3012,
+            103: 3011, 104: 3012, 105: 3015, 106: 3016,
             88: 3100, 89: 3110,            # Running Three w/s
             90: 181, 91: 170, 92: 191,
             94: 710, 95: 700, 96: 750, 97: 760,
@@ -1044,7 +1052,9 @@ CHARS = {
                   60: 3150,
                   67: 250, 69: 720, 94: 710, 95: 700, 96: 750, 97: 760,
                   74: 800, 75: 810, 76: 815, 77: 816,
-                  85: 3000, 86: 3010, 87: 3050, 88: 3100, 89: 3110,
+                  85: 3000, 87: 3050, 88: 3100, 89: 3110,
+                  109: 3010, 110: 3011, 111: 3012,
+                  103: 3013, 104: 3014, 105: 3015, 106: 3016,
                   90: 181, 91: 170, 92: 191},
         "coord_scale": 1,
         "char_scale": 0.81,
@@ -1931,6 +1941,11 @@ def charge_frames(name, air, default_action):
 # space. These four form the fast-palm victim chain (1025 -> 1028).
 VICTIM_STATE_IDS = {1025: 70, 1026: 71, 1027: 72, 1028: 73,
                     820: 76, 821: 77,
+                    # Clark Ultra Argentine victim states (3020..3026):
+                    # the attacker owns the pose through its bind windows,
+                    # so the victim stays in the generic held slot.
+                    3020: 76, 3021: 76, 3022: 76,
+                    3025: 76, 3026: 76,
                     # Kyo throw victims: held pose -> S_VHELD, thrown flight
                     # -> S_VTHROW (815/816 from the C throw, 825/826 from D)
                     815: 76, 816: 77, 825: 76, 826: 77,
