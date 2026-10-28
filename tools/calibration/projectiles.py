@@ -179,14 +179,16 @@ TORSO_PROJECTILES = set()
 # extra bytes at offsets 5-7: spawn height above the floor, gravity in 1/16
 # px/tick^2, and flags (bit0 = ballistic, bits4-7 = ticks of forward drift
 # before VX is zeroed).
-# Lucky's SHOOT: the MUGEN helpers (states 2100 -> 2102 -> 2107 -> 2103)
-# launch the ball up/forward and then zero its horizontal speed so it drops
-# almost vertically about 60 px ahead.  State 2103 is the only phase with a
-# HitDef.  Modelling it as a high drop with a short forward drift keeps the
-# source's "ball from the sky" trajectory; after landing the ball bounces
-# backward three times (states 2105/2108/2112).
+# Lucky's basketball is the arcade Death Bound: it leaves his hand and
+# travels diagonally down/forward toward the opponent, not a vertical drop
+# from the sky.  Spawn at hand height (120 px above the floor), keep a
+# constant 4 px/tick forward speed and let 11/16 px/tick^2 gravity bend it
+# down.  No forward-drift stop (drift=0); the pad is non-zero, so the shared
+# SparkGravity path integrates the fall and the ball bounces on the floor.
+# The Death Shoot (D,D+P, a separate source move) is the sky/layup toss and
+# is not this projectile.
 PROJECTILE_BALLISTIC = {
-    "lucky": {"height": 200, "gravity": 7, "drift": 7},
+    "lucky": {"height": 120, "gravity": 11, "drift": 0},
 }
 
 # Per-sid airborne shots for characters that also have ground projectiles.
@@ -249,14 +251,10 @@ PROJECTILE_CALIBRATION = {
     # the helper's intended forward speed.  Sids 52/53 are states 1000/1010
     # (hadouken); 48/49 are the DP and must stay projectile-free.
     "sakura": {52: (0x0400, 14), 53: (0x0700, 18)},
-    # Lucky SHOOT: the basketball is a helper HitDef in state 2103, reached
-    # only through 2100 -> 2101/2102 -> 2107/2103, which the one-level
-    # helper walk cannot resolve.  Sid 87 is state 2100 (release pose);
-    # source damage 109 on the 100-HP scale -> 22 HUD points.  The ball gets
-    # a short 7 px/tick forward drift (zeroed after 7 ticks by the ballistic
-    # descriptor) and then drops vertically, instead of crossing the screen
-    # like a fireball.
-    "lucky": {87: (0x0700, 22)},
+    # Lucky Death Bound: sid 87 is state 2100 (release pose).  The ball
+    # leaves the hand at 4 px/tick forward; the ballistic profile above adds
+    # the downward curve.  Source damage 109 on the 100-HP scale -> 22 HUD.
+    "lucky": {87: (0x0400, 22)},
     # Heavy D! D. Magnum: state 2105 is the release pose, helper 2120 is a
     # stationary beam with the HitDef.  Give the native shot a forward
     # speed so it reads as the travelling blast, with super-level damage.

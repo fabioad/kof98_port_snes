@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Headless regression for Lucky's basketball (SHOOT) trajectory.
+"""Headless regression for Lucky's Death Bound basketball.
 
-The source helpers (states 2100 -> 2102 -> 2107 -> 2103) give the ball a short
-forward drift and then zero its horizontal speed, so it drops almost
-vertically about 60 px ahead.  State 2103 is the only phase with a HitDef;
-after the first ground contact the ball only bounces (cosmetic).
+The arcade Death Bound leaves Lucky's hand and travels diagonally down and
+forward toward the opponent (the A version is higher, the C version lower).
+It is not a vertical drop from the sky: the source's sky/layup ball belongs to
+the separate Death Shoot (D,D+P).
 
-The old port fired the ball like a horizontal fireball at torso height.  This
-test pins the source shape: spawn above the screen, ~49 px of forward drift,
-then VX=0 and a vertical drop; a victim at the landing spot takes 22 damage,
-and a whiff bounces backward.
+This port's basketball row (sid 87, state 2100) now spawns at hand height
+(120 px above the floor), moves 4 px/tick forward and curves down at
+11/16 px/tick^2.  It hits a victim about 60 px ahead for 22 damage and bounces
+on the floor on a whiff.
 
 Run after a PVSnesLib build:
 
@@ -86,21 +86,25 @@ def case(core, select_state, label, lucky_side, motion, victim_x,
         core.put(F_X, victim_x << 8)
         core.put(F_X + FP2, 100 << 8)
     core.step(20)
+    if not expect_hit:
+        # The corner clamps the victim inside the ball's reach; make him
+        # invulnerable so the projectile passes through and we can test the
+        # floor bounce on a clean whiff.
+        core.ram[F_X + (FP2 if lucky_side == 1 else 0) + 62] = 0xFF
     hp0 = core.word(victim_hp)
     shoot(core, lucky_side - 1, motion)
 
-    base = None
     samples = []
     bounced = False
     hit = False
     for frame in range(150):
-        if base is None:
-            base = ball_slot(core, lucky_side == 2)
+        base = ball_slot(core, lucky_side == 2)
         if base is not None:
             x, y = core.word(base), core.word(base + 2)
-            vx, vy = core.word(base + 8), core.word(base + 10)
+            vx = signed16(core.word(base + 8))
+            vy = signed16(core.word(base + 10))
             attr = core.ram[base + 15]
-            samples.append((frame, x, signed16(y), vx, signed16(vy), attr))
+            samples.append((frame, x, signed16(y), vx, vy, attr))
             if (len(samples) > 1 and samples[-2][2] >= GROUND_Y
                     and signed16(y) < GROUND_Y and signed16(vy) < 0):
                 bounced = True
@@ -112,16 +116,26 @@ def case(core, select_state, label, lucky_side, motion, victim_x,
     if not samples:
         raise AssertionError(f"{label}: no projectile spawned")
     first = samples[0]
-    if first[2] >= 0:
+    # The ball must leave the hand area, not appear above the screen.
+    if not 50 <= first[2] <= 150:
         raise AssertionError(
-            f"{label}: ball spawned at screen Y {first[2]}, not above the top")
-    # Forward drift then a vertical drop (negative X when facing left).
-    drift = max(abs(s[1] - first[1]) for s in samples)
-    if not 40 <= drift <= 60:
-        raise AssertionError(f"{label}: forward drift {drift}px, expected ~49")
-    if not any(s[3] == 0 for s in samples if s[0] - first[0] >= 7):
-        raise AssertionError(f"{label}: VX never stopped (horizontal shot)")
-    max_y = max(s[2] for s in samples)
+            f"{label}: ball spawned at screen Y {first[2]}, "
+            f"expected hand height (~120)")
+    # Forward and downward: no vertical drop, no horizontal fireball.
+    if lucky_side == 1:
+        forward = max(s[1] for s in samples) - first[1]
+        if first[3] <= 0 or forward < 20:
+            raise AssertionError(
+                f"{label}: ball did not move forward (vx={first[3]}, "
+                f"dx={forward})")
+    else:
+        forward = first[1] - min(s[1] for s in samples)
+        if first[3] >= 0 or forward < 20:
+            raise AssertionError(
+                f"{label}: ball did not move forward (vx={first[3]}, "
+                f"dx={forward})")
+    if expect_hit and samples[-1][2] <= first[2]:
+        raise AssertionError(f"{label}: ball did not descend")
 
     damage = hp0 - core.word(victim_hp)
     if expect_hit:
@@ -129,12 +143,12 @@ def case(core, select_state, label, lucky_side, motion, victim_x,
             raise AssertionError(
                 f"{label}: victim not hit (state={core.ram[victim_state]}, "
                 f"damage={damage})")
-        print(f"PASS {label}: high drop + {drift}px drift + {damage} damage",
+        print(f"PASS {label}: diagonal hand shot + {damage} damage",
               flush=True)
     else:
         if hit or damage:
             raise AssertionError(f"{label}: ball hit a far-away victim")
-        if max_y < GROUND_Y:
+        if max(s[2] for s in samples) < GROUND_Y:
             raise AssertionError(f"{label}: ball never reached the floor")
         if not bounced:
             raise AssertionError(f"{label}: no ground bounce on whiff")
@@ -143,8 +157,7 @@ def case(core, select_state, label, lucky_side, motion, victim_x,
             raise AssertionError(f"{label}: right-facing ball did not bounce back")
         if lucky_side == 2 and samples[-1][1] <= samples[ground][1]:
             raise AssertionError(f"{label}: left-facing ball did not bounce back")
-        print(f"PASS {label}: high drop + {drift}px drift + backward bounce",
-              flush=True)
+        print(f"PASS {label}: diagonal hand shot + floor bounce", flush=True)
 
 
 def main(core_path, rom):
@@ -153,10 +166,10 @@ def main(core_path, rom):
         select_state = boot_select(core)
         # P1 Lucky, victim at the landing spot.
         case(core, select_state, "p1-hit", 1, DP_RIGHT, 166, True)
-        # P1 Lucky, victim far away: the ball must bounce back, not fly on.
-        case(core, select_state, "p1-whiff", 1, DP_RIGHT, 230, False)
-        # P2 Lucky facing left: the drop and bounce mirror correctly.
-        case(core, select_state, "p2-hit", 2, DP_LEFT, 37, True)
+        # P1 Lucky, victim far away: the ball must land and bounce, not fly on.
+        case(core, select_state, "p1-whiff", 1, DP_RIGHT, 232, False)
+        # P2 Lucky facing left: the diagonal and bounce mirror correctly.
+        case(core, select_state, "p2-hit", 2, DP_LEFT, 20, True)
     finally:
         core.close()
 

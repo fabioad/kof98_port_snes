@@ -171,24 +171,24 @@ class ProjectileCalibrationTests(unittest.TestCase):
         h2 = max(y for _x, y in frames[2][2]) - min(y for _x, y in frames[2][2]) + 16
         self.assertEqual((w2, h2), (80, 96))     # Kyo's frame 0 bbox
 
-    def test_lucky_basketball_is_a_high_vertical_drop(self):
-        # Source states 2100 -> 2102 -> 2107 move the ball ~47 px forward
-        # over seven ticks, then state 2103 zeroes VX and drops it.  The
-        # native shot must not be another horizontal fireball.
+    def test_lucky_death_bound_is_a_diagonal_hand_shot(self):
+        # The arcade Death Bound leaves Lucky's hand and travels diagonally
+        # down/forward: spawn at 120 px, 4 px/tick forward, 11/16 gravity.
+        # It is not the vertical sky/drop shot from the source Death Shoot.
         self.assertEqual(projectiles.PROJECTILE_BALLISTIC["lucky"],
-                         {"height": 200, "gravity": 7, "drift": 7})
+                         {"height": 120, "gravity": 11, "drift": 0})
         self.assertEqual(projectiles.PROJECTILE_CALIBRATION["lucky"],
-                         {87: (0x0700, 22)})
+                         {87: (0x0400, 22)})
         self.assertNotIn("lucky", projectiles.TORSO_PROJECTILES)
         root = Path(build_fight.ROOT)
         meta = (root / "build/gen_fight/projectiles_meta.inc").read_text()
         self.assertIn(
             "luckyProjFxTab: .dw luckyProjFxAnim, luckyProjFxAnim\n"
             "    .db 0\n"
-            "    .db 200,7,$71\n", meta)
+            "    .db 120,11,$01\n", meta)
         spr = (root / "build/gen_fight/lucky_spr.inc").read_text()
-        # sid 87: vx $0700, damage 22, HitDef sound 5, guard $A0, present
-        self.assertIn("    .db $00,$07,22,5,$A0,1\n", spr)
+        # sid 87: vx $0400, damage 22, HitDef sound 5, guard $A0, present
+        self.assertIn("    .db $00,$04,22,5,$A0,1\n", spr)
 
     def test_projectile_guard_mask_is_per_shot(self):
         # Projectile controllers carry a plain guardflag (MUGEN's default is
