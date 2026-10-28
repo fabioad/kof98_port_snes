@@ -145,7 +145,9 @@ PROJECTILE_SOURCE_PALETTES = {
 PROJECTILE_ZOOM = 2
 
 # The Ko'ou Ken cels are solid ovals (not sparse flame streaks), so the
-# shared 16-tile OBJ page only fits them at native source size.
+# generic 2x upscale overflows the shared 16-cell OBJ page.  Yuri uses the
+# rational resize + per-frame atlas quantizer below instead; keep her generic
+# zoom at 1 so that custom path is selected.
 PROJECTILE_ZOOM_BY_CHAR = {
     "yuri": 1,
     "robert": 1,
@@ -153,6 +155,14 @@ PROJECTILE_ZOOM_BY_CHAR = {
     # half the playfield height; keep it native so it reads as a ball.
     "lucky": 1,
 }
+# Projectile effects that need a non-integer resize.  The engine fits the
+# compiled 16x16-cell atlas, so these are scaled before the atlas quantizer.
+# Yuri's Ko'ou Ken is enlarged 1.5x linearly (~2.25x area) to read roughly
+# like Kyo's 80x96 flame; the old native size was 48x80.
+PROJECTILE_RESIZE = {
+    "yuri": (3, 2),
+}
+
 GROUND_PROJECTILES = {
     "terry", "kyo", "kyonests", "kyoash", "iori",
     # Restored shots that travel along the floor (or reuse a floor-wave

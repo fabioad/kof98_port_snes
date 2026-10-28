@@ -28,6 +28,7 @@ from calibration.projectiles import (PROJECTILE_ACTIONS,
                                      TORSO_PROJECTILES,
                                      PROJECTILE_TORSO_SIDS,
                                      PROJECTILE_ZOOM_BY_CHAR,
+                                     PROJECTILE_RESIZE,
                                      PROJECTILE_CALIBRATION,
                                      PROJECTILE_BALLISTIC,
                                      PROJECTILE_RECOVERY,
@@ -7588,6 +7589,90 @@ def projectile_collect_usable(sff, air, actions):
     return out
 
 
+def resize_projectile(spr, num, den):
+    """Nearest-neighbour resize by the rational factor num/den."""
+    w = max(1, (spr.w * num + den - 1) // den)
+    h = max(1, (spr.h * num + den - 1) // den)
+    out = Sprite()
+    out.group, out.number = spr.group, spr.number
+    out.w, out.h = w, h
+    out.ax = int(round(spr.ax * num / den))
+    out.ay = int(round(spr.ay * num / den))
+    out.palidx, out.link = spr.palidx, spr.link
+    pix = bytearray(w * h)
+    for y in range(h):
+        sy = min(spr.h - 1, (y * den) // num)
+        row = sy * spr.w
+        for x in range(w):
+            sx = min(spr.w - 1, (x * den) // num)
+            pix[y * w + x] = spr.pix[row + sx]
+    out.pix = bytes(pix)
+    return out
+
+
+def fit_quantized_sequence(name, sff, originals, num, den):
+    """Resize a multi-action effect and fit each frame to the OBJ page.
+
+    The source Ko'ou Ken ovals are solid, so a plain 1.5x resize yields more
+    than the 16 unique 16x16 cells the shared effect page can hold.  Keep
+    the enlarged geometry and reduce the atlas to the 16 most frequent
+    cells, mapping the remaining cells to their nearest atlas entry.  The
+    orb keeps its larger silhouette while the page/ROM cost stays identical.
+    """
+    limit = len(SPARK_SLOTS)
+    out = []
+    for spr, xoff, yoff, ticks in originals:
+        resized = resize_projectile(spr, num, den)
+        sxoff = int(round(xoff * num / den))
+        syoff = int(round(yoff * num / den))
+        cells = []
+        cols = (resized.w + CELL - 1) // CELL
+        rows = (resized.h + CELL - 1) // CELL
+        for cy in range(rows):
+            for cx in range(cols):
+                block = bytearray(CELL * CELL)
+                any_px = False
+                for yy in range(CELL):
+                    sy = cy * CELL + yy
+                    if sy >= resized.h:
+                        break
+                    for xx in range(CELL):
+                        sx = cx * CELL + xx
+                        if sx >= resized.w:
+                            continue
+                        v = projectile_remap_index(
+                            sff, resized, resized.pix[sy * resized.w + sx],
+                            name)
+                        block[yy * CELL + xx] = v
+                        any_px |= bool(v)
+                if not any_px:
+                    continue
+                cells.append(
+                    (cx * CELL - resized.w // 2 + sxoff,
+                     cy * CELL - resized.h // 2 + syoff,
+                     bytes(block)))
+        if not cells:
+            continue
+        counts = {}
+        for _dx, _dy, block in cells:
+            counts[block] = counts.get(block, 0) + 1
+        chosen = [b for b, _n in sorted(
+            counts.items(), key=lambda kv: (-kv[1], kv[0]))[:limit]]
+        mapping = {b: i for i, b in enumerate(chosen)}
+        for block in counts:
+            if block in mapping:
+                continue
+            best = min(chosen,
+                       key=lambda c: sum(abs(x - y) for x, y in zip(block, c)))
+            mapping[block] = mapping[best]
+        quads = {b: tiles4bpp(b, CELL, CELL)[0] for b in chosen}
+        atlas = {quads[b]: i for i, b in enumerate(chosen)}
+        out.append((max(1, min(255, ticks)),
+                    [(dx, dy, mapping[b]) for dx, dy, b in cells],
+                    atlas))
+    return out
+
+
 def projectile_effect_sequence(name, cfg, sff, air, actions):
     """Compile a multi-action source effect (one Explod anim per tick).
 
@@ -7601,80 +7686,88 @@ def projectile_effect_sequence(name, cfg, sff, air, actions):
     if not usable:
         return None
     zoom = PROJECTILE_ZOOM_BY_CHAR.get(name, PROJECTILE_ZOOM)
+    resize = PROJECTILE_RESIZE.get(name)
     originals = []
     for _anum, _fi, frame, spr in usable:
         _g, _n, xoff, yoff, ticks, _flip, _ab, _hb = frame
-        original = upscale_projectile(spr, zoom) if zoom != 1 else spr
+        original = spr if resize is not None else (
+            upscale_projectile(spr, zoom) if zoom != 1 else spr)
         originals.append((original, xoff, yoff, max(1, min(255, ticks))))
 
-    fitted = None
-    for scale in range(1, 17):
-        out = []
-        ok = True
-        for original, xoff, yoff, ticks in originals:
-            spr = spark_sprite(original, scale)
-            cell_pixels = {}
-            source_cells = []
-            cols = (spr.w + CELL - 1) // CELL
-            rows = (spr.h + CELL - 1) // CELL
-            for cy in range(rows):
-                for cx in range(cols):
-                    block = bytearray(CELL * CELL)
-                    any_px = False
-                    for yy in range(CELL):
-                        sy = cy * CELL + yy
-                        if sy >= spr.h:
-                            break
-                        for xx in range(CELL):
-                            sx = cx * CELL + xx
-                            if sx >= spr.w:
-                                continue
-                            v = projectile_remap_index(
-                                sff, spr, spr.pix[sy * spr.w + sx], name)
-                            block[yy * CELL + xx] = v
-                            any_px |= bool(v)
-                    if not any_px:
-                        continue
-                    quad = tiles4bpp(block, CELL, CELL)[0]
-                    slot = cell_pixels.setdefault(bytes(quad), len(cell_pixels))
-                    cell_pixels[slot] = bytes(block)
-                    source_cells.append(
-                        (cx * CELL - spr.w // 2 + xoff // scale,
-                         cy * CELL - spr.h // 2 + yoff // scale, slot))
-            if not source_cells:
-                ok = False
-                break
-            bottom = max((dy + i // CELL + 1
-                          for dx, dy, slot in source_cells
-                          for i, value in enumerate(cell_pixels[slot])
-                          if value), default=0)
-            yshift = bottom * zoom if name in GROUND_PROJECTILES else 0
-            atlas = {}
-            cells = []
-            for dx, dy, slot in source_cells:
-                pix = cell_pixels[slot]
-                for by in range(zoom):
-                    for bx in range(zoom):
-                        block = bytes(
-                            pix[(by * CELL + y) // zoom * CELL
-                                + (bx * CELL + x) // zoom]
-                            for y in range(CELL) for x in range(CELL))
-                        if not any(block):
+    if resize is not None:
+        fitted = fit_quantized_sequence(name, sff, originals,
+                                        resize[0], resize[1])
+        if not fitted:
+            raise ValueError(f"{name}: resized projectile sequence is empty")
+    else:
+        fitted = None
+        for scale in range(1, 17):
+            out = []
+            ok = True
+            for original, xoff, yoff, ticks in originals:
+                spr = spark_sprite(original, scale)
+                cell_pixels = {}
+                source_cells = []
+                cols = (spr.w + CELL - 1) // CELL
+                rows = (spr.h + CELL - 1) // CELL
+                for cy in range(rows):
+                    for cx in range(cols):
+                        block = bytearray(CELL * CELL)
+                        any_px = False
+                        for yy in range(CELL):
+                            sy = cy * CELL + yy
+                            if sy >= spr.h:
+                                break
+                            for xx in range(CELL):
+                                sx = cx * CELL + xx
+                                if sx >= spr.w:
+                                    continue
+                                v = projectile_remap_index(
+                                    sff, spr, spr.pix[sy * spr.w + sx], name)
+                                block[yy * CELL + xx] = v
+                                any_px |= bool(v)
+                        if not any_px:
                             continue
                         quad = tiles4bpp(block, CELL, CELL)[0]
-                        idx = atlas.setdefault(quad, len(atlas))
-                        cells.append((dx * zoom + bx * CELL,
-                                      dy * zoom + by * CELL - yshift, idx))
-            if not cells or len(atlas) > len(SPARK_SLOTS):
-                ok = False
+                        slot = cell_pixels.setdefault(bytes(quad), len(cell_pixels))
+                        cell_pixels[slot] = bytes(block)
+                        source_cells.append(
+                            (cx * CELL - spr.w // 2 + xoff // scale,
+                             cy * CELL - spr.h // 2 + yoff // scale, slot))
+                if not source_cells:
+                    ok = False
+                    break
+                bottom = max((dy + i // CELL + 1
+                              for dx, dy, slot in source_cells
+                              for i, value in enumerate(cell_pixels[slot])
+                              if value), default=0)
+                yshift = bottom * zoom if name in GROUND_PROJECTILES else 0
+                atlas = {}
+                cells = []
+                for dx, dy, slot in source_cells:
+                    pix = cell_pixels[slot]
+                    for by in range(zoom):
+                        for bx in range(zoom):
+                            block = bytes(
+                                pix[(by * CELL + y) // zoom * CELL
+                                    + (bx * CELL + x) // zoom]
+                                for y in range(CELL) for x in range(CELL))
+                            if not any(block):
+                                continue
+                            quad = tiles4bpp(block, CELL, CELL)[0]
+                            idx = atlas.setdefault(quad, len(atlas))
+                            cells.append((dx * zoom + bx * CELL,
+                                          dy * zoom + by * CELL - yshift, idx))
+                if not cells or len(atlas) > len(SPARK_SLOTS):
+                    ok = False
+                    break
+                out.append((ticks, cells, atlas))
+            if ok:
+                fitted = out
                 break
-            out.append((ticks, cells, atlas))
-        if ok:
-            fitted = out
-            break
-    if fitted is None:
-        raise ValueError(f"{name}: projectile sequence does not fit the "
-                         f"{len(SPARK_SLOTS)}-tile OBJ page")
+        if fitted is None:
+            raise ValueError(f"{name}: projectile sequence does not fit the "
+                             f"{len(SPARK_SLOTS)}-tile OBJ page")
 
     zoom_frames = []
     chr_data = bytearray()

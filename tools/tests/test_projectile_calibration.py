@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -119,6 +120,56 @@ class ProjectileCalibrationTests(unittest.TestCase):
         self.assertIn("    .db $00,$00,26,5,$AA,41\n", spr)  # sid 52
         self.assertIn("    .db $00,$00,28,5,$AA,49\n", spr)  # sid 53
         self.assertIn("    .db $00,$04,14,5,$A0,1\n", spr)   # sid 58
+
+    def test_yuri_kouken_is_enlarged_to_kyo_size(self):
+        # The old 48x80 Ko'ou Ken looked half Kyo's size.  Yuri now uses the
+        # rational 3/2 resize and a per-frame atlas quantizer: the orb grows
+        # to 64x128 (frame 0) / 80x96 (frame 2) while still fitting 16 unique
+        # 16x16 cells per page.
+        self.assertEqual(projectiles.PROJECTILE_RESIZE["yuri"], (3, 2))
+        self.assertEqual(projectiles.PROJECTILE_ZOOM_BY_CHAR["yuri"], 1)
+        meta = (Path(build_fight.ROOT) /
+                "build/gen_fight/projectiles_meta.inc").read_text()
+        lines = meta.splitlines()
+        frames = {}
+        i = 0
+        while i < len(lines):
+            m = re.match(r"yuriProjFxF(\d+): \.db (\d+),(\d+)", lines[i])
+            if not m:
+                i += 1
+                continue
+            fi, ticks, count = int(m.group(1)), int(m.group(2)), int(m.group(3))
+            cells, slots = [], set()
+            j = i + 1
+            while j < len(lines) and not re.match(r"^\S", lines[j]):
+                cm = re.match(r"\s*\.db (-?\d+),(-?\d+)", lines[j])
+                if cm and j + 1 < len(lines):
+                    sm = re.search(r"\.dw \$([0-9A-F]+)", lines[j + 1])
+                    if sm:
+                        x, y = int(cm.group(1)), int(cm.group(2))
+                        if x > 127:
+                            x -= 256
+                        if y > 127:
+                            y -= 256
+                        cells.append((x, y))
+                        slots.add(sm.group(1))
+                        j += 2
+                        continue
+                j += 1
+            frames[fi] = (ticks, count, cells, slots)
+            i = j
+        self.assertEqual(set(frames), set(range(6)))
+        for fi, (ticks, count, cells, slots) in frames.items():
+            self.assertEqual(count, len(cells), fi)
+            self.assertLessEqual(len(slots), 16, fi)
+        w0 = max(x for x, _y in frames[0][2]) - min(x for x, _y in frames[0][2]) + 16
+        h0 = max(y for _x, y in frames[0][2]) - min(y for _x, y in frames[0][2]) + 16
+        self.assertGreaterEqual(w0 * h0, 2 * 48 * 80)
+        self.assertGreaterEqual(w0, 64)
+        self.assertGreaterEqual(h0, 112)
+        w2 = max(x for x, _y in frames[2][2]) - min(x for x, _y in frames[2][2]) + 16
+        h2 = max(y for _x, y in frames[2][2]) - min(y for _x, y in frames[2][2]) + 16
+        self.assertEqual((w2, h2), (80, 96))     # Kyo's frame 0 bbox
 
     def test_lucky_basketball_is_a_high_vertical_drop(self):
         # Source states 2100 -> 2102 -> 2107 move the ball ~47 px forward

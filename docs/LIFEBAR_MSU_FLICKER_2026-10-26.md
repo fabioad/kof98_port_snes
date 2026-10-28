@@ -68,8 +68,8 @@ atrasa um frame.
 
 ## Hashes
 
-- ROM `kof98-snes.sfc`: checksum **`$A129`**, SHA-256
-  `3f19aa78…1dc1f9b`.
+- ROM `kof98-snes.sfc`: checksum **`$D151`**, SHA-256
+  `6288debf…b94a5dbb`.
 - MSU `kof98-snes.msu`: SHA-256 `3e8945c3…868de386` (inalterado).
 
 Rollback: tag `backup-pre-powerbar-fix-20261026` e
