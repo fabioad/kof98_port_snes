@@ -91,8 +91,9 @@ PROJECTILE_PALETTE_IDX = {(0, 0, 0): 0}
 ART_LOSS = []
 
 # Per-character normal special-cancel opens.  Each descriptor gets a word
-# pointing at a six-byte row (strong sids in CANCEL_STRONG_ORDER) inside the
-# shared CancelData bank, so tight per-character table banks do not grow.
+# pointing at a 22-byte row (normal sids 5..26) inside the shared CancelData
+# bank, so tight per-character table banks do not grow.  Every normal opens
+# after the first third of its animation, on contact.
 CANCEL_OPENS = {}
 
 # Generated per-character CPU AI move tables (see ai_move_table below).
@@ -3258,13 +3259,10 @@ DIR_TOK = {"u": 1, "d": 2, "f": 4, "b": 8,
 BTN_TOK = {"x": 1, "y": 2, "a": 4, "b": 8, "c": 16, "z": 32, "s": 64}
 HOLD_CMD = {"holdup": 1, "holddown": 2, "holdfwd": 4, "holdback": 8}
 
-# Normal-attack slots that the cancel gate covers.  Strong punches/kicks
-# open their special-cancel window by the middle of the animation; light
-# normals keep the source's own var(1) window (or cancel on contact when
-# the source has no window at all).
+# Normal-attack slots that the cancel gate covers.  Every normal -- light or
+# strong -- opens its special / super window after the first third of its
+# animation, on contact.
 CANCEL_NORMAL_SIDS = tuple(range(5, 27))
-CANCEL_STRONG_ORDER = (6, 8, 20, 22, 24, 26)
-CANCEL_STRONG_SIDS = frozenset(CANCEL_STRONG_ORDER)
 
 
 def dir_token(part):
@@ -4521,151 +4519,36 @@ def trans_rules(statedefs, headers, state_to_sid, buttons, state_to_sids=None):
     return rows
 
 
-def chain_rules(path, buttons, move_ids):
-    """State -1 entries -> normal-attack chain rows.
+def normal_open_elem(frames):
+    """Animation element where a normal's first third has elapsed.
 
-    Each row is (from_sid, to_sid, held_dirs, pad_mask, t_norm, t_hit) and
-    fires while the fighter is in from_sid when the pad bit was just
-    pressed, the held_dirs are held, and either the state frame has
-    reached t_norm or a hit made contact and the frame reached t_hit.
-    Times are stored as the first frame number that satisfies the trigger
-    (``time > 5`` -> 6); $FF disables a clock.  Only trigger groups that
-    reference mappable ``stateno = N`` conditions produce rows -- the
-    plain "from ctrl" groups are already covered by the button tables.
+    ``frames`` is the generated AIR timeline: each row's fifth byte is the
+    element's duration in ticks.  Returning an element index keeps the
+    runtime gate a cheap ``F_FRAME >= open`` comparison.  A clip shorter
+    than three ticks opens on element 0, the only element it has.
     """
-    wired = {}
-    for _s, _m in move_ids.items():
-        wired.setdefault(_m, _s)         # first slice sid wins
-    rows = []
-    for entry in parse_neg1(path):
-        if entry.get("type", "").lower() != "changestate":
-            continue
-        try:
-            mstate = int(float(entry.get("value", "-1").split(",", 1)[0]))
-        except ValueError:
-            continue
-        to_sid = wired.get(mstate)
-        if to_sid is None or not 5 <= to_sid <= 26:
-            continue                          # chains only target normals
-        base = [v for k, v in entry["triggers"] if k == "triggerall"]
-        groups = {}
-        for k, v in entry["triggers"]:
-            if k == "triggerall":
-                continue
-            m = re.match(r"trigger(\d+)", k)
-            groups.setdefault(int(m.group(1)) if m else 1, []).append(v)
-        names = re.findall(r'command\s*=\s*"([^"]+)"', " ".join(base), re.I)
-        btns = [b for b in names if b in buttons]
-        if len(btns) != 1:
-            continue
-        pad = buttons[btns[0]]
-        held = 0
-        for cname in names:
-            if cname in HOLD_CMD:
-                held |= HOLD_CMD[cname]
-        for conds in [base + g for g in groups.values()]:
-            txt = " ".join(conds)
-            if re.search(r"stateno\s*(?:!=|=\s*\[)", txt):
-                continue                      # ranges/exclusions too complex
-            froms = [int(n) for n in
-                     re.findall(r"stateno\s*=\s*(\d+)", txt)]
-            from_sids = [wired[n] for n in froms if n in wired]
-            if not from_sids or len(from_sids) != len(froms):
-                continue                      # unmapped stateno ref -> skip
-            if not all(5 <= s <= 26 for s in from_sids):
-                continue                      # only chains out of normals
-            m = re.search(r"movecontact\s*&&\s*\btime\s*>\s*(\d+)", txt)
-            if m:
-                t_hit = int(m.group(1)) + 1
-            elif "movecontact" in txt:
-                t_hit = 0
-            else:
-                t_hit = 0xFF
-            rest = re.sub(r"movecontact\s*&&\s*\btime\s*>\s*\d+", "", txt)
-            tn = [int(n) + 1 for n in
-                  re.findall(r"\btime\s*>\s*(\d+)", rest)]
-            tn += [int(n) for n in
-                   re.findall(r"(?:\btime|statetime)\s*>=\s*(\d+)", rest)]
-            t_norm = min(tn) if tn else 0xFF
-            if t_norm == 0xFF and t_hit == 0xFF:
-                continue
-            for fsid in from_sids:
-                if fsid == to_sid:
-                    continue                      # same-normal loops are infinite
-                rows.append((fsid, to_sid, held, pad, t_norm, t_hit))
-    return rows
+    if not frames:
+        return 0
+    ticks = [max(1, int(frame[4])) for frame in frames]
+    third = sum(ticks) // 3
+    start = 0
+    for index, duration in enumerate(ticks):
+        if start >= third:
+            return min(index, 0xFE)
+        start += duration
+    return min(max(0, len(ticks) - 1), 0xFE)
 
 
-def cancel_windows(path, move_ids, anim_len):
-    """State -1 ``[Combo]`` VarSets -> per-normal special-cancel opens.
+def cancel_windows(frames_by_sid):
+    """Per-normal special/super cancel opens.
 
-    KOF98's CMD/CNS defines the cancel window as ``var(1) = 1`` while a
-    normal is in its cancelable animation elements; the CMD's special and
-    super entries then fire on that variable.  The native engine evaluates
-    the connection separately (F_HITDONE), so this table only needs the
-    first element where a connected normal may cancel.
-
-    Returns ``(sid, open_elem)`` rows for the normal slots (5..26).  The
-    window runs to the animation's end, which keeps late hit-confirms
-    usable instead of freezing on a one-element source window.  CancelGate
-    already requires F_HITDONE, so opening strong normals at element 0 means
-    the first connected hit can cancel immediately into a special or super
-    (KOF98 hit-confirm timing).  Light normals without a source var(1) block
-    keep the old contact-only behaviour.
+    Every character gets the same flexible rule: any connected normal opens
+    its special/super cancel route after the first third of its animation.
+    The native engine gates the connection separately with ``F_HITDONE``;
+    this table only stores the first element where the window is open.
     """
-    state_to_sid = {}
-    for sid, mstate in move_ids.items():
-        state_to_sid.setdefault(mstate, sid)
-    mugen = {}
-    if os.path.exists(path):
-        for entry in parse_neg1(path):
-            if entry.get("type", "").lower() != "varset":
-                continue
-            if entry.get("var(1)", "0").strip() != "1":
-                continue
-            for key, trig in entry["triggers"]:
-                if key == "triggerall":
-                    continue
-                ms = re.search(r"\bstateno\s*=\s*(\d+)\b", trig, re.I)
-                if not ms:
-                    continue
-                sid = state_to_sid.get(int(ms.group(1)))
-                if sid not in CANCEL_NORMAL_SIDS:
-                    continue
-                open_elem = None
-                has_window = False
-                for k, op, _val in re.findall(
-                        r"AnimElemTime\s*\(\s*(\d+)\s*\)\s*([<>]=?)\s*(-?\d+)",
-                        trig, re.I):
-                    k = int(k)
-                    if op in (">", ">="):
-                        # Any lower bound starts inside element k.  Element
-                        # durations are not needed for a 1-based -> 0-based
-                        # conversion of the opening point.
-                        cand = max(0, k - 1)
-                        open_elem = (cand if open_elem is None
-                                     else min(open_elem, cand))
-                    elif op in ("<", "<="):
-                        has_window = True
-                if open_elem is None and has_window:
-                    open_elem = 0
-                if open_elem is not None:
-                    mugen[sid] = min(mugen.get(sid, open_elem), open_elem)
-    rows = []
-    for sid in CANCEL_NORMAL_SIDS:
-        strong = sid in CANCEL_STRONG_SIDS
-        if strong:
-            # Contact is the only gate that matters: once the normal hits or
-            # is blocked, CancelGate lets the player route into a special or
-            # super on the same frame.  Do not wait for the source var(1)
-            # window or the middle of the animation.
-            open_elem = 0
-        elif sid in mugen:
-            open_elem = mugen[sid]
-        else:
-            open_elem = 0
-        rows.append((sid, max(0, min(0xFE, open_elem))))
-    return rows
+    return [(sid, normal_open_elem(frames_by_sid.get(sid)))
+            for sid in CANCEL_NORMAL_SIDS]
 
 
 def ai_move_table(name, rules, move_ids, pow_costs, max_sids, projs, cfg):
@@ -6957,28 +6840,20 @@ def build_char(name, cfg, global_pal=None):
                    f"{r['nstate']},{r['state']}\n")
     inc.append("    .db $FF\n")
 
-    # normal-attack chain/cancel rules.  ChainTab rows (7 bytes each, $FF
-    # terminator): from sid, to sid, held dirs, t_norm, t_hit, pad mask
-    # (16-bit).  Fires when in from_sid with the pad bit just pressed and
-    # either frame >= t_norm or (hitcontact and frame >= t_hit).
-    chains = chain_rules(os.path.join(ROOT, cfg["cmd"]),
-                         cfg["buttons"], cfg["moves"])
+    # normal-attack chain table.  Normal -> normal chains are disabled: a
+    # connected normal now only cancels into a special or a super, with either
+    # the weak or the strong button.  The empty per-character table stays so
+    # the descriptors keep their layout.
+    frames_by_sid = {sid: anim_tables[sid][0]
+                     for sid in range(nsid) if sid in anim_tables}
     inc.append(f"{name}ChainTab:\n")
-    for fsid, tsid, held, pad, tn, th in chains:
-        inc.append(f"    .db {fsid},{tsid},{held},{tn},{th}\n")
-        inc.append(f"    .dw ${pad:04X}\n")
     inc.append("    .db $FF\n")
 
     # Special/super cancel gate.  The descriptor carries a pointer to this
-    # character's six strong-normal opens.  CancelGate additionally requires
-    # F_HITDONE, so only a connected strong normal opens the window.  Opens
-    # come from the character's MUGEN var(1) Combo windows, capped at the
-    # middle element; strong normals without a source window fall back to
-    # exactly half.
-    CANCEL_OPENS[name] = cancel_windows(
-        os.path.join(ROOT, cfg["cns"]), cfg["moves"],
-        {sid: len(anim_tables[sid][0])
-         for sid in range(nsid) if sid in anim_tables})
+    # character's 22 normal opens (sids 5..26).  CancelGate additionally
+    # requires F_HITDONE, so the window opens on contact after the first
+    # third of whichever normal connected.
+    CANCEL_OPENS[name] = cancel_windows(frames_by_sid)
 
     # PowTab[sid] = signed word power delta applied on state entry
     # (statedef-header poweradd plus PowerAdd controllers, summed).
@@ -9178,10 +9053,9 @@ def emit_newchars_inc(new_keys, msu_slices):
                            f"{_x1 & 0xFF},{_y1 & 0xFF}\n")
     reflect.append("    .dw $FFFF\n")
     open(os.path.join(OUT, "reflect_tab.inc"), "w").write("".join(reflect))
-    # Normal special-cancel opens.  Each row is six bytes, one open element
-    # for each strong sid in CANCEL_STRONG_ORDER.  The descriptor's
-    # CH_CANCELROW word points at the row; the table and CancelGate share
-    # bank 50's low window.
+    # Normal special-cancel opens.  Each row is 22 bytes, one open element
+    # for each normal sid 5..26.  The descriptor's CH_CANCELROW word points
+    # at the row; the table and CancelGate share bank 50's low window.
     cancel = ["; generated by tools/build_fight.py -- do not edit\n",
               "CancelTab:\n"]
     for k in CHARS:
@@ -9191,7 +9065,7 @@ def emit_newchars_inc(new_keys, msu_slices):
         opens = dict(rows)
         cancel.append(f"{k}CancelRow:\n")
         cancel.append("    .db " + ",".join(
-            str(opens[sid]) for sid in CANCEL_STRONG_ORDER) + "\n")
+            str(opens[sid]) for sid in CANCEL_NORMAL_SIDS) + "\n")
     open(os.path.join(OUT, "cancel_tab.inc"), "w").write("".join(cancel))
     open(os.path.join(OUT, "newchars_tabs.inc"), "w").write("".join(t))
 
@@ -9394,7 +9268,7 @@ def emit_newchars_inc(new_keys, msu_slices):
     free = [[s[0], s[1], s[2]] for s in PVS_SLOTS]
     # Raw data sections need no alignment; leave a small readable map gap.
     pvs_guard = 0
-    cancel_size = 6 * len(CANCEL_OPENS)
+    cancel_size = len(CANCEL_NORMAL_SIDS) * len(CANCEL_OPENS)
 
     def grab(sz_map, guard=None, prefer_max_slot=None, defer_no_fit=False):
         guard = pvs_guard if guard is None else guard

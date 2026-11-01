@@ -2,10 +2,10 @@
 ; Lives beside CancelTab in bank 50's low half, which shares the Fight
 ; code's CPU bank ($F2), so the call stays a near JSR.
 ; A(16) = 1 when the current normal may cancel into a special or super;
-; X = fofs on exit.  The descriptor's CH_CANCELROW word points at a 6-byte
-; row of opens for the strong normals 6, 8, 20, 22, 24 and 26.  The table is
-; emitted with 0 for strong normals, so the contact check below is the only
-; gate: the first connected hit can be canceled immediately.
+; X = fofs on exit.  The descriptor's CH_CANCELROW word points at a 22-byte
+; row covering every normal sid (5..26).  Each byte is the animation element
+; where the first third of that normal has elapsed, so the window opens on
+; contact for any normal -- light or strong -- once the move is a third in.
 CancelGate:
     rep #$30
     .ACCU 16
@@ -14,61 +14,13 @@ CancelGate:
     sep #$20
     .ACCU 8
     lda FP+F_HITDONE,x
-    beq CG_no
+    beq CG_no8
     lda FP+F_STATE,x
-    ; Light ground normals keep the old contact-only special cancel.
-    cmp #5.b
-    beq CG_light
-    cmp #7.b
-    beq CG_light
-    cmp #19.b
-    beq CG_light
-    cmp #21.b
-    beq CG_light
-    cmp #6.b
-    beq CG_i0
-    cmp #8.b
-    beq CG_i1
-    cmp #20.b
-    beq CG_i2
-    cmp #22.b
-    beq CG_i3
-    cmp #24.b
-    beq CG_i4
-    cmp #26.b
-    beq CG_i5
-    bra CG_no
-CG_light:
-    rep #$20
-    .ACCU 16
-    lda #1
-    rts
-
-; The gate reaches these rows with M=1 (the comparisons above run 8-bit).
-; Keep the immediates 8-bit too: a 16-bit `lda #n` here leaves a $00 byte
-; that the CPU decodes as BRK, and the RTI then resumes mid-instruction --
-; the strong normals (6, 8, 20, 22, 24, 26) ran off into data on contact.
-CG_i0:
-    sep #$20
-    .ACCU 8
-    lda #0
-    bra CG_read
-CG_i1:
-    lda #1
-    bra CG_read
-CG_i2:
-    lda #2
-    bra CG_read
-CG_i3:
-    lda #3
-    bra CG_read
-CG_i4:
-    lda #4
-    bra CG_read
-CG_i5:
-    lda #5
-CG_read:
-    sta ct_off                        ; row index (0..5)
+    sec
+    sbc #S_PUNCH.b                    ; normal sids are 5..26
+    cmp #(S_ASKICK-S_PUNCH+1).b
+    bcs CG_no8
+    sta ct_off                        ; row index = sid - 5
     rep #$20
     .ACCU 16
     ldy #CH_CANCELROW.w
@@ -88,17 +40,297 @@ CG_read:
     ldx fofs
     lda [boxp],y                      ; first cancelable anim element
     cmp FP+F_FRAME,x
-    beq CG_yes                        ; frame >= open: window is open
-    bcc CG_yes
-CG_no:
+    beq CG_yes8                       ; frame >= open: window is open
+    bcc CG_yes8
+CG_no8:
     rep #$20
     .ACCU 16
     lda #0
     rts
-CG_yes:
+CG_yes8:
     rep #$20
     .ACCU 16
     lda #1
+    rts
+
+; A connected normal canceled into a projectile must keep the victim in
+; hitstun long enough for the shot to travel.  ProjTab row (6B) bit0 at
+; offset +5 marks a state that launches a projectile; extend the victim's
+; hitstun to at least PROJ_COMBO_STUN ticks in that case.  Called from the
+; human hit-cancel path and the CPU combo check, with ct_tmp = target sid
+; and fofs = attacker.
+.DEFINE PROJ_COMBO_STUN 64
+ProjComboStun:
+    rep #$20
+    .ACCU 16
+    ldy #CH_PROJTAB.w
+    ldx #sptr
+    jsr CharPtr                       ; sptr -> this fighter's ProjTab
+    lda ct_tmp
+    and #$00FF.w
+    sta scr2
+    asl a
+    clc
+    adc scr2
+    asl a                             ; sid * 6-byte row
+    clc
+    adc #5                            ; +5 = guard | present<<8
+    tay
+    sep #$20
+    .ACCU 8
+    lda [sptr],y
+    and #$01.b                        ; bit0 = projectile exists
+    beq PCS_out
+    rep #$20
+    .ACCU 16
+    lda fofs                          ; attacker offset -> victim offset
+    and #$00FF.w
+    eor #FP2OFS.w
+    tax
+    lda FP+F_HTIMER,x
+    cmp #PROJ_COMBO_STUN.w
+    bcs PCS_out
+    lda #PROJ_COMBO_STUN.w
+    sta FP+F_HTIMER,x
+PCS_out:
+    rep #$20
+    .ACCU 16
+    rts
+
+; ProjHit entry gate for the sequential super projectile.  X = spark slot;
+; carry set = ready to test a contact, clear = still cooling down (the
+; cooldown is decremented here).  A returns 8-bit.
+ProjCooldownReady:
+    sep #$20
+    .ACCU 8
+    cpx #SPK_SIZE
+    bcs PCD_slot1
+    lda.w RT_PROJCD
+    beq PCD_ready
+    dec a
+    sta.w RT_PROJCD
+    clc
+    rts
+PCD_slot1:
+    lda.w RT_PROJCD+1
+    beq PCD_ready
+    dec a
+    sta.w RT_PROJCD+1
+    clc
+    rts
+PCD_ready:
+    sec
+    rts
+
+; Sequential super-projectile tail.  Called from ProjHit with X = spark
+; slot and Y = victim after damage and ComboBump.  Carry set = keep the shot
+; alive for another contact; carry clear = consume it (normal shot or the
+; fifth/last contact, which knocks the victim down).
+ProjMultiTail:
+    sep #$20
+    .ACCU 8
+    cpx #SPK_SIZE
+    bcs PMT_slot1
+    lda.w RT_PROJHITS
+    beq PMT_no
+    dec a
+    sta.w RT_PROJHITS
+    beq PMT_last
+    lda #4
+    sta.w RT_PROJCD
+    sec
+    rts
+PMT_slot1:
+    lda.w RT_PROJHITS+1
+    beq PMT_no
+    dec a
+    sta.w RT_PROJHITS+1
+    beq PMT_last
+    lda #4
+    sta.w RT_PROJCD+1
+    sec
+    rts
+PMT_last:
+    rep #$20
+    .ACCU 16
+    tya
+    sta fofs
+    lda #S_DOWN.w
+    phx
+    jsr EnterState
+    plx                                 ; restore spark slot
+    lda.w SPARKS+SPK_VX,x
+    bmi +
+    lda #$0400.w
+    bra ++
++   lda #$FC00.w
+++  sta scr5
+    phx                                 ; keep the slot for PH_fx
+    ldx fofs
+    lda #LIEDOWN.w
+    sta FP+F_HTIMER,x
+    lda #KOVY.w
+    sta FP+F_VY,x
+    lda scr5
+    sta FP+F_VX,x
+    plx
+    sep #$20
+    .ACCU 8
+    clc
+    rts
+PMT_no:
+    clc
+    rts
+
+; Ken's/Sakura's Shoryuken (Ken sids 52/53, Sakura sids 48/49): the source
+; first contact carries a knockdown flag, so HitOne reaches HO_kdown.  Add
+; the four remaining hits and keep the victim down, making the move a
+; guaranteed five-hit knockdown.  aofs = attacker, vofs = victim.
+MeleeShoryuBurst:
+    rep #$20
+    .ACCU 16
+    ldx aofs
+    lda FP+F_CHAR,x
+    cmp #CharKen
+    beq MSB_ken
+    cmp #CharSakura
+    beq MSB_sakura
+    rts
+MSB_ken:
+    lda FP+F_STATE,x
+    and #$00FF.w
+    cmp #52.w
+    beq MSB_ok
+    cmp #53.w
+    beq MSB_ok
+    rts
+MSB_sakura:
+    lda FP+F_STATE,x
+    and #$00FF.w
+    cmp #48.w
+    beq MSB_ok
+    cmp #49.w
+    beq MSB_ok
+    rts
+MSB_ok:
+    ldx aofs
+    lda FP+F_STATE,x
+    and #$00FF.w
+    asl a
+    sta scr2
+    ldy #CH_DAMAGE.w
+    ldx #sptr
+    jsr CharPtr
+    ldy scr2
+    lda [sptr],y
+    asl a
+    asl a                              ; four remaining contacts
+    sta scr4
+    ldx vofs
+    lda FP+F_HP,x
+    sec
+    sbc scr4
+    bpl +
+    lda #0
++   sta FP+F_HP,x
+    jsr ComboBump
+    jsr ComboBump
+    jsr ComboBump
+    jsr ComboBump
+    lda vofs
+    sta fofs
+    stz fofs+1
+    lda #S_DOWN.w
+    jsr EnterState
+    ldx fofs
+    lda #LIEDOWN.w
+    sta FP+F_HTIMER,x
+    lda #KOVY.w
+    sta FP+F_VY,x
+    ldx aofs
+    lda FP+F_FACING,x
+    bmi +
+    lda #$0400.w
+    bra ++
++   lda #$FC00.w
+++  ldx fofs
+    sta FP+F_VX,x
+    rep #$20
+    .ACCU 16
+    rts
+
+; Pin an active super projectile to its victim while the five-hit sequence
+; is running.  TickSpark calls this before ProjHit, so pushback cannot move
+; the victim out of the shot between contacts.  X = spark slot on entry and
+; exit; A returns 8-bit.
+ProjPinIfMulti:
+    sep #$20
+    .ACCU 8
+    cpx #SPK_SIZE
+    bcs PPM_slot1
+    lda.w RT_PROJHITS
+    beq PPM_out
+    bra PPM_go
+PPM_slot1:
+    lda.w RT_PROJHITS+1
+    beq PPM_out
+PPM_go:
+    lda.w SPARKS+SPK_ATTR,x
+    and #$40.b                        ; bit6 = owner is P2
+    beq +
+    lda #0                            ; owner P2 -> victim P1
+    bra ++
++   lda #FP2OFS.b                     ; owner P1 -> victim P2
+++  sta scr3
+    rep #$20
+    .ACCU 16
+    lda scr3
+    and #$00FF.w
+    tay
+    lda FP+F_X,y
+    xba
+    and #$00FF.w
+    sta.w SPARKS,x
+    lda FP+F_Y,y
+    xba
+    and #$00FF.w
+    sta scr2
+    lda #GROUND_Y.w
+    sec
+    sbc scr2
+    sec
+    sbc #40.w
+    sta.w SPARKS+2,x
+    stz.w SPARKS+SPK_VX,x
+    stz.w SPARKS+SPK_VY,x
+    sep #$20
+    .ACCU 8
+    lda #0
+    sta.w SPARKS+SPK_GRD+1,x
+PPM_out:
+    sep #$20
+    .ACCU 8
+    rts
+
+; Global hitstop normally skips TickFighter, which also skips PushHist.  A
+; player who inputs the cancel motion while the hit is frozen used to lose
+; the command entirely.  Keep the ring current for human sides only; the AI
+; keeps its synthetic pad untouched and will enter its follow-up directly.
+PauseInputBuffer:
+    sep #$20
+    .ACCU 8
+    lda cpu1
+    bne +
+    ldx #0
+    stx fofs
+    jsr PushHist
++   lda cpu2
+    bne +
+    ldx #FP2OFS
+    stx fofs
+    jsr PushHist
++   rep #$20
+    .ACCU 16
     rts
 
 ; Close-range normal: punch or kick, weak or strong, with a stronger bias
@@ -149,64 +381,102 @@ AI_normal_done:
     sta AI_TMP
     jmp AI_SetTimer
 
-; Connected grounded normal -> special/super hit-confirm.  CancelGate only
-; gates human pad input; the CPU enters the follow-up directly, so it uses
-; the same F_HITDONE contact signal and a level-scaled commit rate.  A short
-; per-side throttle keeps a missed scan from retrying every tick.  Kept in
-; the CancelData window to leave room in the 32 KiB Fight bank.
+; Connected normal -> combo hit-confirm.  CancelGate only gates human pad
+; input; the CPU enters the follow-up directly, so it uses the same contact
+; and first-third gate plus a level-scaled commit rate.  Normal -> normal
+; chains are deliberately excluded: the CPU may only route into a special
+; or a super, with either the weak or the strong button.  Levels 2-3 use
+; specials, 4-6 raise the special rate, and 7+ may spend a stock on a super
+; first.  A short per-side throttle keeps a missed scan from retrying every
+; tick.
+AC_fail:
+    sep #$20                            ; AI_one's state dispatch reads the
+    .ACCU 8                             ;   next state with an 8-bit A
+    clc
+    rts
 AI_ComboCheck:
     rep #$20
     .ACCU 16
-    ldx fofs
+    jsr CancelGate                     ; contact + first third of the normal
+    beq AC_fail
+    lda AI_LEVEL
+    and #$00FF.w
+    cmp #2.w
+    bcc AC_fail
+    jsr AI_SideX
     sep #$20
     .ACCU 8
-    lda FP+F_HITDONE,x
-    beq AC_no
-    lda AI_LEVEL
-    cmp #3
-    bcc AC_no
-    jsr AI_SideX
     lda AI_TIMER2,x
-    bne AC_no
-    lda #12
+    bne AC_fail
+    lda #10
     sta AI_TIMER2,x
     lda AI_AGGR
     jsr AI_Rate
     sta AI_TMP
     jsr AI_Rand
     cmp AI_TMP
-    bcs AC_no
+    bcs AC_fail
     jsr AI_Perceive                    ; refresh distance/opponent state
     sep #$20
     .ACCU 8
-    jsr AI_Rand
-    and #$01
-    beq AC_special
+    ldx fofs
+    lda FP+F_STATE,x
+    cmp #S_APUNCH.b
+    bcs AC_fail                        ; airborne: no special/super combo
+    lda AI_LEVEL
+    cmp #7.b
+    bcs AC_try_super
+    bra AC_try_special
+AC_try_super:
     rep #$20
     .ACCU 16
     ldx fofs
     lda FP+F_POWER,x
     cmp #1000.w
-    bcc AC_special
+    bcc AC_try_special
     sep #$20
     .ACCU 8
+    lda AI_SUPER
+    jsr AI_Rate
+    sta AI_TMP
+    jsr AI_Rand
+    cmp AI_TMP
+    bcs AC_try_special
     lda #2                             ; super/MAX-super table
     sta AI_SCANMODE
-    bra AC_scan
-AC_special:
-    lda #0                             ; plain special table
-    sta AI_SCANMODE
-AC_scan:
     jsr AI_ScanMove
-    bcc AC_no
+    bcc AC_try_special
+    bra AC_have_move
+AC_try_special:
+    sep #$20
+    .ACCU 8
+    lda AI_SPEC
+    jsr AI_Rate
+    sta AI_TMP
+    jsr AI_Rand
+    cmp AI_TMP
+    bcs AC_fail_near
+    lda #0                             ; plain special (weak or strong)
+    sta AI_SCANMODE
+    jsr AI_ScanMove
+    bcc AC_fail_near
+AC_have_move:
     lda scr3                           ; sid selected by AI_ScanMove
+    sta ct_tmp
+    jsr ProjComboStun                  ; projectile follow-ups need the same
+    lda scr3                           ;   extended hitstun as human cancels
     jsr AI_StartMove
+AC_commit:
     inc.w AI_DBG_COMBO
     jsr AI_SideX
     stz AI_TIMER2,x
+    sep #$20                            ; keep the caller's 8-bit dispatch mode
+    .ACCU 8
     sec
     rts
-AC_no:
+AC_fail_near:
+    sep #$20
+    .ACCU 8
     clc
     rts
 

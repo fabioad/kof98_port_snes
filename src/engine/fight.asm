@@ -290,7 +290,8 @@
 .DEFINE CH_CMDTAB   40                  ; command rules (motion,held,nheld,post,st)
 .DEFINE CH_MOTTAB   42                  ; motion record pointer table
 .DEFINE CH_POSTAB   44                  ; per-state PosAdd timeline pointers
-.DEFINE CH_CHAINTAB 46                  ; normal-attack chain/cancel rules
+.DEFINE CH_CHAINTAB 46                  ; legacy normal-chain table (empty:
+                                        ;   normal -> normal chains removed)
 .DEFINE CH_POWTAB   48                  ; per-state power delta table (.dw)
 .DEFINE CH_TRANSTAB 50                  ; intra-state ChangeState rules
 .DEFINE CH_EVELTAB  52                  ; per-state entry velset (.dw vx,vy)
@@ -314,8 +315,8 @@
 .DEFINE CH_PROJFXCHR 86                 ; compact projectile cells in ProjFxGlobal
 .DEFINE CH_CMDLIST   88                 ; PRACTICE command list header
 .DEFINE CH_CMDLISTBANK 90               ; 0 = F_TBANK, else explicit bank
-.DEFINE CH_CANCELROW 92                 ; 6 strong-normal cancel opens in
-                                        ;   the CancelData bank (.db each)
+.DEFINE CH_CANCELROW 92                 ; 22 normal cancel opens (sids 5..26)
+                                        ;   in the CancelData bank (.db each)
 .DEFINE CH_MAXMASK   91                 ; bit0..bit4 = sids 85..89 are MAX/SDM
                                         ;   (byte uses the padding after
                                         ;   CH_CMDLISTBANK; layout unchanged)
@@ -682,6 +683,10 @@
 .DEFINE RT_PROJAIR  $510E               ; per-shot torso-height override (ProjTab bit1)
 .DEFINE RT_PROJREL  $51E0               ; per-shot release frame (ProjTab bits 3-7)
 .DEFINE RT_PROJFX2  $51E2               ; per-shot alternate ProjFx clip (bit2)
+.DEFINE RT_PROJHITS $4FC2               ; per spark slot (0/1): super
+                                        ;   projectile hits still to land
+.DEFINE RT_PROJCD   $4FC4               ; per spark slot (0/1): per-hit
+                                        ;   cooldown for those supers
 .DEFINE RT_OAMDROP  $5106               ; cells culled after OAM reaches 128
 .DEFINE RT_GHOSTGEN $5108               ; generation for P1a/P1b/P2a/P2b
 .DEFINE RT_FXUPLOAD $510C               ; cosmetic FX pages per presentation
@@ -4060,6 +4065,11 @@ SF_full:
     stz combohit+FP2OFS                 ;   left in WRAM (the select screen
     stz combotmr                        ;   bypasses ShowTitle/ST_select, so
     stz combotmr+FP2OFS                 ;   the first round would draw garbage)
+    lda #0                              ; no stale multi-hit projectile state
+    sta.w RT_PROJHITS
+    sta.w RT_PROJHITS+1
+    sta.w RT_PROJCD
+    sta.w RT_PROJCD+1
     rep #$20
     .ACCU 16
     stz.w SPARKS+SPK_ANIM               ; clear both hit-spark slots
@@ -6180,8 +6190,9 @@ PHS_done:
 ; CmdTry: scan the generated CmdTab in file order (priority).  On a match the
 ; rule's state is entered via SetState16; on no match the routine returns so
 ; the caller's one-button fallback can run.  CmdTryCancel is the hit-cancel
-; scan: it only accepts specials (48-66) and supers (85-89) so a normal that
-; connected cannot turn into a taunt/dash/throw instead of a combo route.
+; scan: it accepts specials (48-66) and supers (85-89) with either the weak
+; or strong button, so a connected normal cannot turn into a taunt, dash or
+; throw instead of a combo route.
 CmdTry:                                 ; X=fofs
     sep #$20
     .ACCU 8
@@ -6698,9 +6709,16 @@ CMC_roll:
     sbc #1000.w
     sta FP+F_POWER,x
 CMC_take:
-    sep #$20                          ; consume: flag the newest matched ring
-    .ACCU 8                           ;   entry (bit7 of its dir byte).  Entries
-    lda ct_scan                       ;   stay in the ring so a later press can
+    sep #$20                          ; a projectile cancel keeps the victim
+    .ACCU 8                           ;   in hitstun until the shot arrives
+    lda ct_cancel
+    beq +
+    jsr ProjComboStun
+    sep #$20
+    .ACCU 8
++   lda ct_scan                       ; consume: flag the newest matched ring
+                                      ;   entry (bit7 of its dir byte).  Entries
+                                      ;   stay in the ring so a later press can
     sta ct_off                        ;   still complete a command sharing the
     asl a                             ;   prefix (FF -> run, then FF+a); only
     clc                               ;   this press is spent -- the same trick
@@ -6981,6 +6999,10 @@ FightTick:
     .ACCU 8
     lda.b pausecnt                      ; byte access: $74 is shaketmr, not a
     beq +                               ;   pausecnt high byte -- a word read
+    jsr PauseInputBuffer                ; keep command motions entered during
+    sep #$20                            ;   hitstop for the cancel scan
+    .ACCU 8
+    lda.b pausecnt
     dec a                               ;   here aliased EnvShake ticks into a
     sta.b pausecnt                      ;   ~1024-tick full-match freeze
     rts                                 ; global Pause/SuperPause freeze:
@@ -8803,96 +8825,10 @@ ConsumePress:
 ; CancelGate lives in the CancelData window (engine/cancel_gate.asm), which
 ; shares this CPU bank, so the hit path reaches it with a near JSR.
 
-; ChainTry: normal-attack chain/cancel table.  Rows are 7 bytes:
-;   .db from_sid, to_sid, held_dirs, t_norm, t_hit
-;   .dw pad_mask
-; A row fires while F_STATE == from_sid when pad_mask was just pressed,
-; held_dirs are held, and the state frame reached t_norm -- or F_HITDONE
-; (movecontact) is set and the frame reached t_hit.  $FF ends the table.
-ChainTry:
-    rep #$20
-    .ACCU 16
-    ldy #CH_CHAINTAB.w
-    ldx #boxp
-    jsr CharPtr                       ; boxp -> ChainTab
-    stz ct_row
-CN_row:
-    rep #$20
-    .ACCU 16
-    lda ct_row
-    tay
-    sep #$20
-    .ACCU 8
-    lda [boxp],y                      ; from sid; $FF ends the table
-    cmp #$FF
-    bne +
-    rep #$20
-    .ACCU 16
-    rts
-+   ldx fofs
-    cmp FP+F_STATE,x
-    bne CN_next
-    iny
-    lda [boxp],y                      ; to sid
-    sta ct_tmp
-    iny
-    lda [boxp],y                      ; required held dirs
-    sta ct_win
-    iny
-    lda [boxp],y                      ; t_norm
-    sta ct_ei
-    iny
-    lda [boxp],y                      ; t_hit
-    sta ct_ts0
-    lda ct_win
-    beq ++
-    jsr JoyRelDir                     ; held dirs vs current (acc8 in/out)
-    and ct_win
-    cmp ct_win
-    bne CN_next
-++  rep #$20                          ; just-pressed pad mask (.dw field)
-    .ACCU 16
-    lda ct_row
-    clc
-    adc #5
-    tay
-    lda [boxp],y
-    ldx fofs
-    and FP+F_JOYPR,x
-    beq CN_next
-    sep #$20                          ; clock test: frame >= t_norm, or a
-    .ACCU 8                           ;   contact and frame >= t_hit
-    ldx fofs
-    lda ct_ei
-    cmp #$FF
-    beq +
-    cmp FP+F_FRAME,x
-    beq CN_go
-    bcc CN_go
-+   lda FP+F_HITDONE,x
-    beq CN_next
-    lda ct_ts0
-    cmp #$FF
-    beq CN_next
-    cmp FP+F_FRAME,x
-    beq CN_go
-    bcc CN_go
-    bra CN_next
-CN_go:
-    jsr ConsumePress
-    rep #$20
-    .ACCU 16
-    lda ct_tmp
-    and #$00FF.w
-    jmp SetState16
-CN_next:
-    rep #$20
-    .ACCU 16
-    lda ct_row
-    clc
-    adc #7
-    sta ct_row
-    jmp CN_row
+; Normal -> normal chains are intentionally gone.  A connected normal now
+; only routes through CancelGate/CmdTryCancel into a special or a super,
+; with either the weak or the strong button; the empty per-character
+; ChainTab stays only so the descriptor layout is stable.
 
 StJumpGo:                               ; takeoff squat; takeoff velocity is
     rep #$20                            ; applied when anim 40 ends
@@ -9299,11 +9235,10 @@ StAirAtk:                               ; air attack keeps jump momentum;
 +   jsr TryQuickMax                       ; FUSION: air Quick MAX on contact
     bcc +
     jmp StateRet
-+   jsr CancelGate                      ; connected air strong: on contact
-    beq +                               ;   special/super cancel
++   jsr CancelGate                      ; connected air normal: on contact,
+    beq +                               ;   special / super cancel
     jsr CmdTryCancel
-+   jsr ChainTry                          ; air chains (re-fire, x->y/b on hit)
-    jmp StateRet
++   jmp StateRet
 
 StLand:                                 ; grounded recovery, no control
     rep #$20
@@ -9333,11 +9268,10 @@ StAttack:
     beq SA_koho                          ;   the round is already decided
     lda FP+F_HP+FP2OFS
     beq SA_koho
-    jsr CancelGate                       ; first contact -> special/super
-    beq +                                ;   (hit-confirm cancel)
-    jsr CmdTryCancel                     ;   cancel (gate checks F_HITDONE)
-+   jsr ChainTry                         ; then normal chains (whiff ok)
-    jmp StateRet
+    jsr CancelGate                       ; first contact -> special or
+    beq +                                ;   super (hit-confirm cancel)
+    jsr CmdTryCancel                     ;   (gate checks F_HITDONE)
++   jmp StateRet
 SA_koho:
     jmp StateRet
 
@@ -9348,11 +9282,10 @@ StCrouchAtk:                            ; low hits; anim end -> S_CROUCH
     jsr TryQuickMax                     ;   (M.Bison's sweep) keep F_VX
     bcc +
     jmp StateRet
-+   jsr CancelGate                      ; connected crouching strong:
-    beq +                               ;   cancel on first contact
++   jsr CancelGate                      ; connected crouching normal:
+    beq +                               ;   special / super cancel
     jsr CmdTryCancel                    ;   (including the 440 sweep)
-+   jsr ChainTry
-    jmp StateRet
++   jmp StateRet
 
 StRun:                                  ; run while forward is held (anim 100
     rep #$20                            ;   loops via AT_loop)
@@ -11142,6 +11075,7 @@ HO_slide_store:
     ldx vofs
     lda scr0
     sta FP+F_SLIDE,x
+    jsr MeleeShoryuBurst
     jmp HO_done
 HO_kdown:
     lda #S_DOWN
@@ -11154,6 +11088,7 @@ HO_kdown:
 +   ldx fofs
     lda #LIEDOWN.w
     sta FP+F_HTIMER,x
+    jsr MeleeShoryuBurst
     jmp HO_done
 HO_ko:                                    ; KO: boosted launch, stays down
     ldx vofs
@@ -11663,8 +11598,8 @@ AI_smart:
     .ACCU 8
     lda FP+F_STATE,x
     cmp #S_PUNCH                        ; connected grounded normal: let the
-    bcc AI_state_dispatch               ;   CPU hit-confirm into a special
-    cmp #S_CSKICK+1                     ;   or super, like the player can
+    bcc AI_state_dispatch               ;   CPU hit-confirm into a strong
+    cmp #S_CSKICK+1                     ;   special or a weak/strong super
     bcs AI_state_dispatch
     jsr AI_ComboCheck
     bcs AI_done
@@ -12516,7 +12451,7 @@ AI_scan_loop:
     beq AI_scan_super
     cpx #3
     beq AI_scan_throw
-    lda scr6                            ; plain special
+    lda scr6                            ; plain special (weak or strong)
     and #(AI_F_SUPER|AI_F_THROW|AI_F_MAX)
     bne AI_scan_next
     bra AI_scan_range
@@ -13171,7 +13106,10 @@ PR_no:
     rts
 
 ProjHit:
-    sep #$20
+    jsr ProjCooldownReady                ; multi-hit super contact spacing
+    bcs PH_proceed
+    jmp PH_miss
+PH_proceed:
     .ACCU 8
     lda.w SPARKS+SPK_ATTR,x
     and #$80.b                          ; hitbox sparks only: cosmetic
@@ -13342,11 +13280,37 @@ PH_dmg_done:
     beq PH_ko                         ;   down, not leave it on its feet
     sep #$20
     .ACCU 8
-    lda #8.b                          ; brief projectile hitstun, no long freeze
-    sta FP+F_HTIMER,y
+    lda #8.b                          ; brief hitstun; the fifth super hit
+    sta FP+F_HTIMER,y                 ;   replaces it with a knockdown
     lda #5.b
     sta FP+F_SLIDE,y
-    bra PH_fx
+    ; A projectile contact also advances the attacker's combo counter.  The
+    ; normal hit path calls ComboBump from HitOne; this shot path used to
+    ; apply damage directly, so a normal -> projectile link kept showing
+    ; "1 HIT" even when the shot connected during hitstun.
+    rep #$20
+    .ACCU 16
+    phx
+    phy
+    lda.w SPARKS+SPK_ATTR,x
+    and #$0040.w                      ; bit6 = owner is P2
+    beq +
+    lda #FP2OFS.w
+    bra ++
++   lda #0
+++  sta aofs
+    tya                               ; Y still holds the victim offset; scr6
+    sta vofs                          ;   may have been reused by PracBlock
+    jsr ComboBump
+    ply
+    plx
+    ; Sequential super projectile: one contact per cooldown.  The fifth
+    ; contact knocks the victim down and consumes the shot.
+    jsr ProjMultiTail
+    bcc PH_fx
+    .ACCU 8
+    lda #1
+    rts
 PH_ko:
     tya                                ; victim offset for the tail helper
     sta fofs
@@ -13773,6 +13737,26 @@ PS_ground:
     lda.w SPARKS+SPK_ATTR,x
     ora #$20.b                           ; bit5 = special/super projectile
     sta.w SPARKS+SPK_ATTR,x
+    stz scr3                             ; spark slot -> 0/1 table index
+    cpx #SPK_SIZE
+    bcc PTS_idx0
+    lda #1
+    sta scr3
+PTS_idx0:
+    ldy scr3
+    lda #0                               ; single-hit by default
+    sta.w RT_PROJHITS,y
+    sta.w RT_PROJCD,y
+    ldy fofs
+    lda FP+F_STATE,y
+    cmp #S_SUPPER.b                      ; 85..89 = super projectile:
+    bcc PTS_notmulti                     ;   five sequential hits
+    cmp #90.b
+    bcs PTS_notmulti
+    lda #5
+    ldy scr3
+    sta.w RT_PROJHITS,y
+PTS_notmulti:
 +   rep #$20
     .ACCU 16
     sec
@@ -14055,6 +14039,7 @@ TS_no_gravity:
     bpl +
     and #$0E.b                          ; bouncing ball: hitbox already spent
     bne TS_nohit
+    jsr ProjPinIfMulti                  ; super projectile follows its victim
     jsr ProjReflect                    ; opponent shield: bounce it back
     bcc +
     jmp TS_next8                       ; reflected this tick
@@ -14095,8 +14080,17 @@ TS_bank_ready:
     stz.w SPARKS+SPK_FIDX,x
     bra TS_frame_load
 TS_anim_end:
-    stz.w SPARKS+SPK_ANIM,x             ; animation finished
+    cpx #SPK_SIZE                       ; multi-hit super: hold its last
+    bcs +                               ;   frame until the sequence ends
+    lda.w RT_PROJHITS
+    bne TS_multi_hold
+    bra ++
++   lda.w RT_PROJHITS+1
+    bne TS_multi_hold
+++  stz.w SPARKS+SPK_ANIM,x             ; animation finished
     stz.w SPARKS+SPK_ANIM+1,x
+    jmp TS_next8
+TS_multi_hold:
     jmp TS_next8
 TS_frame_load:
     rep #$20

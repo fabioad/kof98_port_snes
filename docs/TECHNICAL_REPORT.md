@@ -162,20 +162,37 @@ Constantes clássicas relevantes:
 - crouching: 400, 410, 430 e 440;
 - aéreos: 600, 610, 630 e 640;
 - throw: 800/810;
-- light/strong chains e cancelamentos condicionados por `movecontact` e tempo;
-- cancelamento especial/super: os normais fortes (`6, 8, 20, 22, 24, 26`)
-  só abrem a janela depois de conectar (`F_HITDONE`) e a partir do elemento
-  definido pelo bloco `[State -1, Combo]`/`var(1)` do CNS do personagem,
-  limitado ao meio da animação quando a fonte não traz janela. O
-  `CmdTryCancel` aceita apenas especiais (`48-66`) e supers (`85-89`), para
-  um normal conectado não virar provocação, corrida ou agarre; os normais
-  leves mantêm o cancelamento por contato anterior. A linha de abertura vem
-  do word `CH_CANCELROW` do descritor, mas a tabela `CancelTab` mora no banco
-  de dados do motor: o `CancelGate` corrige o banco do ponteiro antes de
-  indexar. Sem isso o gate desreferenciava o ponteiro uma vez a mais e lia
-  um byte do banco de tabelas do personagem, fechando a janela dos
-  importados (Ryu, Ken, Sakura, Ryo e Robert) e abrindo-a por acaso nos
-  personagens fixos.
+- sem chains normal -> normal: soco forte e chute forte não se cancelam
+  neles mesmos nem em outro golpe normal;
+- cancelamento especial/super: qualquer normal conectado, fraco ou forte,
+  abre a janela depois de `F_HITDONE` e após o primeiro terço da animação.
+  O `CmdTryCancel` aceita especiais (`48-66`) e supers (`85-89`) com botão
+  fraco ou forte; o super, fraco ou forte, sempre gasta um stock. Provocação,
+  corrida e agarre ficam de fora. A linha de
+  abertura vem do word `CH_CANCELROW` do descritor, mas a tabela `CancelTab`
+  mora no banco de dados do motor: o `CancelGate` corrige o banco do
+  ponteiro antes de indexar. Sem isso o gate desreferenciava o ponteiro uma
+  vez a mais e lia um byte do banco de tabelas do personagem, fechando a
+  janela dos importados (Ryu, Ken, Sakura, Ryo e Robert) e abrindo-a por
+  acaso nos personagens fixos.
+- combos com projétil: um normal conectado que cancela em um golpe com
+  projétil estende a hitstun do adversário (mínimo de 64 ticks) até o
+  impacto, e o próprio impacto do projétil entra no contador de combo. Isso
+  vale para Hadouken e demais tiros de Ryu, Ken, Sakura, Ryo, Robert, Takuma,
+  Yuri e todos os personagens com ProjTab ativo.
+- supers de projétil: o primeiro contato inicia cinco hits sequenciais
+  (tá-tá-tá-tá-TÁ), um a cada quatro ticks, com o projétil preso à vítima
+  durante a sequência; o quinto hit derruba o oponente. Vale para qualquer
+  super com ProjTab ativo, independentemente da distância.
+- Shoryuken de Ken e Sakura (sids 52/53 e 48/49): o primeiro contato aplica
+  os cinco hits e termina em knockdown.
+- comandos durante o hitstop global também alimentam o anel de entrada dos
+  lados humanos, então a motion do cancelamento não se perde enquanto o
+  golpe está congelado.
+- IA de combos por nível: níveis 2-3 usam especiais; 4-6 aumentam a taxa de
+  especiais; 7+ podem gastar um stock em super antes de tentar o especial.
+  Especiais e supers aceitam botão fraco ou forte. A IA nunca emenda
+  normal -> normal.
 
 Parâmetros básicos do KFM clássico que devem ser preservados:
 
