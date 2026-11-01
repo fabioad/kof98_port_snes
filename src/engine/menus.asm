@@ -168,12 +168,21 @@ im7_8:  .incbin "gen_menu/intro/intro08.m7pak"
 im7_9:  .incbin "gen_menu/intro/intro09.m7pak"
 .ENDS
 
-.BANK 45 SLOT 0
-.ORGA $0000
-.SECTION "IntroM7c" FORCE
-im7_10: .incbin "gen_menu/intro/intro10.m7pak"
+.BANK 118 SLOT 0
+.ORGA $E5E0                         ; after EndData4
+.SECTION "IntroM7c11" FORCE
 im7_11: .incbin "gen_menu/intro/intro11.m7pak"
+.ENDS
+
+.BANK 121 SLOT 0
+.ORGA $B620                         ; after EndData7
+.SECTION "IntroM7c13" FORCE
 im7_13: .incbin "gen_menu/intro/intro13.m7pak"
+.ENDS
+
+.BANK 122 SLOT 0
+.ORGA $B4C0                         ; after EndData8
+.SECTION "IntroM7c14" FORCE
 im7_14: .incbin "gen_menu/intro/intro14.m7pak"
 .ENDS
 
@@ -198,12 +207,12 @@ im7p_14: .incbin "gen_menu/intro/intro14.m7pal"
 ; end00-04 = ending1 (Rugal defeat), end05-10 = ending2 (cast/credits).
 ; Raw ExHiROM bank bytes can only reach $8000-$FFFF for banks 64-127, but
 ; the PVSnesLib low-half windows are CPU-mapped ($54-$7D).  EndData21/22
-; and EndData0 uses low half 43; EndData1-3 use 120-125; EndData19/20 use the
+; and EndData0 uses low half 45; EndData1-3 use 120-125; EndData19/20 use the
 ; free upper halves of banks 46/49.  This frees upper halves 95-117 for
 ; Omega Rugal's ROM CHR.  Banks 84-89/110-117 keep upper-half screens.
-; Bank 43 is <64: address it through the $C0 window ($EB), not $2B.
+; Bank 45 is <64: address it through the $C0 window ($ED), not $2D.
 .BASE $C0
-.BANK 43 SLOT 0
+.BANK 45 SLOT 0
 .ORGA $0000
 .SECTION "EndData0" FORCE
 e0_chr: .incbin "gen_menu/end/end00.chr"
@@ -253,6 +262,15 @@ e5_chr_end:
 .SECTION "EndData6" FORCE
 e6_chr: .incbin "gen_menu/end/end06.chr"
 e6_chr_end:
+.ENDS
+
+; IntroM7c used to span bank 45's $0000-$9498 and overlapped KyoChrT at
+; $8000 once Kyo's close-normal art grew the CHR run.  Keep the largest
+; intro clip in bank 120's free tail; the remaining three fit $0000-$8000.
+.BANK 120 SLOT 0
+.ORGA $B620
+.SECTION "IntroM7c10" FORCE
+im7_10: .incbin "gen_menu/intro/intro10.m7pak"
 .ENDS
 
 .BANK 121 SLOT 0

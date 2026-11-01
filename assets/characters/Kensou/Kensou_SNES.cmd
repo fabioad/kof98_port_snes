@@ -456,7 +456,7 @@ trigger1 = ctrl
 
 [State -1, Stand Light Kick]
 type = ChangeState
-value = 230
+value = 220
 triggerall = command = "a"
 triggerall = command != "holddown"
 trigger1 = statetype = S

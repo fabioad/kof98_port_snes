@@ -22,6 +22,8 @@ import zlib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from sff import Sff, Sprite, snes_pal, tiles4bpp
 from runtime_abi import ABI as RUNTIME_ABI, emit as emit_runtime_abi
+from close_normals import (CLOSE_NORMALS, CLOSE_NORMAL_SKIP,
+                           BUTTON_ORDER, close_sids_for)
 from calibration.projectiles import (PROJECTILE_ACTIONS,
                                      PROJECTILE_ACTION_SEQUENCES,
                                      PROJECTILE_SOURCE_PALETTES,
@@ -4244,7 +4246,7 @@ def build_command_list(name, cfg, button_rows, rules, cmddefs, max_sids=()):
 
     source = _state_labels(_source_cmd_path(cfg))
     for r in rules:
-        if r.get("shortcut"):
+        if r.get("shortcut") or r.get("close_normal"):
             continue
         sid = r["state"]
         if sid in rows:
@@ -5405,6 +5407,24 @@ def build_char(name, cfg, global_pal=None):
             continue
         air[anum] = ([(g, n, 0, 0, max(1, int(t)), "", [], [])
                       for g, n, t in entries], 0)
+    (cns_moves, cns_posadds, cns_powadds, cns_headers,
+     cns_statedefs, cns_binds, cns_acts,
+     cns_reversals, cns_hitdef_lists,
+     cns_snds, cns_hitsnds, cns_exprows) = parse_cns(
+        os.path.join(ROOT, cfg["cns"]), coord_scale,
+        cfg.get("damage_scale", 1), char=name,
+        char_scale=char_scale)
+
+    def _state_anim(state):
+        raw = cns_headers.get(state, {}).get("anim", "")
+        m = re.match(r"\s*(-?\d+)", str(raw or ""))
+        candidates = [int(m.group(1))] if m else []
+        candidates += [state, 47, 0]
+        for cand in candidates:
+            if cand in air:
+                return cand
+        return 47
+
     anims = resolve_import_anims(cfg, air) if name in NEW_CHARS else cfg["anims"]
     anims = dict(anims)
     # Counter-grab runtime slots (RevTab p2stateno): every fighter can be the
@@ -5430,13 +5450,6 @@ def build_char(name, cfg, global_pal=None):
     if repaired:
         print(f"{name}: replaced {len(repaired)} stand-pose move actions: "
               f"{repaired}")
-    (cns_moves, cns_posadds, cns_powadds, cns_headers,
-     cns_statedefs, cns_binds, cns_acts,
-     cns_reversals, cns_hitdef_lists,
-     cns_snds, cns_hitsnds, cns_exprows) = parse_cns(
-        os.path.join(ROOT, cfg["cns"]), coord_scale,
-        cfg.get("damage_scale", 1), char=name,
-        char_scale=char_scale)
 
     # Per-character TargetLifeAdd values are authored on the source's life
     # scale (Blue Mary uses 1500) and are not HitDef damage rows.  Override
@@ -5450,6 +5463,49 @@ def build_char(name, cfg, global_pal=None):
     # Stale source hashes or changed manual values fail closed at build time.
     from calibration.native import apply_profile
     apply_profile(ROOT, name, cfg, cns_moves, air)
+
+    # Close standing normals (KOF '98), wired after calibration so existing
+    # profiles keep their hashes: keep the far state in the classic sid 5..8
+    # and give each close variant its own runtime sid, so AnimTab, DamageTab,
+    # HitTimeTab and every other per-state table carry the real source data.
+    # The engine's button table selects close/far by body distance.
+    _98_was_special = 98 in cfg["moves"]
+    cfg["_close_sids"] = ({} if name in CLOSE_NORMAL_SKIP
+                          else close_sids_for(name, cfg["moves"]))
+    cfg["_close98"] = not _98_was_special
+    _close_skip = name in CLOSE_NORMAL_SKIP
+    _trip_anim = anims.get(93, 5070)
+    for _btn in BUTTON_ORDER:
+        _entry = CLOSE_NORMALS.get(name, {}).get(_btn)
+        if _entry is None:
+            continue
+        _close, _far, _dist = _entry
+        _sid = 5 + BUTTON_ORDER.index(_btn)
+        if cfg["moves"].get(_sid) != _far:
+            cfg["moves"][_sid] = _far
+            cfg["anims"][_sid] = _state_anim(_far)
+            anims[_sid] = cfg["anims"][_sid]
+        if _close_skip:
+            continue
+        _csid = cfg["_close_sids"][_btn]
+        cfg["moves"][_csid] = _close
+        cfg["anims"][_csid] = _state_anim(_close)
+        anims[_csid] = cfg["anims"][_csid]
+
+    # ANIM_TRIP moved to slot 44; close light kick now owns slot 93.
+    anims[44] = _trip_anim
+    cfg["anims"][44] = _trip_anim
+    if name == "chizuru":
+        # Close 240 was cloned per button; pick the HitDef row that matches
+        # each clone's fixed anim (LP/HP -> [240,250], LK -> 260, HK -> 270).
+        cfg.setdefault("hitdef_by_sid", {}).update(
+            {82: 0, 83: 0, 93: 1, 98: 2, 112: 2})
+
+    # Close sids can sit above a hole in the dense AnimTab range (Iori/Mary's
+    # 112 fallback).  Fill the gaps with the shared placeholder pose.
+    for _sid in range(98, max(cfg.get("moves", {0})) + 1):
+        anims.setdefault(_sid, 5000)
+
     wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers)
     if name in COUNTER_GRAB_POST_CAL:
         _rows = COUNTER_GRAB_POST_CAL[name]
@@ -5485,6 +5541,8 @@ def build_char(name, cfg, global_pal=None):
     _max_sids = {x for x in _max_sids if x in cfg.get("moves", {})}
     cfg["_max_sids"] = _max_sids
     MAX_MASKS[name] = max_sid_mask(_max_sids)
+    if cfg.get("_close98"):
+        MAX_MASKS[name] |= 0x20             # descriptor bit5: sid 98 is close HK
 
     # A few imports have no AIR 170 (time-over loser pose); use their dizzy
     # pose instead of falling back to the anim 47 landing placeholder.
@@ -5986,6 +6044,9 @@ def build_char(name, cfg, global_pal=None):
                    27, 28, 29, 45, 46}
     motion_sids.intersection_update(anim_tables)
     tween_sids = attack_sids | motion_sids
+    # Close normals use the source's own timing; dissolving them would add
+    # synthetic cels for no gameplay gain and the 8 MiB ROM is tight.
+    tween_sids -= set(cfg.get("_close_sids", {}).values())
     TWEEN_TARGET = 5                # clips below five poses get a dissolve
     bayer8 = (
         (0, 48, 12, 60, 3, 51, 15, 63),
@@ -6794,9 +6855,22 @@ def build_char(name, cfg, global_pal=None):
         inc.append(f"    .db ${move['p2state']:02X},{move['p2pause']},"
                    f"${p1:02X},{move['throw']}\n")
     inc.append(f"{name}ButtonTab:\n")
+    # Four close rows (mask 0 = that button has no close variant) followed
+    # by the four unconditional far rows.  A row's high byte is the
+    # p2bodydist gate in centre-distance pixels; 0 means "take it now".
+    for _btn in BUTTON_ORDER:
+        _entry = CLOSE_NORMALS.get(name, {}).get(_btn)
+        if _entry is None:
+            _mask, _gate = 0, 0
+        else:
+            _mask = cfg["buttons"][_btn]
+            _gate = min(127, _entry[2] + 30)
+        inc.append(f"    .dw ${_mask:04X},${(_gate << 8) | cfg['_close_sids'].get(_btn, 0):04X}\n")
     for mask, sid in button_rows["stand"]:
         inc.append(f"    .dw ${mask:04X},{sid}\n")
     inc.append(f"{name}ButtonTabEnd:\n")
+    # Crouching/air have no close variants: four rows, scanned with a
+    # 16-byte limit instead of the stand table's eight.
     inc.append(f"{name}CButtonTab:\n")
     for mask, sid in button_rows["crouch"]:
         inc.append(f"    .dw ${mask:04X},{sid}\n")
@@ -6896,6 +6970,33 @@ def build_char(name, cfg, global_pal=None):
             # never matched at normal grab range.
             r["dist"] = (r["dist"] & 0x80) | 40
             r["vgate"] = 1
+    # Close standing normals: a raw-button rule gated by the source body
+    # distance, placed immediately before the far normal's plain button rule.
+    # Specials and command normals rank higher and still win; the distance
+    # gate only affects the plain button when the opponent is close.
+    for _btn in BUTTON_ORDER:
+        _entry = CLOSE_NORMALS.get(name, {}).get(_btn)
+        if _entry is None:
+            continue
+        _close, _far, _dist = _entry
+        if _btn not in cfg["_close_sids"]:
+            continue
+        _sid = cfg["_close_sids"][_btn]
+        if _sid not in move_ids:
+            continue
+        cmddefs.setdefault(_btn, (0, [(0, btn_token(_btn))], 15))
+        display_defs.setdefault(_btn, cmddefs[_btn])
+        _far_sid = 5 + BUTTON_ORDER.index(_btn)
+        _pos = next((i for i, r in enumerate(rules)
+                     if r["motion"] == _btn and r["state"] == _far_sid),
+                    next((i for i, r in enumerate(rules)
+                          if r["motion"] == _btn), len(rules)))
+        rules.insert(_pos, {
+            "motion": _btn, "held": 0, "nheld": 0, "posture": 1,
+            "dist": min(127, _dist + 30), "nstate": 0,
+            "state": _sid, "mstate": _close,
+            "close_normal": True,
+            "label": "Close normal"})
     rules.sort(key=lambda r: r["state"] != 74)
     mot_ids = {}
     for r in rules:
@@ -9366,9 +9467,63 @@ def emit_newchars_inc(new_keys, msu_slices):
     # bank 48 tail registered below.
     benimaru_end = _inc_size("benimaru_spr.inc")
     shingo_end = _inc_size("shingo_spr.inc")
+    # Takuma's table no longer fits the 32 KiB low half of bank 83.  Place it
+    # after ShingoData in bank 62 ($7E00-$FE06), which frees bank 83's low
+    # half for the general allocator and keeps TakumaData contiguous.
+    takuma_end = 0x7E00 + _inc_size("takuma_spr.inc")
     PVS_SLOTS = [(47, 0, 65536),
                  (61, benimaru_end, 65536 - benimaru_end),
-                 (62, shingo_end, 65536 - shingo_end)]
+                 (62, takuma_end, 65536 - takuma_end),
+                 (83, 0, 0x8000)]
+    # Tails of fixed character/quote banks that are ROM and unused.
+    rugal_end = _inc_size("rugal_spr.inc")
+    PVS_SLOTS += [(44, rugal_end, 0x8000 - rugal_end)]
+    # Rugal's tables occupy the low part of bank 44; there is no separate
+    # upper-half window in the 32 KiB PVS slot.
+    # Small gaps between fixed tables and quote strings.
+    iori_end = _inc_size("iori_spr.inc")
+    PVS_SLOTS += [(58, iori_end, 0x9000 - iori_end)]
+    heidern_end = _inc_size("heidern_spr.inc")
+    PVS_SLOTS += [(59, heidern_end, 0xB000 - heidern_end)]
+    kyo_end = _inc_size("kyo_spr.inc")
+    PVS_SLOTS += [(60, kyo_end, 0x9000 - kyo_end)]
+    # IntroM7c keeps bank 45's low half; KyoChrT keeps the upper half.
+    # Ending CHR upper halves have large free tails after each image.
+    _intro11 = os.path.getsize(os.path.join(
+        ROOT, "src/gen_menu/intro/intro11.m7pak"))
+    _intro13 = os.path.getsize(os.path.join(
+        ROOT, "src/gen_menu/intro/intro13.m7pak"))
+    _intro14 = os.path.getsize(os.path.join(
+        ROOT, "src/gen_menu/intro/intro14.m7pak"))
+    for _bank, _num, _extra in ((118, 4, _intro11), (119, 5, 0),
+                                (121, 7, _intro13), (122, 8, _intro14),
+                                (123, 9, 0), (124, 10, 0)):
+        _sz = os.path.getsize(os.path.join(
+            ROOT, f"src/gen_menu/end/end{_num:02d}.chr"))
+        _start = 0x8000 + _sz + _extra
+        PVS_SLOTS += [(_bank, _start, 0x10000 - _start)]
+    _end6 = os.path.getsize(os.path.join(ROOT,
+                                         "src/gen_menu/end/end06.chr"))
+    _intro10 = os.path.getsize(os.path.join(
+        ROOT, "src/gen_menu/intro/intro10.m7pak"))
+    _tail120 = 0x8000 + _end6 + _intro10
+    PVS_SLOTS += [(120, _tail120, 0x10000 - _tail120)]
+    # EndData0 moved to bank 45's low half, freeing bank 43 for DaimonChrQ.
+    PVS_SLOTS += [(45, 0x6F40, 0x8000 - 0x6F40)]
+    PVS_SLOTS += [(43, 21120, 0x8000 - 21120)]
+    # EndData20 occupies bank 49's upper half from $9800; its tail is free.
+    end20 = os.path.getsize(os.path.join(ROOT,
+                                         "src/gen_menu/end/end20.chr"))
+    PVS_SLOTS += [(49, 0x9800 + end20, 0x10000 - (0x9800 + end20))]
+    leona_end = 0x8000 + _inc_size("leona_spr.inc")
+    PVS_SLOTS += [(57, leona_end, 0x10000 - leona_end)]
+    vice_end = 0x9000 + _inc_size("vice_spr.inc")
+    PVS_SLOTS += [(60, vice_end, 0x10000 - vice_end)]
+    pt_end = 0x9000 + _inc_size("quote_strings_pt.inc")
+    # SharedTables occupies $C000-$D426 in bank 58, so the PT quote gap is
+    # not a general-purpose slot.
+    es_end = 0xB000 + _inc_size("quote_strings_es.inc")
+    PVS_SLOTS += [(59, es_end, 0x10000 - es_end)]
     # Bank 88 carries EndData15 in the lower half and ShingoChrS in the
     # upper half.  A generated section there makes the linker reject
     # ShingoChrS once the allocation order changes, so leave the bank to
@@ -9379,6 +9534,22 @@ def emit_newchars_inc(new_keys, msu_slices):
     # after EndData18 (13 KiB) and its upper half is free.  Small overflow
     # tables/projectile atlases use these tail windows.
     PVS_SLOTS += [(82, 0x4000, 0x4000)]
+    PVS_SLOTS += [(82, 0x3420, 0x4000 - 0x3420)]
+    # Small ROM tails that can absorb projectile atlases and keep the big
+    # 32 KiB windows free for tables/metas.
+    rugal_meta_end = _inc_size("rugal_meta.inc")
+    PVS_SLOTS += [(17, rugal_meta_end, 0x8000 - rugal_meta_end)]
+    end19 = os.path.getsize(os.path.join(ROOT,
+                                         "src/gen_menu/end/end19.chr"))
+    PVS_SLOTS += [(46, 0xBE00 + end19, 0x10000 - (0xBE00 + end19))]
+    PVS_SLOTS += [(121, 0x7000, 0x1000)]
+    PVS_SLOTS += [(123, 0x6DA0, 0x8000 - 0x6DA0)]
+    PVS_SLOTS += [(62, shingo_end, 0x7E00 - shingo_end)]
+    _chang_meta = _inc_size("chang_meta.inc")
+    PVS_SLOTS += [(47, _chang_meta, 0x10000 - _chang_meta)]
+    _billy_meta = _inc_size("billy_meta.inc")
+    PVS_SLOTS += [(48, 0x6600 + _billy_meta,
+                   0x10000 - (0x6600 + _billy_meta))]
     # Bank 50's low half is free below the Fight code, but $7100-$751C is
     # reserved for FightMenuTail (menucore.asm).  Keep generated data below
     # that tail or the linker cannot place the section.
@@ -9390,11 +9561,19 @@ def emit_newchars_inc(new_keys, msu_slices):
     # Bank 56's low half is empty in the hybrid map; its full 32 KiB window
     # keeps 12 KiB projectile atlases from fragmenting the upper banks.
     PVS_SLOTS += [(56, 0x0000, 0x8000)]
-    # Daimon's tables occupy the low part of bank 63; the tail is still ROM
-    # and gives the 12 KiB projectile atlases a window that does not depend
-    # on the per-character table packing above.
+    # Daimon's tables occupy the low part of bank 63; EN/FR quote strings
+    # move into its tail, freeing bank 44's low half as one contiguous
+    # 32 KiB window for the generated tables.
     daimon_end = _inc_size("daimon_spr.inc")
-    PVS_SLOTS += [(63, daimon_end, 65536 - daimon_end)]
+    en_sz = _inc_size("quote_strings_en.inc")
+    fr_sz = _inc_size("quote_strings_fr.inc")
+    q_en = daimon_end
+    q_fr = q_en + en_sz
+    PVS_SLOTS += [(63, q_fr + fr_sz, 65536 - (q_fr + fr_sz))]
+    # MatureData starts at $794C in bank 55; its tail is free ROM and gives
+    # one more contiguous window for generated table/metasprite sections.
+    mature_end = 0x794C + _inc_size("mature_spr.inc")
+    PVS_SLOTS += [(55, mature_end, 0x10000 - mature_end)]
     # Never allocate file banks 126/127: ExHiROM maps them to CPU $7E/$7F,
     # which are WRAM, so data placed there is unreachable (projectile tables
     # and Chris' generated tables used to land in that hole).  The ending
@@ -9452,25 +9631,68 @@ def emit_newchars_inc(new_keys, msu_slices):
     def grab(sz_map, guard=None, prefer_max_slot=None, defer_no_fit=False):
         guard = pvs_guard if guard is None else guard
         alloc = {}
+        items = [[] for _ in free]
+
+        def put(idx, key, size):
+            slot = free[idx]
+            alloc[key] = (slot[0], slot[1])
+            slot[1] += size + guard
+            slot[2] -= size + guard
+            items[idx].append((key, size))
+
         for k in sorted(sz_map, key=lambda k: -sz_map[k]):
-            candidates = [slot for slot in free
-                          if sz_map[k] <= slot[2] - guard]
+            size = sz_map[k]
+            candidates = [i for i, slot in enumerate(free)
+                          if size <= slot[2] - guard]
             if prefer_max_slot is not None:
-                compact = [slot for slot in candidates
-                           if slot[2] <= prefer_max_slot]
+                compact = [i for i in candidates
+                           if free[i][2] <= prefer_max_slot]
                 if compact:
                     candidates = compact
             if not candidates:
+                # Repair: evict the last placed section(s) of a slot until
+                # its tail can hold the newcomer, parking the evicted
+                # sections in other free fragments.
+                repaired = False
+                for si in range(len(free)):
+                    if not items[si]:
+                        continue
+                    snap_free = copy.deepcopy(free)
+                    snap_items = copy.deepcopy(items)
+                    snap_alloc = dict(alloc)
+                    while free[si][2] < size:
+                        if not items[si]:
+                            break
+                        lk, lsize = items[si][-1]
+                        dests = [j for j in range(len(free)) if j != si
+                                 and lsize + guard <= free[j][2] - guard]
+                        if not dests:
+                            break
+                        dj = min(dests, key=lambda j: free[j][2])
+                        free[si][1] -= lsize + guard
+                        free[si][2] += lsize + guard
+                        items[si].pop()
+                        put(dj, lk, lsize)
+                    if free[si][2] >= size:
+                        put(si, k, size)
+                        repaired = True
+                        break
+                    free[:] = snap_free
+                    items[:] = snap_items
+                    alloc.clear()
+                    alloc.update(snap_alloc)
+                if repaired:
+                    continue
                 if defer_no_fit:
                     continue
+                print("NOFIT", k, sz_map[k],
+                      sorted((s[2] for s in free), reverse=True)[:8])
                 raise ValueError(f"{k}: no free PVS bank window for "
                                  f"{sz_map[k]} bytes")
             # Best-fit prevents a medium section from wasting a large span
             # and leaving only fragments too small for later tables.
-            slot = min(candidates, key=lambda candidate: candidate[2])
-            alloc[k] = (slot[0], slot[1])
-            slot[1] += sz_map[k] + guard
-            slot[2] -= sz_map[k] + guard
+            idx = min(candidates, key=lambda j: free[j][2])
+            put(idx, k, size)
         return alloc
     # Animation records share one bank; 2x frame pages are scattered into
     # free ROM windows and carry their own bank byte for DMA.
@@ -9573,35 +9795,26 @@ def emit_newchars_inc(new_keys, msu_slices):
                    ".ENDS\n"]
     open(os.path.join(OUT, "cancel_data.inc"), "w").write(
         "".join(cancel_data))
-    # Reserve the PRACTICE command pool before smaller allocations fragment
-    # the only windows that can hold this contiguous block.
+    # Reserve the PRACTICE command pool and allocate every large section in
+    # one bin-packing pass.  Staged allocation left the last ~11 KiB tables
+    # without a contiguous window once the close-normal art was added.
     cmd_keys = [k for k in new_keys if k not in FIXED_CMD_LIST]
     cmdpool_sz = _inc_size("cmdlist_pool.inc")
-    pvs_cmdpool = (grab({"__cmdpool": cmdpool_sz}, guard=0)["__cmdpool"]
-                   if cmdpool_sz else None)
-    # Allocate the per-character sections (metas + gameplay tables) first:
-    # they are by far the largest blocks and need the big contiguous windows.
-    # The small/fixed projectile atlases and the AI table fit in the leftover
-    # fragments afterwards.  Allocating the small pieces first fragmented the
-    # last 10 KiB window and left a character table with nowhere to go.
     combined_sizes = ({("meta", k): size for k, size in meta_sz.items()} |
                       {("table", k): size for k, size in tab_sz.items()})
+    for k, size in proj_lengths.items():
+        combined_sizes[("proj", k)] = size + 16
+    combined_sizes[("ai",)] = _inc_size("ai_tables.inc")
+    combined_sizes[("projdesc",)] = proj_size
+    if cmdpool_sz:
+        combined_sizes[("cmdpool",)] = cmdpool_sz
     combined_alloc = grab(combined_sizes)
     pvs_meta = {k: combined_alloc[("meta", k)] for k in meta_sz}
     pvs_tab = {k: combined_alloc[("table", k)] for k in tab_sz}
-    # Projectile atlases are a fixed 4 KiB each and must be contiguous; the
-    # AI table avoids the per-character section banks so a 30K table never
-    # pushes Vice/Kyo's shared bank 60 over its 32K window.
-    pvs_projgfx = grab(proj_lengths, guard=16)
-    pvs_ai = grab({"__ai": _inc_size("ai_tables.inc")})["__ai"]
-    # The shared projectile descriptor table is small; allocate it after the
-    # 64 KiB Chang meta section has claimed the full-window slot.
-    proj_slot = max((slot for slot in free
-                     if proj_size <= slot[2] - pvs_guard),
-                    key=lambda slot: slot[2])
-    pvs_proj = (proj_slot[0], proj_slot[1])
-    proj_slot[1] += proj_size + pvs_guard
-    proj_slot[2] -= proj_size + pvs_guard
+    pvs_projgfx = {k: combined_alloc[("proj", k)] for k in proj_lengths}
+    pvs_ai = combined_alloc[("ai",)]
+    pvs_proj = combined_alloc[("projdesc",)]
+    pvs_cmdpool = combined_alloc.get(("cmdpool",)) if cmdpool_sz else None
     # Quote strings live in fixed readable tails of the already-occupied
     # banks: Rugal's low half (bank 44) carries EN+FR, Iori's bank 58 carries
     # PT and Heidern's bank 59 carries ES.  The assertions keep the constants
@@ -9611,21 +9824,20 @@ def emit_newchars_inc(new_keys, msu_slices):
     assert _inc_size("vice_spr.inc") <= 0x7000     # remainder of bank 60
     # MatureData uses the free tail of sound bank 55 ($794C-$FFFF).
     assert _inc_size("mature_spr.inc") <= 0x10000 - 0x794C
-    assert _inc_size("rugal_spr.inc") <= 0x3000
-    assert 0x3000 + qstr_sz["en"] <= 0x5000
-    assert 0x5000 + qstr_sz["fr"] <= 0x8000
+    assert _inc_size("rugal_spr.inc") <= 0x8000
+    assert daimon_end + qstr_sz["en"] + qstr_sz["fr"] <= 0x10000
     assert _inc_size("iori_spr.inc") <= 0x9000
     assert 0x9000 + qstr_sz["pt"] <= 0x10000
-    assert _inc_size("heidern_spr.inc") <= 0xA000
-    assert 0xA000 + qstr_sz["es"] <= 0x10000
+    assert _inc_size("heidern_spr.inc") <= 0xB000
+    assert 0xB000 + qstr_sz["es"] <= 0x10000
     qtab_sz = (_inc_size("quote_tables.inc") +
                _inc_size("char_names.inc") +
                _inc_size("survival_msu.inc"))
     assert 0xC000 + qtab_sz <= 0x10000            # PVS bank 58
     assert sum(qstr_sz.values()) <= 0x8000        # standalone bank 52
     assert 0x8000 + qtab_sz <= 0x10000
-    pvs_qstr = {"en": (44, 0x3000), "fr": (44, 0x5000),
-                "pt": (58, 0x9000), "es": (59, 0xA000)}
+    pvs_qstr = {"en": (63, q_en), "fr": (63, q_fr),
+                "pt": (58, 0x9000), "es": (59, 0xB000)}
     gfx_inc = ["; per-frame 2x projectile atlases\n.IFDEF PVSNESLIB\n"]
     for k in proj_order:
         bk, org = pvs_projgfx[k]
