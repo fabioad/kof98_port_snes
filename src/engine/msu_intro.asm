@@ -73,6 +73,7 @@ MsuIntroEnterFar:
     ; scr3 chunk counter in this DP layout.
     jsr MI_LoadTable
     jsr MI_SetRegs
+    jsr MI_ResetVideo                      ; wipe the check screen's palette/maps
     rep #$20
     .ACCU 16
     stz.w IN_MFRAME
@@ -162,10 +163,46 @@ MsuIntroLoad:
     lda #128.w
     sta.b scr3
     jsr MI_StreamCgram
+    ; Stay blanked.  The first gs14 vblank (FightPresentDispatch) enables
+    ; the display after the check screen/PPU state has fully settled.
+    rep #$20
+    .ACCU 16
+    rts
+
+; Clear CGRAM and both BG2 map buffers while the display is blanked.  The
+; MSU check screen leaves gray/white BG3 palettes and maps around; wiping
+; them here guarantees no stale colours/tiles can peek through the first
+; video frames.
+MI_ResetVideo:
     sep #$20
     .ACCU 8
-    lda #$0F.b
-    sta.l INIDISP                          ; display on
+    rep #$10
+    .INDEX 16
+    lda #0
+    sta.l $2121                            ; CGRAM 0
+    ldx #0
+-   sta.l $2122
+    inx
+    cpx #512.w                             ; all 256 colors
+    bne -
+    rep #$20
+    .ACCU 16
+    lda #$80.b
+    sta.l $2115
+    lda #$1800.w
+    sta.l $2116
+    lda #0
+    ldx #1024.w
+-   sta.l $2118
+    dex
+    bne -
+    lda #$1C00.w
+    sta.l $2116
+    lda #0
+    ldx #1024.w
+-   sta.l $2118
+    dex
+    bne -
     rep #$20
     .ACCU 16
     rts
