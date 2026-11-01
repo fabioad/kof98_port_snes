@@ -191,6 +191,11 @@ Constantes clássicas relevantes:
   animação 1505 do 1910 foi fatiada no ponto do ChangeState do fonte e o
   TargetLifeAdd de 1065 foi convertido para a escala de 200 de HP (20 de
   dano); a vítima fica no slot 76 e cai depois do choke.
+- intro do Mr. Big: as duas namoradinhas do Statedef 191 (Explods 165/166,
+  sprites 192,0 e 193,0) são desenhadas como um overlay OAM dedicado durante
+  o estado 92. Os dois cels cabem numa página OBJ de 64 tiles carregada em
+  SPK2CHR; a página SPK1CHR fica livre para os Explods da intro do oponente.
+  As cores entram na paleta do Mr. Big, e o overlay some quando a luta começa.
 - comandos durante o hitstop global também alimentam o anel de entrada dos
   lados humanos, então a motion do cancelamento não se perde enquanto o
   golpe está congelado.

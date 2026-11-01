@@ -723,6 +723,8 @@
 .DEFINE box1        $4C                  ; 8 bytes: attacker x0,y0,x1,y1
 .DEFINE aofs        $54                  ; HitOne attacker offset
 .DEFINE boxp        $56                  ; 3-byte generated-data pointer
+.DEFINE girlflags   $59                  ; intro girlfriend cell flags
+.DEFINE girlpal     $5D                  ; intro girlfriend OBJ palette bits
 .DEFINE cptr        $5A                  ; 3-byte character descriptor pointer
 
 .INCLUDE "gen_audio/spc_ids.inc"
@@ -1830,6 +1832,7 @@ SP_set:
     .ACCU 8
     lda [lptr],y                        ; map bank
     jsr VrDma
+    jsl UploadIntroGirls                ; round-1 Mr. Big girlfriend cels
     lda #32                             ; BG palettes 2-4; HUD owns 12-31
     sta.l CGADD
     rep #$20
@@ -14681,6 +14684,7 @@ BuildOam:
     ; priority OBJs with lower OAM indexes win, so a large spark/afterimage
     ; can no longer erase a fighter on dense frames.
     jsr DrawSparks
+    jsl DrawIntroGirls
     ldx #0
     stx fofs
     jsr DrawGhost
@@ -19580,6 +19584,313 @@ BallBounceVY:
     .dw $FB00, $FC00, $FE00            ; -5, -4, -2 px/tick
 .ENDS
 
+; Mr. Big's round-1 intro girlfriend overlay lives outside the full Fight
+; bank and is reached with jsl from BuildOam.  Internal helpers stay in this
+; bank so their jsr/rts calls remain short.
+.BANK 126 SLOT 0
+.ORGA $E000
+.SECTION "IntroGirlCode" FORCE
+; Draw Mr. Big's two girlfriends during his round-1 intro.  The source
+; Statedef 191 spawns them as static Explods 165/166 (sprites 192,0 and
+; 193,0); with no helpers in this engine they are drawn straight from the
+; effect page loaded by StagePick.  Cells are {dx.b,dy.b,tile.w} with
+; bit15 = 8x8 OAM sprite, bit14..0 = absolute tile number (448..511, page
+; $7C00).  Source intro Explods are sparse enough to stay on slot 0 ($6C00),
+; so they never overwrite this page.  The overlay disappears with the intro.
+UIG_dma:
+    sta lptr+2
+    lda scr0
+    sta lptr
+    lda scr0+1
+    sta lptr+1
+    lda #$80.b
+    sta.l VMAIN
+    rep #$20
+    .ACCU 16
+    lda scr2
+    sta.l VMADDL
+    ldy #0
+-   lda [lptr],y
+    sta.l VMDATAL
+    iny
+    iny
+    cpy scr1
+    bne -
+    sep #$20
+    .ACCU 8
+    rts
+
+; Load Mr. Big's intro girlfriend cels into the second effect page while
+; StagePick still has the display blanked.  Keeping both girls on page 1
+; leaves page 0 free for the opponent's intro Explods.
+UploadIntroGirls:
+    rep #$20
+    .ACCU 16
+    lda #IntroGirlTiles.w
+    sta scr0
+    lda #2048.w
+    sta scr1
+    lda #SPK2CHR
+    sta scr2
+    sep #$20
+    .ACCU 8
+    lda #:IntroGirlTiles
+    jsr UIG_dma
+    sep #$20                            ; StagePick resumes in 8-bit mode
+    .ACCU 8
+    rtl
+
+DrawIntroGirls:
+    rep #$20
+    .ACCU 16
+    ldx #0
+    stx fofs
+    jsr DIG_side
+    ldx #FP2OFS
+    stx fofs
+    jsr DIG_side
+    rep #$20
+    .ACCU 16
+    rtl
+
+DIG_side:
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    lda FP+F_STATE,x
+    cmp #S_INTRO.w
+    bne DIG_s_out
+    sep #$20
+    .ACCU 8
+    lda.b roundno
+    dec a
+    bne DIG_s_out8
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    lda FP+F_CHAR,x
+    cmp #CharMrbig.w
+    bne DIG_s_out
+    lda FP+F_X,x                       ; feet origin, 8.8 -> px
+    xba
+    and #$00FF.w
+    sta scr1
+    lda FP+F_Y,x
+    xba
+    and #$00FF.w
+    sta scr2
+    lda #GROUND_Y.w
+    sec
+    sbc scr2
+    sta scr2
+    sep #$20
+    .ACCU 8
+    lda FP+F_FACING,x                  ; low byte: +1 right / $FF left
+    sta scr0
+    lda #$30.b                        ; OBJ priority 3, palette 0
+    ldy fofs
+    beq +
+    lda #$32.b                        ; P2: palette 1
++   sta girlpal
+    rep #$20
+    .ACCU 16
+    lda #GirlACells.w
+    sta lptr
+    sep #$20
+    .ACCU 8
+    lda #:GirlACells
+    sta lptr+2
+    jsr DIG_cells
+    rep #$20
+    .ACCU 16
+    lda #GirlBCells.w
+    sta lptr
+    sep #$20
+    .ACCU 8
+    lda #:GirlBCells
+    sta lptr+2
+    jsr DIG_cells
+DIG_s_out8:
+    rep #$20
+    .ACCU 16
+DIG_s_out:
+    rts
+
+DIG_cells:
+    rep #$20
+    .ACCU 16
+    lda [lptr]                         ; ncells
+    and #$00FF.w
+    bne +
+    rts                                ; empty cell list
++   sta scr4
+    inc lptr
+    bne +
+    inc lptr+2
++   ldy #0
+DIG_c_loop:
+    sep #$20
+    .ACCU 8
+    lda [lptr],y                      ; dx
+    sta scr3
+    iny
+    lda [lptr],y                      ; dy
+    sta scr5
+    iny
+    rep #$20
+    .ACCU 16
+    lda [lptr],y                      ; tile word (+ size flag)
+    iny
+    iny
+    sta scr6
+    lda scr5                          ; y = base + dy
+    and #$00FF.w
+    bit #$0080.w
+    beq +
+    ora #$FF00.w
++   clc
+    adc scr2
+    sta scr5
+    lda scr3                          ; signed dx
+    and #$00FF.w
+    bit #$0080.w
+    beq +
+    ora #$FF00.w
++   sta scr3
+    lda scr6
+    and #$8000.w
+    beq DIG_c_16
+    lda scr0                          ; 8x8: x = base +- dx [- 8]
+    bmi DIG_c_8f
+    lda scr1
+    clc
+    adc scr3
+    bra DIG_c_8x
+DIG_c_8f:
+    lda scr1
+    sec
+    sbc scr3
+    sec
+    sbc #8.w
+DIG_c_8x:
+    sta scr3
+    sep #$20
+    .ACCU 8
+    stz girlflags
+    bra DIG_c_flip
+DIG_c_16:
+    lda scr0                          ; 16x16: x = base +- dx [- 16]
+    bmi DIG_c_16f
+    lda scr1
+    clc
+    adc scr3
+    bra DIG_c_16x
+DIG_c_16f:
+    lda scr1
+    sec
+    sbc scr3
+    sec
+    sbc #16.w
+DIG_c_16x:
+    sta scr3
+    sep #$20
+    .ACCU 8
+    lda #2.b                          ; size bit
+    sta girlflags
+DIG_c_flip:
+    lda scr0
+    bpl +
+    lda girlflags
+    ora #1.b                          ; mirror the cell
+    sta girlflags
++   rep #$20
+    .ACCU 16
+    ldx oamtop
+    cpx #512.w
+    bcc +
+    jmp DIG_c_stop                     ; OAM full
++   sep #$20
+    .ACCU 8
+    lda scr3
+    sta.w OAMBUF,x
+    lda scr5
+    sta.w OAMBUF+1,x
+    rep #$20
+    .ACCU 16
+    lda scr6
+    and #$7FFF.w
+    sta scr6
+    sep #$20
+    .ACCU 8
+    lda scr6
+    sta.w OAMBUF+2,x
+    lda girlflags
+    and #1.b
+    beq +
+    lda #$40.b                        ; OAM h-flip
+    bra ++
++   lda #0
+++  ora girlpal
+    sta.w OAMBUF+3,x
+    lda scr6+1                        ; tile bit 8 -> attr bit 0
+    beq +
+    lda.w OAMBUF+3,x
+    ora #$01.b
+    sta.w OAMBUF+3,x
++   rep #$20
+    .ACCU 16
+    lda scr3                          ; high table: X bit 8 + 16x16 size
+    and #$0100.w
+    lsr a
+    sta scr0
+    sep #$20
+    .ACCU 8
+    lda girlflags
+    and #2.b
+    ora scr0
+    sta scr0
+    rep #$20
+    .ACCU 16
+    lda oamtop
+    lsr a
+    lsr a
+    sta scr6                          ; sprite index
+    and #$0003.w
+    asl a
+    tax
+    lda scr0
+-   cpx #0
+    beq +
+    asl a
+    dex
+    bra -
++   sta scr0
+    lda scr6
+    lsr a
+    lsr a
+    tax
+    sep #$20
+    .ACCU 8
+    lda scr0
+    ora.w OAMHI,x
+    sta.w OAMHI,x
+    rep #$20
+    .ACCU 16
+    lda oamtop
+    clc
+    adc #4.w
+    sta oamtop
+    dec scr4
+    beq DIG_c_stop
+    jmp DIG_c_loop
+DIG_c_stop:
+    rep #$20
+    .ACCU 16
+DIG_c_done:
+    rts
+
+.ENDS
+
 ; Frequently-called Fight helpers that need no code changes when relocated:
 ; they stay in the same CPU bank ($F2), so every `jsr`/`jmp` keeps working.
 ; Bank 50's low half is free from $7EA9 to $7FFF after FightMenuTail.
@@ -21103,6 +21414,7 @@ UiSrc:      .db 4, 13, 12, 3            ; select, move, back, winner voice
 .SECTION "StageData" FORCE
 HudChr:     .INCBIN "gen_fight/hud.chr"
 HudChr_End:
+.INCLUDE "gen_fight/intro_girls.inc"
 .INCLUDE "gen_fight/stage_anim.inc"
 Portraits:  .INCBIN "gen_fight/portraits.chr"
 Portraits_End:
