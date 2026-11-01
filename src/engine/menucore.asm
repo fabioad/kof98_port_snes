@@ -2952,3 +2952,13 @@ KHD_go:
     jmp KO_DownState
 KHD_out:
     rts
+
+.IFDEF PVSNESLIB
+; Far-bank bridge for the MSU opening video.  TitleEnter is a near routine
+; that ends with RTS, so the far player cannot JML straight into it: this
+; same-bank JSR supplies the return frame, then the bridge hands control back
+; to MainLoop (which resets S at its top).
+MsuTitleEnterBridge:
+    jsr TitleEnter
+    jmp MainLoop
+.ENDIF

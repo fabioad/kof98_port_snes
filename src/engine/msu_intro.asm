@@ -61,7 +61,7 @@ MsuIntroTickFar:
     .ACCU 8
     lda #$80.b
     sta.l INIDISP                          ; blank before the handoff
-    jml TitleEnter
+    jml MsuTitleEnterBridge
 +   inc.w IN_MTICK
     lda.w IN_MTICK
     cmp.w IN_MTICKS
@@ -86,7 +86,7 @@ MIK_finish:
     .ACCU 8
     lda #$80.b
     sta.l INIDISP
-    jml TitleEnter
+    jml MsuTitleEnterBridge
 
 ; ---------------------------------------------------------------------------
 ; Load IN_MFRAME from the MSU into BG2.  Keeps the display blanked and NMI
