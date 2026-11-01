@@ -1,0 +1,16 @@
+{
+  "source": "assets/video/Wmva3m93t34/frames",
+  "output": "assets/video/Wmva3m93t34/frames_snes",
+  "frame_count": 432,
+  "resolution": [
+    128,
+    112
+  ],
+  "colors": 256,
+  "format": "SNES Mode-7 .m7pak + .m7pal (InLM7-compatible)",
+  "frame_ticks": "7/8 alternating",
+  "duration_seconds": 54.0,
+  "total_pak_bytes": 3200800,
+  "total_pal_bytes": 221184,
+  "max_unique_tiles": 198
+}
