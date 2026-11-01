@@ -322,18 +322,20 @@ MISC_body:
     sec
     sbc.b scr5
     sta.b scr3
-    ; CGRAM copy: pointer = MsuStageBuf + prefix
+    ; CGRAM copy: pointer = MsuStageBuf + prefix.  Use lptr (not scr0) so
+    ; scr0 keeps the advanced source word for a palette that crosses a
+    ; 512-byte sector and needs a second pass.
     lda #(MsuStageBuf & $FFFF).w
     clc
     adc.b scr4
-    sta.b scr0
+    sta.b lptr
     sep #$20
     .ACCU 8
     lda #$7F.b
-    sta.b scr1                            ; bank byte of the 24-bit ptr
+    sta.b lptr+2                          ; bank byte of the 24-bit ptr
     ldy #0
 MISC_copy:
-    lda [scr0],y
+    lda [lptr],y
     sta.l $2122
     iny
     cpy.b scr5
