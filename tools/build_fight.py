@@ -7793,6 +7793,11 @@ def projectile_effect_sequence(name, cfg, sff, air, actions):
     return actions, zoom_frames, bytes(chr_data)
 
 
+# Characters whose projectile art is already at its intended size; keep the
+# historical pre-zoom fit for them (Kyo/Iori/Saisyu flames).
+PROJECTILE_LEGACY_FIT = {"kyo", "kyonests", "kyoash", "iori", "saisyu"}
+
+
 def projectile_effect(name, cfg, sff, air, statedefs, headers, move_ids,
                       palidx, global_pal, mapped_color):
     """Compile source AIR frames into the eight-cell OBJ cache per side."""
@@ -7845,18 +7850,23 @@ def projectile_effect(name, cfg, sff, air, statedefs, headers, move_ids,
         return projectile_remap_index(sff, spr, idx, name)
 
     source_frames = air[action][0]
+    # Kyo/Iori/Saisyu already read large with the legacy pre-zoom fit.
+    # Every other fighter now fits the *final* (zoomed) atlas to the 16-cell
+    # page, which keeps the effect as close to its source size as the OBJ
+    # budget allows instead of shrinking it before doubling it again.
+    legacy_fit = name in PROJECTILE_LEGACY_FIT
     originals = []
     for fi in frames:
         g, n, xoff, yoff, ticks, _flip, _ab, _hb = source_frames[fi]
-        original = upscale_projectile(crop_projectile_sprite(sff.get(g, n)),
-                                      zoom)
-        originals.append((original, xoff, yoff, ticks))
+        spr = crop_projectile_sprite(sff.get(g, n))
+        if legacy_fit:
+            spr = upscale_projectile(spr, zoom)
+        originals.append((spr, xoff, yoff, ticks))
 
     # Fit the complete animation at one scale. Fitting each frame separately
     # let the first consume the cache and forced later frames to shrink or
     # repeat tile zero. Rebuild all frames until their distinct tiles fit.
-    scale = 1
-    while True:
+    for scale in range(1, 17):
         all_cells = {}
         cell_pixels = {}
         out_frames = []
@@ -7893,47 +7903,47 @@ def projectile_effect(name, cfg, sff, air, statedefs, headers, move_ids,
                                       cy * CELL - spr.h // 2 + yoff // scale,
                                       slot))
             out_frames.append((max(1, min(255, ticks)), cells))
-        if len(all_cells) <= 8 and all(len(cells) <= 8
-                                      for _ticks, cells in out_frames):
-            break
-        scale += 1
-
-    # Enlarge the fitted pixels exactly 2x, without shrinking them back to
-    # the old clip budget. Each live effect slot streams a complete 2 KiB
-    # frame page, shared with ordinary sparks when that slot is reused.
-    zoom_frames = []
-    chr_data = bytearray()
-    for ticks, source_cells in out_frames:
-        bottom = max(dy + i // CELL + 1
-                     for dx, dy, slot in source_cells
-                     for i, value in enumerate(cell_pixels[slot]) if value)
-        yshift = bottom * zoom if name in GROUND_PROJECTILES else 0
-        atlas = {}
-        cells = []
-        for dx, dy, slot in source_cells:
-            pix = cell_pixels[slot]
-            for by in range(zoom):
-                for bx in range(zoom):
-                    block = bytes(pix[(by * CELL + y) // zoom * CELL
-                                      + (bx * CELL + x) // zoom]
-                                  for y in range(CELL) for x in range(CELL))
-                    if not any(block):
-                        continue
-                    quad = tiles4bpp(block, CELL, CELL)[0]
-                    idx = atlas.setdefault(quad, len(atlas))
-                    cells.append((dx * zoom + bx * CELL,
-                                  dy * zoom + by * CELL - yshift, idx))
-        if len(atlas) > 16:
-            raise ValueError(f"{name}: {zoom}x frame exceeds its 16-cell "
-                             f"VRAM page")
-        page = bytearray(2048)
-        for quad, idx in atlas.items():
-            offset = (SPARK_SLOTS[idx] - 192) * 32
-            page[offset:offset + 64] = quad[:64]
-            page[offset + 512:offset + 576] = quad[64:]
-        chr_data += page
-        zoom_frames.append((ticks, cells))
-    return action, zoom_frames, bytes(chr_data)
+        if legacy_fit and (len(all_cells) > 8
+                           or any(len(cells) > 8
+                                  for _ticks, cells in out_frames)):
+            continue
+        zoom_frames = []
+        chr_data = bytearray()
+        ok = True
+        for ticks, source_cells in out_frames:
+            bottom = max(dy + i // CELL + 1
+                         for dx, dy, slot in source_cells
+                         for i, value in enumerate(cell_pixels[slot]) if value)
+            yshift = bottom * zoom if name in GROUND_PROJECTILES else 0
+            atlas = {}
+            cells = []
+            for dx, dy, slot in source_cells:
+                pix = cell_pixels[slot]
+                for by in range(zoom):
+                    for bx in range(zoom):
+                        block = bytes(pix[(by * CELL + y) // zoom * CELL
+                                          + (bx * CELL + x) // zoom]
+                                      for y in range(CELL) for x in range(CELL))
+                        if not any(block):
+                            continue
+                        quad = tiles4bpp(block, CELL, CELL)[0]
+                        idx = atlas.setdefault(quad, len(atlas))
+                        cells.append((dx * zoom + bx * CELL,
+                                      dy * zoom + by * CELL - yshift, idx))
+            if len(atlas) > len(SPARK_SLOTS):
+                ok = False
+                break
+            page = bytearray(2048)
+            for quad, idx in atlas.items():
+                offset = (SPARK_SLOTS[idx] - 192) * 32
+                page[offset:offset + 64] = quad[:64]
+                page[offset + 512:offset + 576] = quad[64:]
+            chr_data += page
+            zoom_frames.append((ticks, cells))
+        if ok:
+            return action, zoom_frames, bytes(chr_data)
+    raise ValueError(f"{name}: {zoom}x projectile does not fit the "
+                     f"{len(SPARK_SLOTS)}-tile OBJ page")
 
 
 def projectile_effect_alt(name, sff, air, spec):

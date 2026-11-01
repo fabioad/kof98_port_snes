@@ -184,6 +184,10 @@ Constantes clássicas relevantes:
   (tá-tá-tá-tá-TÁ), um a cada quatro ticks, com o projétil preso à vítima
   durante a sequência; o quinto hit derruba o oponente. Vale para qualquer
   super com ProjTab ativo, independentemente da distância.
+- projéteis/magias: o atlas de cada frame agora é ajustado no tamanho final
+  já ampliado, então os efeitos ficam o maior possível dentro da página de
+  16 células OBJ. Kyo, Iori e Saisyu mantêm o tamanho anterior (os fogos
+  deles já liam grandes).
 - Shoryuken de Ken e Sakura (sids 52/53 e 48/49): o primeiro contato aplica
   os cinco hits e termina em knockdown.
 - Blue Mary, grab que avança agachado e aplica o mata-leão: a cadeia
