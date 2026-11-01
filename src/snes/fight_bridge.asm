@@ -51,7 +51,7 @@ OamCacheRam dsb $0800
 .RAMSECTION ".fight_stream_cache" BANK $7F SLOT 3 ORGA $0000 FORCE
 FightStreamingCache dsb $3000
 .ENDS
-; Opening-video staging buffer: one 512-byte sector prefix + one 5888-byte chunk.
+; Opening-video staging buffer: one 512-byte sector prefix + one 4864-byte chunk.
 ; The seek is always aligned to a 512-byte file sector; the prefix is read
 ; into this buffer and skipped by the VRAM DMA source address.
 .RAMSECTION ".msu_stage" BANK $7F SLOT 3 ORGA $5000 FORCE

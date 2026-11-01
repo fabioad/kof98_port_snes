@@ -6,6 +6,8 @@
  * the library has established the C runtime.
  */
 extern void FightMain(void);
+extern void IntroNmiHandler(void);
+extern void nmiSet(void (*vblankRoutine)(void));
 extern char SOUNDBANK__;                /* soundbank base (Makefile aliases
                                            SOUNDBANK__0 -> SOUNDBANK__) */
 
@@ -46,6 +48,7 @@ void BootAudio(void)
 int main(void)
 {
     BootAudio();
+    nmiSet(IntroNmiHandler);            /* early video consume/swap in vblank */
     FightMain();
 
     /* FightMain is the game loop and does not return. */

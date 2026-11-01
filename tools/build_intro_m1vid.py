@@ -51,40 +51,39 @@ SOURCE_CROP = (14, 8, 114, 104)
 BAND_COLORS = 15             # same 15-colour bands as the endings
 
 
-CHUNK_BYTES = 5888                     # one staged chunk per tick
-MAP_BYTES = 2048                       # the map is staged as its own segment
+CHUNK_BYTES = 4864                     # one staged chunk per tick
+MAP_BYTES = 2048                       # CHR and map stream back to back
 
 
 def _need(chr_len):
-    # The streamer restarts the chunk at the CHR->map boundary, so the map
-    # always costs one extra tick (2048 < CHUNK_BYTES).
-    return (chr_len + CHUNK_BYTES - 1) // CHUNK_BYTES + 1
+    # The player lets one chunk straddle the CHR->map boundary, so the map
+    # rides along with the CHR tail instead of costing an extra tick.
+    return (chr_len + MAP_BYTES + CHUNK_BYTES - 1) // CHUNK_BYTES
 
 
 def balance_ticks(chr_lens):
     """Pick per-frame ticks that total TOTAL_TICKS and never starve the
     double-buffer streamer.  Frames need enough ticks to stage their CHR
-    and map at one chunk per tick; spare ticks are spread over the frames
-    so the opening keeps the exact 44.3 s wall-clock duration.
+    and map at one chunk per tick; spare ticks go to the shortest frames so
+    the opening keeps the exact 44.3 s wall-clock duration.
     """
     need = [_need(c) for c in chr_lens]
     # Frame i stays on screen while frame i+1 is streamed, so its display
-    # time must cover the *next* frame's payload.  The last frame has no
-    # successor to prepare; give it two ticks so the finish hand-off is not
-    # visible as a one-frame flash.
-    ticks = [1] * len(chr_lens)
-    for i in range(len(chr_lens) - 1):
-        ticks[i] = need[i + 1]
-    ticks[-1] = 2
+    # time must cover the *next* frame's payload.  Two ticks is the minimum
+    # that avoids a one-frame flash; the last frame has no successor but
+    # still gets the same floor.
+    ticks = [max(need[i + 1], 2) for i in range(len(chr_lens) - 1)]
+    ticks.append(max(need[-1], 2))
     if sum(ticks) > TOTAL_TICKS:
         raise SystemExit(
             f"15 fps needs {sum(ticks)} ticks, budget {TOTAL_TICKS}; "
             "use a larger CHUNK_BYTES or lower fps")
-    # Spread the remaining ticks evenly so the cadence stays close to 15 fps.
-    i = 0
-    while sum(ticks) < TOTAL_TICKS:
-        ticks[i % len(ticks)] += 1
-        i += 1
+    # Spend the remaining ticks on the shortest frames first, so simple
+    # scenes do not flash by at 60 fps while complex ones hold for longer.
+    slack = TOTAL_TICKS - sum(ticks)
+    order = sorted(range(len(ticks)), key=lambda i: (ticks[i], i))
+    for k in range(slack):
+        ticks[order[k % len(order)]] += 1
     return ticks
 
 

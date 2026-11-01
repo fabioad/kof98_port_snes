@@ -66,14 +66,14 @@ SNES screen instead of leaving black columns/rows. The crop is recorded as
 
 The per-frame ticks are balanced so the table totals exactly **2658** ticks
 = **44.3 s** at 60 Hz (**15.01 fps**). Each frame gets enough display time
-to stage its successor, and the spare ticks are spread evenly. The player is
-double-buffered: while a frame is on screen, the next one is staged into WRAM
-during the visible part of the frame and DMA'd into a hidden VRAM buffer at
-vblank. The staging chunk is **5888 bytes**; the largest chunks slightly
-overrun the vblank window, so the display stays blanked for the first ~5
-scanlines of those frames (a thin black band at the very top, normally hidden
-by CRT overscan). `tools/build_intro_m1vid.py` records the schedule in
-`manifest.json`.
+to stage its successor, and the spare ticks are spread over the shortest
+frames. The player is double-buffered: while a frame is on screen, the next
+one is staged into WRAM during the visible part of the frame and DMA'd into a
+hidden VRAM buffer at vblank. The staging chunk is **4864 bytes**; a chunk
+may cross the CHR→map boundary, in which case the vblank consume splits it
+into a tile DMA and a map DMA. The palette is also transferred by DMA, so the
+whole consume + swap fits inside vblank and the top scanlines stay visible.
+`tools/build_intro_m1vid.py` records the schedule in `manifest.json`.
 
 ## Engine path
 
@@ -85,11 +85,11 @@ by CRT overscan). `tools/build_intro_m1vid.py` records the schedule in
   covers the audio handshake and frame 0 begins ticking immediately.
 - `MsuIntroEnterFar` reads the 665-entry table once, sets Mode 1 / BG2-only
   (map `$1800`, 4 bpp tiles `$2000`) and loads frame 0 into buffer A.
-- `FightPresentDispatch` calls `MsuVideoVblank` at the top of every vblank
-  for gamestate 14. It re-asserts the PPU mode, consumes the chunk staged
-  during visible time into the hidden VRAM buffer, and swaps the palette +
-  BG2 tile/map base inside vblank when the tick count expires. The visible
-  tick stages the next 5888-byte chunk from the MSU.
+- `IntroNmiHandler` runs `MsuVideoVblank` at the top of the NMI for
+  gamestate 14, before PVSnesLib scans the pads. It re-asserts the PPU mode,
+  consumes the chunk staged during visible time into the hidden VRAM buffer,
+  and swaps the palette + BG2 tile/map base inside vblank when the tick count
+  expires. The visible tick stages the next 4864-byte chunk from the MSU.
 - `MsuIntroTickFar` only advances the tick counter and handles START/finish.
 - START skips to the title; after the last frame the player jumps to
   `TitleEnter`.

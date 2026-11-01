@@ -11,12 +11,13 @@
 ;
 ; The player lives in ROM bank 126's free high-half tail at CPU $3E:D300.
 ; MsuIntroEnterFar loads the table and frame 0 once.  From then on the video
-; is double-buffered: while frame N is on screen, FightPresentDispatch calls
-; MsuVideoVblank in every vblank, which streams frame N+1 into the hidden
-; tile/map buffer in 5888-byte chunks during the visible part of the frame;
-; vblank only performs the WRAM->VRAM DMA for the staged chunk.  When the
-; frame's ticks expire, the swap (palette + BG2 base) happens inside vblank,
-; so the screen never goes blank between frames.  The table uses a ~15 fps
+; is double-buffered: while frame N is on screen, the visible tick stages
+; frame N+1 into the hidden tile/map buffer in 4864-byte chunks; the NMI hook
+; (IntroNmiHandler) then performs the WRAM->VRAM DMA at the top of vblank.
+; A chunk may straddle the CHR->map boundary; the consume splits it into a
+; tile DMA and a map DMA instead of wasting a tick on the boundary.  When the
+; frame's ticks expire, the swap (DMA palette + BG2 base) happens inside
+; vblank, so the screen never goes blank between frames.  The table uses a ~15 fps
 ; cadence (665 frames), totalling 2658 ticks = 44.3 s at 60 Hz.
 ; MsuIntroTickFar only counts ticks and handles START/finish.
 ;
@@ -30,10 +31,9 @@
 ; 16-bit WRAM addresses.  $7E8600-$7E87FF is free in the hybrid RAM map.
 .DEFINE MV_ACTIVE   $8600                 ; .w 0 = A ($2000/$1800), 1 = B
 .DEFINE MV_NEXT     $8602                 ; .w frame being streamed
-.DEFINE MV_SEG      $8604                 ; .w 0 = CHR, 1 = map
+.DEFINE MV_CHRLEFT  $8604                 ; .w bytes left in the CHR segment
 .DEFINE MV_SRC0     $8606                 ; .w source low word
 .DEFINE MV_SRC1     $8608                 ; .w source high word
-.DEFINE MV_LEFT     $860A                 ; .w bytes left in this segment
 .DEFINE MV_TOTAL    $860C                 ; .w bytes left in CHR+map
 .DEFINE MV_CHR      $860E                 ; .w CHR length of the new frame
 .DEFINE MV_TICKS    $8610                 ; .w display ticks of the new frame
@@ -50,8 +50,11 @@
 .DEFINE MV_STAGED   $8626                 ; .w 1 = chunk ready in MsuVideoStage
 .DEFINE MV_SPREFIX  $8628                 ; .w in-sector prefix of the staged chunk
 .DEFINE MV_SLEN     $862A                 ; .w payload length of the staged chunk
+.DEFINE MV_CHRPART  $862C                 ; .w CHR bytes inside the staged chunk
+.DEFINE MV_LOCK     $862E                 ; .w 1 = visible tick is staging
+.DEFINE NMI_SAVE    $7E8630               ; 6-byte NMI scratch stash
 .DEFINE MV_PALBUF   $8700                 ; 128-byte palette buffer
-.DEFINE MV_CHUNK    5888                 ; bytes staged during active display
+.DEFINE MV_CHUNK    4864                 ; bytes staged during active display
 .DEFINE MSU_VIDEO_POLL 65535             ; cold-start seek budget for the video
 
 .BASE $C0
@@ -84,6 +87,7 @@ MsuIntroEnterFar:
     stz.w MV_ACTIVE                        ; A is on screen
     stz.w MV_FINISH
     stz.w MV_STAGED                        ; no chunk is pending yet
+    stz.w MV_LOCK
     lda #1.w
     jsr MI_BeginStream                     ; stream frame 1 into buffer B
     jml OpnMsuReady
@@ -444,7 +448,7 @@ MI_BeginStream:
     lda.w MsuVideoTable+6,x                ; ticks
     sta.w MV_TICKS
     lda.w MV_CHR
-    sta.w MV_LEFT
+    sta.w MV_CHRLEFT
     clc
     adc #2048.w
     sta.w MV_TOTAL
@@ -463,7 +467,6 @@ MI_BeginStream:
     lda.b scr2
     adc #0
     sta.w MV_PAL1
-    stz.w MV_SEG
     stz.w MV_READY
     ; target the buffer that is not active
     lda.w MV_ACTIVE
@@ -564,16 +567,24 @@ MI_SwapBuffers:
     .ACCU 8
     lda #0
     sta.l $2121                            ; CGRAM 0
-    rep #$10
-    .INDEX 16
-    ldx #0
--   lda.w MV_PALBUF,x
-    sta.l $2122
-    inx
-    cpx #128.w
-    bcc -
+    ; 128-byte palette via GPDMA ch6.  The CPU loop this replaces spent
+    ; most of the vblank window on CGRAM writes and pushed the swap into
+    ; the visible area, blacking out the top scanlines.
+    rep #$20
+    .ACCU 16
+    lda #$2200.w                        ; mode 0, BBAD6 $22 (CGDATA)
+    sta.l $4360
+    lda #(MV_PALBUF & $FFFF).w
+    sta.l $4362
     sep #$20
     .ACCU 8
+    lda #$7E.b
+    sta.l $4364
+    lda #128.b
+    sta.l $4365
+    stz $4366
+    lda #$40.b                            ; channel 6
+    sta.l MDMAEN
     lda.w MV_BGSC
     sta.l $2108                            ; BG2SC
     lda.w MV_NBA
@@ -672,68 +683,108 @@ MV_ConsumeChunk:
     .ACCU 16
     sep #$20
     .ACCU 8
+    lda #$8F.b
+    sta.l INIDISP                          ; blank during the VRAM DMAs
     lda #$80.b
     sta.l $2115                            ; increment after $2119
     rep #$20
     .ACCU 16
-    lda.w MV_VRAM
-    sta.l $2116
-    sep #$20
-    .ACCU 8
-    lda #$8F.b
-    sta.l INIDISP                          ; blank during the VRAM DMA
-    rep #$20
-    .ACCU 16
     lda #$1801.w
     sta.l $4350                            ; mode 1, BBAD5 $2118
-    lda #(MsuVideoStage & $FFFF).w
-    clc
-    adc.w MV_SPREFIX
-    sta.l $4352
-    lda.w MV_SLEN
-    sta.l $4355
     sep #$20
     .ACCU 8
     lda #$7E.b
     sta.l $4354
-    lda #$20.b
-    sta.l MDMAEN
-    ; advance the stream state
     rep #$20
     .ACCU 16
-    lda.w MV_SRC0
-    clc
-    adc.w MV_SLEN
-    sta.w MV_SRC0
-    lda.w MV_SRC1
-    adc #0
-    sta.w MV_SRC1
-    lda.w MV_LEFT
-    sec
-    sbc.w MV_SLEN
-    sta.w MV_LEFT
-    lda.w MV_TOTAL
-    sec
-    sbc.w MV_SLEN
-    sta.w MV_TOTAL
+    ; A chunk may cross the CHR -> map boundary.  Split the VRAM DMA
+    ; into a CHR part and a map part; the staged bytes are contiguous.
     lda.w MV_SLEN
+    cmp.w MV_CHRLEFT
+    bcc +
+    lda.w MV_CHRLEFT
++   sta.w MV_CHRPART
+    beq MVC_map
+    ; CHR part -> tile page
+    lda.w MV_VRAM
+    sta.l $2116
+    lda #(MsuVideoStage & $FFFF).w
+    clc
+    adc.w MV_SPREFIX
+    sta.l $4352
+    lda.w MV_CHRPART
+    sta.l $4355
+    sep #$20
+    .ACCU 8
+    lda #$20.b
+    sta.l MDMAEN
+    rep #$20
+    .ACCU 16
+    lda.w MV_CHRPART
     lsr a
     clc
     adc.w MV_VRAM
     sta.w MV_VRAM
-    stz.w MV_STAGED
-    ; CHR segment done -> point at the hidden map buffer
-    lda.w MV_LEFT
-    bne MVC_out
-    lda.w MV_SEG
-    bne MVC_out
-    lda #1.w
-    sta.w MV_SEG
-    lda #2048.w
-    sta.w MV_LEFT
-    lda.w MV_MAPBASE
+    lda.w MV_SRC0
+    clc
+    adc.w MV_CHRPART
+    sta.w MV_SRC0
+    lda.w MV_SRC1
+    adc #0
+    sta.w MV_SRC1
+    lda.w MV_CHRLEFT
+    sec
+    sbc.w MV_CHRPART
+    sta.w MV_CHRLEFT
+    lda.w MV_TOTAL
+    sec
+    sbc.w MV_CHRPART
+    sta.w MV_TOTAL
+    lda.w MV_CHRLEFT
+    bne MVC_finish
+    lda.w MV_MAPBASE                       ; CHR done: next bytes are the map
     sta.w MV_VRAM
-MVC_out:
+MVC_map:
+    ; map part -> map page
+    lda.w MV_SLEN
+    sec
+    sbc.w MV_CHRPART
+    beq MVC_finish
+    sta.w MV_LEN
+    lda.w MV_VRAM
+    sta.l $2116
+    lda #(MsuVideoStage & $FFFF).w
+    clc
+    adc.w MV_SPREFIX
+    clc
+    adc.w MV_CHRPART
+    sta.l $4352
+    lda.w MV_LEN
+    sta.l $4355
+    sep #$20
+    .ACCU 8
+    lda #$20.b
+    sta.l MDMAEN
+    rep #$20
+    .ACCU 16
+    lda.w MV_LEN
+    lsr a
+    clc
+    adc.w MV_VRAM
+    sta.w MV_VRAM
+    lda.w MV_SRC0
+    clc
+    adc.w MV_LEN
+    sta.w MV_SRC0
+    lda.w MV_SRC1
+    adc #0
+    sta.w MV_SRC1
+    lda.w MV_TOTAL
+    sec
+    sbc.w MV_LEN
+    sta.w MV_TOTAL
+MVC_finish:
+    stz.w MV_STAGED
     rep #$20
     .ACCU 16
     rts
@@ -753,7 +804,9 @@ MV_StageChunk:
     bne MVS_out
     lda.w MV_TOTAL
     beq MVS_out
-    lda.w MV_LEFT
+    lda #1.w
+    sta.w MV_LOCK                          ; the NMI hook must not touch MV_*
+    lda.w MV_TOTAL
     cmp #MV_CHUNK.w
     bcc +
     lda #MV_CHUNK.w
@@ -791,15 +844,13 @@ MV_StageChunk:
     .ACCU 16
     lda #1.w
     sta.w MV_STAGED
-    ; If this is the last map chunk, read the palette now (visible time).
-    lda.w MV_SEG
-    beq MVS_out
-    lda.w MV_LEFT
-    sec
-    sbc.w MV_SLEN
+    ; If this chunk completes the CHR+map payload, read the palette now.
+    lda.w MV_SLEN
+    cmp.w MV_TOTAL
     bne MVS_out
     jsr MI_ReadPalette
 MVS_out:
+    stz.w MV_LOCK
     rep #$20
     .ACCU 16
     rts
@@ -910,5 +961,74 @@ MI_Seek:
 +   rep #$20
     .ACCU 16
     rts
+
+
+; ---------------------------------------------------------------------------
+; PVSnesLib NMI hook.  The library ISR transfers OAM and then jumps here
+; before scanning the pads.  Running the video consume/swap at this point
+; gives the VRAM DMA the full vblank window; doing it after WaitForVBlank
+; left only part of vblank and blanked the top scanlines on some frames.
+; Non-video states fall through to the library's consoleVblank unchanged.
+; ---------------------------------------------------------------------------
+IntroNmiHandler:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    pha
+    phx
+    phy
+    phd
+    phb
+    sep #$20
+    .ACCU 8
+    lda #ENGINE_DB.b
+    pha
+    plb
+    rep #$20
+    .ACCU 16
+    lda #ENGINE_DP.w
+    tcd
+    sep #$20
+    .ACCU 8
+    lda gamestate
+    cmp #GS_INTRO_MSU.b
+    beq IntroNmi_video
+    rep #$30
+    .ACCU 16
+    plb
+    pld
+    ply
+    plx
+    pla
+    jml consoleVblank
+IntroNmi_video:
+    ldx #$05.w                            ; preserve scr0..scr2 for the tick
+-   lda $10.b,x
+    sta.l NMI_SAVE,x
+    dex
+    bpl -
+    lda.w MV_LOCK                         ; visible tick is mid-update: skip
+    bne IntroNmi_restore
+    rep #$20
+    .ACCU 16
+    jsl MsuVideoVblank
+    sep #$20
+    .ACCU 8
+    lda #$0F.b
+    sta.l INIDISP
+IntroNmi_restore:
+    ldx #$05.w
+-   lda.l NMI_SAVE,x
+    sta $10.b,x
+    dex
+    bpl -
+    rep #$30
+    .ACCU 16
+    plb
+    pld
+    ply
+    plx
+    pla
+    rtl
 
 .ENDS
