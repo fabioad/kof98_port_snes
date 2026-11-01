@@ -91,7 +91,8 @@ MsuIntroEnterFar:
 MsuIntroTickFar:
     rep #$20
     .ACCU 16
-    lda FP+F_JOYPR.w                       ; pad1 edges
+    lda FP+F_JOYPR.w                       ; either pad's edges
+    ora FP+F_JOYPR+FP2OFS.w
     and #$1000.w                           ; START only
     beq +
     sep #$20
