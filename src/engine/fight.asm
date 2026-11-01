@@ -379,6 +379,20 @@
 ; Generated MSU-1 slice constants are used by tables below, so define them
 ; before those tables are assembled.
 .INCLUDE "gen_fight/msu1_bases.inc"
+; A build without an embedded M1VID1 leaves the video constants out of the
+; generated include; keep every reference defined so the MSU-intro branch
+; simply compiles away.
+.IFNDEF MSU_VIDEO_FRAMES
+.DEFINE MSU_VIDEO_FRAMES 0
+.DEFINE MSU_VIDEO_FPS 0
+.DEFINE MSU_VIDEO_SIZE 0
+.DEFINE MSU_VIDEO_DATA 0
+.DEFINE MSU_VIDEO_OFFSET $000000
+.DEFINE MSU_VIDEO_BASE_LO $0000
+.DEFINE MSU_VIDEO_BASE_HI $0000
+.DEFINE MSU_VIDEO_TABLE_LO $0000
+.DEFINE MSU_VIDEO_TABLE_HI $0000
+.ENDIF
 .DEFINE pbase       $36                 ; displayed OBJ tile base for cells
 .DEFINE rev_vsid    $37                 ; RevCheck: counter-grab victim sid
 .DEFINE rev_bsid    $3E                 ; RevCheck: counter-grab actor sid
@@ -411,6 +425,7 @@
                                         ;   tick, and reusing 6 left YouLoseTick
                                         ;   unreachable (frozen cursor).
 .DEFINE GS_BOSS_FADE 13                ; final KO -> black -> ending1
+.DEFINE GS_INTRO_MSU 14                ; MSU-1 full-screen opening video
 .DEFINE nmiflag     $22
 .DEFINE framecnt    $24
 .DEFINE WIN_TIMER   $7B                 ; 16-bit winner-screen frame counter
@@ -1043,6 +1058,12 @@ ML_sp_next:
     beq ML_youlose
     cmp #GS_BOSS_FADE.b
     beq ML_bossfade
+.IFDEF PVSNESLIB
+.IF MSU_VIDEO_FRAMES > 0
+    cmp #GS_INTRO_MSU.b
+    beq ML_intromsu
+.ENDIF
+.ENDIF
     lda nextflag                        ; gs0 splits: imported title when the
     beq +++++++                         ;   mode-menu flow owns it, legacy
     jsr TitleTick                       ;   intermission/banner tick otherwise
@@ -1079,6 +1100,12 @@ ML_youlose:
 ML_bossfade:
     jsl BossFadeTickFar                   ; Omega KO -> ending1
     jmp MainLoop
+.IFDEF PVSNESLIB
+.IF MSU_VIDEO_FRAMES > 0
+ML_intromsu:
+    jml MsuIntroTickFar                   ; gs 14: MSU opening video
+.ENDIF
+.ENDIF
 
 ; ---------------------------------------------------------------------------
 PpuInit:

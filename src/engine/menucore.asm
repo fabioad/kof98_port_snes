@@ -35,6 +35,14 @@
 .DEFINE IN_M7DDI    $F00C
 .DEFINE IN_M7DHO    $F00E
 .DEFINE IN_M7DDO    $F010
+; MSU-1 opening video (gs 14).  $F014-$F01F is free: the intro's M7 zoom
+; state ends at $F011 and IN_FCUR starts at $F080.
+.DEFINE IN_MFRAME   $F014                 ; .w current frame index
+.DEFINE IN_MTICK    $F016                 ; .w ticks elapsed in this frame
+.DEFINE IN_MTICKS   $F018                 ; .w ticks for this frame
+.DEFINE IN_MCHR     $F01A                 ; .w CHR byte count
+.DEFINE IN_MOFF0    $F01C                 ; .w frame-data offset, low word
+.DEFINE IN_MOFF1    $F01E                 ; .w frame-data offset, high word
 .DEFINE IN_FCUR     $F080                 ; 128B fading palette (4 bands)
 .DEFINE IN_FTGT     $F100                 ; 128B target palette
 .DEFINE M_ITEM      $F070                 ; 0..6 -> MenuItemTab entry (6 = EXIT)
@@ -737,20 +745,37 @@ OpnEnter:
     .ACCU 16
     lda #0
     sta.l $7E0000+IN_TICK
+.IFDEF PVSNESLIB
+.IF MSU_VIDEO_FRAMES > 0
+    ; With MSU-1 present the full-screen ending-colour video replaces the
+    ; traditional 16-screen presentation.  Without the data file msuok is 0
+    ; and the ROM intro below runs unchanged.
+    lda.b msuok
+    beq +
+    jml MsuIntroEnterFar                  ; never returns: the far entry
+OpnMsuReady:                              ;   jumps back here when frame 0
+    sep #$20                              ;   is on screen
+    .ACCU 8
+    lda #GS_INTRO_MSU.b
+    sta.b gamestate
+    bra OpnMusic
++
+.ENDIF
+.ENDIF
     jsr InLoad
+    sep #$20
+    .ACCU 8
+    lda #GS_INTRO.b
+    sta.b gamestate
+OpnMusic:
     sep #$20
     .ACCU 8
     lda #SONG_CIPHER.b
     jsr MusPlaySong                       ; Cipher theme under the intro
     sep #$20
     .ACCU 8
-    lda #GS_INTRO.b
-    sta.b gamestate
-    jmp OpnDone                          ; InLoad leaves the stack skewed --
-                                         ;   rts here jumps wild, so continue
-                                         ;   straight into the main loop tail
+    jmp OpnDone
 
-; per-frame tick while the intro runs; START skips to the title
 OpnTick:
     rep #$20
     .ACCU 16
@@ -1065,9 +1090,14 @@ MtStrDense:
     stx.b oamtop
     rts
 
+; The hybrid build keeps these 31 bytes in bank 126 (fight_bridge.asm) so the
+; full Fight section has room for the MSU-intro branch.  The standalone build
+; has no bank-126 include, so keep the original copy there.
+.IFNDEF PVSNESLIB
 MsuCheckText: .db 24,3,8,5,3,11,9,14,7,0,13,19,21,42,28,0,19,21,16,16,15,18,20,38,0
 MsuAvailable: .db 3,25,5,19
 MsuUnavailable: .db 2,14,15
+.ENDIF
 ; The menu/selection/ending tail lives in the free slot above the stage FX
 ; graphics at $7100, still inside the Fight bank, so the battle code keeps
 ; room below its 32 KiB limit and every near jsr/jmp continues to resolve.

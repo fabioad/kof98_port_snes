@@ -18,5 +18,34 @@
   "frames_dir": "assets/video/Wmva3m93t34/frames",
   "video": "assets/video/Wmva3m93t34/snes_video/Wmva3m93t34.m7vid",
   "video_bytes": 3424600,
-  "video_sha256": "0cdb0df666b4bc542450a9fab45fdebcda5839f7fb30f1d685ce33a585ec6dfc"
+  "video_sha256": "0cdb0df666b4bc542450a9fab45fdebcda5839f7fb30f1d685ce33a585ec6dfc",
+  "msu": {
+    "file": "kof98-snes.msu",
+    "embedded": true,
+    "offset": 29032448,
+    "offset_hex": "0x1BB0000",
+    "size": 1497568,
+    "sha256": "8de3c62409f08e0a064049c74f7a0c7331be3a67c2bbf754014596990dca655b",
+    "layout_crc": "0x3CDC",
+    "note": "same .msu file as the game data; no second runtime file"
+  },
+  "m1vid": {
+    "file": "assets/video/Wmva3m93t34/snes_video/Wmva3m93t34.m1vid",
+    "resolution": [
+      256,
+      224
+    ],
+    "colors": 256,
+    "palette": "4 bands x 15 colors (endings pipeline)",
+    "fps": 3,
+    "frame_count": 133,
+    "duration_seconds": 44.3,
+    "ticks": 2557,
+    "nominal_ticks": 2658,
+    "load_compensation_ticks": 101,
+    "format": "M1VID1",
+    "audio": false,
+    "bytes": 1497568,
+    "sha256": "8de3c62409f08e0a064049c74f7a0c7331be3a67c2bbf754014596990dca655b"
+  }
 }

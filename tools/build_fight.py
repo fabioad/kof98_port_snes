@@ -10,6 +10,7 @@ Generates into build/gen_fight/:
 import os
 import copy
 import glob
+import hashlib
 import json
 import re
 import statistics
@@ -9987,7 +9988,66 @@ if __name__ == "__main__":
     if len(msu) >= 10:
         msu[8] = layout & 0xFF
         msu[9] = layout >> 8
-    if MSU_BLOBS or sv_count:
+    # Opening FMV: keep the video in the same .msu file as the game data.
+    # Append it only after the layout CRC above is computed, so the CRC keeps
+    # versioning the streamed-CHR slices only (an existing ROM must still
+    # accept the file).  Header bytes 10-17 carry the video offset/length.
+    video_blob = b""
+    video_path = os.path.join(
+        ROOT, "assets/video/Wmva3m93t34/snes_video/Wmva3m93t34.m1vid")
+    if os.path.exists(video_path):
+        with open(video_path, "rb") as vf:
+            video_blob = vf.read()
+        if video_blob[:8] != b"M1VID1\0\0":
+            raise SystemExit(f"{video_path}: not an M1VID1 container")
+        pad = (-len(msu)) % 32768
+        msu += b"\0" * pad
+        video_off = len(msu)
+        msu += video_blob
+        vfps = int.from_bytes(video_blob[12:14], "little")
+        vcount = int.from_bytes(video_blob[16:20], "little")
+        struct.pack_into("<I", msu, 10, video_off)
+        struct.pack_into("<I", msu, 14, len(video_blob))
+        defs.append(f"MSU_VIDEO_SLICE = {video_off // 32768}\n")
+        defs.append(f"MSU_VIDEO_OFFSET = ${video_off:06X}\n")
+        defs.append(f"MSU_VIDEO_OFF0 = ${video_off & 0xFF:02X}\n")
+        defs.append(f"MSU_VIDEO_OFF1 = ${(video_off >> 8) & 0xFF:02X}\n")
+        defs.append(f"MSU_VIDEO_OFF2 = ${(video_off >> 16) & 0xFF:02X}\n")
+        defs.append(f"MSU_VIDEO_OFF3 = ${(video_off >> 24) & 0xFF:02X}\n")
+        defs.append(f"MSU_VIDEO_SIZE = {len(video_blob)}\n")
+        defs.append(f"MSU_VIDEO_FRAMES = {vcount}\n")
+        defs.append(f"MSU_VIDEO_FPS = {vfps}\n")
+        defs.append(f"MSU_VIDEO_DATA = {24 + vcount * 8}\n")
+        vbase = video_off + 24 + vcount * 8
+        defs.append(f"MSU_VIDEO_BASE_LO = ${vbase & 0xFFFF:04X}\n")
+        defs.append(f"MSU_VIDEO_BASE_HI = ${(vbase >> 16) & 0xFFFF:04X}\n")
+        vtable = video_off + 24
+        defs.append(f"MSU_VIDEO_TABLE_LO = ${vtable & 0xFFFF:04X}\n")
+        defs.append(f"MSU_VIDEO_TABLE_HI = ${(vtable >> 16) & 0xFFFF:04X}\n")
+        print(f"msu1video: {len(video_blob)} bytes at ${video_off:06X} "
+              f"({vcount} frames, {vfps} fps)")
+        manifest_path = os.path.join(
+            ROOT, "assets/video/Wmva3m93t34/manifest.json")
+        if os.path.exists(manifest_path):
+            with open(manifest_path) as mf:
+                manifest = json.load(mf)
+            digest = hashlib.sha256(video_blob).hexdigest()
+            manifest["msu"] = {
+                "file": "kof98-snes.msu",
+                "embedded": True,
+                "offset": video_off,
+                "offset_hex": f"0x{video_off:06X}",
+                "size": len(video_blob),
+                "sha256": digest,
+                "layout_crc": f"0x{layout:04X}",
+                "note": "same .msu file as the game data; "
+                        "no second runtime file",
+            }
+            manifest.setdefault("m1vid", {})["sha256"] = digest
+            with open(manifest_path, "w") as mf:
+                json.dump(manifest, mf, indent=2, ensure_ascii=False)
+                mf.write("\n")
+    if MSU_BLOBS or sv_count or video_blob:
         defs.append(f"MSU_LAYOUT = ${layout:04X}\n")
         # Write through a temp file and rename: an emulator running during a
         # rebuild keeps this file open, and truncating it in place makes

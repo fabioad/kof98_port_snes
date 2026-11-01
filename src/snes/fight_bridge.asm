@@ -64,12 +64,22 @@ MsuStageBuf dsb $0800
 .RAMSECTION ".msu_read" BANK $7E SLOT 2 ORGA $7F30 FORCE
 MsuReadVars dsb $10
 .ENDS
+
+; Opening-video frame table: 133 entries x 8 bytes.  Loading it once keeps the
+; per-frame path to a single payload seek instead of a table seek plus a
+; payload seek.  $7E8000-$7ECFFF is free in the hybrid RAM map.
+.RAMSECTION ".msu_video_table" BANK $7E SLOT 2 ORGA $8000 FORCE
+MsuVideoTable dsb 1088
+.ENDS
 .DEFINE MRD_SRC $7E7F30                 ; 32-bit .msu file offset
 .DEFINE MRD_DST $7E7F34                 ; 24-bit destination
 .DEFINE MRD_LEN $7E7F37                 ; bytes still to read
 .DEFINE MRD_POS $7E7F39                 ; bytes already copied
 
 .INCLUDE "engine/fight.asm"
+.IF MSU_VIDEO_FRAMES > 0
+.INCLUDE "engine/msu_intro.asm"         ; bank-126 opening-video player
+.ENDIF
 .INCLUDE "engine/voice_queue.asm"       ; incremental MSU voice loader
 .INCLUDE "engine/menus.asm"
 .INCLUDE "engine/options.asm"
@@ -85,6 +95,18 @@ MsuDiagBuffers dsb $1800
 .ENDIF
 .INCLUDE "engine/msu_diag.asm"
 .ENDIF
+
+; Boot MSU-check strings.  Moving these 31 bytes out of the Fight section
+; leaves room for the gamestate-14 branch; MtStr walks them through a 24-bit
+; pointer, so the bank byte is all that changes.
+.BASE $C0
+.BANK 126 SLOT 0
+.ORGA $DE00
+.SECTION "MsuCheckStrings" FORCE
+MsuCheckText: .db 24,3,8,5,3,11,9,14,7,0,13,19,21,42,28,0,19,21,16,16,15,18,20,38,0
+MsuAvailable: .db 3,25,5,19
+MsuUnavailable: .db 2,14,15
+.ENDS
 
 ; MSU CHR staging, kept out of the full 32 KiB Fight bank.  The caller has
 ; already written VMADDL with the hidden-page destination and staged the

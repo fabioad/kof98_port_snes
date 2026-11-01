@@ -183,7 +183,7 @@ $(SOUNDBANK).asm: $(AUDIOFILES)
 
 src/snes/fight_bridge.obj: src/snes/fight_bridge.asm src/engine/fight.asm \
 	src/engine/menucore.asm src/engine/menus.asm src/engine/options.asm \
-	src/engine/cancel_gate.asm \
+	src/engine/msu_intro.asm src/engine/cancel_gate.asm \
 	$(wildcard src/gen_menu/*) $(wildcard src/gen_menu/intro/*) \
 	$(FIGHT_GEN) $(AUDIO_GEN) $(SOUNDBANK).asm
 	$(AS) -d -s -x $(if $(filter 1,$(BIGROM)),-D BIGROM -D FULL12) $(if $(filter 1,$(BASE4)),-D BASE4) -I src -I build -o $@ $<
