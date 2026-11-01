@@ -48,7 +48,7 @@
 .DEFINE M_ITEM      $F070                 ; 0..6 -> MenuItemTab entry (6 = EXIT)
 .DEFINE S_MODE      $F071                 ; mode menu selection
 .DEFINE S_WAIT      $F074                 ; .w idle frames on title
-.DEFINE S_BLINK     $F076                 ; PRESS START visibility phase
+.DEFINE S_BLINK     $F076                 ; title prompt visibility phase
 .DEFINE M_WHICH     $F077
 .DEFINE DM_TICK     $F068                 ; .w attract-demo frames left
 .DEFINE DM_ON       $F06A                 ; 1 while the title attract fight runs
@@ -1506,8 +1506,7 @@ MnPalLoop:
     sta.b I_LEN
     ldx #128.w                            ; OBJ pal base
     jsr MnCgRam
-    ; OBJ palette 2 for the title prompt: light-blue body, blue shade,
-    ; white highlight. Inline writes avoid growing the full menu asset bank.
+    ; OBJ palette 2 stays blue for the select-screen P1 ring.
     sep #$20
     .ACCU 8
     lda #160.b
@@ -1525,7 +1524,7 @@ MnPalLoop:
     sta.l $2122
     lda #$FF.b
     sta.l $2122
-    lda #$FF.b                            ; restore the previous white highlight
+    lda #$FF.b
     sta.l $2122
     ; --- 32x32 map -> word $1800 (28 rows) ---
     rep #$20
@@ -1714,7 +1713,7 @@ MtCell:
 
 ; ---- screens --------------------------------------------------------------
 
-; title screen: art + blinking PRESS START; START -> menu; ~22s idle
+; title screen: art + blinking prompt; either pad START -> menu; ~22s idle
 ; replays the intro (matches the source attract loop)
 TitleEnter:
     jsr VoiceQueueClear                  ; a fight quote must not follow us
@@ -1761,16 +1760,17 @@ TitleEnter:
     stz.b gamestate                       ; gs 0 after song upload
     rts
 
-; draw the PRESS START row (11 cells at oamtop 0..43)
+; draw the PRESS 1P OR 2P START row (20 cells at oamtop 0..79)
 TitleSprites:
     php
     sep #$20
     .ACCU 8
     lda #0
     sta.l $4200                           ; NMI off: lib ISR clobbers DP scratch
+    jsl TitlePaletteFar
     rep #$20
     .ACCU 16
-    lda #80.w
+    lda #48.w                             ; centre the 20-cell prompt
     sta.b scr0
     lda #136.w
     sta.b scr1
@@ -1780,7 +1780,7 @@ TitleSprites:
     .ACCU 8
     lda #:StrStart
     sta.b scr2+2
-    lda #$34.b                            ; prio3, OBJ pal2: blue text + shaded blue
+    lda #$38.b                            ; prio3, OBJ pal4: orange prompt
     sta.b scr4
     jsr MtStr
     ; one compact credit row sits in the black strip directly below the
@@ -1797,7 +1797,7 @@ TitleSprites:
     .ACCU 8
     lda #:TitleCredit2
     sta.b scr2+2
-    lda #$34.b
+    lda #$3A.b                            ; prio3, OBJ pal5: blue credit
     sta.b scr4
     jsr MtStr
     sep #$20
@@ -1814,7 +1814,8 @@ TitleTickNew:
     .ACCU 8
     rep #$20
     .ACCU 16
-    lda FP+F_JOYPR.w                      ; pad1 edges
+    lda FP+F_JOYPR.w                      ; either pad's edges
+    ora FP+F_JOYPR+FP2OFS.w
     sta.b scr0
     and #(JOY_ST|JOY_A|JOY_B).w
     beq TTN_nostrt
@@ -1862,7 +1863,7 @@ TTN_blink:
     cmp.w S_BLINK
     beq TTN_out
     sta.w S_BLINK
-    ldx #0                                ; toggle y on the 11 cells
+    ldx #0                                ; toggle y on the 20 prompt cells
 -   lda.w OAMBUF+1,x
     cmp #$F0.b
     beq +
@@ -1874,7 +1875,7 @@ TTN_blink:
     inx
     inx
     inx
-    cpx #44.w
+    cpx #80.w
     bne -
 TTN_out:
     rts
@@ -2032,7 +2033,8 @@ MenuTick:
     rep #$30
     .ACCU 16
     .INDEX 16                            ; comparisons below use 16-bit X
-    lda FP+F_JOYPR.w
+    lda FP+F_JOYPR.w                      ; either pad may drive the menu
+    ora FP+F_JOYPR+FP2OFS.w
     sta.b scr0
     and #JOY_UP.w
     beq MT_noup
@@ -2983,4 +2985,6 @@ FightPresentDispatch:
     rts
 +   jsr FightPresent
     rts
+
+
 .ENDIF

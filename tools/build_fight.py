@@ -8923,7 +8923,7 @@ def build_hud():
 
     strs = {
         "StrTitle": "FIGHTING ENGINE",
-        "StrStart": "PRESS START",
+        "StrStart": "PRESS 1P OR 2P START",
         "StrKfm": "IORI",
         "StrKO": "K.O.",
         "StrTime": "TIME",

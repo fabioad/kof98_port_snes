@@ -89,6 +89,7 @@ MsuVideoStage dsb $0C00
 .IF MSU_VIDEO_FRAMES > 0
 .INCLUDE "engine/msu_intro.asm"         ; bank-126 opening-video player
 .ENDIF
+.INCLUDE "engine/select_far.asm"        ; bank-126 P2 takeover helpers
 .INCLUDE "engine/voice_queue.asm"       ; incremental MSU voice loader
 .INCLUDE "engine/menus.asm"
 .INCLUDE "engine/options.asm"

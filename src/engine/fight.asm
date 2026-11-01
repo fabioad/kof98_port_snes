@@ -3145,6 +3145,12 @@ SelLevelTick:
     .ACCU 8
     rts
 
+.IFNDEF PVSNESLIB
+; Standalone is experimental; keep the far-call symbols resolvable.
+SelP1ReclaimCheck: rtl
+SelP2JoinCheck:    clc
+                   rtl
+.ENDIF
 SelTick:
     sep #$20
     .ACCU 8
@@ -3157,7 +3163,8 @@ SelTick:
     cmp #3
     bne +
     jmp TeamVsSelTick                     ; both sides choose three fighters
-+   ; ---------- START: join the P1 side ----------
++   jsl SelP1ReclaimCheck
+    ; ---------- START: join the P1 side ----------
     rep #$20
     .ACCU 16
     lda FP+F_JOYPR
@@ -3263,20 +3270,8 @@ ST_nolock1:
     jmp ST_cpuflow                        ; Team Play owns Pad2 in TeamSelTick
 ST_pad2_ready:
 ST_pad2:
-    rep #$20
-    .ACCU 16
-    lda FP+F_JOYPR+FP2OFS
-    and #JOY_ST.w
-    beq ST_nostart2
-    sep #$20
-    .ACCU 8
-    lda.b cpu2
-    beq ST_nostart2
-    stz.b cpu2
-    stz.b lock2
-    lda #SFX_SELECT.b
-    jsr SfxPlay
-ST_nostart2:
+    jsl SelP2JoinCheck
+    bcs ST_cpuflow
     rep #$20
     .ACCU 16
     lda FP+F_JOYPR+FP2OFS

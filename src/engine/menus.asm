@@ -14,8 +14,9 @@ ArtTitleT_End:
 ArtTitleM:      .INCBIN "gen_menu/title.map"
 ArtTitleP:      .INCBIN "gen_menu/title.pal"
 
-; Title screen credit in the same 8x8 pixel font and blue OBJ palette as
-; PRESS START, aligned with the SNK logo's left edge.
+; Title screen credit in the same 8x8 pixel font, using blue OBJ palette 3
+; (the title prompt uses orange palette 2), aligned with the SNK logo's left
+; edge.
 TitleCredit2: .db 26,16,18,15,7,18,1,13,13,9,14,7,38,0,6,1,2,9,15,0,1,4,0,29,27,29,33
 .ENDS
 
