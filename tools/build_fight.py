@@ -1674,8 +1674,15 @@ if "lucky" in CHARS:
 # the ReversalDef follow-ups.
 if "mary" in CHARS:
     _mary = CHARS["mary"]
-    _mary["moves"].update({107: 1101, 108: 1111, 109: 1305,
+    _mary["moves"].update({98: 1065, 107: 1101, 108: 1111, 109: 1305,
                            110: 1910, 111: 4010})
+    # State 1065 is the choke/damage phase reached from 1910.  The source
+    # gates it on AnimElem 11 plus Vel Y/Pos Y, which the native TransTab
+    # cannot express; slice 1505 to the point before that trigger and hand
+    # over on anim end instead.
+    _mary["anims"][98] = 1055
+    _mary["slices"] = {110: (1505, 0, 10)}
+    _mary["target_life_fix"] = {1065: -20}   # 150/1500 life = 10% = 20/200
     # Reuse the throw cels already resident from the counter-grab states
     # instead of importing the source-only 1305/1910/4010 sequences.  The
     # follow-up logic (target binds, damage and frame events) comes from the
@@ -1699,6 +1706,7 @@ if "mary" in CHARS:
         (59, 17, 1, 0), (60, 17, 1, 0),      # Spinfall -> land
         (56, 17, 1, 0), (57, 17, 1, 0),      # Spider attempt -> land
         (49, 17, 1, 0),                     # Typhoon whiff -> land
+        (110, 98, 0, 0),                    # grab hold -> choke/damage
     ])
 
 # Ken: the strong Shoryuken (MUGEN state 1110, sid 53) is a three-HitDef
@@ -5396,6 +5404,14 @@ def build_char(name, cfg, global_pal=None):
      cns_snds, cns_hitsnds, cns_exprows) = parse_cns(
         os.path.join(ROOT, cfg["cns"]), coord_scale,
         cfg.get("damage_scale", 1), char=name)
+
+    # Per-character TargetLifeAdd values are authored on the source's life
+    # scale (Blue Mary uses 1500) and are not HitDef damage rows.  Override
+    # the few throws/chokes that need the port's 200-point scale.
+    for _state, _life in cfg.get("target_life_fix", {}).items():
+        cns_acts[_state] = [
+            (frame, op, _life if op == 3 else arg, cond)
+            for frame, op, arg, cond in cns_acts.get(_state, ())]
 
     # Optional verified calibration, preserving the existing native table ABI.
     # Stale source hashes or changed manual values fail closed at build time.

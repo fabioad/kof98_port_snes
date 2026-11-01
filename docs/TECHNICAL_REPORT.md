@@ -186,6 +186,11 @@ Constantes clássicas relevantes:
   super com ProjTab ativo, independentemente da distância.
 - Shoryuken de Ken e Sakura (sids 52/53 e 48/49): o primeiro contato aplica
   os cinco hits e termina em knockdown.
+- Blue Mary, grab que avança agachado e aplica o mata-leão: a cadeia
+  1900 (agarrão) -> 1910 (segurar) -> 1065 (choke, sid 98) foi completada. A
+  animação 1505 do 1910 foi fatiada no ponto do ChangeState do fonte e o
+  TargetLifeAdd de 1065 foi convertido para a escala de 200 de HP (20 de
+  dano); a vítima fica no slot 76 e cai depois do choke.
 - comandos durante o hitstop global também alimentam o anel de entrada dos
   lados humanos, então a motion do cancelamento não se perde enquanto o
   golpe está congelado.

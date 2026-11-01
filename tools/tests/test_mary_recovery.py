@@ -86,7 +86,7 @@ class MaryRecoveryTests(unittest.TestCase):
         self.assertEqual(ptrs[107], ".dw maryAnim107")
         self.assertEqual(ptrs[108], ".dw maryAnim107")   # same AIR 1111
         self.assertEqual(ptrs[109], ".dw maryAnim99")    # reuse 1505 cels
-        self.assertEqual(ptrs[110], ".dw maryAnim99")
+        self.assertEqual(ptrs[110], ".dw maryAnim110")  # sliced 1505
         self.assertEqual(ptrs[111], ".dw maryAnim101")   # reuse 1525 cels
 
     def test_startup_clip_no_longer_holds_for_255_ticks(self):
