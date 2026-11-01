@@ -1,8 +1,13 @@
+import os
 import re
+import sys
 import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "tools"))
+import build_fight  # noqa: E402
+
 GEN = ROOT / "build" / "gen_fight"
 
 MAX_HOLD_LIFT = 80          # px above the floor for TargetBind holds
@@ -67,6 +72,35 @@ class ThrowHeightRowsTests(unittest.TestCase):
             if gvy < -MAX_GUARD_LAUNCH or avy < -MAX_GUARD_LAUNCH:
                 bad.append(f"{path.name}: sid67 gvy={gvy} avy={avy}")
         self.assertEqual(bad, [])
+
+
+class ThrowBindScaleTests(unittest.TestCase):
+    """Bind offsets follow the fighter art scale.
+
+    At char_scale 0.81 a source -64 px hold becomes -52 px; at 1.0 it stays
+    -64 px.  This keeps a thrown opponent at the same body-relative height
+    when the roster scale changes.
+    """
+
+    def _binds(self, name, scale):
+        cfg = build_fight.CHARS[name]
+        cns = build_fight.parse_cns(
+            os.path.join(build_fight.ROOT, cfg["cns"]),
+            cfg.get("coord_scale", 1), cfg.get("damage_scale", 1),
+            char=name, char_scale=scale)
+        return cns[5]
+
+    def test_chris_bind_follows_art_scale(self):
+        scaled = self._binds("chris", 0.81)[860]
+        full = self._binds("chris", 1.0)[860]
+        self.assertIn(-52, [dy for _lo, _hi, _dx, dy in scaled])
+        self.assertIn(-64, [dy for _lo, _hi, _dx, dy in full])
+
+    def test_source_hold_lift_is_clamped_in_port_pixels(self):
+        for scale in (0.81, 1.0):
+            binds = self._binds("kyo", scale)
+            lifts = [-dy for rows in binds.values() for _lo, _hi, _dx, dy in rows]
+            self.assertLessEqual(max(lifts, default=0), MAX_HOLD_LIFT)
 
 
 if __name__ == "__main__":

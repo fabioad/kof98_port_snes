@@ -2410,7 +2410,7 @@ def state_is_max(cns_path, headers, statedefs, state):
     return False
 
 
-def parse_cns(path, coord_scale=1, damage_scale=1, char=None):
+def parse_cns(path, coord_scale=1, damage_scale=1, char=None, char_scale=1.0):
     """Return the small HitDef subset needed by the native fight engine.
 
     ``char`` selects per-character Explod anim overrides (for source anim ids
@@ -2867,13 +2867,16 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None):
                 pos = ctrl.get("pos", "0,0")
                 m = re.match(r"(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)",
                              pos.strip())
-                dx, dy = ((int(round(float(m.group(1)) / coord_scale)),
-                           int(round(float(m.group(2)) / coord_scale)))
+                # TargetBind offsets follow the source art scale: shrinking
+                # the fighters to 0.81 must also bring the held victim down
+                # by the same factor, otherwise their feet sit too high on
+                # the attacker's body.  The clamp for the 190 px playfield is
+                # applied in port pixels after both scales.
+                dx, dy = ((int(round(float(m.group(1)) / coord_scale
+                                     * char_scale)),
+                           int(round(float(m.group(2)) / coord_scale
+                                     * char_scale)))
                           if m else (0, 0))
-                # The SNES playfield is only 190 px above the floor; a source
-                # TargetBind y below -80 would hold the victim up into the
-                # HUD (or off the top).  Clamp the hold height for every
-                # throw/grab bind.
                 if dy < -80:
                     dy = -80
                 lo, hi = elem_window(trig)
@@ -5431,7 +5434,8 @@ def build_char(name, cfg, global_pal=None):
      cns_reversals, cns_hitdef_lists,
      cns_snds, cns_hitsnds, cns_exprows) = parse_cns(
         os.path.join(ROOT, cfg["cns"]), coord_scale,
-        cfg.get("damage_scale", 1), char=name)
+        cfg.get("damage_scale", 1), char=name,
+        char_scale=char_scale)
 
     # Per-character TargetLifeAdd values are authored on the source's life
     # scale (Blue Mary uses 1500) and are not HitDef damage rows.  Override

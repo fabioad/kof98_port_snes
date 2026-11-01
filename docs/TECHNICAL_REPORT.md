@@ -217,6 +217,12 @@ Constantes clássicas relevantes:
   cruzamento ou choque que deixou o facing invertido. Ataques simultâneos
   mantêm a prioridade normal (o que acerta primeiro interrompe o outro);
   não há trade automático.
+- throws/agarrões: os deslocamentos de `TargetBind` agora acompanham o
+  `char_scale` do arremessador (além do `coord_scale`), e o limite de altura
+  é aplicado em pixels do port depois das duas escalas. Com scale 1.0 os
+  offsets voltam aos valores do fonte; com 0.81 a vítima desce na mesma
+  proporção do corpo. Vale para throws normais, command grabs, counter-grabs
+  e cancels que terminam em arremesso.
 - comandos durante o hitstop global também alimentam o anel de entrada dos
   lados humanos, então a motion do cancelamento não se perde enquanto o
   golpe está congelado.

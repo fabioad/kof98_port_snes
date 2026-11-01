@@ -28,6 +28,17 @@ ROOT = Path(__file__).resolve().parents[2]
 GEN = ROOT / "build" / "gen_fight"
 CMD = ROOT / "assets" / "characters" / "Clark-KOF98" / "Clark_SNES.cmd"
 
+import sys
+sys.path.insert(0, str(ROOT / "tools"))
+import build_fight  # noqa: E402
+
+CLARK_SCALE = build_fight.CHARS["clark"].get("char_scale", 1.0)
+
+
+def sc(value):
+    """Source offset -> emitted bind offset at the current art scale."""
+    return int(round(value * CLARK_SCALE))
+
 
 def rows_of(text, label):
     m = re.search(rf"^{re.escape(label)}:\s*\n((?:\s*\.db[^\n]*\n)+)",
@@ -77,9 +88,14 @@ class ClarkUltraArgentineTests(unittest.TestCase):
         rows = rows_of(self.text, "clarkBind109")
         self.assertIsNotNone(rows, "clarkBind109 missing")
         self.assertNotIn((0, 254), [r[:2] for r in rows])
-        self.assertEqual(rows, [(0, 1, 40, 0), (2, 2, 32, 0),
-                                (3, 3, 36, 176), (4, 4, 20, 176),
-                                (5, 5, 8, 176), (255,)])
+        # One window per held element; the offsets follow the art scale.
+        self.assertEqual([r[:2] for r in rows if len(r) >= 2],
+                         [(0, 1), (2, 2), (3, 3), (4, 4), (5, 5)])
+        self.assertEqual([r[2] for r in rows[:-1]],
+                         [sc(40), sc(32), sc(36), sc(20), sc(8)])
+        for r in rows[:-1]:
+            dy = r[3] - 256 if r[3] >= 128 else r[3]
+            self.assertLessEqual(-dy, 80)
 
     def test_full_hold_chain_is_wired(self):
         """3010 -> 3011 -> 3012 -> 3013 -> 3014 -> 3015 -> 3016 -> stand."""
@@ -106,9 +122,11 @@ class ClarkUltraArgentineTests(unittest.TestCase):
         rows = rows_of(self.text, "clarkBind53")
         self.assertIsNotNone(rows, "clarkBind53 missing")
         self.assertNotIn((0, 254), [r[:2] for r in rows])
-        self.assertIn((1, 1, 6, 0), rows)
-        self.assertIn((2, 3, 8, 177), rows)      # elems 3-4 share one pos
-        self.assertIn((4, 4, 252, 176), rows)
+        self.assertIn((1, 1, sc(6), 0), rows)
+        self.assertTrue(any(r[0] == 2 and r[1] == 3 and r[2] == sc(8)
+                            for r in rows))     # elems 3-4 share one pos
+        self.assertTrue(any(r[0] == 4 and r[1] == 4 and r[2] == (sc(-4) & 0xFF)
+                            for r in rows))
 
 
 class BindShadowingTests(unittest.TestCase):
