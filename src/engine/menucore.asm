@@ -1860,9 +1860,34 @@ TTN_reset:
     .ACCU 16
     stz.w S_WAIT
 TTN_blink:
-    ; Keep the prompt permanently visible.  It used to blink by moving the
-    ; OAM row to y=$F0, which made the gold text look black during the off
-    ; phase.  The palette is re-asserted every frame above.
+    ; blink at ~1 Hz: framecnt bit5 flips the text row on/off.  The palette
+    ; is re-asserted every frame above, so the visible phase is always gold.
+    sep #$20
+    .ACCU 8
+    lda.b framecnt
+    and #$20.b
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    lsr a                                 ; 0/1
+    cmp.w S_BLINK
+    beq TTN_out
+    sta.w S_BLINK
+    ldx #0                                ; toggle y on the 20 prompt cells
+-   lda.w OAMBUF+1,x
+    cmp #$F0.b
+    beq +
+    lda #$F0.b                            ; hide
+    bra ++
++   lda #136.b                            ; show at y=136
+++  sta.w OAMBUF+1,x
+    inx
+    inx
+    inx
+    inx
+    cpx #80.w
+    bne -
 TTN_out:
     rts
 
