@@ -2657,7 +2657,16 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None):
                        or c.get("air.fall", "0").strip().startswith("1")
                        or c.get("ground.type", "").strip().lower() == "trip"),
                       hitdefs[0])
-        moves[state] = hitdef_row(hitdef, varvals)
+        row = hitdef_row(hitdef, varvals)
+        # `air.fall = 1` means the source launches an airborne victim.  The
+        # native hit path needs the same knockdown flag to enter S_DOWN;
+        # ignoring it made launchers (e.g. grounded anti-airs) recover
+        # through S_HIT.  Apply it only to the row that is actually emitted
+        # for the move, never to intermediate multi-hit slices.
+        if hitdef.get("air.fall", "0").strip().startswith("1"):
+            row = dict(row)
+            row["fall"] = 1
+        moves[state] = row
 
     # ReversalDef (Kung Fu Blocking parry / counter-grab): state ->
     # (window ticks, mugen blocked state, class, mugen victim state).  The

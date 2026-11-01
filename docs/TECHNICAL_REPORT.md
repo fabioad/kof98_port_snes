@@ -196,6 +196,11 @@ Constantes clássicas relevantes:
   o estado 92. Os dois cels cabem numa página OBJ de 64 tiles carregada em
   SPK2CHR; a página SPK1CHR fica livre para os Explods da intro do oponente.
   As cores entram na paleta do Mr. Big, e o overlay some quando a luta começa.
+- especiais e supers que conectam cinco vezes com o **mesmo** golpe derrubam
+  no quinto contato. O contador é por sid de runtime e reinicia quando um
+  combo novo começa ou o golpe muda, então combos livres de golpes
+  diferentes não são afetados. Golpes que usam `air.fall` também recebem o
+  flag nativo de knockdown na linha emitida.
 - comandos durante o hitstop global também alimentam o anel de entrada dos
   lados humanos, então a motion do cancelamento não se perde enquanto o
   golpe está congelado.

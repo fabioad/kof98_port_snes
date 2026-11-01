@@ -562,6 +562,8 @@
 .DEFINE FUS_FLASH   FUSION_BASE+10     ; byte: COUNTER banner ticks
 .DEFINE FUS_VALID   FUSION_BASE+11     ; byte: synergy/carry initialized
 .DEFINE FUS_TMP     FUSION_BASE+12     ; word: AddPower scratch
+.DEFINE movehits    $5070              ; per-side same-move hit count
+.DEFINE lastsid     $50B2              ; per-side last runtime move sid
 .DEFINE sdmaside    COMBO_BASE+$80    ; sprite-DMA arbiter for the current
                                         ;   vblank: 0 = free, 1 = only P1,
                                         ;   2 = only P2 (set when both sides
@@ -10782,6 +10784,7 @@ HO_dmg_done:
     jsr ComboBump                         ;   HITS digits reuse scr5/scr6.
     pla
     sta scr5
+    jsl MoveHitFinisher                   ; same-move 5th hit -> knockdown
     ldx aofs                              ; ComboDraw's WriteStr clobbers scr4:
     lda FP+F_STATE,x                      ;   rebuild the sid index from the
     and #$00FF.w                          ;   attacker's state before the tables
@@ -19638,6 +19641,64 @@ UploadIntroGirls:
     jsr UIG_dma
     sep #$20                            ; StagePick resumes in 8-bit mode
     .ACCU 8
+    rtl
+
+; A special or super that lands five hits of the *same* move must knock
+; the victim down on the fifth contact.  The count is keyed by the runtime
+; state id and reset when a fresh combo starts or the move changes, so a
+; free-form combo of different attacks is not affected.  Called from
+; HO_apply after ComboBump; scr5 holds the HitDef flags.
+MoveHitFinisher:
+    rep #$20
+    .ACCU 16
+    ldx aofs
+    lda FP+F_STATE,x
+    and #$00FF.w
+    cmp #S_SPECIAL.w                   ; 48..69 = specials
+    bcc MHF_done
+    cmp #70.w
+    bcs MHF_super
+    bra MHF_range_ok
+MHF_super:
+    cmp #S_SUPPER.w                    ; 85..89 = supers
+    bcc MHF_done
+    cmp #90.w
+    bcs MHF_done
+MHF_range_ok:
+    sta scr0
+    lda combohit,x
+    and #$00FF.w
+    cmp #1.w
+    beq MHF_reset
+    lda lastsid,x
+    and #$00FF.w
+    cmp scr0
+    bne MHF_reset
+    lda movehits,x
+    and #$00FF.w
+    inc a
+    bra MHF_store
+MHF_reset:
+    lda #1
+MHF_store:
+    sta movehits,x
+    sep #$20
+    .ACCU 8
+    lda scr0
+    sta lastsid,x
+    lda movehits,x
+    cmp #5.b
+    bcc MHF_out8
+    rep #$20
+    .ACCU 16
+    lda scr5
+    ora #$0001.w                       ; force the knockdown path
+    sta scr5
+    bra MHF_done
+MHF_out8:
+    rep #$20
+    .ACCU 16
+MHF_done:
     rtl
 
 DrawIntroGirls:
