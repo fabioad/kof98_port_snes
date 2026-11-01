@@ -1,0 +1,22 @@
+{
+  "source": "assets/video/Wmva3m93t34/source/Wmva3m93t34.webm",
+  "source_url": "https://www.youtube.com/watch?v=Wmva3m93t34",
+  "duration_seconds": 54.0,
+  "fps": 8,
+  "resolution": [
+    128,
+    112
+  ],
+  "display_resolution": "256x224 (Mode-7 rest scale 0.5 / 2x)",
+  "colors": 256,
+  "format": "SNES Mode-7 8bpp; intro .m7pak-compatible",
+  "audio": false,
+  "frame_count": 432,
+  "frame_ticks": "7/8 alternating",
+  "duration_ticks": 3240,
+  "container": "M7VID1",
+  "frames_dir": "assets/video/Wmva3m93t34/frames",
+  "video": "assets/video/Wmva3m93t34/snes_video/Wmva3m93t34.m7vid",
+  "video_bytes": 3424600,
+  "video_sha256": "0cdb0df666b4bc542450a9fab45fdebcda5839f7fb30f1d685ce33a585ec6dfc"
+}
