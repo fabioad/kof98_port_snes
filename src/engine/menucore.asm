@@ -731,9 +731,6 @@ OpnEnter:
     .ACCU 8
     lda #0
     sta.l NMITIMEN                         ; kill NMI before the ISR can land
-    lda #$80.b
-    sta.l INIDISP                          ; blank now: the last title frame
-    ;                                      ;   lingers into mid-load garbage
     lda #ENGINE_DB.b                    ; defensive: callers may arrive with a
     pha                                 ;   foreign DBR; every .w var below
     plb                                 ;   lives in WRAM
@@ -756,6 +753,10 @@ OpnEnter:
     .ACCU 8
     lda #SONG_CIPHER.b
     jsr MusPlaySong                       ; load the theme behind the check screen
+    sep #$20
+    .ACCU 8
+    lda #$80.b
+    sta.l INIDISP                         ; blank only for the frame-0 load
     jml MsuIntroEnterFar                  ; never returns: the far entry
 OpnMsuReady:                              ;   jumps back here when frame 0
     sep #$20                              ;   is on screen
@@ -766,7 +767,7 @@ OpnMsuReady:                              ;   jumps back here when frame 0
 +
 .ENDIF
 .ENDIF
-    jsr InLoad
+    jsr InLoad                            ; InLoad force-blanks itself
     sep #$20
     .ACCU 8
     lda #GS_INTRO.b

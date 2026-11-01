@@ -52,6 +52,7 @@
 .DEFINE MV_SLEN     $862A                 ; .w payload length of the staged chunk
 .DEFINE MV_PALBUF   $8700                 ; 128-byte palette buffer
 .DEFINE MV_CHUNK    1280                 ; bytes staged during active display
+.DEFINE MSU_VIDEO_POLL 65535             ; cold-start seek budget for the video
 
 .BASE $C0
 .BANK 126 SLOT 0
@@ -788,28 +789,59 @@ MI_SetRegs:
     .ACCU 16
     rts
 
-; Copy the M1VID1 frame table into MsuVideoTable.  A16 on entry and exit.
+; Copy the M1VID1 frame table into MsuVideoTable.  The table starts at
+; video_off+24, i.e. at a non-zero in-sector offset; direct reads there can
+; make the SD2SNES cache serve the wrong sector and corrupt the first frame
+; entries.  Read from the aligned sector into MsuStageBuf, then copy the
+; requested window.
 MI_LoadTable:
-    rep #$20
+    rep #$30
     .ACCU 16
+    .INDEX 16
     lda #MSU_VIDEO_TABLE_LO
+    and #$01FF.w
+    sta.w MSU_PREFIX
+    lda #MSU_VIDEO_TABLE_LO
+    and #$FE00.w
     sta.b scr0
     lda #MSU_VIDEO_TABLE_HI
     sta.b scr2
     jsr MI_Seek
+    lda.w MSU_PREFIX
+    clc
+    adc #(MSU_VIDEO_FRAMES * 8).w
+    sta.w MV_LEN
+    lda #(MsuStageBuf & $FFFF).w
+    sta.l $2181
+    lda #$8008.w
+    sta.l $4350
+    lda #$2001.w
+    sta.l $4352
+    lda.w MV_LEN
+    sta.l $4355
+    sep #$20
+    .ACCU 8
+    lda #$00.b
+    sta.l $4354
+    lda #$7F.b
+    sta.l $2183
+    lda #$20.b
+    sta.l MDMAEN
     rep #$20
     .ACCU 16
-    lda #(MsuVideoTable & $FFFF)
+    lda #(MsuStageBuf & $FFFF).w
+    clc
+    adc.w MSU_PREFIX
     sta.b scr0
     sep #$20
     .ACCU 8
-    lda #$7E.b
+    lda #$7F.b
     sta.b scr1                            ; bank byte at scr0+2
     ldy #0
--   lda.l $2001
-    sta [scr0],y
+-   lda [scr0],y
+    sta.w MsuVideoTable,y
     iny
-    cpy #(MSU_VIDEO_FRAMES * 8)
+    cpy #(MSU_VIDEO_FRAMES * 8).w
     bcc -
     rep #$20
     .ACCU 16
@@ -832,7 +864,7 @@ MI_Seek:
     sta.l $2002
     lda.b scr2+1
     sta.l $2003
-    ldx #MSU_POLL_LIMIT.w
+    ldx #MSU_VIDEO_POLL.w
 -   lda.l $2000
     bpl +
     dex
