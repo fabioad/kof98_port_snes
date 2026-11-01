@@ -968,7 +968,7 @@ ML_top_ok:
     plb
     rep #$20
     .ACCU 16
-    jsr FightPresent
+    jsr FightPresentDispatch
     sep #$20
     .ACCU 8
     rep #$20

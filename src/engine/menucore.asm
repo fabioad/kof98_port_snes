@@ -752,13 +752,17 @@ OpnEnter:
     ; and the ROM intro below runs unchanged.
     lda.b msuok
     beq +
+    sep #$20
+    .ACCU 8
+    lda #SONG_CIPHER.b
+    jsr MusPlaySong                       ; load the theme behind the check screen
     jml MsuIntroEnterFar                  ; never returns: the far entry
 OpnMsuReady:                              ;   jumps back here when frame 0
     sep #$20                              ;   is on screen
     .ACCU 8
     lda #GS_INTRO_MSU.b
     sta.b gamestate
-    bra OpnMusic
+    jmp OpnDone
 +
 .ENDIF
 .ENDIF
@@ -2961,4 +2965,22 @@ KHD_out:
 MsuTitleEnterBridge:
     jsr TitleEnter
     jmp MainLoop
+
+; MainLoop's per-vblank presentation entry.  Gamestate 14 owns the PPU setup
+; and streams the opening video; every other state keeps the fight path.
+FightPresentDispatch:
+    sep #$20
+    .ACCU 8
+    lda gamestate
+    cmp #GS_INTRO_MSU.b
+    bne +
+    jsl MsuVideoVblank
+    sep #$20
+    .ACCU 8
+    lda #$0F.b
+    sta.l INIDISP
+    inc.w framecnt
+    rts
++   jsr FightPresent
+    rts
 .ENDIF

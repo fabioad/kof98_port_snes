@@ -58,11 +58,10 @@ set of 8×8 4 bpp tiles, the map is a 32×32 word array with the band in bits
 10-12, and the palette is four 15-colour bands (colors 0-63). The data offsets
 are relative to the first frame's payload.
 
-The nominal ticks sum to **2658** (44.3 s at 60 Hz). The generator subtracts
-the measured per-frame MSU staging cost (about one vblank per 12 KiB of CHR),
-so the wall-clock sequence also lasts **44.3 s**; the compensated table sums
-to 2557 ticks. `tools/build_intro_m1vid.py` records both values in
-`manifest.json`.
+The ticks sum to **2658** (44.3 s at 60 Hz). The player is double-buffered:
+while a frame is on screen, the next one is streamed into a hidden VRAM
+buffer during vblank, so the nominal tick count is also the wall-clock
+duration. `tools/build_intro_m1vid.py` records the value in `manifest.json`.
 
 ## Engine path
 
@@ -70,10 +69,15 @@ to 2557 ticks. `tools/build_intro_m1vid.py` records both values in
 **14**:
 
 - `OpnEnter` branches there only when `msuok != 0` and an M1VID1 is embedded.
+  The Cipher theme is loaded before the video starts, so the MSU check screen
+  covers the audio handshake and frame 0 begins ticking immediately.
 - `MsuIntroEnterFar` reads the 133-entry table once, sets Mode 1 / BG2-only
-  (map `$1800`, 4 bpp tiles `$2000`) and loads frame 0.
-- `MsuIntroTickFar` re-asserts the PPU registers every frame, advances the
-  current frame's ticks, and loads the next frame under forced blank.
+  (map `$1800`, 4 bpp tiles `$2000`) and loads frame 0 into buffer A.
+- `FightPresentDispatch` calls `MsuVideoVblank` at the top of every vblank
+  for gamestate 14. It re-asserts the PPU mode, streams the next frame into
+  the hidden buffer in 1280-byte sector-aligned chunks, and swaps the
+  palette + BG2 tile/map base inside vblank when the tick count expires.
+- `MsuIntroTickFar` only advances the tick counter and handles START/finish.
 - START skips to the title; after the last frame the player jumps to
   `TitleEnter`.
 - Without MSU-1 (`msuok == 0`) the original 16-screen ROM intro still runs

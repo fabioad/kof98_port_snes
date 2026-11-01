@@ -71,6 +71,12 @@ MsuReadVars dsb $10
 .RAMSECTION ".msu_video_table" BANK $7E SLOT 2 ORGA $8000 FORCE
 MsuVideoTable dsb 1088
 .ENDS
+.RAMSECTION ".msu_video_state" BANK $7E SLOT 2 ORGA $8600 FORCE
+MsuVideoState dsb $0100
+.ENDS
+.RAMSECTION ".msu_video_pal" BANK $7E SLOT 2 ORGA $8700 FORCE
+MsuVideoPal dsb $0080
+.ENDS
 .DEFINE MRD_SRC $7E7F30                 ; 32-bit .msu file offset
 .DEFINE MRD_DST $7E7F34                 ; 24-bit destination
 .DEFINE MRD_LEN $7E7F37                 ; bytes still to read

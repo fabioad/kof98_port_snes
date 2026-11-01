@@ -10,18 +10,44 @@
 ; and the 8-byte table entry is { u32 offset, u16 chr_len, u16 ticks }.
 ;
 ; The player lives in ROM bank 126's free high-half tail at CPU $3E:D300.
-; MsuIntroEnterFar loads the table once, then MsuIntroLoad streams the first
-; frame.  MsuIntroTickFar advances IN_MTICK each vblank and loads the next
-; frame when the entry's tick count expires.  The generator starts from the
-; nominal 2658 ticks (44.3 s) and subtracts the measured per-frame staging
-; cost, so the wall-clock sequence stays at 44.3 s even though the loads run
-; under forced blank.
+; MsuIntroEnterFar loads the table and frame 0 once.  From then on the video
+; is double-buffered: while frame N is on screen, FightPresentDispatch calls
+; MsuVideoVblank in every vblank, which streams frame N+1 into the hidden
+; tile/map buffer in 1280-byte chunks.  When the frame's ticks expire, the
+; swap (palette + BG2 base) happens inside vblank, so the screen never goes
+; blank between frames.  The table keeps the nominal 20/18-tick cadence,
+; i.e. 2658 ticks = 44.3 s at 60 Hz.  MsuIntroTickFar only counts ticks and
+; handles START/finish.
 ;
 ; MSU traffic is sector-aligned and double-DMA'd: $2001 -> MsuStageBuf, then
 ; MsuStageBuf+prefix -> $2118/$2119.  This is the same path the CHR streamer
 ; validated on the SD2SNES; reading the data port at an arbitrary in-sector
 ; offset can make its cache serve stale sectors.
 ; ============================================================================
+
+; Double-buffer state.  DBR is $7E in every caller, so these are ordinary
+; 16-bit WRAM addresses.  $7E8600-$7E87FF is free in the hybrid RAM map.
+.DEFINE MV_ACTIVE   $8600                 ; .w 0 = A ($2000/$1800), 1 = B
+.DEFINE MV_NEXT     $8602                 ; .w frame being streamed
+.DEFINE MV_SEG      $8604                 ; .w 0 = CHR, 1 = map
+.DEFINE MV_SRC0     $8606                 ; .w source low word
+.DEFINE MV_SRC1     $8608                 ; .w source high word
+.DEFINE MV_LEFT     $860A                 ; .w bytes left in this segment
+.DEFINE MV_TOTAL    $860C                 ; .w bytes left in CHR+map
+.DEFINE MV_CHR      $860E                 ; .w CHR length of the new frame
+.DEFINE MV_TICKS    $8610                 ; .w display ticks of the new frame
+.DEFINE MV_READY    $8612                 ; .w 1 = CHR/map/palette buffered
+.DEFINE MV_PAL0     $8614                 ; .w palette source low word
+.DEFINE MV_PAL1     $8616                 ; .w palette source high word
+.DEFINE MV_CHRBASE  $8618                 ; .w hidden tile base word
+.DEFINE MV_MAPBASE  $861A                 ; .w hidden map base word
+.DEFINE MV_BGSC     $861C                 ; .w hidden BG2SC value
+.DEFINE MV_NBA      $861E                 ; .w hidden BG12NBA value
+.DEFINE MV_FINISH   $8620                 ; .w last frame elapsed
+.DEFINE MV_LEN      $8622                 ; .w current chunk length
+.DEFINE MV_VRAM     $8624                 ; .w current VRAM word address
+.DEFINE MV_PALBUF   $8700                 ; 128-byte palette buffer
+.DEFINE MV_CHUNK    1280                 ; bytes staged per vblank
 
 .BASE $C0
 .BANK 126 SLOT 0
@@ -46,11 +72,18 @@ MsuIntroEnterFar:
     .ACCU 16
     stz.w IN_MFRAME
     stz.w IN_MTICK
-    jsr MsuIntroLoad                       ; frame 0
+    jsr MsuIntroLoad                       ; frame 0 -> buffer A
+    rep #$20
+    .ACCU 16
+    stz.w MV_ACTIVE                        ; A is on screen
+    stz.w MV_FINISH
+    lda #1.w
+    jsr MI_BeginStream                     ; stream frame 1 into buffer B
     jml OpnMsuReady
 
-; One MainLoop tick.  START skips to the title; otherwise count the current
-; frame's ticks and advance when the table entry expires.
+; One MainLoop tick.  The vblank hook (MsuVideoVblank) performs the buffer
+; swap and streams the next frame; this routine only counts ticks, honours
+; START and handles the final hand-off.
 MsuIntroTickFar:
     rep #$20
     .ACCU 16
@@ -62,18 +95,10 @@ MsuIntroTickFar:
     lda #$80.b
     sta.l INIDISP                          ; blank before the handoff
     jml MsuTitleEnterBridge
-+   inc.w IN_MTICK
-    lda.w IN_MTICK
-    cmp.w IN_MTICKS
-    bcc MIK_done
-    stz.w IN_MTICK
-    inc.w IN_MFRAME
-    lda.w IN_MFRAME
-    cmp #MSU_VIDEO_FRAMES.w
-    bcs MIK_finish
-    jsr MsuIntroLoad
++   lda.w MV_FINISH
+    bne MIK_finish
+    inc.w IN_MTICK
 MIK_done:
-    jsr MI_SetRegs
     sep #$20
     .ACCU 8
     lda #$81.b
@@ -343,6 +368,335 @@ MISC_copy:
     rep #$20
     .ACCU 16
     jmp MISC_loop
+
+; ---------------------------------------------------------------------------
+; Prepare the hidden buffer for frame A.  Reads its table entry, computes the
+; CHR/map/palette addresses and selects the buffer that is not on screen.
+; A16 = frame index, returns A16.
+; ---------------------------------------------------------------------------
+MI_BeginStream:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    sta.w MV_NEXT
+    asl a
+    asl a
+    asl a                                  ; frame * 8
+    tax
+    lda.w MsuVideoTable,x                  ; offset low word
+    sta.b scr0
+    lda.w MsuVideoTable+2,x                ; offset high word
+    sta.b scr2
+    lda #MSU_VIDEO_BASE_LO
+    clc
+    adc.b scr0
+    sta.w MV_SRC0
+    lda #MSU_VIDEO_BASE_HI
+    adc.b scr2
+    sta.w MV_SRC1
+    lda.w MsuVideoTable+4,x                ; chr_len
+    sta.w MV_CHR
+    lda.w MsuVideoTable+6,x                ; ticks
+    sta.w MV_TICKS
+    lda.w MV_CHR
+    sta.w MV_LEFT
+    clc
+    adc #2048.w
+    sta.w MV_TOTAL
+    ; palette source = frame base + chr_len + 2048
+    lda.w MV_SRC0
+    clc
+    adc.w MV_CHR
+    sta.b scr0
+    lda.w MV_SRC1
+    adc #0
+    sta.b scr2
+    lda.b scr0
+    clc
+    adc #2048.w
+    sta.w MV_PAL0
+    lda.b scr2
+    adc #0
+    sta.w MV_PAL1
+    stz.w MV_SEG
+    stz.w MV_READY
+    ; target the buffer that is not active
+    lda.w MV_ACTIVE
+    bne MIB_targetA
+    lda #$5000.w
+    sta.w MV_CHRBASE
+    lda #$1C00.w
+    sta.w MV_MAPBASE
+    lda #$1C.w
+    sta.w MV_BGSC
+    lda #$50.w
+    sta.w MV_NBA
+    bra MIB_target_done
+MIB_targetA:
+    lda #$2000.w
+    sta.w MV_CHRBASE
+    lda #$1800.w
+    sta.w MV_MAPBASE
+    lda #$18.w
+    sta.w MV_BGSC
+    lda #$20.w
+    sta.w MV_NBA
+MIB_target_done:
+    lda.w MV_CHRBASE
+    sta.w MV_VRAM
+    rts
+
+; ---------------------------------------------------------------------------
+; Read the 128-byte palette at MV_PAL0/1 into MV_PALBUF and mark the stream
+; ready.  Runs inside a vblank; 128 CPU reads are cheap.
+; ---------------------------------------------------------------------------
+MI_ReadPalette:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    ; Read prefix+128 bytes from the aligned sector into MsuStageBuf, then
+    ; copy the 128-byte payload.  Direct reads at a non-zero in-sector offset
+    ; can make the SD2SNES cache serve stale sectors.
+    lda.w MV_PAL0
+    and #$01FF.w
+    sta.w MSU_PREFIX
+    lda.w MV_PAL0
+    and #$FE00.w
+    sta.b scr0
+    lda.w MV_PAL1
+    sta.b scr2
+    jsr MI_Seek
+    lda.w MSU_PREFIX
+    clc
+    adc #128.w
+    sta.w MV_LEN
+    lda #(MsuStageBuf & $FFFF).w
+    sta.l $2181
+    lda #$8008.w
+    sta.l $4350
+    lda #$2001.w
+    sta.l $4352
+    lda.w MV_LEN
+    sta.l $4355
+    sep #$20
+    .ACCU 8
+    lda #$00.b
+    sta.l $4354
+    lda #$7F.b
+    sta.l $2183
+    lda #$20.b
+    sta.l MDMAEN
+    ; copy the palette out of stage+prefix
+    rep #$20
+    .ACCU 16
+    lda #(MsuStageBuf & $FFFF).w
+    clc
+    adc.w MSU_PREFIX
+    sta.b scr0
+    sep #$20
+    .ACCU 8
+    lda #$7F.b
+    sta.b scr1
+    ldy #0
+-   lda [scr0],y
+    sta.w MV_PALBUF,y
+    iny
+    cpy #128.w
+    bcc -
+    rep #$20
+    .ACCU 16
+    lda #1.w
+    sta.w MV_READY
+    rts
+
+; ---------------------------------------------------------------------------
+; Swap the hidden buffer on screen: copy its palette to CGRAM, program the
+; new BG2 base, advance IN_MFRAME and start streaming the following frame.
+; Called from the vblank hook, so none of this is visible.
+; ---------------------------------------------------------------------------
+MI_SwapBuffers:
+    sep #$20
+    .ACCU 8
+    lda #0
+    sta.l $2121                            ; CGRAM 0
+    rep #$10
+    .INDEX 16
+    ldx #0
+-   lda.w MV_PALBUF,x
+    sta.l $2122
+    inx
+    cpx #128.w
+    bcc -
+    sep #$20
+    .ACCU 8
+    lda.w MV_BGSC
+    sta.l $2108                            ; BG2SC
+    lda.w MV_NBA
+    sta.l $210B                            ; BG12NBA
+    lda #$01.b
+    sta.l $2105                            ; BGMODE 1
+    lda #$02.b
+    sta.l $212C                            ; TM = BG2
+    rep #$20
+    .ACCU 16
+    lda.w MV_NEXT
+    sta.w IN_MFRAME
+    lda.w MV_TICKS
+    sta.w IN_MTICKS
+    stz.w IN_MTICK
+    lda.w MV_ACTIVE
+    eor #1.w
+    sta.w MV_ACTIVE
+    lda.w IN_MFRAME
+    inc a
+    cmp #MSU_VIDEO_FRAMES.w
+    bcs MISB_no_next
+    jsr MI_BeginStream
+    bra MISB_done
+MISB_no_next:
+    stz.w MV_READY
+    stz.w MV_TOTAL
+MISB_done:
+    rts
+
+; ---------------------------------------------------------------------------
+; Vblank hook for gamestate 14, called at the top of vblank by
+; FightPresentDispatch.  It re-asserts the PPU mode, performs a due buffer
+; swap, and streams at most MV_CHUNK bytes into the hidden VRAM buffer.
+; ---------------------------------------------------------------------------
+MsuVideoVblank:
+    ; Keep BG2 on the active buffer even if the library ISR touched the PPU.
+    sep #$20
+    .ACCU 8
+    lda #$01.b
+    sta.l $2105                            ; BGMODE 1
+    lda #$02.b
+    sta.l $212C                            ; TM = BG2 only
+    lda #0
+    sta.l $212D                            ; TS off
+    sta.l $210F
+    sta.l $210F                            ; BG2HOFS 0
+    sta.l $2110
+    sta.l $2110                            ; BG2VOFS 0
+    lda.w MV_ACTIVE
+    bne MVV_activeB
+    lda #$18.b
+    sta.l $2108
+    lda #$20.b
+    sta.l $210B
+    bra MVV_regs_done
+MVV_activeB:
+    lda #$1C.b
+    sta.l $2108
+    lda #$50.b
+    sta.l $210B
+MVV_regs_done:
+    rep #$20
+    .ACCU 16
+    ; A swap is due when the forthcoming tick reaches IN_MTICKS.  Doing it
+    ; before the tick keeps every frame's displayed duration exact.
+    lda.w IN_MTICK
+    cmp.w IN_MTICKS
+    bcc MVV_stream
+    lda.w IN_MFRAME
+    cmp #(MSU_VIDEO_FRAMES - 1).w
+    bcs MVV_finish                         ; last frame: no next one to wait for
+    lda.w MV_READY
+    beq MVV_stream
+    jsr MI_SwapBuffers
+    bra MVV_stream
+MVV_finish:
+    lda #1.w
+    sta.w MV_FINISH
+    jmp MVV_out
+MVV_stream:
+    lda.w MV_READY
+    beq +
+    jmp MVV_out
++   lda.w MV_TOTAL
+    bne +
+    jmp MVV_out
++    lda.w MV_LEFT
+    cmp #MV_CHUNK.w
+    bcc +
+    lda #MV_CHUNK.w
++   sta.w MV_LEN
+    ; sector-aligned seek
+    lda.w MV_SRC0
+    and #$01FF.w
+    sta.w MSU_PREFIX
+    lda.w MV_SRC0
+    and #$FE00.w
+    sta.b scr0
+    lda.w MV_SRC1
+    sta.b scr2
+    jsr MI_Seek
+    ; VRAM destination for this chunk
+    sep #$20
+    .ACCU 8
+    lda #$80.b
+    sta.l $2115                            ; increment after $2119
+    rep #$20
+    .ACCU 16
+    lda.w MV_VRAM
+    sta.l $2116
+    lda.w MV_LEN
+    sta.b scr3
+    jsl MsuStageUploadFar                  ; stage + DMA, blanks in vblank
+    ; advance source and counters
+    rep #$20
+    .ACCU 16
+    lda.w MV_SRC0
+    clc
+    adc.w MV_LEN
+    sta.w MV_SRC0
+    lda.w MV_SRC1
+    adc #0
+    sta.w MV_SRC1
+    lda.w MV_LEFT
+    sec
+    sbc.w MV_LEN
+    sta.w MV_LEFT
+    lda.w MV_TOTAL
+    sec
+    sbc.w MV_LEN
+    sta.w MV_TOTAL
+    lda.w MV_LEN
+    lsr a
+    clc
+    adc.w MV_VRAM
+    sta.w MV_VRAM
+    ; CHR done -> map segment; map done -> read palette
+    lda.w MV_LEFT
+    bne MVV_out
+    lda.w MV_SEG
+    bne MVV_palette
+    lda #1.w
+    sta.w MV_SEG
+    lda #2048.w
+    sta.w MV_LEFT
+    lda.w MV_MAPBASE
+    sta.w MV_VRAM
+    bra MVV_out
+MVV_palette:
+    jsr MI_ReadPalette
+    ; If the last chunk completed exactly at the frame boundary, swap now
+    ; instead of leaving the old frame up for one extra vblank.
+    rep #$20
+    .ACCU 16
+    lda.w IN_MTICK
+    cmp.w IN_MTICKS
+    bcs +
+    jmp MVV_out
++   lda.w IN_MFRAME
+    cmp #(MSU_VIDEO_FRAMES - 1).w
+    bcc +
+    jmp MVV_finish
++   jsr MI_SwapBuffers
+MVV_out:
+    rep #$20
+    .ACCU 16
+    rtl
 
 ; Re-assert the Mode 1/BG2-only setup.  Other front-end ticks (and the
 ; library NMI) may touch the PPU registers while the video is running.

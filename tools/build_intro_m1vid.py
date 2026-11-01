@@ -45,18 +45,12 @@ TOTAL_TICKS = 2658
 SOURCE_WINDOW = 354          # 44.3 s at the 8 fps frame export
 
 
-# The player stages each frame through a 512-byte WRAM buffer, so a frame's
-# load costs roughly one vblank per 12 KiB of CHR.  Subtracting that from the
-# display ticks keeps the wall-clock sequence at the intended 44.3 s even
-# though the nominal table sums to fewer ticks.  Calibrated with the Snes9x
-# headless reference (101 frames of overhead over this sequence).
-LOAD_BYTES_PER_FRAME = 12000
-
-
 def frame_ticks(i, chr_len):
-    base = 20 if i < FRAMES - 1 else 18
-    load = (chr_len + LOAD_BYTES_PER_FRAME // 2) // LOAD_BYTES_PER_FRAME
-    return max(2, base - load)
+    # The double-buffered player streams the next frame during the current
+    # frame's display window, so the nominal 20/18-tick cadence is also the
+    # wall-clock cadence.  chr_len is kept in the signature so the generator
+    # can be retuned without touching the loop.
+    return 20 if i < FRAMES - 1 else 18
 
 
 def main():
@@ -115,7 +109,6 @@ def main():
             "duration_seconds": 44.3,
             "ticks": sum(t for *_x, t in table),
             "nominal_ticks": TOTAL_TICKS,
-            "load_compensation_ticks": TOTAL_TICKS - sum(t for *_x, t in table),
             "format": "M1VID1",
             "audio": False,
             "bytes": args.out.stat().st_size,
