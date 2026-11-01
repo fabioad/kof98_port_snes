@@ -1776,6 +1776,8 @@ TitleSprites:
     .ACCU 8
     lda #0
     sta.l $4200                           ; NMI off: lib ISR clobbers DP scratch
+    lda #$80.b
+    sta.l $2100                           ; blank for CGRAM/OAM setup
     jsl TitlePaletteFar
     rep #$20
     .ACCU 16
@@ -1811,6 +1813,8 @@ TitleSprites:
     jsr MtStr
     sep #$20
     .ACCU 8
+    lda #$0F.b
+    sta.l $2100                           ; display on with the new palette
     lda #$81.b
     sta.l $4200
     plp
@@ -1821,7 +1825,6 @@ TitleSprites:
 TitleTickNew:
     sep #$20
     .ACCU 8
-    jsl TitlePaletteFar                   ; keep gold/blue against stale fighter palettes
     rep #$20
     .ACCU 16
     lda FP+F_JOYPR.w                      ; either pad's edges
@@ -2994,6 +2997,10 @@ FightPresentDispatch:
     sta.l INIDISP
     inc.w framecnt
     rts
++   lda gamestate
+    cmp #0.b
+    bne +
+    jsl TitlePaletteFar                   ; rewrite CGRAM inside vblank
 +   jsr FightPresent
     rts
 
