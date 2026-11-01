@@ -2,25 +2,26 @@
 """Build the full-screen ending-colour intro video (M1VID1).
 
 The source is the same KOF '98 opening already extracted under
-``assets/video/Wmva3m93t34/frames``.  This tool samples 133 frames across
-the first 44.3 s and converts each through the endings pipeline
-(256x224, 4 bpp, four 15-colour palette bands), then packs the CHR, map and
-palette into ``snes_video/Wmva3m93t34.m1vid``.
+``assets/video/Wmva3m93t34/frames``.  This tool samples 665 frames across
+the first 44.3 s (15 fps, interpolated from the 8 fps source) and converts
+each through the endings pipeline (256x224, 4 bpp, four 15-colour palette
+bands), then packs the CHR, map and palette into
+``snes_video/Wmva3m93t34.m1vid``.
 
 Container M1VID1:
 
     u8  magic[8]       "M1VID1\\0\\0"
     u16 width          256
     u16 height         224
-    u16 fps            3
+    u16 fps            15
     u16 flags          0
-    u32 frame_count    133
+    u32 frame_count    665
     u32 duration_ms    44300
-    table               133 * (u32 offset, u16 chr_len, u16 ticks)
+    table               665 * (u32 offset, u16 chr_len, u16 ticks)
     data                chr_len bytes CHR, 2048-byte map, 128-byte palette
 
-Frame ticks are 20 for the first 132 frames and 18 for the last, exactly
-2658 ticks (44.3 s at 60 Hz).
+Frame ticks are balanced so the table totals exactly 2658 ticks (44.3 s at
+60 Hz) while every frame has enough display time to stage its successor.
 """
 import argparse
 import json
@@ -39,8 +40,8 @@ from build_endings import build_frame                  # noqa: E402
 SRC = ROOT / "assets/video/Wmva3m93t34/frames"
 OUT = ROOT / "assets/video/Wmva3m93t34/snes_video/Wmva3m93t34.m1vid"
 W, H = 256, 224
-FPS = 2                            # 24/23-tick cadence = 2.5 fps
-FRAMES = 111
+FPS = 15                           # ~15 fps, same 44.3 s duration
+FRAMES = 665
 TOTAL_TICKS = 2658
 SOURCE_WINDOW = 354          # 44.3 s at the 8 fps frame export
 # The YouTube upload places the opening inside a black 16:9 frame.  In the
@@ -50,32 +51,40 @@ SOURCE_CROP = (14, 8, 114, 104)
 BAND_COLORS = 15             # same 15-colour bands as the endings
 
 
-CHUNK_BYTES = 1280
-FRAME_BYTES = 2048                     # map; CHR length comes from build_frame
+CHUNK_BYTES = 5888                     # one staged chunk per tick
+MAP_BYTES = 2048                       # the map is staged as its own segment
 
 
 def _need(chr_len):
-    total = chr_len + FRAME_BYTES
-    return (total + CHUNK_BYTES - 1) // CHUNK_BYTES
+    # The streamer restarts the chunk at the CHR->map boundary, so the map
+    # always costs one extra tick (2048 < CHUNK_BYTES).
+    return (chr_len + CHUNK_BYTES - 1) // CHUNK_BYTES + 1
 
 
 def balance_ticks(chr_lens):
     """Pick per-frame ticks that total TOTAL_TICKS and never starve the
-    double-buffer streamer.  The 2.5 fps cadence (24 ticks) leaves six ticks
-    of slack over 111 frames; take them from the frames with the most margin.
+    double-buffer streamer.  Frames need enough ticks to stage their CHR
+    and map at one chunk per tick; spare ticks are spread over the frames
+    so the opening keeps the exact 44.3 s wall-clock duration.
     """
-    ticks = [max(24, _need(c)) for c in chr_lens]
-    excess = sum(ticks) - TOTAL_TICKS
-    while excess > 0:
-        candidates = [i for i, c in enumerate(chr_lens)
-                      if ticks[i] > _need(c) and ticks[i] > 2]
-        if not candidates:
-            break
-        i = max(candidates, key=lambda j: ticks[j] - _need(chr_lens[j]))
-        ticks[i] -= 1
-        excess -= 1
-    if excess < 0:
-        ticks[-1] -= excess
+    need = [_need(c) for c in chr_lens]
+    # Frame i stays on screen while frame i+1 is streamed, so its display
+    # time must cover the *next* frame's payload.  The last frame has no
+    # successor to prepare; give it two ticks so the finish hand-off is not
+    # visible as a one-frame flash.
+    ticks = [1] * len(chr_lens)
+    for i in range(len(chr_lens) - 1):
+        ticks[i] = need[i + 1]
+    ticks[-1] = 2
+    if sum(ticks) > TOTAL_TICKS:
+        raise SystemExit(
+            f"15 fps needs {sum(ticks)} ticks, budget {TOTAL_TICKS}; "
+            "use a larger CHUNK_BYTES or lower fps")
+    # Spread the remaining ticks evenly so the cadence stays close to 15 fps.
+    i = 0
+    while sum(ticks) < TOTAL_TICKS:
+        ticks[i % len(ticks)] += 1
+        i += 1
     return ticks
 
 
@@ -99,24 +108,24 @@ def main():
     payload = bytearray()
     try:
         for i in range(FRAMES):
-            idx = min(SOURCE_WINDOW - 1,
-                      int(round(i * (SOURCE_WINDOW - 1) / (FRAMES - 1))))
+            # 15 fps out of an 8 fps source: blend adjacent source frames so
+            # the extra frames carry real motion instead of hard duplicates.
+            pos = i * (SOURCE_WINDOW - 1) / (FRAMES - 1)
+            i0 = min(SOURCE_WINDOW - 1, int(pos))
+            i1 = min(SOURCE_WINDOW - 1, i0 + 1)
+            frac = pos - i0
+            im0 = Image.open(src[i0]).convert("RGB").crop(SOURCE_CROP)
+            im0 = im0.resize((W, H), Image.LANCZOS)
+            if frac > 0.001:
+                im1 = Image.open(src[i1]).convert("RGB").crop(SOURCE_CROP)
+                im1 = im1.resize((W, H), Image.LANCZOS)
+                im = Image.blend(im0, im1, frac)
+            else:
+                im = im0
+            src_path = tmp / f"pre{i:03d}.png"
+            im.save(src_path)
             base = tmp / f"f{i:03d}"
-            # The YouTube upload pillarboxes the 4:3 opening inside a 16:9
-            # frame.  In the 128x112 export the content window is x=14..114,
-            # y=8..104; crop it before resizing so the picture fills the
-            # whole screen instead of leaving black columns/rows.
-            src_path = src[idx]
-            crop = SOURCE_CROP
-            if args.internal:
-                iw, ih = (int(v) for v in args.internal.lower().split("x"))
-                im = Image.open(src[idx]).convert("RGB").crop(SOURCE_CROP)
-                im = im.resize((iw, ih), Image.LANCZOS)
-                im = im.resize((256, 224), Image.NEAREST)
-                src_path = tmp / f"pre{i:03d}.png"
-                im.save(src_path)
-                crop = None
-            build_frame(str(src_path), str(base), crop=crop,
+            build_frame(str(src_path), str(base), crop=None,
                         colors=args.colors, blur=args.blur)
             chr_data = base.with_suffix(".chr").read_bytes()
             map_data = base.with_suffix(".map").read_bytes()

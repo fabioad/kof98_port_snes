@@ -1,7 +1,7 @@
 ; ============================================================================
 ; msu_intro.asm — MSU-1 full-screen opening video (gamestate 14).
 ;
-; The M1VID1 container embedded in kof98-snes.msu holds 111 frames in the
+; The M1VID1 container embedded in kof98-snes.msu holds 665 frames in the
 ; endings' format: 256x224, 4 bpp tiles, a 32x32 map and four 15-colour
 ; palette bands.  Frames are packed as
 ;
@@ -13,11 +13,11 @@
 ; MsuIntroEnterFar loads the table and frame 0 once.  From then on the video
 ; is double-buffered: while frame N is on screen, FightPresentDispatch calls
 ; MsuVideoVblank in every vblank, which streams frame N+1 into the hidden
-; tile/map buffer in 1280-byte chunks during the visible part of the frame;
+; tile/map buffer in 5888-byte chunks during the visible part of the frame;
 ; vblank only performs the WRAM->VRAM DMA for the staged chunk.  When the
 ; frame's ticks expire, the swap (palette + BG2 base) happens inside vblank,
-; so the screen never goes blank between frames.  The table uses a 24/23
-; tick cadence (2.5 fps), totalling 2658 ticks = 44.3 s at 60 Hz.
+; so the screen never goes blank between frames.  The table uses a ~15 fps
+; cadence (665 frames), totalling 2658 ticks = 44.3 s at 60 Hz.
 ; MsuIntroTickFar only counts ticks and handles START/finish.
 ;
 ; MSU traffic is sector-aligned and double-DMA'd: $2001 -> MsuStageBuf, then
@@ -51,7 +51,7 @@
 .DEFINE MV_SPREFIX  $8628                 ; .w in-sector prefix of the staged chunk
 .DEFINE MV_SLEN     $862A                 ; .w payload length of the staged chunk
 .DEFINE MV_PALBUF   $8700                 ; 128-byte palette buffer
-.DEFINE MV_CHUNK    1280                 ; bytes staged during active display
+.DEFINE MV_CHUNK    5888                 ; bytes staged during active display
 .DEFINE MSU_VIDEO_POLL 65535             ; cold-start seek budget for the video
 
 .BASE $C0
@@ -67,7 +67,7 @@ MsuIntroEnterFar:
     .ACCU 8
     lda #0
     sta.l $4200                            ; NMI off during the setup
-    ; Read the frame table (133 * 8 = 1064 bytes) into WRAM once.  A direct
+    ; Read the frame table (665 * 8 = 5320 bytes) into WRAM once.  A direct
     ; byte copy is enough here: it runs once and avoids the shared
     ; MsuReadAlignedFar path, whose 24-bit destination bank byte aliases the
     ; scr3 chunk counter in this DP layout.
@@ -83,6 +83,7 @@ MsuIntroEnterFar:
     .ACCU 16
     stz.w MV_ACTIVE                        ; A is on screen
     stz.w MV_FINISH
+    stz.w MV_STAGED                        ; no chunk is pending yet
     lda #1.w
     jsr MI_BeginStream                     ; stream frame 1 into buffer B
     jml OpnMsuReady

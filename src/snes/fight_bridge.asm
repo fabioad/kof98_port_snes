@@ -51,7 +51,7 @@ OamCacheRam dsb $0800
 .RAMSECTION ".fight_stream_cache" BANK $7F SLOT 3 ORGA $0000 FORCE
 FightStreamingCache dsb $3000
 .ENDS
-; MSU CHR staging buffer: one 512-byte sector prefix + one 1280-byte chunk.
+; Opening-video staging buffer: one 512-byte sector prefix + one 5888-byte chunk.
 ; The seek is always aligned to a 512-byte file sector; the prefix is read
 ; into this buffer and skipped by the VRAM DMA source address.
 .RAMSECTION ".msu_stage" BANK $7F SLOT 3 ORGA $5000 FORCE
@@ -65,11 +65,12 @@ MsuStageBuf dsb $0800
 MsuReadVars dsb $10
 .ENDS
 
-; Opening-video frame table: 133 entries x 8 bytes.  Loading it once keeps the
+; Opening-video frame table: 665 entries x 8 bytes.  Loading it once keeps the
 ; per-frame path to a single payload seek instead of a table seek plus a
-; payload seek.  $7E8000-$7ECFFF is free in the hybrid RAM map.
-.RAMSECTION ".msu_video_table" BANK $7E SLOT 2 ORGA $8000 FORCE
-MsuVideoTable dsb 1088
+; payload seek.  $7E8000-$7ECFFF is free in the hybrid RAM map; park the
+; table at $B000, above the enlarged staging buffer.
+.RAMSECTION ".msu_video_table" BANK $7E SLOT 2 ORGA $B000 FORCE
+MsuVideoTable dsb 5320
 .ENDS
 .RAMSECTION ".msu_video_state" BANK $7E SLOT 2 ORGA $8600 FORCE
 MsuVideoState dsb $0100
@@ -78,7 +79,7 @@ MsuVideoState dsb $0100
 MsuVideoPal dsb $0080
 .ENDS
 .RAMSECTION ".msu_video_stage" BANK $7E SLOT 2 ORGA $8800 FORCE
-MsuVideoStage dsb $0C00
+MsuVideoStage dsb $1900
 .ENDS
 .DEFINE MRD_SRC $7E7F30                 ; 32-bit .msu file offset
 .DEFINE MRD_DST $7E7F34                 ; 24-bit destination

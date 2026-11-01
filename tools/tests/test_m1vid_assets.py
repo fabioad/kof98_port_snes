@@ -18,8 +18,8 @@ class M1VidAssetTests(unittest.TestCase):
         self.assertEqual(self.data[:8], b"M1VID1\0\0")
         width, height, fps, flags = struct.unpack_from("<HHHH", self.data, 8)
         count, duration = struct.unpack_from("<II", self.data, 16)
-        self.assertEqual((width, height, fps, flags), (256, 224, 2, 0))
-        self.assertEqual(count, 111)
+        self.assertEqual((width, height, fps, flags), (256, 224, 15, 0))
+        self.assertEqual(count, 665)
         self.assertEqual(duration, 44300)
 
     def test_frame_table_and_ticks(self):

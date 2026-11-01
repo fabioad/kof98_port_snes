@@ -7,7 +7,7 @@ Two video builds are kept in this directory:
 
 | file | format | use |
 | --- | --- | --- |
-| `snes_video/Wmva3m93t34.m1vid` | 256×224, 4 bpp, 2.5 fps, 44.3 s | **new opening played by the ROM when MSU-1 is present** |
+| `snes_video/Wmva3m93t34.m1vid` | 256×224, 4 bpp, ~15 fps, 44.3 s | **new opening played by the ROM when MSU-1 is present** |
 | `snes_video/Wmva3m93t34.m7vid` | 128×112, 8 bpp, 8 fps, 54 s | earlier Mode-7 reference asset (not embedded) |
 
 The M1VID build uses the same palette pipeline as the endings: four
@@ -26,11 +26,11 @@ video byte offset and 14-17 its length. The engine constants are generated in
 ```
 MSU_VIDEO_OFFSET   = $1BB0000
 MSU_VIDEO_OFF0..3  = $00,$00,$BB,$01   ; 32-bit MSU seek bytes
-MSU_VIDEO_SIZE     = 1603504
-MSU_VIDEO_FRAMES   = 111
-MSU_VIDEO_FPS      = 2
-MSU_VIDEO_DATA     = 912                ; 24 + 111*8, first frame payload
-MSU_VIDEO_BASE_LO  = $0440
+MSU_VIDEO_SIZE     = 10861728
+MSU_VIDEO_FRAMES   = 665
+MSU_VIDEO_FPS      = 15
+MSU_VIDEO_DATA     = 5344               ; 24 + 665*8, first frame payload
+MSU_VIDEO_BASE_LO  = $14E0
 MSU_VIDEO_BASE_HI  = $01BB
 MSU_VIDEO_TABLE_LO = $0018
 MSU_VIDEO_TABLE_HI = $01BB
@@ -45,9 +45,9 @@ offset  size  contents
 0       8     "M1VID1\0\0"
 8       2     width  (u16 LE) = 256
 10      2     height (u16 LE) = 224
-12      2     fps    (u16 LE) = 2        ; actual cadence 24/23 ticks = 2.5 fps
+12      2     fps    (u16 LE) = 15       ; actual cadence 2658/665 ticks = 15.01 fps
 14      2     flags  (u16 LE) = 0
-16      4     frame_count (u32 LE) = 111
+16      4     frame_count (u32 LE) = 665
 20      4     duration_ms (u32 LE) = 44300
 24      8×N   frame table: u32 data offset, u16 chr_len, u16 ticks
 ...           N × (CHR bytes + 2048-byte map + 128-byte palette)
@@ -64,12 +64,15 @@ crops that window before resizing to 256×224, so the video fills the whole
 SNES screen instead of leaving black columns/rows. The crop is recorded as
 `source_crop` in `manifest.json`.
 
-The per-frame ticks are 24, with six frames using 23, totalling **2658**
-ticks = **44.3 s** at 60 Hz (2.5 fps). The player is double-buffered: while a
-frame is on screen, the next one is staged into WRAM during the visible part
-of the frame and DMA'd into a hidden VRAM buffer at vblank. The 1280-byte
-vblank budget leaves no dark band, and the tick cadence is also the
-wall-clock duration. `tools/build_intro_m1vid.py` records the schedule in
+The per-frame ticks are balanced so the table totals exactly **2658** ticks
+= **44.3 s** at 60 Hz (**15.01 fps**). Each frame gets enough display time
+to stage its successor, and the spare ticks are spread evenly. The player is
+double-buffered: while a frame is on screen, the next one is staged into WRAM
+during the visible part of the frame and DMA'd into a hidden VRAM buffer at
+vblank. The staging chunk is **5888 bytes**; the largest chunks slightly
+overrun the vblank window, so the display stays blanked for the first ~5
+scanlines of those frames (a thin black band at the very top, normally hidden
+by CRT overscan). `tools/build_intro_m1vid.py` records the schedule in
 `manifest.json`.
 
 ## Engine path
@@ -80,13 +83,13 @@ wall-clock duration. `tools/build_intro_m1vid.py` records the schedule in
 - `OpnEnter` branches there only when `msuok != 0` and an M1VID1 is embedded.
   The Cipher theme is loaded before the video starts, so the MSU check screen
   covers the audio handshake and frame 0 begins ticking immediately.
-- `MsuIntroEnterFar` reads the 111-entry table once, sets Mode 1 / BG2-only
+- `MsuIntroEnterFar` reads the 665-entry table once, sets Mode 1 / BG2-only
   (map `$1800`, 4 bpp tiles `$2000`) and loads frame 0 into buffer A.
 - `FightPresentDispatch` calls `MsuVideoVblank` at the top of every vblank
-  for gamestate 14. It re-asserts the PPU mode, streams the next frame into
-  stages the next chunk from the MSU into WRAM during visible time, DMAs it
-  to the hidden VRAM buffer at vblank, and swaps the palette + BG2 tile/map
-  base inside vblank when the tick count expires.
+  for gamestate 14. It re-asserts the PPU mode, consumes the chunk staged
+  during visible time into the hidden VRAM buffer, and swaps the palette +
+  BG2 tile/map base inside vblank when the tick count expires. The visible
+  tick stages the next 5888-byte chunk from the MSU.
 - `MsuIntroTickFar` only advances the tick counter and handles START/finish.
 - START skips to the title; after the last frame the player jumps to
   `TitleEnter`.
@@ -100,9 +103,10 @@ offset can make its cache serve stale sectors.
 
 ## `frames/`
 
-- 432 indexed PNGs, `frame_00000.png` … `frame_00431.png`.
+- 354 indexed PNGs, `frame_00000.png` … `frame_00353.png`.
 - **128×112**, **256 colors** (Pillow `P` mode).
-- 8 fps sampled from the 54 s cut; used by the Mode-7 `.m7vid`.
+- 8 fps sampled from the first 44.3 s; used for both the M1VID1 opening
+  (interpolated to 15 fps) and the Mode-7 `.m7vid`.
 
 ## Regenerate
 
