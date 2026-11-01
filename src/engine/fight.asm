@@ -713,6 +713,7 @@
 .DEFINE VQ_SLOT     $518E               ; cache slot 0/1
 .DEFINE VQ_LASTSLOT $5190
 .DEFINE VQ_COUNT    $5192               ; bytes copied during this tick
+.DEFINE VQ_CUR_SIDE $5194               ; 0 = current stream is P1, 1 = P2
 .DEFINE VQ_TABLE    $51A0               ; mutable 8-byte SNESMOD sample record
 .DEFINE VQ_CACHE0   $0000               ; bank $7F, 6 KiB per slot
 .DEFINE VQ_CACHE1   $1800
@@ -5091,6 +5092,7 @@ EnterState:
     .ACCU 16
     ldx fofs
     sta FP+F_STATE,x
+    jsr VoiceDropP1                      ; P1: stop the previous move voice
     stz FP+F_LASTSCAN,x
     jsr CmdTrack                          ; practice command-list usage log
     stz FP+F_FRAME,x

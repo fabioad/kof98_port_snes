@@ -259,6 +259,108 @@ MSB_ok:
     .ACCU 16
     rts
 
+; A(16) = side (0 = P1, 1 = P2).  Stop that side's in-flight stream and
+; mark its queued records as cancelled; the other side's voice and queue
+; records are left alone.
+VoiceDropSide:
+    phb
+    rep #$30
+    .ACCU 16
+    pha                                ; save target side across DB switch
+    sep #$20
+    .ACCU 8
+    lda #ENGINE_DB.b
+    pha
+    plb
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    pla
+    and #$00FF.w
+    sta scr0
+    lda.w VQ_CUR_SIDE
+    and #$00FF.w
+    cmp scr0
+    bne VDS_filter
+    lda.l $00015A
+    and #$00FF.w
+    beq VDS_filter
+    sep #$20
+    .ACCU 8
+    lda #0
+    sta.l $000158
+    sta.l $00015A
+    rep #$20
+    .ACCU 16
+    stz.w VQ_BUSY
+    stz.w VQ_POS
+    stz.w VQ_COUNT
+    stz.w VQ_TOTAL
+VDS_filter:
+    lda.w VQ_HEAD
+    sta scr4
+VDS_loop:
+    lda scr4
+    cmp.w VQ_TAIL
+    beq VDS_done
+    tay
+    lda.w VQ_DATA+2,y
+    xba
+    and #$00FF.w
+    cmp scr0
+    bne VDS_next
+    sep #$20
+    .ACCU 8
+    lda #$FF
+    sta.w VQ_DATA+2,y                  ; low byte = voice index: cancel it
+    rep #$20
+    .ACCU 16
+VDS_next:
+    lda scr4
+    clc
+    adc #4.w
+    and #$003F.w
+    sta scr4
+    bra VDS_loop
+VDS_done:
+    sep #$20
+    .ACCU 8
+    plb
+    rts
+
+; P1 move start/cancel: drop P1's old move voice/queue entries before the
+; new state can enqueue its own voice.  P2 is deliberately untouched.
+VoiceDropP1:
+    php
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    pha
+    phx
+    phy
+    ldx fofs
+    lda FP+F_STATE,x
+    and #$00FF.w
+    cmp #5.w
+    bcc VDP_out
+    cmp #27.w
+    bcc VDP_go
+    cmp #48.w
+    bcc VDP_out
+    cmp #90.w
+    bcs VDP_out
+VDP_go:
+    lda fofs
+    bne VDP_out                       ; only P1
+    lda #0
+    jsr VoiceDropSide
+VDP_out:
+    ply
+    plx
+    pla
+    plp
+    rts
+
 ; Pin an active super projectile to its victim while the five-hit sequence
 ; is running.  TickSpark calls this before ProjHit, so pushback cannot move
 ; the victim out of the shot between contacts.  X = spark slot on entry and

@@ -62,6 +62,23 @@ VQTF_dequeue:
     sta.w VQ_PTRIDX
     lda.w VQ_DATA+2,y
     sta.w VQ_INDEX
+    and #$00FF.w
+    cmp #$00FF.w                       ; $FF = record cancelled by side
+    bne VQTF_take
+    tya
+    clc
+    adc #4.w
+    and #$003F.w
+    sta.w VQ_HEAD
+    bra VQTF_dequeue
+VQTF_take:
+    lda.w VQ_INDEX
+    xba
+    and #$00FF.w                       ; high byte = owning side
+    sta.w VQ_CUR_SIDE
+    lda.w VQ_INDEX
+    and #$00FF.w
+    sta.w VQ_INDEX
     tya
     clc
     adc #4.w
@@ -432,8 +449,9 @@ VoicePlayFar:
     ldx #0
 VPF_scan:
     lda.l VoicePtrTab,x
-    beq VPF_out
-    cmp scr5
+    bne +
+    jmp VPF_out
++   cmp scr5
     beq VPF_got
     txa
     clc
@@ -450,7 +468,12 @@ VPF_got:
     lda.l $7E7F20                      ; saved local voice index
     and #$00FF.w
     sta scr5
-    jsl VoiceQueueAddFar
+    lda fofs                           ; tag the queue record with its side
+    beq +
+    lda scr5
+    ora #$0100.w                       ; high byte 1 = P2
+    sta scr5
++   jsl VoiceQueueAddFar
     bra VPF_out
 VPF_rom:
     lda.l $00015A                       ; a direct ROM voice must not cut into
