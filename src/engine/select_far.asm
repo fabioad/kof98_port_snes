@@ -65,9 +65,10 @@ SPJ_no:
     rtl
 
 
-; OBJ palette 4 = light-orange title prompt (dark-orange outline, white
-; highlight); palette 5 = blue title credit, matching the previous look.
-; Kept out of the menu tail so bank 50 has room for FightHelperTail.
+; OBJ palette 4 = gold title prompt.  The font glyphs use colour 3 for the
+; body and colour 1 for the right/bottom shadow, so the body is the gold
+; from the reference image and the shadow is the same hue, slightly darker.
+; Palette 5 keeps the blue title credit.
 TitlePaletteFar:
     sep #$20
     .ACCU 8
@@ -76,16 +77,17 @@ TitlePaletteFar:
     lda #$00.b
     sta.l $2122
     sta.l $2122
-    lda #$FF.b
+    lda #$36.b                            ; colour 1: shadow 0x1A36
     sta.l $2122
-    lda #$26.b
+    lda #$1A.b
     sta.l $2122
-    lda #$57.b
+    lda #$36.b                            ; colour 2: unused, same shadow
     sta.l $2122
-    lda #$01.b
+    lda #$1A.b
     sta.l $2122
-    lda #$FF.b
+    lda #$DC.b                            ; colour 3: body 0x2ADC
     sta.l $2122
+    lda #$2A.b
     sta.l $2122
     lda #208.b
     sta.l $2121
