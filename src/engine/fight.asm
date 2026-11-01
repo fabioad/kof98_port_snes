@@ -5092,7 +5092,7 @@ EnterState:
     .ACCU 16
     ldx fofs
     sta FP+F_STATE,x
-    jsr VoiceDropP1                      ; P1: stop the previous move voice
+    jsr VoiceDropHuman                   ; pad side: stop previous move voice
     stz FP+F_LASTSCAN,x
     jsr CmdTrack                          ; practice command-list usage log
     stz FP+F_FRAME,x

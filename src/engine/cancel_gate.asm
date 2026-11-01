@@ -328,9 +328,11 @@ VDS_done:
     plb
     rts
 
-; P1 move start/cancel: drop P1's old move voice/queue entries before the
-; new state can enqueue its own voice.  P2 is deliberately untouched.
-VoiceDropP1:
+; Pad-controlled side move start/cancel: drop that side's old move voice
+; before the new state can enqueue its own.  CPU-driven sides keep their
+; voices, so P2 remains untouched when it is the CPU and becomes eligible
+; when a pad drives it.
+VoiceDropHuman:
     php
     rep #$30
     .ACCU 16
@@ -350,11 +352,27 @@ VoiceDropP1:
     cmp #90.w
     bcs VDP_out
 VDP_go:
+    sep #$20
+    .ACCU 8
     lda fofs
-    bne VDP_out                       ; only P1
+    bne VDP_p2
+    lda cpu1
+    bne VDP_out
     lda #0
+    bra VDP_call
+VDP_p2:
+    lda cpu2
+    bne VDP_out
+    lda #1
+VDP_call:
+    rep #$20
+    .ACCU 16
+    and #$00FF.w
     jsr VoiceDropSide
 VDP_out:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
     ply
     plx
     pla

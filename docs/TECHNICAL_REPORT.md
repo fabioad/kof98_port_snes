@@ -189,11 +189,13 @@ Constantes clássicas relevantes:
 - comandos durante o hitstop global também alimentam o anel de entrada dos
   lados humanos, então a motion do cancelamento não se perde enquanto o
   golpe está congelado.
-- vozes de golpe do P1: ao iniciar outro golpe ou um cancelamento por combo,
-  o stream de voz do P1 em andamento é abortado e seus registros pendentes no
-  anel são marcados como cancelados. A voz e os registros do P2 não são
-  tocados. O anel de vozes agora carrega o lado no byte alto do índice, e o
-  dequeue ignora registros cancelados com índice $FF.
+- vozes de golpe do lado humano/pad: ao iniciar outro golpe ou um
+  cancelamento por combo, o stream de voz daquele lado em andamento é
+  abortado e seus registros pendentes no anel são marcados como cancelados.
+  Isso vale para P1 ou P2 quando o pad controla aquele lado; lados dirigidos
+  pela CPU mantêm a voz (inclusive o P2 da CPU). O anel de vozes agora
+  carrega o lado no byte alto do índice, e o dequeue ignora registros
+  cancelados com índice $FF.
 - IA de combos por nível: níveis 2-3 usam especiais; 4-6 aumentam a taxa de
   especiais; 7+ podem gastar um stock em super antes de tentar o especial.
   Especiais e supers aceitam botão fraco ou forte. A IA nunca emenda
