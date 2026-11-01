@@ -205,6 +205,11 @@ Constantes clássicas relevantes:
   combo novo começa ou o golpe muda, então combos livres de golpes
   diferentes não são afetados. Golpes que usam `air.fall` também recebem o
   flag nativo de knockdown na linha emitida.
+- Andy, Kuuha Dan (1300/1310): a até 40 px do oponente o golpe conecta duas
+  vezes; o primeiro contato mantém a vítima em hitstun e zera o pushback, e
+  o segundo derruba. Mais longe continua um único hit com knockdown. As
+  caixas Clsn1 ganharam um retângulo de corpo inteiro para pegar oponente
+  encostado ou agachado, que antes passava sob o primeiro frame alto.
 - comandos durante o hitstop global também alimentam o anel de entrada dos
   lados humanos, então a motion do cancelamento não se perde enquanto o
   golpe está congelado.

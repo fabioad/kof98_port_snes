@@ -564,6 +564,8 @@
 .DEFINE FUS_TMP     FUSION_BASE+12     ; word: AddPower scratch
 .DEFINE movehits    $5070              ; per-side same-move hit count
 .DEFINE lastsid     $50B2              ; per-side last runtime move sid
+.DEFINE andykuuha   $5060              ; word: 0/1/2 Kuuha Dan hit state
+.DEFINE andykuut    $5064              ; word: state time of its first hit
 .DEFINE sdmaside    COMBO_BASE+$80    ; sprite-DMA arbiter for the current
                                         ;   vblank: 0 = free, 1 = only P1,
                                         ;   2 = only P2 (set when both sides
@@ -10784,7 +10786,6 @@ HO_dmg_done:
     jsr ComboBump                         ;   HITS digits reuse scr5/scr6.
     pla
     sta scr5
-    jsl MoveHitFinisher                   ; same-move 5th hit -> knockdown
     ldx aofs                              ; ComboDraw's WriteStr clobbers scr4:
     lda FP+F_STATE,x                      ;   rebuild the sid index from the
     and #$00FF.w                          ;   attacker's state before the tables
@@ -11027,6 +11028,7 @@ HO_aset:
     bne +
     jmp HO_ko                             ; finishing blow: dramatic knockdown
 +
+    jsl MoveHitFinisher                   ; multi-hit finishers / Kuuha Dan
     lda scr5
     and #$0001.w
     beq +
@@ -19643,6 +19645,118 @@ UploadIntroGirls:
     .ACCU 8
     rtl
 
+; Andy's Kuuha Dan (runtime 48 weak / 49 strong) is a close-range two-hit
+; attack.  The first contact keeps the victim in hitstun and the second one
+; knocks down; a far first contact remains a single knockdown.  The source
+; resets MoveHit between active elements, which the native hit path cannot
+; express directly, so this routine clears F_HITDONE for the close case and
+; zeroes the first hit's pushback.  Called from HO_normalhit after the hit
+; velocity has been applied.
+AndyKuuhaHit:
+    rep #$20
+    .ACCU 16
+    ldx aofs
+    lda FP+F_CHAR,x
+    cmp #CharAndy.w
+    beq +
+    jmp AKH_clear
++   lda FP+F_STATE,x
+    and #$00FF.w
+    cmp #48.w
+    beq AKH_state_ok
+    cmp #49.w
+    beq AKH_state_ok
+    jmp AKH_clear
+AKH_state_ok:
+    lda aofs                            ; 0/$40 -> word index 0/2
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    sta scr1
+    ldy aofs
+    lda FP+F_STIME,y
+    sta scr0                            ; state time of this contact
+    ldx scr1
+    lda andykuuha,x
+    beq AKH_first
+    lda scr1
+    tax
+    lda andykuut,x
+    sta scr2                            ; stored first-hit time
+    lda scr0
+    sec
+    sbc scr2
+    cmp #9.w                            ; same move only within a few ticks
+    bcs AKH_first
+    ldx scr1
+    lda andykuuha,x
+    cmp #1.w
+    bne AKH_third
+    lda #2                              ; second contact: knockdown
+    sta andykuuha,x
+    lda scr5
+    ora #$0001.w
+    sta scr5
+    bra AKH_done
+AKH_third:
+    lda scr5                            ; already past the second: stay down
+    ora #$0001.w
+    sta scr5
+    bra AKH_done
+AKH_first:
+    lda #2                              ; default: single knockdown
+    sta andykuuha,x
+    lda scr1
+    tax
+    lda scr0
+    sta andykuut,x
+    lda scr5
+    ora #$0001.w
+    sta scr5
+    ldy vofs                            ; close?  <= 40 px between origins
+    lda FP+F_X,y
+    ldy aofs
+    sec
+    sbc FP+F_X,y
+    bpl +
+    eor #$FFFF.w
+    inc a
++   cmp #(40<<8).w
+    bcs AKH_done
+    ldx scr1                            ; close: first hit does not down
+    lda #1
+    sta andykuuha,x
+    lda scr5
+    and #$FFFE.w
+    sta scr5
+    ldy vofs
+    lda #0
+    sta FP+F_VX,y                       ; keep the victim in the second box
+    ldx aofs
+    sep #$20
+    .ACCU 8
+    lda #0
+    sta FP+F_HITDONE,x                  ; MoveHitReset: allow the next contact
+    rep #$20
+    .ACCU 16
+    bra AKH_done
+AKH_clear:
+    lda aofs
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    tax
+    lda #0
+    sta andykuuha,x
+AKH_done:
+    rep #$20
+    .ACCU 16
+    rts
+
 ; A special or super that lands five hits of the *same* move must knock
 ; the victim down on the fifth contact.  The count is keyed by the runtime
 ; state id and reset when a fresh combo starts or the move changes, so a
@@ -19699,6 +19813,7 @@ MHF_out8:
     rep #$20
     .ACCU 16
 MHF_done:
+    jsr AndyKuuhaHit
     rtl
 
 DrawIntroGirls:

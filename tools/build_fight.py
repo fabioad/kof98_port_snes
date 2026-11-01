@@ -1768,6 +1768,17 @@ if "sakura" in CHARS:
                             62: (6, 0), 63: (8, -10)}
     _sakura.setdefault("extra_trans", []).append((63, 56, 1, 0))
 
+# Andy's Kuuha Dan (weak 1300 / strong 1310) is a close-range leaping
+# attack.  The source Clsn1 boxes only cover the outstretched arm, so a
+# point-blank or crouching opponent can sit under the first active frame.
+# Union a body-sized rectangle into every attacking frame; the engine still
+# clamps the left edge to the fighter axis.
+if "andy" in CHARS:
+    CHARS["andy"]["air_box_patch"] = {
+        1300: (-20, -110, 50, -5),
+        1310: (-20, -110, 55, -5),
+    }
+
 # ReversalDef counter-grab follow-ups (p1stateno/p2stateno) share four
 # runtime slots: 99/100 for the high/mid counter (actor/held opponent) and
 # 101/102 for the low counter.  Wiring both MUGEN states into "moves" makes
@@ -5599,6 +5610,11 @@ def build_char(name, cfg, global_pal=None):
     anim_tables = {}
     for sid, anum in anims.items():
         frames, loopstart = air[anum]
+        _patch = cfg.get("air_box_patch", {}).get(anum)
+        if _patch:
+            frames = [(g, n, x, y, t, flip,
+                       (atk + [_patch] if atk else []), hurt)
+                      for g, n, x, y, t, flip, atk, hurt in frames]
         if sid == 97:
             frames, loopstart = charge_frames(name, air, anum)
         frames = scale_air_frames(frames, coord_scale)
