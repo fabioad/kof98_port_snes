@@ -1,7 +1,7 @@
 ; ============================================================================
 ; msu_intro.asm — MSU-1 full-screen opening video (gamestate 14).
 ;
-; The M1VID1 container embedded in kof98-snes.msu holds 133 frames in the
+; The M1VID1 container embedded in kof98-snes.msu holds 111 frames in the
 ; endings' format: 256x224, 4 bpp tiles, a 32x32 map and four 15-colour
 ; palette bands.  Frames are packed as
 ;
@@ -13,11 +13,12 @@
 ; MsuIntroEnterFar loads the table and frame 0 once.  From then on the video
 ; is double-buffered: while frame N is on screen, FightPresentDispatch calls
 ; MsuVideoVblank in every vblank, which streams frame N+1 into the hidden
-; tile/map buffer in 1280-byte chunks.  When the frame's ticks expire, the
-; swap (palette + BG2 base) happens inside vblank, so the screen never goes
-; blank between frames.  The table keeps the nominal 20/18-tick cadence,
-; i.e. 2658 ticks = 44.3 s at 60 Hz.  MsuIntroTickFar only counts ticks and
-; handles START/finish.
+; tile/map buffer in 1280-byte chunks during the visible part of the frame;
+; vblank only performs the WRAM->VRAM DMA for the staged chunk.  When the
+; frame's ticks expire, the swap (palette + BG2 base) happens inside vblank,
+; so the screen never goes blank between frames.  The table uses a 24/23
+; tick cadence (2.5 fps), totalling 2658 ticks = 44.3 s at 60 Hz.
+; MsuIntroTickFar only counts ticks and handles START/finish.
 ;
 ; MSU traffic is sector-aligned and double-DMA'd: $2001 -> MsuStageBuf, then
 ; MsuStageBuf+prefix -> $2118/$2119.  This is the same path the CHR streamer
@@ -46,8 +47,11 @@
 .DEFINE MV_FINISH   $8620                 ; .w last frame elapsed
 .DEFINE MV_LEN      $8622                 ; .w current chunk length
 .DEFINE MV_VRAM     $8624                 ; .w current VRAM word address
+.DEFINE MV_STAGED   $8626                 ; .w 1 = chunk ready in MsuVideoStage
+.DEFINE MV_SPREFIX  $8628                 ; .w in-sector prefix of the staged chunk
+.DEFINE MV_SLEN     $862A                 ; .w payload length of the staged chunk
 .DEFINE MV_PALBUF   $8700                 ; 128-byte palette buffer
-.DEFINE MV_CHUNK    1280                 ; bytes staged per vblank
+.DEFINE MV_CHUNK    1280                 ; bytes staged during active display
 
 .BASE $C0
 .BANK 126 SLOT 0
@@ -99,6 +103,7 @@ MsuIntroTickFar:
     bne MIK_finish
     inc.w IN_MTICK
 MIK_done:
+    jsr MV_StageChunk                       ; stage the next chunk while visible
     sep #$20
     .ACCU 8
     lda #$81.b
@@ -593,45 +598,38 @@ MVV_activeB:
 MVV_regs_done:
     rep #$20
     .ACCU 16
-    ; A swap is due when the forthcoming tick reaches IN_MTICKS.  Doing it
-    ; before the tick keeps every frame's displayed duration exact.
+    ; Consume one pre-staged chunk (WRAM -> VRAM only; the MSU read ran
+    ; during the visible part of the previous frame).
+    lda.w MV_STAGED
+    beq MVV_check_swap
+    jsr MV_ConsumeChunk
+MVV_check_swap:
+    ; A swap is due when the tick counter has reached the frame's ticks.
     lda.w IN_MTICK
     cmp.w IN_MTICKS
-    bcc MVV_stream
+    bcc MVV_out
     lda.w IN_MFRAME
     cmp #(MSU_VIDEO_FRAMES - 1).w
-    bcs MVV_finish                         ; last frame: no next one to wait for
+    bcs MVV_finish
     lda.w MV_READY
-    beq MVV_stream
+    beq MVV_out
     jsr MI_SwapBuffers
-    bra MVV_stream
+    bra MVV_out
 MVV_finish:
     lda #1.w
     sta.w MV_FINISH
-    jmp MVV_out
-MVV_stream:
-    lda.w MV_READY
-    beq +
-    jmp MVV_out
-+   lda.w MV_TOTAL
-    bne +
-    jmp MVV_out
-+    lda.w MV_LEFT
-    cmp #MV_CHUNK.w
-    bcc +
-    lda #MV_CHUNK.w
-+   sta.w MV_LEN
-    ; sector-aligned seek
-    lda.w MV_SRC0
-    and #$01FF.w
-    sta.w MSU_PREFIX
-    lda.w MV_SRC0
-    and #$FE00.w
-    sta.b scr0
-    lda.w MV_SRC1
-    sta.b scr2
-    jsr MI_Seek
-    ; VRAM destination for this chunk
+MVV_out:
+    rep #$20
+    .ACCU 16
+    rtl
+
+; ---------------------------------------------------------------------------
+; Copy the staged chunk from MsuVideoStage to VRAM.  Called from the vblank
+; hook, so the forced blank around the DMA is invisible.
+; ---------------------------------------------------------------------------
+MV_ConsumeChunk:
+    rep #$20
+    .ACCU 16
     sep #$20
     .ACCU 8
     lda #$80.b
@@ -640,63 +638,131 @@ MVV_stream:
     .ACCU 16
     lda.w MV_VRAM
     sta.l $2116
-    lda.w MV_LEN
-    sta.b scr3
-    jsl MsuStageUploadFar                  ; stage + DMA, blanks in vblank
-    ; advance source and counters
+    sep #$20
+    .ACCU 8
+    lda #$8F.b
+    sta.l INIDISP                          ; blank during the VRAM DMA
+    rep #$20
+    .ACCU 16
+    lda #$1801.w
+    sta.l $4350                            ; mode 1, BBAD5 $2118
+    lda #(MsuVideoStage & $FFFF).w
+    clc
+    adc.w MV_SPREFIX
+    sta.l $4352
+    lda.w MV_SLEN
+    sta.l $4355
+    sep #$20
+    .ACCU 8
+    lda #$7E.b
+    sta.l $4354
+    lda #$20.b
+    sta.l MDMAEN
+    ; advance the stream state
     rep #$20
     .ACCU 16
     lda.w MV_SRC0
     clc
-    adc.w MV_LEN
+    adc.w MV_SLEN
     sta.w MV_SRC0
     lda.w MV_SRC1
     adc #0
     sta.w MV_SRC1
     lda.w MV_LEFT
     sec
-    sbc.w MV_LEN
+    sbc.w MV_SLEN
     sta.w MV_LEFT
     lda.w MV_TOTAL
     sec
-    sbc.w MV_LEN
+    sbc.w MV_SLEN
     sta.w MV_TOTAL
-    lda.w MV_LEN
+    lda.w MV_SLEN
     lsr a
     clc
     adc.w MV_VRAM
     sta.w MV_VRAM
-    ; CHR done -> map segment; map done -> read palette
+    stz.w MV_STAGED
+    ; CHR segment done -> point at the hidden map buffer
     lda.w MV_LEFT
-    bne MVV_out
+    bne MVC_out
     lda.w MV_SEG
-    bne MVV_palette
+    bne MVC_out
     lda #1.w
     sta.w MV_SEG
     lda #2048.w
     sta.w MV_LEFT
     lda.w MV_MAPBASE
     sta.w MV_VRAM
-    bra MVV_out
-MVV_palette:
-    jsr MI_ReadPalette
-    ; If the last chunk completed exactly at the frame boundary, swap now
-    ; instead of leaving the old frame up for one extra vblank.
+MVC_out:
     rep #$20
     .ACCU 16
-    lda.w IN_MTICK
-    cmp.w IN_MTICKS
-    bcs +
-    jmp MVV_out
-+   lda.w IN_MFRAME
-    cmp #(MSU_VIDEO_FRAMES - 1).w
+    rts
+
+; ---------------------------------------------------------------------------
+; Stage one chunk from the MSU into MsuVideoStage.  Called from the tick,
+; i.e. during the visible part of the frame, so the MSU read/DMA never eats
+; into vblank.  When the last map chunk is staged, the palette is read into
+; MV_PALBUF in the same pass, ready for the vblank swap.
+; ---------------------------------------------------------------------------
+MV_StageChunk:
+    rep #$20
+    .ACCU 16
+    lda.w MV_STAGED
+    bne MVS_out
+    lda.w MV_READY
+    bne MVS_out
+    lda.w MV_TOTAL
+    beq MVS_out
+    lda.w MV_LEFT
+    cmp #MV_CHUNK.w
     bcc +
-    jmp MVV_finish
-+   jsr MI_SwapBuffers
-MVV_out:
+    lda #MV_CHUNK.w
++   sta.w MV_SLEN
+    ; sector-aligned seek
+    lda.w MV_SRC0
+    and #$01FF.w
+    sta.w MV_SPREFIX
+    lda.w MV_SRC0
+    and #$FE00.w
+    sta.b scr0
+    lda.w MV_SRC1
+    sta.b scr2
+    jsr MI_Seek
+    ; MSU -> MsuVideoStage (channel 4, fixed source $00:2001)
+    lda #(MsuVideoStage & $FFFF).w
+    sta.l $2181
+    lda #$8008.w
+    sta.l $4340
+    lda #$2001.w
+    sta.l $4342
+    lda.w MV_SPREFIX
+    clc
+    adc.w MV_SLEN
+    sta.l $4345
+    sep #$20
+    .ACCU 8
+    lda #$00.b
+    sta.l $4344
+    lda #$7E.b
+    sta.l $2183
+    lda #$10.b                            ; channel 4
+    sta.l MDMAEN
     rep #$20
     .ACCU 16
-    rtl
+    lda #1.w
+    sta.w MV_STAGED
+    ; If this is the last map chunk, read the palette now (visible time).
+    lda.w MV_SEG
+    beq MVS_out
+    lda.w MV_LEFT
+    sec
+    sbc.w MV_SLEN
+    bne MVS_out
+    jsr MI_ReadPalette
+MVS_out:
+    rep #$20
+    .ACCU 16
+    rts
 
 ; Re-assert the Mode 1/BG2-only setup.  Other front-end ticks (and the
 ; library NMI) may touch the PPU registers while the video is running.

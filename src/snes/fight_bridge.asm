@@ -77,6 +77,9 @@ MsuVideoState dsb $0100
 .RAMSECTION ".msu_video_pal" BANK $7E SLOT 2 ORGA $8700 FORCE
 MsuVideoPal dsb $0080
 .ENDS
+.RAMSECTION ".msu_video_stage" BANK $7E SLOT 2 ORGA $8800 FORCE
+MsuVideoStage dsb $0C00
+.ENDS
 .DEFINE MRD_SRC $7E7F30                 ; 32-bit .msu file offset
 .DEFINE MRD_DST $7E7F34                 ; 24-bit destination
 .DEFINE MRD_LEN $7E7F37                 ; bytes still to read

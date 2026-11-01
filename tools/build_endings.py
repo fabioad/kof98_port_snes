@@ -71,16 +71,21 @@ def _enc4(px):
     return bytes(out)
 
 
-def build_frame(path, outbase):
+def build_frame(path, outbase, crop=None, colors=15, blur=0.0):
     from PIL import Image
-    im = Image.open(path).convert("RGB").resize((256, 224),
-                                                Image.LANCZOS)
+    im = Image.open(path).convert("RGB")
+    if crop is not None:
+        im = im.crop(crop)
+    im = im.resize((256, 224), Image.LANCZOS)
+    if blur:
+        from PIL import ImageFilter
+        im = im.filter(ImageFilter.GaussianBlur(blur))
     tiles, lut = [], {}
     pal = bytearray()
     mwords = [0] * (32 * 32)
     for band in range(4):
         crop = im.crop((0, band * 56, 256, (band + 1) * 56)).convert("RGB")
-        q = crop.quantize(colors=15, method=Image.MEDIANCUT,
+        q = crop.quantize(colors=colors, method=Image.MEDIANCUT,
                           dither=Image.NONE)
         qp = q.getpalette()
         ncol = len(qp) // 3

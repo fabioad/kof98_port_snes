@@ -24,8 +24,8 @@
     "embedded": true,
     "offset": 29032448,
     "offset_hex": "0x1BB0000",
-    "size": 1497568,
-    "sha256": "f4941cf8c523147cafa526417bd7c7f70411cb7f748e3f81d5ac38e98fa9e9c6",
+    "size": 1603504,
+    "sha256": "54e78e9ee2bdc92bce3c076c0241aec89f8ea999eba027a01cef24e6a18cd693",
     "layout_crc": "0x3CDC",
     "note": "same .msu file as the game data; no second runtime file"
   },
@@ -37,14 +37,22 @@
     ],
     "colors": 256,
     "palette": "4 bands x 15 colors (endings pipeline)",
-    "fps": 3,
-    "frame_count": 133,
+    "source_crop": [
+      14,
+      8,
+      114,
+      104
+    ],
+    "band_colors": 15,
+    "blur": 0.0,
+    "fps": 2,
+    "frame_count": 111,
     "duration_seconds": 44.3,
     "ticks": 2658,
     "nominal_ticks": 2658,
     "format": "M1VID1",
     "audio": false,
-    "bytes": 1497568,
-    "sha256": "f4941cf8c523147cafa526417bd7c7f70411cb7f748e3f81d5ac38e98fa9e9c6"
+    "bytes": 1603504,
+    "sha256": "54e78e9ee2bdc92bce3c076c0241aec89f8ea999eba027a01cef24e6a18cd693"
   }
 }
