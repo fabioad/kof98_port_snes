@@ -82,13 +82,12 @@ class MaryRecoveryTests(unittest.TestCase):
             self.skipTest("generated tables not built")
         seg = _table(self.text, "maryAnimTab:", "maryAnim0:")
         ptrs = [l.strip() for l in seg.splitlines() if l.strip().startswith(".dw")]
-        self.assertEqual(len(ptrs), 113)                 # 112 = close HK sid
+        self.assertEqual(len(ptrs), 112)
         self.assertEqual(ptrs[107], ".dw maryAnim107")
         self.assertEqual(ptrs[108], ".dw maryAnim107")   # same AIR 1111
         self.assertEqual(ptrs[109], ".dw maryAnim99")    # reuse 1505 cels
         self.assertEqual(ptrs[110], ".dw maryAnim110")  # sliced 1505
         self.assertEqual(ptrs[111], ".dw maryAnim101")   # reuse 1525 cels
-        self.assertEqual(ptrs[112], ".dw maryAnim112")   # close strong kick
 
     def test_startup_clip_no_longer_holds_for_255_ticks(self):
         if not self.text:

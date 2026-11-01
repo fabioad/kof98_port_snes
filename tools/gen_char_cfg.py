@@ -23,8 +23,6 @@ import os
 import re
 import sys
 
-from close_normals import CLOSE_NORMALS
-
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CHARS_DIR = os.path.join(ROOT, "assets", "characters")
 KOF98DATA = os.path.join(ROOT, "assets", "kof98data")
@@ -242,12 +240,6 @@ OVERRIDES = {
                     ("a", "x"): 600, ("a", "y"): 601,
                     ("a", "a"): 602, ("a", "b"): 603},
         "clone_states": [(200, 201, 210), (200, 202, 220), (200, 203, 230),
-                         # Close standing normals: the source state 240 also
-                         # picks 240/250/260/270 from the button command;
-                         # clone it per button so each close sid carries one
-                         # fixed anim and hit row.
-                         (240, 241, 240), (240, 242, 250),
-                         (240, 243, 260), (240, 244, 270),
                          (400, 401, 410), (400, 402, 420), (400, 403, 430),
                          (600, 601, 620), (600, 602, 610), (600, 603, 630),
                          # 1000 picks anim 1000/1001 from the command; clone
@@ -1213,12 +1205,6 @@ def gen_char(key, cdir_name, defname, display):
                     normals[nkey] = e["value_i"]
 
     normals.update(ov.get("normals", {}))
-    # KOF '98 close standing normals: the source `.cmd` picks a different
-    # state within a per-button body-distance gate.  The port keeps the far
-    # state in the classic sid (5..8) and routes the close one through the
-    # dedicated sids added by build_fight (see tools/close_normals.py).
-    for btn, (_close, far, _dist) in CLOSE_NORMALS.get(key, {}).items():
-        normals[("s", btn)] = far
     sid_map = {"s": 5, "c": 19, "a": 23}
     for (posture, btn), state in sorted(normals.items()):
         wire(sid_map[posture] + BTN_ORDER[btn], state)

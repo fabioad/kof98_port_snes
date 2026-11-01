@@ -145,18 +145,6 @@
 .DEFINE S_ASPUNCH   24                  ; jumping strong punch   (state 610)
 .DEFINE S_AKICK     25                  ; jumping light kick     (state 630)
 .DEFINE S_ASKICK    26                  ; jumping strong kick    (state 640)
-; Close standing normals (KOF '98).  Each fighter's close state has its own
-; animation and hit data; the button table picks these when the opponent is
-; inside the source p2bodydist gate, else it falls back to sids 5..8.
-; 82/83/93/98 are free state slots; 98 stays Iori/Mary's imported special,
-; so their close strong kick uses 112 instead (MarkCloseNormal checks a
-; descriptor bit when latching sid 98).  ANIM_TRIP moved to slot 44 so sid
-; 93 can carry close light kick.
-.DEFINE S_CLPUNCH   82
-.DEFINE S_CLSPUNCH  83
-.DEFINE S_CLKICK    93
-.DEFINE S_CLSKICK   98
-.DEFINE S_CLSKICK_ALT 112
 .DEFINE S_GUARD     27                  ; stand guard hold       (anim 130)
 .DEFINE S_CGUARD    28                  ; crouch guard hold      (anim 131)
 .DEFINE S_AGUARD    29                  ; air guard / air guard-hit
@@ -208,7 +196,7 @@
                                         ;   follow-ups and as Clark's Ultra
                                         ;   Argentine lift/slam chain.
 .DEFINE S_DIZZY     11                  ; FUSION dizzy/stun (reuses S_WIN slot)
-.DEFINE S_AIRTHROW  44                  ; FUSION air-throw attempt (state 44)
+.DEFINE S_AIRTHROW  44                  ; FUSION air-throw (reuses spare AnimTab slot)
 
 .DEFINE F_X         0
 .DEFINE F_Y         2
@@ -257,8 +245,6 @@
                                         ; bit1: state entered this tick
                                         ; bit2: afterimage trail on
                                         ; bit3: PosFreeze latch
-                                        ; bit4: hop/hyper-hop (no air guard)
-                                        ; bit5: close standing normal
 .DEFINE F_HITVX     54                  ; HitVelSet velocity saved at impact
 .DEFINE F_HITVY     56
 .DEFINE F_HOT       58                  ; ticks of live command input: PushHist
@@ -429,7 +415,7 @@
 .DEFINE ANIM_AGUARD  29                    ; air guard / air guard-hit
 .DEFINE ANIM_DIZZY   11                    ; FUSION dizzy pose (mugen 5300)
 .DEFINE ANIM_AIRT    23                    ; FUSION air-throw attempt (air punch)
-.DEFINE ANIM_TRIP    44                    ; trip fall (slot 44; 93 is close LK)
+.DEFINE ANIM_TRIP    93                    ; trip fall, ground.type=Trip (5070)
 .DEFINE fofs        $1C
 .DEFINE vofs        $1E
 .DEFINE gamestate   $20
@@ -5133,7 +5119,6 @@ EnterState:
     .ACCU 16
     ldx fofs
     sta FP+F_STATE,x
-    jsr MarkCloseNormal                  ; latch close-normal flag for selectors
     jsr VoiceDropHuman                   ; pad side: stop previous move voice
     stz FP+F_LASTSCAN,x
     jsr CmdTrack                          ; practice command-list usage log
@@ -8811,72 +8796,23 @@ AtkScan:
     .ACCU 16
     sty scr4
     sta scr5
-    lda #32
-    sta scr2
-    cpy #CH_BUTTONS.w
-    beq +
-    lda #16                            ; crouch/air: four rows, no close block
-    sta scr2
-+   ldy scr4
+    ldy scr4
     ldx #boxp
     jsr CharPtr                           ; boxp -> character button table
     ldy #0
-AS_scan:
-    lda [boxp],y                          ; mask
+-   lda [boxp],y
     and scr5
-    beq AS_next
-    ; Rows 0-3 are the close-normal block (stand table only): the word at
-    ; +2 is gate<<8 | sid.  Gate 0 / mask 0 means the source has no close
-    ; variant for this button.  Rows 4-7 are the unconditional far states.
-    cpy #16.w
-    bcs AS_take
-    iny
-    iny
-    lda [boxp],y
-    and #$00FF.w
-    beq AS_next2                          ; disabled close row
-    sta scr0                              ; max centre distance
-    ldx fofs
-    txa
-    eor #FP2OFS.w
-    tax
-    lda FP+F_X,x
-    ldx fofs
-    sec
-    sbc FP+F_X,x
-    bpl +
-    eor #$FFFF.w
-    inc a
-+   xba
-    and #$00FF.w                          ; whole pixels
-    cmp scr0
-    bcc AS_take_close
-    bne AS_next2                          ; too far: use the far row
-AS_take_close:
-    lda [boxp],y
-    xba
-    and #$00FF.w                          ; high byte = close sid
-    bra AS_enter
-AS_take:
-    iny
-    iny
-    lda [boxp],y
-    and #$00FF.w                          ; far sid
-    bra AS_enter
-AS_next2:
-    iny
-    iny
-    bra AS_next_check
-AS_next:
+    bne +
     iny
     iny
     iny
     iny
-AS_next_check:
-    cpy scr2                             ; stand: 8 rows; crouch/air: 4
-    bcc AS_scan
+    cpy #16.w                             ; four mask,state pairs
+    bcc -
     jmp StateRet
-AS_enter:
++   iny
+    iny
+    lda [boxp],y
     pha
     jsr ConsumePress                  ; the press is spent: don't let the
     rep #$20                          ;   matcher re-fire it on a later
@@ -9942,6 +9878,47 @@ StSuper:                                ; 87-89 Triple Kung Fu Palm slices:
                                           ;   dash; AnimTick chains the
                                           ;   slices through TransEnd
 
+HoldsBack:                              ; fofs fighter -> A(16) nonzero when
+    rep #$20                            ; the pad holds "back" (away from
+    .ACCU 16                            ; the facing direction)
+    ldx fofs
+    lda FP+F_FACING,x
+    bmi +
+    lda FP+F_JOY,x
+    and #JOY_LF.w
+    rts
++   lda FP+F_JOY,x
+    and #JOY_RT.w
+    rts
+
+EnemyAttacking:                         ; fofs fighter -> A(16) nonzero when
+    rep #$20                            ; the *other* fighter is in an
+    .ACCU 16                            ; attack state (5-8, 19-26)
+    ldx fofs
+    bne +
+    ldx #FP2OFS
+    bra ++
++   ldx #0
+++  lda FP+F_STATE,x
+    and #$00FF.w
+    sec
+    sbc #S_PUNCH.w
+    cmp #4
+    bcc EA_yes
+    lda FP+F_STATE,x
+    and #$00FF.w
+    sec
+    sbc #S_CPUNCH.w
+    cmp #8
+    bcs EA_no
+EA_yes:
+    lda #1
+    rts
+EA_no:
+    lda #0
+    rts
+
+; A(16) = state, x ignored (uses fofs)
 SetState16:
     rep #$20
     .ACCU 16
@@ -10380,6 +10357,34 @@ HitCheck:
 ; Called after GuardCheck says "not guarded", before damage/velocity.
 ; Returns carry set when the juggle budget rejects the hit.
 ; ---------------------------------------------------------------------------
+IsAttackState:                          ; X = fighter offset -> A=1 attack
+    rep #$20
+    .ACCU 16
+    lda FP+F_STATE,x
+    and #$00FF.w
+    cmp #5.w
+    bcc IA_no
+    cmp #9.w
+    bcc IA_yes
+    cmp #19.w
+    bcc IA_no
+    cmp #27.w
+    bcc IA_yes
+    cmp #48.w
+    bcc IA_no
+    cmp #67.w
+    bcc IA_yes
+    cmp #85.w
+    bcc IA_no
+    cmp #90.w
+    bcc IA_yes
+IA_no:
+    lda #0
+    rts
+IA_yes:
+    lda #1
+    rts
+
 ; FUSION Quick MAX: Y+B+X on a connected normal/special cancels into the
 ; shared MAX burst (state 96).  State 96's PowTab entry pays one stock.
 HitModifiers:
@@ -10457,9 +10462,6 @@ HitOne:                                 ; X=attacker, Y=victim
     sbc #S_PUNCH.b
     cmp #4
     bcc HO_atkst                          ; standing hits 5-8
-    lda FP+F_STATE,x
-    jsr IsCloseNormal8
-    bne HO_atkst                          ; close standing hits
     lda FP+F_STATE,x
     sec
     sbc #S_CPUNCH.b
@@ -11623,12 +11625,7 @@ AI_smart:
     cmp #S_PUNCH                        ; connected grounded normal: let the
     bcc AI_state_dispatch               ;   CPU hit-confirm into a strong
     cmp #S_CSKICK+1                     ;   special or a weak/strong super
-    bcc AI_try_combo
-    ldx fofs
-    jsr IsCloseNormal8                  ; close standing normals
-    bne AI_try_combo
-    bra AI_state_dispatch
-AI_try_combo:
+    bcs AI_state_dispatch
     jsr AI_ComboCheck
     bcs AI_done
 AI_state_dispatch:
@@ -12266,12 +12263,6 @@ AI_per_fall_done:
     bcc +
     cmp #S_ASKICK+1
     bcc AI_oppatt_yes
-+   lda fofs
-    eor #FP2OFS.b
-    tax
-    lda AI_OPPST
-    jsr IsCloseNormal8
-    bne AI_oppatt_yes
 +   lda AI_OPPST
     cmp #S_SPECIAL
     bcc +
@@ -18900,10 +18891,11 @@ TTS_p2_deny:
 .IFDEF PVSNESLIB
 .BASE $C0
 .BANK 50 SLOT 0
-; The Fight bank's low half carries CancelData ($0000-$...) and VegaMeta
-; ($1000-$7022).  Close-normal helpers made CancelData larger, so park
-; OamCache in the remaining gap between CancelData and VegaMeta.
-.ORGA $0C00
+; The Fight bank's low half carries CancelData ($0000-$044D) and VegaMeta
+; ($1000-$7022).  This section used to sit at $7E00, but the menu tail
+; ($7100+) grew past it; park it in the free CancelData window instead
+; (0x0A00 leaves ~2.5 KiB for CancelData growth and stays below VegaMeta).
+.ORGA $0A00
 .SECTION "OamCache" FORCE
 CmdSimpleNormal:
     sep #$20
@@ -19211,7 +19203,7 @@ DFC_store_done:
 ; the 32 KiB Fight window below its limit.  The implementations are in the
 ; bank-126 voice loader.
 .BANK 50 SLOT 0
-.ORGA $0F80
+.ORGA $0C00
 .SECTION "VoiceResetWrappers" FORCE
 VoiceQueueDrop:
     php
@@ -19240,7 +19232,7 @@ VoiceQueueReset:
 .ELSE
 .BANK 70 SLOT 0
 .ENDIF
-.ORGA $0E00
+.ORGA $0D00
 .SECTION "TransDistGate" FORCE
 TransDistGate:
     ldy #3
@@ -19282,7 +19274,7 @@ TransDistGate:
 .ELSE
 .BANK 70 SLOT 0
 .ENDIF
-.ORGA $0E40
+.ORGA $0E00
 .SECTION "TransLive" FORCE
 TransLive:
     ldy #CH_TRANSTAB
@@ -21751,15 +21743,13 @@ PortraitPal_End:
 .INCLUDE "gen_fight/shingo_chr.inc"
 
 ; ---------------------------------------------------------------------------
-; RUGAL generated tables.  Bank 44 is a 32 KiB low-half window; the EN/FR
-; quote strings moved to bank 63, so the tables can use the whole window.
+; RUGAL generated tables.
 .IFDEF PVSNESLIB
 .BANK 44 SLOT 0
-.ORGA $0000
 .ELSE
 .BANK 125 SLOT 0
-.ORGA $0000
 .ENDIF
+.ORGA $0000
 .SECTION "RugalData" FORCE
 .INCLUDE "gen_fight/rugal_spr.inc"
 .ENDS
@@ -21837,15 +21827,9 @@ PortraitPal_End:
 .SECTION "RalfData" FORCE
 .INCLUDE "gen_fight/ralf_spr.inc"
 .ENDS
-.IFDEF PVSNESLIB
-.BASE $C0
-.BANK 62 SLOT 0
-.ORGA $7E00
-.ELSE
 .BASE $00
 .BANK 83 SLOT 0
 .ORGA $0000
-.ENDIF
 .SECTION "TakumaData" FORCE
 .INCLUDE "gen_fight/takuma_spr.inc"
 .ENDS

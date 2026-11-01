@@ -1,144 +1,3 @@
-IsAttackState:                          ; X = fighter offset -> A=1 attack
-    rep #$20
-    .ACCU 16
-    lda FP+F_STATE,x
-    and #$00FF.w
-    cmp #5.w
-    bcc IA_no
-    cmp #9.w
-    bcc IA_yes
-    cmp #19.w
-    bcc IA_no
-    cmp #27.w
-    bcc IA_yes
-    cmp #48.w
-    bcc IA_no
-    cmp #67.w
-    bcc IA_yes
-    cmp #85.w
-    bcc IA_no
-    cmp #90.w
-    bcc IA_yes
-    lda FP+F_STATE,x
-    and #$00FF.w
-    jsr IsCloseNormal
-    bne IA_yes
-IA_no:
-    lda #0
-    rts
-IA_yes:
-    lda #1
-    rts
-
-; X = fighter offset -> A=1 when the fighter entered a close normal.
-; EnterState sets F_TFLAGS bit5 for those sids, so state 98 can remain an
-; imported special on Iori/Mary without being mistaken for close strong kick.
-IsCloseNormal:
-    sep #$20
-    .ACCU 8
-    lda FP+F_TFLAGS,x
-    and #$20.b
-    beq +
-    lda #1
-    bra ++
-+   lda #0
-++  rep #$20
-    .ACCU 16
-    rts
-
-; A(8) variant: X = fighter offset -> A=1/0.
-IsCloseNormal8:
-    lda FP+F_TFLAGS,x
-    and #$20.b
-    beq +
-    lda #1
-    rts
-+   lda #0
-    rts
-
-; Called from EnterState (A = new state, X = fighter): latch bit5 when the
-; entered state is a close standing normal.
-MarkCloseNormal:
-    sep #$20
-    .ACCU 8
-    lda FP+F_TFLAGS,x
-    and #$DF.b
-    sta FP+F_TFLAGS,x
-    lda FP+F_STATE,x
-    cmp #S_CLPUNCH.b
-    beq MC_yes
-    cmp #S_CLSPUNCH.b
-    beq MC_yes
-    cmp #S_CLKICK.b
-    beq MC_yes
-    cmp #S_CLSKICK_ALT.b
-    beq MC_yes
-    cmp #S_CLSKICK.b
-    bne MC_no
-    ; Sid 98 is normally close strong kick, but Iori/Mary use it for an
-    ; imported special.  The descriptor's MaxMask bit5 says which one it is.
-    ldy #CH_MAXMASK
-    ldx #sptr
-    jsr CharPtr
-    sep #$20
-    lda [cptr],y
-    and #$20.b
-    beq MC_no
-MC_yes:
-    ldx fofs
-    lda FP+F_TFLAGS,x
-    ora #$20.b
-    sta FP+F_TFLAGS,x
-MC_no:
-    rts
-
-
-HoldsBack:                              ; fofs fighter -> A(16) nonzero when
-    rep #$20                            ; the pad holds "back" (away from
-    .ACCU 16                            ; the facing direction)
-    ldx fofs
-    lda FP+F_FACING,x
-    bmi +
-    lda FP+F_JOY,x
-    and #JOY_LF.w
-    rts
-+   lda FP+F_JOY,x
-    and #JOY_RT.w
-    rts
-
-EnemyAttacking:                         ; fofs fighter -> A(16) nonzero when
-    rep #$20                            ; the *other* fighter is in an
-    .ACCU 16                            ; attack state (5-8, 19-26)
-    ldx fofs
-    bne +
-    ldx #FP2OFS
-    bra ++
-+   ldx #0
-++  lda FP+F_STATE,x
-    and #$00FF.w
-    sec
-    sbc #S_PUNCH.w
-    cmp #4
-    bcc EA_yes
-    lda FP+F_STATE,x
-    and #$00FF.w
-    jsr IsCloseNormal
-    bne EA_yes
-    lda FP+F_STATE,x
-    and #$00FF.w
-    sec
-    sbc #S_CPUNCH.w
-    cmp #8
-    bcs EA_no
-EA_yes:
-    lda #1
-    rts
-EA_no:
-    lda #0
-    rts
-
-; A(16) = state, x ignored (uses fofs)
-
 ; Normal special/super cancel gate (called with JSR from the Fight bank).
 ; Lives beside CancelTab in bank 50's low half, which shares the Fight
 ; code's CPU bank ($F2), so the call stays a near JSR.
@@ -156,37 +15,9 @@ CancelGate:
     .ACCU 8
     lda FP+F_HITDONE,x
     beq CG_no8
-    lda FP+F_TFLAGS,x
-    and #$20.b
-    beq CG_notclose
-    lda FP+F_STATE,x
-    cmp #S_CLPUNCH.b                   ; close standing normals map onto the
-    beq CG_row0                        ;   far rows 0..3
-    cmp #S_CLSPUNCH.b
-    beq CG_row1
-    cmp #S_CLKICK.b
-    beq CG_row2
-    cmp #S_CLSKICK.b
-    beq CG_row3
-    cmp #S_CLSKICK_ALT.b
-    beq CG_row3
-CG_notclose:
     lda FP+F_STATE,x
     sec
     sbc #S_PUNCH.b                    ; normal sids are 5..26
-    bra CG_rowcheck
-CG_row0:
-    lda #0
-    bra CG_rowcheck
-CG_row1:
-    lda #1
-    bra CG_rowcheck
-CG_row2:
-    lda #2
-    bra CG_rowcheck
-CG_row3:
-    lda #3
-CG_rowcheck:
     cmp #(S_ASKICK-S_PUNCH+1).b
     bcs CG_no8
     sta ct_off                        ; row index = sid - 5
@@ -706,13 +537,12 @@ AI_ComboCheck:
     cmp AI_TMP
     bcs AC_fail
     jsr AI_Perceive                    ; refresh distance/opponent state
-    rep #$20
-    .ACCU 16
-    ldx fofs
-    lda FP+F_Y,x
     sep #$20
     .ACCU 8
-    bne AC_fail                        ; airborne: no special/super combo
+    ldx fofs
+    lda FP+F_STATE,x
+    cmp #S_APUNCH.b
+    bcs AC_fail                        ; airborne: no special/super combo
     lda AI_LEVEL
     cmp #7.b
     bcs AC_try_super

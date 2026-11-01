@@ -362,7 +362,7 @@ trigger1 = ctrl
 
 [State -1, Stand Light Punch]
 type = ChangeState
-value = 250
+value = 200
 triggerall = command = "x"
 triggerall = command != "holddown"
 trigger1 = statetype = S
@@ -370,7 +370,7 @@ trigger1 = ctrl
 
 [State -1, Stand Strong Punch]
 type = ChangeState
-value = 260
+value = 210
 triggerall = command = "y"
 triggerall = command != "holddown"
 trigger1 = statetype = S
@@ -378,7 +378,7 @@ trigger1 = ctrl
 
 [State -1, Stand Light Kick]
 type = ChangeState
-value = 270
+value = 230
 triggerall = command = "a"
 triggerall = command != "holddown"
 trigger1 = statetype = S
@@ -386,7 +386,7 @@ trigger1 = ctrl
 
 [State -1, Stand Strong Kick]
 type = ChangeState
-value = 280
+value = 250
 triggerall = command = "b"
 triggerall = command != "holddown"
 trigger1 = statetype = S

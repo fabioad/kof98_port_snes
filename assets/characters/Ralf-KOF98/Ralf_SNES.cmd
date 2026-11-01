@@ -565,21 +565,21 @@ trigger1 = statetype = S
 trigger1 = ctrl
 [State -1, Stand Strong Punch]
 type = ChangeState
-value = 203
+value = 202
 triggerall = command = "y"
 triggerall = command != "holddown"
 trigger1 = statetype = S
 trigger1 = ctrl
 [State -1, Stand Light Kick]
 type = ChangeState
-value = 205
+value = 204
 triggerall = command = "a"
 triggerall = command != "holddown"
 trigger1 = statetype = S
 trigger1 = ctrl
 [State -1, Stand Strong Kick]
 type = ChangeState
-value = 207
+value = 206
 triggerall = command = "b"
 triggerall = command != "holddown"
 trigger1 = statetype = S
