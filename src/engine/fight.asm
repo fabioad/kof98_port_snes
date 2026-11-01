@@ -3508,8 +3508,7 @@ JoinFinish:
     lda #3
     sta.w T_N2
 JF_single:
-    jsr StartFight
-    rts
+    jmp StartFight
 
 ; TEAM VS selection: P1 chooses three fighters, then P2 chooses three.
 ; Both sides are human from the start; the shared cursor rings and cell data
@@ -3525,8 +3524,7 @@ TeamVsSelTick:
     sta.w T_LASTFRAME
     dec.w T_START
     bne TVS_wait
-    jsr StartFight
-    rts
+    jmp StartFight
 TVS_wait:
     rts
 TVS_normal:
@@ -7599,6 +7597,7 @@ FE_right:
     lda #1
     sta FP+F_FACING+FP2OFS
 FE_done:
+    jsl FaceCloseAttack
     rep #$20
     .ACCU 16
     rts
@@ -7967,8 +7966,7 @@ ComboTick:                              ; per FightTick (acc16): a victim
     ldx #0                              ;   back in a free state ends the
     jsr CB_check                        ;   attacker's run and clears the HUD
     ldx #FP2OFS
-    jsr CB_check
-    rts
+    jmp CB_check
 CB_check:                               ; X = fighter -> clear opponent's count
     lda FP+F_STATE,x
     and #$00FF.w
@@ -8193,8 +8191,7 @@ VictimBounceEnter:                      ; 1027 AnimTime=0 -> 1028
     lda #-$0600.w
     sta FP+F_VY,x
     lda #S_VBOUNCE.w
-    jsr EnterState
-    rts
+    jmp EnterState
 
 StVictimBounce:                         ; 1028: own fall anim, 0.35 gravity
     rep #$20
@@ -10104,10 +10101,8 @@ AT_nodown:
     jsr TransLive                         ; still waiting on a live rule?
     bne ++                                ;   yes: freeze the last frame
     lda #S_STAND
-    jsr EnterState
-    rts
-+   jsr EnterState
-    rts
+    jmp EnterState
++   jmp EnterState
 ++  sep #$20
     .ACCU 8
     jmp AT_stay
@@ -10121,14 +10116,12 @@ AT_rec_crouch:
     rep #$20
     .ACCU 16
     lda #S_CROUCH
-    jsr EnterState
-    rts
+    jmp EnterState
 AT_rec_air:
     rep #$20
     .ACCU 16
     jsr PickJumpState
-    jsr EnterState
-    rts
+    jmp EnterState
 AT_stay:
     dec FP+F_FRAME,x
     jmp AnimSetFrame
@@ -10335,8 +10328,7 @@ HitCheck:
     jsr HitOne
     ldx #FP2OFS
     ldy #0
-    jsr HitOne
-    rts
+    jmp HitOne
 
 ; ---------------------------------------------------------------------------
 ; FUSION hit modifiers: counter-hit flag, juggle budget and banner.
@@ -11435,6 +11427,7 @@ MakeBox:
     clc
     adc scr3
     sta box0+6
+    jsl MinReachBox
     rts
 
 ; ---------------------------------------------------------------------------
@@ -17870,8 +17863,7 @@ CNF_go:
     stz.b wins2
     lda #1
     sta.b roundno
-    jsr StartFight
-    rts
+    jmp StartFight
 
 ; Match-over resolution for campaign modes (from TitleTick, acc8).
 CampResolve:
@@ -17939,8 +17931,7 @@ CR_pvp_launch:
     sta.b roundno
     stz.b nextflag
     stz.w MUSIC_VALID
-    jsr StartFight
-    rts
+    jmp StartFight
 CR_regular:
     lda.w G_MODE
     cmp #1
@@ -18484,8 +18475,7 @@ TeamSelTick:
     sta.w T_LASTFRAME
     dec.w T_START
     bne TTS_wait
-    jsr StartFight
-    rts
+    jmp StartFight
 TTS_wait:
     rts
 TTS_active:
@@ -18733,8 +18723,7 @@ TTS_lock_go:
     lda.w YL_REPICK
     bne TTS_hm_repick
     jsr CampStart                         ; trio locked -> fight 1
-    jsr StartFight
-    rts
+    jmp StartFight
 TTS_hm_join:
     jsr JoinFinish                        ; newcomer trio done: restart
     rts
@@ -19644,6 +19633,107 @@ UploadIntroGirls:
     sep #$20                            ; StagePick resumes in 8-bit mode
     .ACCU 8
     rtl
+
+; Make every attacker's active box reach at least 20 px forward from the
+; axis.  Imported hurt boxes can sit just beyond a short jab's authored
+; reach, making a touching opponent unhittable.  Called after MakeBox has
+; written the box for fofs; only the attacker's box is adjusted.
+MinReachBox:
+    rep #$20
+    .ACCU 16
+    lda fofs
+    cmp aofs
+    bne MRB_out
+    ldx aofs
+    lda FP+F_X,x
+    xba
+    and #$00FF.w
+    sta scr0                            ; attacker X (px)
+    lda FP+F_FACING,x
+    bmi MRB_left
+    lda scr0
+    clc
+    adc #20.w
+    sta scr2                            ; forward edge floor
+    lda box0+4
+    cmp scr2
+    bpl MRB_out
+    lda scr2
+    sta box0+4
+    bra MRB_out
+MRB_left:
+    lda scr0
+    sec
+    sbc #20.w
+    sta scr2
+    lda box0
+    cmp scr2
+    bmi MRB_out
+    lda scr2
+    sta box0
+MRB_out:
+    rep #$20
+    .ACCU 16
+    rtl
+
+; A close attack must face the opponent during its first few ticks.  A
+; trade or a pinned overlap can leave a fighter turned away; idle turning
+; ignores attack states, so the jab then swings through the opponent.
+FaceCloseAttack:
+    rep #$20
+    .ACCU 16
+    ldx #0
+    jsr FCA_side
+    ldx #FP2OFS
+    jsr FCA_side
+    rep #$20
+    .ACCU 16
+    rtl
+
+FCA_side:
+    lda FP+F_Y,x
+    bne FCA_out
+    lda FP+F_GRAB,x
+    and #$00FF.w
+    bne FCA_out
+    lda FP+F_STIME,x
+    cmp #7.w
+    bcs FCA_out
+    lda FP+F_STATE,x
+    and #$00FF.w
+    cmp #5.w
+    bcc FCA_out
+    cmp #9.w
+    bcc FCA_ok
+    cmp #19.w
+    bcc FCA_out
+    cmp #27.w
+    bcc FCA_ok
+    cmp #48.w
+    bcc FCA_out
+    cmp #70.w
+    bcc FCA_ok
+    cmp #85.w
+    bcc FCA_out
+    cmp #90.w
+    bcs FCA_out
+FCA_ok:
+    txa
+    eor #FP2OFS.w
+    tay
+    lda FP+F_X,y
+    sec
+    sbc FP+F_X,x
+    beq FCA_out
+    bmi FCA_left
+    lda #1
+    sta FP+F_FACING,x
+    rts
+FCA_left:
+    lda #$FFFF.w
+    sta FP+F_FACING,x
+FCA_out:
+    rts
 
 ; Andy's Kuuha Dan (runtime 48 weak / 49 strong) is a close-range two-hit
 ; attack.  The first contact keeps the victim in hitstun and the second one

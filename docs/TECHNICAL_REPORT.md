@@ -210,6 +210,13 @@ Constantes clássicas relevantes:
   o segundo derruba. Mais longe continua um único hit com knockdown. As
   caixas Clsn1 ganharam um retângulo de corpo inteiro para pegar oponente
   encostado ou agachado, que antes passava sob o primeiro frame alto.
+- golpes em ponto morto: a caixa ativa de qualquer lutador é estendida até
+  pelo menos 20 px à frente do eixo, e golpes iniciados encostados viram o
+  lutador para o oponente nos primeiros ticks. Isso impede que normais,
+  especiais e supers atravessem um oponente colado, inclusive depois de um
+  cruzamento ou choque que deixou o facing invertido. Ataques simultâneos
+  mantêm a prioridade normal (o que acerta primeiro interrompe o outro);
+  não há trade automático.
 - comandos durante o hitstop global também alimentam o anel de entrada dos
   lados humanos, então a motion do cancelamento não se perde enquanto o
   golpe está congelado.
