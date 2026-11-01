@@ -870,6 +870,7 @@ OT_over:
 MsuScreenEnter:
     sep #$20
     .ACCU 8
+    stz.b huddirty                         ; no stale HUD flush on this screen
     lda #0
     jsr MnLoadArt
     jsr MsuCreditsInit
@@ -886,6 +887,10 @@ MsuScreenEnter:
     sta.w S_BLINK
     jsr MsuPalette
     jsr MsuDraw
+    sep #$20
+    .ACCU 8
+    lda #$0F.b
+    sta.l $2100                           ; enable only after palette + OAM
     lda #$81.b
     sta.l $4200
     lda #GS_MSUCHK.b
@@ -1112,7 +1117,8 @@ MsuUnavailable: .db 2,14,15
 .SECTION "FightMenuTail" FORCE
 
 ; Upload the 2bpp HUD font to BG3 and build the static credit strip on map
-; rows 20-27.  Runs under forced blank and leaves the display enabled.
+; rows 20-27.  Leaves the display force-blanked; MsuScreenEnter enables it
+; after the palette and OAM are ready.
 MsuCreditsInit:
     php
     sep #$20
@@ -1219,8 +1225,9 @@ MCI_chars:
     sta.l $2111                           ; BG3HOFS
     sta.l $2112
     sta.l $2112                           ; BG3VOFS
-    lda #$0F.b
-    sta.l $2100
+    ; Stay blanked: MsuScreenEnter enables the display only after the
+    ; palette and OAM are ready, so an old white backdrop can never show
+    ; through for a frame.
     rep #$20
     .ACCU 16
     plp
