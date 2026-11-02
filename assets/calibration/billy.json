@@ -1,11 +1,11 @@
 {
   "character": "billy",
-  "config_hash": "f54909ec993460a207fb7b20f85ee0d23a1dfdc95394678a581526851b3d0878",
+  "config_hash": "e9d5ee67169c1e38f1747e7b7f4b1ab905354223d1a3e724086ccce810d356df",
   "corrections": [],
   "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/BILLY/BILLY.DEF",
   "inputs": {
     "assets/characters/BILLY/BILLY.DEF": "f077eb634c48d94bbdf87c4f0a311c8f54126ec6d817271333a3259118770562",
-    "assets/characters/BILLY/Billy_SNES.cmd": "10671ee3cb5d04fdd372cc7fad10bacb0bb523d056538798ca9a878ccfe59bf1",
+    "assets/characters/BILLY/Billy_SNES.cmd": "9cb68e4715a4c8e68e5099649b0280de9f51f3dfe33d1c9b2b689b0ba488bb8c",
     "assets/characters/BILLY/Billy_SNES.cns": "1cf4c5295cf919d77791ca59934ef194f7500047ad852b7d78f2344730b36c7e",
     "assets/characters/BILLY/billy-1.cns": "d07095bf840393b47ecbdb4ecd33d2da535a89a3498706d8259ace228c02c890",
     "assets/characters/BILLY/billy-2.cns": "c4a0f9ecc8f2250f6b37a21fc9b4bb8f5e41afc37ee645c4a6f8d9c51d2c10ff",

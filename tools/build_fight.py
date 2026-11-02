@@ -1874,6 +1874,67 @@ if "sakura" in CHARS:
     # the commands themselves are added to Sakura_SNES.cmd.
 
 
+# ---------------------------------------------------------------------------
+# Billy: Kyoushuu Hishou Kon (1300/1305), Senpuu Kon (1600/1610) and the
+# Sansetsu Kon Chuudan Uchi follow-up (1700/1710 -> 1705).
+# ---------------------------------------------------------------------------
+# 1300/1305 only had their opening strike wired: 1301 (rise), 1302 (drop)
+# and 1303 (land) were not reachable, so the vault ended after the first hit.
+# 1600/1610 carry one HitDef re-issued on every spin element; they need the
+# same MoveHitReset rows as the ranbu or only the first contact lands.  The
+# Sansetsu states hand over to 1705 when the player presses P after contact;
+# the native table has no ground command follow-up kind, so the hit chains
+# directly into the follow-up instead.
+if "billy" in CHARS:
+    _billy = CHARS["billy"]
+    _billy["moves"].update({
+        58: 1305,   # Kyoushuu Hishou Kon, hard start
+        59: 1610,   # Senpuu Kon, hard variant
+        60: 1705,   # Sansetsu Kon follow-up (Chuudan Uchi -> Fire Cane)
+        61: 1301,   # rising phase
+        63: 1302,   # dropping phase (multi-hit)
+        65: 1303,   # landing recovery
+    })
+    _billy["anims"].update({
+        58: 1305, 59: 1610, 60: 1705,
+        61: 1301, 63: 1302, 65: 1303,
+    })
+    # 1305 has a low and a launcher HitDef; keep the launcher.
+    _billy["hitdef_by_sid"] = {58: 1}
+    _billy["hit_resets"] = dict(_billy.get("hit_resets", {}))
+    _billy["hit_resets"].update({
+        1302: [2, 3],                 # three falling contacts (hitcount < 3)
+        1600: [8, 14, 16, 22, 24, 30, 32, 38, 40, 46, 48, 54, 56],
+        1610: [6, 9, 13, 18, 22, 24, 30],
+    })
+    # Keep the victim inside the spinning staff and cap blocked chip.  The
+    # hard Senpuu variant would knock down on the opening contact without
+    # this, dropping all remaining spins.
+    _billy["hitdef_override"] = dict(_billy.get("hitdef_override", {}))
+    _billy["hitdef_override"].update({
+        54: {"gvx": 0, "gdamage": 1,
+             "p1pause": 4, "p1gpause": 4},
+        59: {"gvx": 0, "gdamage": 1,
+             "p1pause": 4, "p1gpause": 4},
+    })
+    _billy["slice_no_fall"] = sorted(
+        set(_billy.get("slice_no_fall", ())) | {52, 54, 58, 59, 63})
+    # 1301 is a one-frame airborne hold in the source and waits 15 ticks
+    # before 1302.  Extend the clip and keep the header velset (-7): the
+    # source then applies VelMul y=1.92, which lifts the native fighter
+    # above the 1302 hitboxes and makes the dropping staff whiff.
+    _billy["tail_ticks"] = dict(_billy.get("tail_ticks", {}))
+    _billy["tail_ticks"][1301] = 15
+    _billy["state_vel"] = dict(_billy.get("state_vel", {}))
+    _billy["state_vel"][61] = (0, -7)
+
+    _billy.setdefault("extra_trans", []).extend([
+        (61, 63, 0, 0),               # rise ends -> drop
+        (56, 60, 3, 0),               # light Sansetsu contact -> follow-up
+        (55, 60, 3, 0),               # hard Sansetsu contact -> follow-up
+        (56, 0, 0, 0), (55, 0, 0, 0),
+    ])
+
 # Andy's Kuuha Dan (weak 1300 / strong 1310) is a close-range leaping
 # attack.  The source Clsn1 boxes only cover the outstretched arm, so a
 # point-blank or crouching opponent can sit under the first active frame.
@@ -2868,6 +2929,13 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None, char_scale=1.0):
                 if em:
                     posadds.setdefault(state, []).append(
                         (int(em.group(1)) - 1, dx))
+                    continue
+                # State-entry PosAdd (`Time = 0`): Billy's 1302/1304 cross-up
+                # and several throws move on the first tick.  Ignoring it
+                # left the attacker in place while the victim was pushed
+                # away, so the dropping staff whiffed.
+                if re.match(r"\s*time\s*=\s*0\s*$", trigger, re.I):
+                    posadds.setdefault(state, []).append((0, dx))
     for state in posadds:
         posadds[state] = sorted(set(posadds[state]))
 

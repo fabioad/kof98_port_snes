@@ -218,7 +218,8 @@ Foram encontrados **61 diretórios de personagens ativos nos assets**, dos quais
 
 - **Super:** Flaming Stick Spin normal/MAX (1800/1850/1860); entradas especiais de super em 1900/1910 (nome do pacote não legível com segurança); Super Stick Swing forte (2510); Chou HongRenSalgon forte (2600); MAX2 (6000).
 - **Especial/variação:** Rapid Wave Cane forte (1610).
-- **Variações do modo 2002:** 1102/1105/1111, 1305/1310/1315, 1580/1590, 1720 e 1791 não têm mapeamento próprio. São principalmente entradas de cancel/variante de golpes já parcialmente ligados.
+- **Implementado:** Kyoushuu Hishou Kon fraco/forte (1300/1305 → 1301 → 1302 → 1303), Senpuu Kon fraco/forte (1600/1610, multi-hit) e Sansetsu Kon Chuudan Uchi fraco/forte (1700/1710 → 1705). O 1302 usa três contatos e o 1705 finaliza com knockdown; o 1305 agora tem comando próprio.
+- **Variações do modo 2002:** 1102/1105/1111, 1310/1315, 1580/1590, 1720 e 1791 não têm mapeamento próprio. São principalmente entradas de cancel/variante de golpes já parcialmente ligados.
 - **Rótulo enganoso:** o state 3100, removido do slot 87, é **Power Charge**, não um super. Não o contei como golpe faltante.
 
 ### Lucky

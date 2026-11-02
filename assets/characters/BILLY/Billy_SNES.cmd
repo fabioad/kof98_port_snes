@@ -29,6 +29,21 @@ command = ~F, D, DF, a
 time = 18
 
 [Command]
+name = "DP_B"
+command = ~F, D, DF, b
+time = 18
+
+[Command]
+name = "WHEEL_X"
+command = ~D, D, x
+time = 18
+
+[Command]
+name = "WHEEL_Y"
+command = ~D, D, y
+time = 18
+
+[Command]
 name = "MFD_df+y"
 command = ~F, D, DF, y
 time = 18
@@ -238,6 +253,27 @@ trigger1 = ctrl
 type = ChangeState
 value = 1300
 triggerall = command = "DP_A"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_52b]
+type = ChangeState
+value = 1305
+triggerall = command = "DP_B"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_54a]
+type = ChangeState
+value = 1600
+triggerall = command = "WHEEL_X"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_54b]
+type = ChangeState
+value = 1610
+triggerall = command = "WHEEL_Y"
 triggerall = statetype != A
 trigger1 = ctrl
 
