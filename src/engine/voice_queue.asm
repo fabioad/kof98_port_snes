@@ -409,7 +409,7 @@ SMF_apu_idle:
     rep #$20
     .ACCU 16
     pla
-    pea 150.w
+    pea 240.w
     jsl spcSetModuleVolume
     rep #$20
     .ACCU 16

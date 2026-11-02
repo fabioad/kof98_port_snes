@@ -15770,7 +15770,7 @@ SM_music_go:
     rep #$20
     .ACCU 16
     pla
-    pea 150.w                           ; music under the SFX (~60%)
+    pea 240.w                           ; music under the SFX (~94%)
     jsl spcSetModuleVolume
     rep #$20
     .ACCU 16
