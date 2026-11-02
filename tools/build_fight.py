@@ -1975,6 +1975,34 @@ if "chin" in CHARS:
         (61, 0, 0, 0),
     ])
 
+# ---------------------------------------------------------------------------
+# Chun-Li: Hyakuretsu Kyaku (state 1200, QCB+K).
+# ---------------------------------------------------------------------------
+# The source re-issues its HitDef on animation elements 12/16/20/24/28/32
+# (the last only exists on the strong 1205 clip).  The port compiles the
+# first trigger as the active frame, so the later contacts need soft
+# MoveHitReset rows to clear the hit latch and let the rapid kicks combo.
+if "chunli" in CHARS:
+    _chunli = CHARS["chunli"]
+    # The weak 1200 clip only has attack boxes on elements 12 and 16 (two
+    # contacts).  The strong 1205 clip carries all six, so use it for the
+    # native five-hit sequence.
+    _chunli["anims"] = dict(_chunli.get("anims", {}))
+    _chunli["anims"][52] = 1205
+    _chunli["hit_soft_resets"] = dict(_chunli.get("hit_soft_resets", {}))
+    _chunli["hit_soft_resets"][1200] = [16, 20, 24, 28]
+    # The source HitDef launches/knocks down on every contact, which would
+    # end the sequence on the first kick.  Keep the victim grounded and in
+    # hitstun for the rapid contacts; the soft resets let MoveHitFinisher
+    # force the knockdown on the fifth hit.  Per-hit damage is trimmed so
+    # the whole 5-hit special is not stronger than a super.
+    _chunli["hitdef_override"] = dict(_chunli.get("hitdef_override", {}))
+    _chunli["hitdef_override"][52] = {
+        "fall": 0, "trip": 0,
+        "gvx": 0, "gvy": 0, "avx": 0, "avy": 0,
+        "damage": 22, "gdamage": 3,
+    }
+
 # Andy's Kuuha Dan (weak 1300 / strong 1310) is a close-range leaping
 # attack.  The source Clsn1 boxes only cover the outstretched arm, so a
 # point-blank or crouching opponent can sit under the first active frame.
@@ -5748,6 +5776,14 @@ def build_char(name, cfg, global_pal=None):
         _rows = list(cns_acts.get(_state, ()))
         for _e in _elems:
             _rows.append((max(0, min(0x7F, int(_e) - 1)), 18, 0, 0))
+        cns_acts[_state] = sorted(set(_rows))
+    # Arg 1 keeps the per-move counter, so MoveHitFinisher can still count
+    # the contacts and force the fifth-hit knockdown (Chun-Li's Hyakuretsu
+    # Kyaku).  Arg 0 is the hard reset used by flurries with a finish state.
+    for _state, _elems in (cfg.get("hit_soft_resets") or {}).items():
+        _rows = list(cns_acts.get(_state, ()))
+        for _e in _elems:
+            _rows.append((max(0, min(0x7F, int(_e) - 1)), 18, 1, 0))
         cns_acts[_state] = sorted(set(_rows))
 
     # Optional verified calibration, preserving the existing native table ABI.

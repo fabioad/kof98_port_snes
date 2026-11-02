@@ -287,6 +287,7 @@ Foram encontrados **61 diretórios de personagens ativos nos assets**, dos quais
 ### Chun-Li
 
 - **Especiais/variantes:** Kikouken novo/curto (1050); Spinning Bird Kick aéreo (1250).
+- **Implementado:** Hyakuretsu Kyaku (1200, QCB+K) como sequência de **5 hits**; usa o clipe forte 1205 (6 frames de ataque) e o quinto contato derruba via `MoveHitFinisher`.
 - **Supers:** Kikou Shou (3000), Houyoku Sen (3100), Hazan Tenshou Kyaku (3200).
 - O state 3300 restaurado é outra entrada do pacote e não comprova a presença desses três supers.
 

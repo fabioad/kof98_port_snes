@@ -19480,12 +19480,14 @@ TL_no:
 .SECTION "HitResetLow" FORCE
 AO_hitreset:                            ; re-arm the current state's HitDef
     ldx fofs                            ;   for the next strike of a
-    sep #$20                            ;   ranbu-style flurry.  Clearing
-    .ACCU 8                             ;   the per-move counter also keeps
-    stz FP+F_HITDONE,x                  ;   MoveHitFinisher from forcing a
-    stz movehits,x                      ;   knockdown on the fifth contact.
-    stz lastsid,x
-    rts
+    sep #$20                            ;   ranbu-style flurry.  Arg 0 is
+    .ACCU 8                             ;   the hard reset: clear the
+    lda scr6+1                          ;   per-move counter too (a
+    bne +                               ;   separate finish state will
+    stz movehits,x                      ;   force the knockdown).  Arg 1
+    stz lastsid,x                       ;   is soft: keep counting so
++   stz FP+F_HITDONE,x                  ;   MoveHitFinisher fires on the
+    rts                                 ;   fifth contact.
 .ENDS
 
 ; The Fight bank is full, so the projectile-clash helper lives in the free
