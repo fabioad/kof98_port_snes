@@ -559,6 +559,12 @@ MPS_apu_idle:
     .ACCU 8                             ;   even here, so use an 8-bit STA
     lda #1                              ;   to keep the neighbouring byte
     sta.w UI_SFXLOAD
+    ; This is a frontend/UI module, not a stage module.  Leave the stage
+    ; cache valid and the next fight that picks the same stage skips the
+    ; StageMusic reload: the title theme keeps playing and the UI effect
+    ; slots (including the winner announcer) stay selected.
+    lda #0
+    sta.w MUSIC_VALID
     stz.w UI_SLOT_SEL
     lda #1
     sta.w UI_SLOT_MOVE

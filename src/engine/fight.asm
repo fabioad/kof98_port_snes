@@ -4024,6 +4024,7 @@ TT_out:
 ; ---------------------------------------------------------------------------
 StartFight:
     jsr VoiceQueueDrop                   ; no queued quote may follow us;
+    stz.b winvoice                       ; and no deferred winner voice either
     sep #$20                             ;   StageMusic finishes an active one
     .ACCU 8                              ;   before rewriting SPC RAM
     lda #0

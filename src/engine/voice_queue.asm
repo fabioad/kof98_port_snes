@@ -356,6 +356,11 @@ StageMusicFar:
     .ACCU 8
     lda.w MUSIC_VALID
     beq SMF_changed
+    ; A UI module also leaves MUSIC_VALID set.  UI_SFXLOAD is 1 while the
+    ; menu/winner effect slots are active, so never treat that as the stage
+    ; module just because the stage index happens to match.
+    lda.w UI_SFXLOAD
+    bne SMF_changed
     lda.w MUSIC_STAGE
     cmp.b stageidx
     bne SMF_changed
