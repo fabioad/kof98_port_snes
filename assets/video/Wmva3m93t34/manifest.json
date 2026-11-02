@@ -22,11 +22,11 @@
   "msu": {
     "file": "kof98-snes.msu",
     "embedded": true,
-    "offset": 29327360,
-    "offset_hex": "0x1BF8000",
+    "offset": 29556736,
+    "offset_hex": "0x1C30000",
     "size": 10861728,
     "sha256": "62f4f3dfd10a20bf31b7acb527123bdc55be2ae7ceea22744831905fd7559ddb",
-    "layout_crc": "0x12DC",
+    "layout_crc": "0xB318",
     "note": "same .msu file as the game data; no second runtime file"
   },
   "m1vid": {

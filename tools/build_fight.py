@@ -3132,7 +3132,7 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None, char_scale=1.0):
                         split = i
                         break
                 gm = re.match(r"(-?\d+)", rest)
-                im = (re.match(r"(-?\d+)", rest[split + 1:])
+                im = (re.match(r"\s*(-?\d+)", rest[split + 1:])
                       if split is not None else None)
                 if gm and im:
                     pair = (int(gm.group(1)), int(im.group(1)))
