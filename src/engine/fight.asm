@@ -19909,11 +19909,13 @@ FCA_ok:
     txa
     eor #FP2OFS.w
     tay
+    ; Compare the raw 8.8 X words unsigned.  Subtracting first and testing
+    ; the sign overflowed at 128 px: a fighter 140 px away looked "left" and
+    ; turned his back to the opponent at long range (the left-corner bug).
     lda FP+F_X,y
-    sec
-    sbc FP+F_X,x
+    cmp FP+F_X,x
     beq FCA_out
-    bmi FCA_left
+    bcc FCA_left
     lda #1
     sta FP+F_FACING,x
     rts
