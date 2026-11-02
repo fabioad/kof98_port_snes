@@ -1714,6 +1714,14 @@ if "mary" in CHARS:
     # presenter stalls on it (global freeze, independent of these states).
     # End the intro on the preceding pose so the round can start.
     _mary["frame_cap"] = {92: 16}
+    # The arcade command grabs step into the opponent before the grab
+    # window closes.  The source 1300 only moves 12 px after its single
+    # frame-0 hitbox, so it works at point-blank only.  Add a short lunge
+    # and keep the grab box alive through it; 1900 already has three
+    # windows, so a small entry step extends its running grab range.
+    _mary["posadd_extra"] = {1300: [(0, 10), (1, 10), (2, 10)],
+                             1900: [(0, 8), (1, 8)]}
+    _mary["air_box_add"] = {1300: (8, -81, 45, 0)}
     _mary.setdefault("extra_trans", []).extend([
         (54, 107, 0, 0), (55, 108, 0, 0),    # Vertical Arrow -> air phase
         (107, 17, 1, 0), (108, 17, 1, 0),    # Vertical Arrow air -> land
@@ -5676,6 +5684,13 @@ def build_char(name, cfg, global_pal=None):
             (frame, op, _life if op == 3 else arg, cond)
             for frame, op, arg, cond in cns_acts.get(_state, ())]
 
+    # Extra PosAdd rows for attacks whose source moves through a
+    # trigger form the extractor cannot represent (a lunging command grab).
+    for _state, _rows in (cfg.get("posadd_extra") or {}).items():
+        _all = list(cns_posadds.get(_state, ()))
+        _all += [(int(_f), int(_dx)) for _f, _dx in _rows]
+        cns_posadds[_state] = sorted(set(_all))
+
     # Synthetic MoveHitReset rows for flurries whose source re-issues the
     # HitDef on each strike element instead of using a MoveHitReset
     # controller (Sakura's Haru Ichiban 3100).  Values are 1-based source
@@ -5859,6 +5874,12 @@ def build_char(name, cfg, global_pal=None):
         if _patch:
             frames = [(g, n, x, y, t, flip,
                        (atk + [_patch] if atk else []), hurt)
+                      for g, n, x, y, t, flip, atk, hurt in frames]
+        # Add a box to every frame (lunging command grabs keep their grab
+        # window open while the fighter steps in).
+        _add = cfg.get("air_box_add", {}).get(anum)
+        if _add:
+            frames = [(g, n, x, y, t, flip, atk + [_add], hurt)
                       for g, n, x, y, t, flip, atk, hurt in frames]
         if sid == 97:
             frames, loopstart = charge_frames(name, air, anum)

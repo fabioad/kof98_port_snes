@@ -213,6 +213,7 @@ Foram encontrados **61 diretórios de personagens ativos nos assets**, dos quais
 - **Especiais:** Straight Slicer (1600/1610); entrada 1050 sem nome confiável nos rótulos examinados.
 - **Supers/inícios:** Super Dunk normal/MAX (3000/30000); Mary's Dynamite Swing nível 1 (3100); Splash Rose nível 1/2 (3300/3400); Mary's Typhoon (3800); versão `dynamite` 40000; Infinity Rose (50000).
 - **Parcial:** há Super Dunk em 3060 e Goodnight em 4000 restaurados, além de outras fases de Mary. Não contar cada fase do Super Dunk como golpe diferente; a versão inicial/fiel normal ainda não foi preservada.
+- **Implementado:** o Goodnight (1300/1305) e o face lock (1900/1910) agora dão um passo à frente antes de agarrar e mantêm a caixa de grab ativa durante o deslocamento. O Goodnight alcança ~70 px e o face lock ~70 px; antes só funcionavam quase no ponto zero.
 
 ### Billy
 
