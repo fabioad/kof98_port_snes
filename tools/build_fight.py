@@ -1943,6 +1943,32 @@ if "billy" in CHARS:
         (56, 0, 0, 0), (55, 0, 0, 0),
     ])
 
+# ---------------------------------------------------------------------------
+# Chin: the drink command throw (850 -> 860, release 865/866) and its bottle.
+# ---------------------------------------------------------------------------
+# The generic throw slot 74 was pointing at the blowback state 900, so Chin
+# had no drink hold.  Put the source 850 on 74, keep 860 on the standard bind
+# slot 75 so the victim stays held, and move the CD blowback to free slot 88.
+# The 861 Explod is compiled as a compact one-cell bottle.
+if "chin" in CHARS:
+    _chin = CHARS["chin"]
+    _chin["moves"].update({74: 850, 75: 860, 59: 865, 61: 866, 88: 900})
+    # The package's AIR has no action 900; the CD blowback reuses the
+    # existing knockdown/throw pose.
+    _chin["anims"].update({74: 850, 75: 860, 59: 865, 61: 866, 88: 300})
+    _chin["target_life_fix"] = dict(_chin.get("target_life_fix", {}))
+    _chin["target_life_fix"][860] = -8       # eight sips, not the source -120
+    _chin["tail_ticks"] = dict(_chin.get("tail_ticks", {}))
+    _chin["tail_ticks"][860] = 90       # let all eight sips/bottle flashes run
+    _chin["tail_ticks"][865] = 8
+    _chin.setdefault("extra_trans", []).extend([
+        (74, 0, 0, 0),                       # whiffed drink grab -> stand
+        (75, 59, 0, 0),                     # 860 end -> release/fall
+        (59, 61, 1, 0),                     # 865 falls -> 866 air
+        (61, 0, 1, 0),                      # 866 lands -> stand
+        (61, 0, 0, 0),
+    ])
+
 # Andy's Kuuha Dan (weak 1300 / strong 1310) is a close-range leaping
 # attack.  The source Clsn1 boxes only cover the outstretched arm, so a
 # point-blank or crouching opponent can sit under the first active frame.
@@ -3221,16 +3247,26 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None, char_scale=1.0):
                 rem = int(float(ctrl.get("removetime", "0")
                                 .split(",")[0] or 0))
                 trig_b = 0x80                       # RoundState != 0 -> entry
+                expl_times = []
                 for x in trig:
                     m2 = re.search(r"animelemtime\((\d+)\)\s*=\s*1", x, re.I)
                     if not m2:
                         m2 = re.search(r"animelem\s*=\s*(\d+)", x, re.I)
                     if m2:
                         trig_b = int(m2.group(1)) - 1
-                acts.setdefault(state, []).append(
-                    (trig_b, 14, len(exprows), 0))
+                    # Repeated `Time = N` Explods (Chin's drink bottle every
+                    # ten ticks) need one act row per scheduled time.
+                    mt = re.match(r"\s*time\s*=\s*(\d+)\s*$", x, re.I)
+                    if mt:
+                        expl_times.append(0x80 | min(0x7F, int(mt.group(1))))
+                row = len(exprows)
                 exprows.append((EXPLODS_IDX[label], xoff, yoff,
                                 vx, vy, ay, rem & 0xFF, EXPLODS[label][3]))
+                if expl_times:
+                    for tb in sorted(set(expl_times)):
+                        acts.setdefault(state, []).append((tb, 14, row, 0))
+                else:
+                    acts.setdefault(state, []).append((trig_b, 14, row, 0))
             elif ctype == "changeanim" and any(
                     "movecontact" in t.lower() for t in trig):
                 # "switch to elem N on hit contact" -> op12: when the HitDef
@@ -3354,12 +3390,19 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None, char_scale=1.0):
                 # element; keeping only the first turned Takuma's six-kick
                 # Shouran Kyaku into a single-damage throw.
                 elem_frames = []
+                time_frames = []
                 for x in trig:
                     elem_frames += [int(em.group(1)) - 1 for em in
                                     re.finditer(r"\banimelem\s*=\s*(\d+)",
                                                 x, re.I)]
+                    time_frames += [0x80 | min(0x7F, int(tm.group(1)))
+                                    for tm in re.finditer(
+                                        r"\btime\s*=\s*(\d+)", x, re.I)]
                 if elem_frames:
                     for fr in sorted(set(elem_frames)):
+                        acts.setdefault(state, []).append((fr, 3, arg, cond))
+                elif time_frames:
+                    for fr in sorted(set(time_frames)):
                         acts.setdefault(state, []).append((fr, 3, arg, cond))
                 elif frame is not None:
                     acts.setdefault(state, []).append((frame, 3, arg, cond))
@@ -7698,11 +7741,13 @@ SPARK_ANIMS = {
 # (group -1) animate the flicker of the breaking chunk.
 WOOD_SCALE = 4
 EXPLODS = {
+    # One key pose per wood chunk: the intro still shows the flying debris,
+    # and the two freed cells are used by the magic/effect clips below.
     "WoodA": ("assets/characters/_excluded/kfm/kfm.sff", WOOD_SCALE,
-              [(191, 3, 8), (191, 0, 8)],
+              [(191, 3, 8)],
               0x3E),
     "WoodB": ("assets/characters/_excluded/kfm/kfm.sff", WOOD_SCALE,
-              [(192, 0, 5), (192, 1, 8), (-1, 0, 1)],
+              [(192, 0, 5)],
               0x3E),
     # Oniyaki flame pillar + crest (Kyo 1120/1121, Iori 1101/1102 -- the
     # sprite sheets are identical between the two chars).  The full clips
@@ -7716,6 +7761,19 @@ EXPLODS = {
     "FlameTop": ("assets/characters/Kyo-KOF98/Kyo.sff", 2,
                  [(1110, 3, 12)],
                  0x3E),
+    # Compact one-cell magic clips.  The spark page has only 16 cells and
+    # the two wood frames above were trimmed to make room.
+    # OBJ palette 2 = the shared magic/spark palette; 0x2A keeps the
+    # projectile hues instead of remapping the orb onto the wood palette.
+    "MagicOrbA": ("assets/characters/Athena-98/Athena-98.sff", 2,
+                  [(7700, 0, 8)],
+                  0x2A),
+    "MagicOrbK": ("assets/characters/Kensou/kensou.sff", 4,
+                  [(3030, 0, 8)],
+                  0x2A),
+    "Bottle": ("assets/characters/chin-kofa/Chin-KOFM.sff", 4,
+               [(1005, 0, 10)],
+               0x3E),
 }
 # mugen explod anim id -> compiled clip label.  Kyo's flames ride AIR
 # actions 1120/1121; Iori's (identical art) ride 1101/1102.
@@ -7728,6 +7786,14 @@ EXPLOD_ANIM = {191: "WoodA", 192: "WoodB",
 # vertical effect without adding another atlas to the shared 32-cell pool.
 EXPLOD_ANIM_BY_CHAR = {
     "geese": {3001: "FlameRise", 3002: "FlameTop"},
+    # Athena's Psycho Ball / Crystal Bit orbs and the reflected-shield
+    # flashes share a compact one-cell orb.
+    "athena": {7010: "MagicOrbA", 7110: "MagicOrbA",
+               1022: "MagicOrbA", 1023: "MagicOrbA", 1024: "MagicOrbA"},
+    # Kensou's SDM bursts (Niku Man / Sen Ki Hakkei / Chouryuu Renken).
+    "kensou": {3030: "MagicOrbK", 2180: "MagicOrbK"},
+    # Chin's drink hold: the bottle at his mouth.
+    "chin": {861: "Bottle"},
 }
 # State -> NotHitBy window length in animation ticks.  The source gates the
 # controller with AnimElemTime(1)..AnimElemTime(14); the generic parser has no
@@ -8572,8 +8638,10 @@ def build_spark():
             s = spark_sprite(csff.get(g, n), scale)
             remap = [0] * 256
             srcpal = csff.palettes[s.palidx]
+            use_magic = (attr & 0x1C) == 0x08      # OBJ palette 2
             for i, c in enumerate(srcpal):
-                remap[i] = wpidx.get(c, 0)
+                remap[i] = (shared_color_index(c) if use_magic
+                            else wpidx.get(c, 0))
             out_frames.append((t, sprite_cells(s, remap)))
         anims[label] = out_frames
         wood_attrs[label] = attr

@@ -135,18 +135,21 @@ Foram encontrados **61 diretórios de personagens ativos nos assets**, dos quais
 
 - **Supers:** Phoenix Fang Arrow curto/longo/duplo (2000/2020/2050); Super Shining Crystal Bit (4000).
 - **Parcial:** a entrada 3100 também foi retirada do mapeamento; deve ser conferida com a sequência Crystal Bit antes de tratá-la como família independente. Crystal Bit e sua continuação 3000/3050 já estão ligados.
+- **Implementado:** os Explods de magia (orbes do Psycho Ball/Crystal Bit e brilhos do escudo refletor) agora usam um clipe compacto de uma célula no atlas compartilhado. As cores vêm da paleta mágica, não da paleta da madeira.
 
 ### Kensou
 
 - **Especial:** Sen Shippo fraco/forte (1300/1330).
 - **Versões normais dos supers:** Niku Man o Kuu (2000), Sen Ki Hakkei (2100), Chouryuu Renken (2200).
 - **Parcial:** as versões SDM 2050/2150/2250 estão ligadas nos slots 48–53, classificados pelo motor como especiais. Portanto não são três famílias inteiramente ausentes, mas também não há equivalência fiel de custo/categoria com o MUGEN.
+- **Implementado:** os Explods de magia dos SDM (Niku Man, Sen Ki Hakkei e Chouryuu Renken) agora aparecem como orbes compactos de uma célula, na paleta mágica compartilhada.
 
 ### Chin
 
 - **Especiais do pacote:** Zake Attack (1000/1100), Fire Zake e sua variante (1203/1300), upper forte (1400).
 - **Supers:** Super Long Walk Hell (1750); Hyper Long Walk Hell (2200).
 - Há outros projéteis e variantes, inclusive 1900/1910/1920, já ligados; nomes genéricos do pacote não devem ser confundidos com ausência de todo ataque de fogo.
+- **Implementado:** o agarrão de bebida (850 → 860 → 865/866) agora usa o slot de throw genérico, mantém a vítima presa, drena vida em oito goles e desenha a garrafa (Explod 861) na boca do Chin. O blowback de CD foi movido para o slot 88 para não conflitar com o throw. O comando é o throw padrão (x+y).
 
 ### King
 

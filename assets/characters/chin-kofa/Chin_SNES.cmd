@@ -309,7 +309,7 @@ trigger1 = ctrl
 
 [State -1, Throw]
 type = ChangeState
-value = 900
+value = 850
 triggerall = command = "x+y"
 triggerall = statetype = S
 trigger1 = ctrl
