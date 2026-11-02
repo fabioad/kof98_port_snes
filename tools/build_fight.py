@@ -1769,7 +1769,7 @@ if "lucky" in CHARS:
     CHARS["lucky"]["cmd_labels"] = {66: "BASKETBALL"}
     # The command-list button labels are globally inverted; show the input
     # the pad actually needs for the new move: forward, down, down-forward, Y.
-    CHARS["lucky"]["cmd_text"] = {66: "DP+Y"}
+    CHARS["lucky"]["cmd_text"] = {66: "DP+B"}
 
 # Blue Mary: restore the multi-phase specials and give the grab follow-ups a
 # runtime state.  The generated import only wired the root statedefs, so every

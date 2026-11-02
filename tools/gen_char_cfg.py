@@ -48,19 +48,22 @@ def input_calibration(key):
 #   "moves":    {sid: statedef} extra/fallback sid wiring (sys states)
 OVERRIDES = {
     "king": {   # unnamed -1 entries; statedefs exist but unwired
-        "specials": [(48, 1000, "QCF_X", "~D, DF, F, x"),      # Venom Strike
-                     (49, 1050, "QCF_Y", "~D, DF, F, y"),
-                     (50, 1100, "QCB_A", "~D, DB, B, a"),      # Trap Shot
-                     (51, 1150, "QCB_B", "~D, DB, B, b"),
-                     (52, 1200, "DP_A", "~F, D, DF, a"),       # Surprise Rose
-                     (53, 1250, "DP_B", "~F, D, DF, b"),
-                     (54, 1300, "HCB_A", "~F, DF, D, DB, B, a"),  # Tornado
-                     (55, 1350, "HCB_B", "~F, DF, D, DB, B, b"),
-                     (56, 1400, "RDP_X", "~B, D, DB, x"),
-                     (57, 1450, "RDP_Y", "~B, D, DB, y"),
-                     (85, 3000, "SUP1_X", "~D, DB, B, DB, D, DF, F, x"),
-                     (86, 3100, "SUP1_Y", "~D, DB, B, DB, D, DF, F, y"),
-                     (87, 3500, "SUP2", "~D, DB, B, DB, D, DF, F, a")],
+        # Source motions: King is kick-based.  The package uses a/b for
+        # kicks and x/y for punches; keep the source state -> motion pairs so
+        # the physical pad follows Y=WP, X=SP, B=WK, A=SK.
+        "specials": [(48, 1000, "QCF_A", "~D, DF, F, a"),      # Venom Strike
+                     (49, 1050, "QCF_B", "~D, DF, F, b"),
+                     (50, 1100, "DP_A", "~F, D, DF, a"),       # Trap Shot
+                     (51, 1150, "DP_B", "~F, D, DF, b"),
+                     (52, 1200, "QCB_X", "~D, DB, B, x"),      # Surprise Rose
+                     (53, 1250, "QCB_Y", "~D, DB, B, y"),
+                     (54, 1300, "QCF_X", "~D, DF, F, x"),      # Tornado
+                     (55, 1350, "QCF_Y", "~D, DF, F, y"),
+                     (56, 1400, "QCB_A", "~D, DB, B, a"),
+                     (57, 1450, "QCB_B", "~D, DB, B, b"),
+                     (85, 3000, "SUP1_A", "~D, F, B, a"),
+                     (86, 3100, "SUP1_B", "~D, F, B, b"),
+                     (87, 3500, "SUP2", "~D, B, F, a")],
         # King's jump normals are 500/510/520/530; state 600 is the standing
         # blowback.  The generic 600 fallback made every air attack play the
         # blowback animation.

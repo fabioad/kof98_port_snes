@@ -4,6 +4,36 @@
 
 ;=========================[ Command definitions ]============================
 [Command]
+name = "QCF_A"
+command = ~D, DF, F, a
+time = 18
+
+[Command]
+name = "QCF_B"
+command = ~D, DF, F, b
+time = 18
+
+[Command]
+name = "DP_A"
+command = ~F, D, DF, a
+time = 18
+
+[Command]
+name = "DP_B"
+command = ~F, D, DF, b
+time = 18
+
+[Command]
+name = "QCB_X"
+command = ~D, DB, B, x
+time = 18
+
+[Command]
+name = "QCB_Y"
+command = ~D, DB, B, y
+time = 18
+
+[Command]
 name = "QCF_X"
 command = ~D, DF, F, x
 time = 18
@@ -24,48 +54,18 @@ command = ~D, DB, B, b
 time = 18
 
 [Command]
-name = "DP_A"
-command = ~F, D, DF, a
+name = "SUP1_A"
+command = ~D, F, B, a
 time = 18
 
 [Command]
-name = "DP_B"
-command = ~F, D, DF, b
-time = 18
-
-[Command]
-name = "HCB_A"
-command = ~F, DF, D, DB, B, a
-time = 18
-
-[Command]
-name = "HCB_B"
-command = ~F, DF, D, DB, B, b
-time = 18
-
-[Command]
-name = "RDP_X"
-command = ~B, D, DB, x
-time = 18
-
-[Command]
-name = "RDP_Y"
-command = ~B, D, DB, y
-time = 18
-
-[Command]
-name = "SUP1_X"
-command = ~D, DB, B, DB, D, DF, F, x
-time = 18
-
-[Command]
-name = "SUP1_Y"
-command = ~D, DB, B, DB, D, DF, F, y
+name = "SUP1_B"
+command = ~D, F, B, b
 time = 18
 
 [Command]
 name = "SUP2"
-command = ~D, DB, B, DB, D, DF, F, a
+command = ~D, B, F, a
 time = 18
 
 [Command]
@@ -199,84 +199,84 @@ command = D
 [State -1, special_48]
 type = ChangeState
 value = 1000
-triggerall = command = "QCF_X"
+triggerall = command = "QCF_A"
 triggerall = statetype != A
 trigger1 = ctrl
 
 [State -1, special_49]
 type = ChangeState
 value = 1050
-triggerall = command = "QCF_Y"
+triggerall = command = "QCF_B"
 triggerall = statetype != A
 trigger1 = ctrl
 
 [State -1, special_50]
 type = ChangeState
 value = 1100
-triggerall = command = "QCB_A"
+triggerall = command = "DP_A"
 triggerall = statetype != A
 trigger1 = ctrl
 
 [State -1, special_51]
 type = ChangeState
 value = 1150
-triggerall = command = "QCB_B"
+triggerall = command = "DP_B"
 triggerall = statetype != A
 trigger1 = ctrl
 
 [State -1, special_52]
 type = ChangeState
 value = 1200
-triggerall = command = "DP_A"
+triggerall = command = "QCB_X"
 triggerall = statetype != A
 trigger1 = ctrl
 
 [State -1, special_53]
 type = ChangeState
 value = 1250
-triggerall = command = "DP_B"
+triggerall = command = "QCB_Y"
 triggerall = statetype != A
 trigger1 = ctrl
 
 [State -1, special_54]
 type = ChangeState
 value = 1300
-triggerall = command = "HCB_A"
+triggerall = command = "QCF_X"
 triggerall = statetype != A
 trigger1 = ctrl
 
 [State -1, special_55]
 type = ChangeState
 value = 1350
-triggerall = command = "HCB_B"
+triggerall = command = "QCF_Y"
 triggerall = statetype != A
 trigger1 = ctrl
 
 [State -1, special_56]
 type = ChangeState
 value = 1400
-triggerall = command = "RDP_X"
+triggerall = command = "QCB_A"
 triggerall = statetype != A
 trigger1 = ctrl
 
 [State -1, special_57]
 type = ChangeState
 value = 1450
-triggerall = command = "RDP_Y"
+triggerall = command = "QCB_B"
 triggerall = statetype != A
 trigger1 = ctrl
 
 [State -1, special_85]
 type = ChangeState
 value = 3000
-triggerall = command = "SUP1_X"
+triggerall = command = "SUP1_A"
 triggerall = statetype != A
 trigger1 = ctrl
 
 [State -1, special_86]
 type = ChangeState
 value = 3100
-triggerall = command = "SUP1_Y"
+triggerall = command = "SUP1_B"
 triggerall = statetype != A
 trigger1 = ctrl
 
