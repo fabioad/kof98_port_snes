@@ -2954,6 +2954,9 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None, char_scale=1.0):
                 except ValueError:
                     tt = -1
                 arg = tt if 1 < tt < 0xFF else 0xFF
+                _window = INVUL_TICKS.get(char, {}).get(state)
+                if _window is not None:
+                    arg = max(0, min(0xFE, int(_window)))
                 acts.setdefault(state, []).append(
                     (frame if frame is not None else 0x80, 11, arg, 0))
             elif ctype == "posfreeze":
@@ -7465,6 +7468,14 @@ EXPLOD_ANIM = {191: "WoodA", 192: "WoodB",
 # vertical effect without adding another atlas to the shared 32-cell pool.
 EXPLOD_ANIM_BY_CHAR = {
     "geese": {3001: "FlameRise", 3002: "FlameTop"},
+}
+# State -> NotHitBy window length in animation ticks.  The source gates the
+# controller with AnimElemTime(1)..AnimElemTime(14); the generic parser has no
+# animation-tick context and used to collapse it to $FF (whole state), making
+# the whole Raging Storm (including its 70-tick recovery) invulnerable.
+INVUL_TICKS = {
+    # Geese Raging Storm: elements 1-13 are 2+3+3+3+3+17+2+2+6+2+2+2 ticks.
+    "geese": {3000: 47, 3010: 47},
 }
 EXPLODS_IDX = {label: i for i, label in enumerate(
     list(SPARK_ANIMS) + list(EXPLODS))}

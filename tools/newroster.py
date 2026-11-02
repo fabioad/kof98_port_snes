@@ -400,7 +400,7 @@ NEW_CHARS = {
         # sids 60/65.  State 3000/3010 (Raging Storm) is a stationary helper
         # HitDef.  Keep the rows explicit; vx=0 is a valid stationary shot.
         'projs': {58:(1792,12,4,10),60:(768,12,4,10),65:(1024,16,4,10),
-                  85:(0,26,4,2),86:(0,30,4,2)},
+                  85:(0,38,4,2),86:(0,38,4,2)},
         'cmd_labels': {58:'SHIPPU KEN',60:'REPPUKEN W',62:'REPPUKEN S',
                        65:'DOUBLE REPPU',85:'RAGING STORM W',
                        86:'RAGING STORM S'},

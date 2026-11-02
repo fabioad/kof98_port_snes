@@ -13322,7 +13322,19 @@ PR_wide:
 +
     ; Floor waves check the victim's feet; higher effects check the torso.
     ; This lets jumps evade floor waves while ordinary hits need no exact
-    ; F_Y == 0 match.
+    ; F_Y == 0 match.  The Raging Storm's tall pillar (SPK_GRD bit0) covers
+    ; the whole jump arc, matching its KOF98 anti-air role.
+    sep #$20
+    .ACCU 8
+    lda.w SPARKS+SPK_GRD,x
+    and #$01.b
+    beq PH_normal_height
+    rep #$20
+    .ACCU 16
+    jmp PH_hit
+PH_normal_height:
+    rep #$20
+    .ACCU 16
     lda.w SPARKS+2,x
     cmp #(GROUND_Y-4).w
     bcc PH_body_height
@@ -13908,6 +13920,33 @@ PTS_idx0:
     lda #5
     ldy scr3
     sta.w RT_PROJHITS,y
+    ; Geese's Raging Storm is a single-hit tall anti-air pillar in KOF98,
+    ; not the generic five-contact super projectile.  SPK_GRD bit0 marks
+    ; the tall hitbox (the guard bits themselves live in 4-7).
+    rep #$20
+    .ACCU 16
+    ldy fofs
+    lda FP+F_CHAR,y
+    cmp #CharGeese
+    bne PTS_notstorm
+    sep #$20
+    .ACCU 8
+    lda FP+F_STATE,y
+    cmp #85
+    beq PTS_storm
+    cmp #86
+    beq PTS_storm
+PTS_notstorm:
+    sep #$20
+    .ACCU 8
+    bra PTS_notmulti
+PTS_storm:
+    lda #1
+    ldy scr3
+    sta.w RT_PROJHITS,y
+    lda.w SPARKS+SPK_GRD,x
+    ora #$01.b
+    sta.w SPARKS+SPK_GRD,x
 PTS_notmulti:
 +   rep #$20
     .ACCU 16
