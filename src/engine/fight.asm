@@ -619,6 +619,7 @@
 .DEFINE AI_OPPGRD   $1108               ; foe is guarding
 .DEFINE AI_OPPHIT   $1109               ; foe is in hitstun/recovery
 .DEFINE AI_OPPDOWN  $110A               ; foe is down/getting up
+.DEFINE AI_GSL      $110B               ; per side: 0 undecided, 1 block, 2 let it hit
 .IFDEF PVSNESLIB
 ; Reserved by fight_bridge.asm between the combo counters and streaming queue.
 .DEFINE AI_OPPFALL  $5042               ; foe is airborne and falling
@@ -852,6 +853,7 @@ FightMain:
     stz.w AI_AIRT
     stz.w AI_JUMPCD
     stz.w AI_OFFCD
+    stz.w AI_GSL                        ; per-side ground-shock block latch
     sep #$20
     .ACCU 8
     lda #1
@@ -10157,6 +10159,15 @@ AT_loop:
 ; ---------------------------------------------------------------------------
 ; Hit detection: active-frame AABB using aggregated AIR boxes
 ; ---------------------------------------------------------------------------
+.IFDEF PVSNESLIB
+; GuardCheck lives in bank 126 to keep the 32 KiB Fight window under its
+; limit; this stub keeps the two near call sites unchanged.
+GuardCheck:
+    jsl GuardCheckFar
+    rts
+.ENDIF
+
+.IFNDEF PVSNESLIB
 ; GuardCheck: fofs = victim, scr5 = attacker move flags word.
 ; Returns A(16) = guard-hit AnimTab slot when the incoming hit is blocked
 ; (0 = not guarded). Posture is taken from the victim's position + held
@@ -10230,6 +10241,28 @@ GC_air_ok:
     rts
 GC_no:
     lda #0
+    rts
+
+.ENDIF
+
+; GroundShockMove: X = fighter offset.  Carry set for Daimon's weak
+; Jiraishin (sid 48), the full-screen ground shock.  The hit path skips the
+; attack box for this move and whiffs against airborne victims.
+GroundShockMove:
+    rep #$20
+    .ACCU 16
+    lda FP+F_CHAR,x
+    cmp #CharDaimon
+    bne GSM_no
+    lda FP+F_STATE,x
+    and #$00FF.w
+    cmp #48
+    beq GSM_yes
+GSM_no:
+    clc
+    rts
+GSM_yes:
+    sec
     rts
 
 ; RevCheck: fofs = victim (parry stance).  Returns A(16) = blocked sid when
@@ -10536,6 +10569,26 @@ HO_atkst:
         jmp HO_no
     +
     ldx aofs
+    jsr GroundShockMove
+    bcc HO_box
+    ; The shock wave only exists on the ground-punch frame; the long
+    ; recovery frame must not keep hitting a victim that lands later.
+    lda FP+F_FRAME,x
+    cmp #6
+    bne GS_air
+    ; Full-screen ground shock: only a grounded victim with a hurtbox is
+    ; eligible.  Airborne victims are above the wave and are not hit.
+    ldx vofs
+    lda FP+F_Y,x
+    bne GS_air
+    lda FP+F_HURTBOX,x
+    bne GS_hit
+GS_air:
+    jmp HO_nohit
+GS_hit:
+    jmp HO_hit
+HO_box:
+    ldx aofs
     lda FP+F_ATKBOX,x
     bne +
         jmp HO_no
@@ -10600,6 +10653,7 @@ HO_atkst:
 +   bpl +
         jmp HO_nohit
     +
+HO_hit:
     ; HIT
     ldx aofs
     stx fofs
@@ -11709,6 +11763,20 @@ AI_air_ret:
     jmp AI_done
 AI_ok:
     jsr AI_Perceive
+    ; --- full-screen ground shock: hold back most of the time ------------
+    ; The weak Jiraishin reaches the whole stage, so the usual <140 px
+    ; ground-threat window never sees it.  Run this before the committed
+    ; action timer: the CPU can abandon an approach to guard the wave.
+    ; The roll is latched per move so it blocks most attempts, not all.
+    jsr AI_GroundShock
+    bcc AI_no_groundshock
+    jsr AI_DirBack
+    lda #36
+    sta AI_TMP
+    lda #1
+    jsr AI_SetHold
+    jmp AI_done
+AI_no_groundshock:
     ; a committed action (block/approach/retreat) owns the pad for a while
     lda AI_SIDE
     rep #$20
@@ -12729,6 +12797,65 @@ AI_SetTimer:
     sta AI_TIMER1,x
     stz AI_HOLD1,x
     rts
+
+.IFNDEF PVSNESLIB
+; A8 in/out.  Carry set when the CPU should hold back for a full-screen
+; ground shock (Daimon's weak Jiraishin).  One roll per move instance.
+AI_GroundShock:
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    lda FP+F_Y,x
+    bne AGS_clear
+    txa
+    eor #FP2OFS.w
+    tax
+    jsr GroundShockMove
+    bcc AGS_clear
+    lda AI_SIDE
+    and #$00FF.w
+    tax
+    sep #$20
+    .ACCU 8
+    lda AI_GSL,x
+    bne AGS_have
+    ; Low two bits of the free-running rng: exactly one in four attempts
+    ; lets the wave through, so the CPU blocks most but not every time.
+    lda rng
+    and #$03
+    beq AGS_setno
+    lda #1
+    sta AI_GSL,x
+    sec
+    rts
+AGS_setno:
+    lda #2
+    sta AI_GSL,x
+    clc
+    rts
+AGS_have:
+    cmp #1
+    beq AGS_yes
+    clc
+    rts
+AGS_yes:
+    sec
+    rts
+AGS_clear:
+    sep #$20
+    .ACCU 8
+    lda AI_SIDE
+    rep #$20
+    .ACCU 16
+    and #$00FF.w
+    tax
+    sep #$20
+    .ACCU 8
+    stz AI_GSL,x
+    clc
+    rts
+
+.ENDIF
 
 AI_Rand:
     sep #$20
@@ -20245,6 +20372,65 @@ SetShake:
     lsr a
     sta shakeamp
     rts
+.IFDEF PVSNESLIB
+; A8 in/out.  Carry set when the CPU should hold back for a full-screen
+; ground shock (Daimon's weak Jiraishin).  One roll per move instance.
+AI_GroundShock:
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    lda FP+F_Y,x
+    bne AGS_clear
+    txa
+    eor #FP2OFS.w
+    tax
+    jsr GroundShockMove
+    bcc AGS_clear
+    lda AI_SIDE
+    and #$00FF.w
+    tax
+    sep #$20
+    .ACCU 8
+    lda AI_GSL,x
+    bne AGS_have
+    ; Low two bits of the free-running rng: exactly one in four attempts
+    ; lets the wave through, so the CPU blocks most but not every time.
+    lda rng
+    and #$03
+    beq AGS_setno
+    lda #1
+    sta AI_GSL,x
+    sec
+    rts
+AGS_setno:
+    lda #2
+    sta AI_GSL,x
+    clc
+    rts
+AGS_have:
+    cmp #1
+    beq AGS_yes
+    clc
+    rts
+AGS_yes:
+    sec
+    rts
+AGS_clear:
+    sep #$20
+    .ACCU 8
+    lda AI_SIDE
+    rep #$20
+    .ACCU 16
+    and #$00FF.w
+    tax
+    sep #$20
+    .ACCU 8
+    stz AI_GSL,x
+    clc
+    rts
+
+.ENDIF
+
 .ENDS
 .ENDIF
 
@@ -21947,3 +22133,105 @@ PortraitPal_End:
 .ENDIF
 ; mass-import bank windows + chr placeholders
 .INCLUDE "gen_fight/newchars_banks.inc"
+
+; ---------------------------------------------------------------------------
+; GuardCheckFar: full guard-posture test, relocated to bank 126 because the
+; 32 KiB Fight window has no room left.  GuardCheck in the Fight bank is a
+; JSL/RTS stub; this routine keeps the same A16 contract.
+; ---------------------------------------------------------------------------
+.IFDEF PVSNESLIB
+.BASE $C0
+.BANK 126 SLOT 0
+.ORGA $F000
+.SECTION "GuardCheckFar" FORCE
+GuardCheckFar:
+; GuardCheck: fofs = victim, scr5 = attacker move flags word.
+; Returns A(16) = guard-hit AnimTab slot when the incoming hit is blocked
+; (0 = not guarded). Posture is taken from the victim's position + held
+; pad, so the same routine works for the guard states and for a fighter
+; that is simply holding "back" as the hit lands.
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    lda FP+F_STATE,x
+    and #$00FF.w
+    cmp #S_PUNCH.w                        ; 0-4: stand/walk/crouch/jump
+    bcc GC_ok
+    cmp #S_CDOWN.w
+    beq GC_ok
+    cmp #S_CUP.w
+    beq GC_ok
+    cmp #S_JUMPF.w
+    beq GC_ok
+    cmp #S_JUMPB.w
+    beq GC_ok
+    sec
+    sbc #S_GUARD.w                        ; 27-30: the guard states
+    cmp #4
+    bcs GC_no
+GC_ok:
+    jsr GCHoldsBack
+    beq GC_no
+    ldx fofs
+    lda FP+F_Y,x
+    bne GC_air                            ; airborne: try KOF98 air guard
+    lda FP+F_JOY,x
+    and #JOY_DN.w
+    beq GC_stand
+    lda scr5                              ; crouch block stops M|L attacks
+    and #$0060.w
+    beq GC_no
+    lda #ANIM_GHIT_CR.w
+    rtl
+GC_stand:
+    lda scr5                              ; stand block stops M|H attacks
+    and #$0030.w
+    beq GC_no
+    lda #ANIM_GHIT_HI.w
+    rtl
+GC_air:
+    ; FUSION/arcade air guard: neutral and back full jumps can block
+    ; specials, supers, projectiles and air normals.  Hops, forward jumps
+    ; and grounded normals stay unguardable in the air.
+    lda FP+F_STATE,x
+    and #$00FF.w
+    cmp #S_JUMPF.w
+    beq GC_no
+    cmp #S_JUMP.w
+    beq GC_air_ok
+    cmp #S_JUMPB.w
+    beq GC_air_ok
+    cmp #S_AGUARD.w
+    beq GC_air_ok
+    bra GC_no
+GC_air_ok:
+    lda FP+F_TFLAGS,x
+    and #$0010.w                          ; bit4 = hop/hyper-hop in progress
+    bne GC_no
+    lda scr5
+    bit #$2000.w                          ; bit13 = ground normal
+    bne GC_no
+    and #$00F0.w                          ; must stop some posture
+    beq GC_no
+    lda #ANIM_AGUARD.w
+    rtl
+GC_no:
+    lda #0
+    rtl
+
+; Local copy of HoldsBack: the far section cannot RTS into the Fight bank.
+GCHoldsBack:
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    lda FP+F_FACING,x
+    bmi +
+    lda FP+F_JOY,x
+    and #JOY_LF.w
+    rts
++   lda FP+F_JOY,x
+    and #JOY_RT.w
+    rts
+
+.ENDS
+.ENDIF

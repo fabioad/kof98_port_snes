@@ -1398,6 +1398,13 @@ CHARS = {
         "coord_scale": 1,
         "char_scale": 0.81,
         "damage_scale": 2.0,
+        # Weak Jiraishin: the source keeps its HitDef in the invisible
+        # helper state 1005.  The native engine has no helpers, so copy the
+        # helper's trip row onto the fighter's state 48 at the ground-punch
+        # frame.  Guard M keeps the move blockable from stand or crouch.
+        # The runtime's GroundShockMove test makes sid 48 full-screen and
+        # air-whiff; see the hit path in fight.asm.
+        "hitdef_from_state": {48: (1005, {"active": 7, "guard": 0x2})},
         "pow_override": {96: -1000},
         "display": "DAIMON",
     },
@@ -6639,6 +6646,16 @@ def build_char(name, cfg, global_pal=None):
         lst = cns_hitdef_lists.get(move_ids.get(sid, -1))
         if lst and 0 <= hidx < len(lst):
             move_rows[sid] = dict(lst[hidx])
+    # Port-specific copies of a helper's HitDef onto a reachable move state
+    # (the native engine has no helpers).  `overrides` adjusts the active
+    # frame and guard mask without touching the calibrated CNS.
+    for sid, spec in cfg.get("hitdef_from_state", {}).items():
+        src, overrides = spec
+        lst = cns_hitdef_lists.get(src)
+        if lst:
+            row = dict(lst[0])
+            row.update(overrides)
+            move_rows[sid] = row
     # AIR trimming shifts the HitDef's animelem start: the engine activates
     # hits only on frames >= active-1, so when no surviving frame at/after
     # that index carries an atkbox the move whiffs forever.  Re-anchor the
