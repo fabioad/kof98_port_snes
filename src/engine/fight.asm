@@ -744,6 +744,7 @@
 .DEFINE aofs        $54                  ; HitOne attacker offset
 .DEFINE boxp        $56                  ; 3-byte generated-data pointer
 .DEFINE girlflags   $59                  ; intro girlfriend cell flags
+.DEFINE girlface    $5E                  ; intro girlfriend facing sign
 .DEFINE girlpal     $5D                  ; intro girlfriend OBJ palette bits
 .DEFINE cptr        $5A                  ; 3-byte character descriptor pointer
 
@@ -20161,7 +20162,7 @@ DIG_side:
     sep #$20
     .ACCU 8
     lda FP+F_FACING,x                  ; low byte: +1 right / $FF left
-    sta scr0
+    sta girlface
     lda #$30.b                        ; OBJ priority 3, palette 0
     ldy fofs
     beq +
@@ -20235,8 +20236,9 @@ DIG_c_loop:
     lda scr6
     and #$8000.w
     beq DIG_c_16
-    lda scr0                          ; 8x8: x = base +- dx [- 8]
-    bmi DIG_c_8f
+    lda girlface                      ; 8x8: x = base +- dx [- 8]
+    and #$0080.w                      ; 16-bit load: test the low-byte sign
+    bne DIG_c_8f
     lda scr1
     clc
     adc scr3
@@ -20254,8 +20256,9 @@ DIG_c_8x:
     stz girlflags
     bra DIG_c_flip
 DIG_c_16:
-    lda scr0                          ; 16x16: x = base +- dx [- 16]
-    bmi DIG_c_16f
+    lda girlface                      ; 16x16: x = base +- dx [- 16]
+    and #$0080.w                      ; 16-bit load: test the low-byte sign
+    bne DIG_c_16f
     lda scr1
     clc
     adc scr3
@@ -20273,7 +20276,7 @@ DIG_c_16x:
     lda #2.b                          ; size bit
     sta girlflags
 DIG_c_flip:
-    lda scr0
+    lda girlface
     bpl +
     lda girlflags
     ora #1.b                          ; mirror the cell
