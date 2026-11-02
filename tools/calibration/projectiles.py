@@ -219,6 +219,8 @@ PROJECTILE_X_OFFSET = {
     # QCB+P Hishou Ken: the helper's Clsn1 is at x=32..127 (centre ~80), so
     # centre the burst 80 px in front of Andy.
     "andy": {52: 80, 53: 80},
+    # Kikouken leaves the hands ~37 px ahead of Chun-Li.
+    "chunli": {48: 40},
 }
 
 # Per-shot release frame override (0-based source animation frame).  Used
@@ -227,6 +229,9 @@ PROJECTILE_X_OFFSET = {
 # anim 1110 frame 5.
 PROJECTILE_RELEASE = {
     "andy": {52: 4, 53: 5},
+    # Kikouken's Projectile controller fires on AnimElem 7 (0-based 6);
+    # the engine default third frame spawned it during the startup pose.
+    "chunli": {48: 6},
 }
 
 # Character-level projectile calibration, in 8.8 px/tick and HUD damage.
@@ -237,6 +242,11 @@ PROJECTILE_CALIBRATION = {
     # generic walk did not see the controller, so both rows were empty and
     # the shot never spawned.
     "ryu": {48: (0x0300, 14), 49: (0x0400, 18)},
+    # Kikouken: source damage 40 (vs Ryu's 18); the generic import derived
+    # only 8 HUD from the formula, leaving the strongest fireball weaker
+    # than a Hadouken.  Keep the source speed and give it a commensurate
+    # HUD value.
+    "chunli": {48: (0x0300, 24)},
     "iori": {48: (0x02C0, 12), 49: (0x03C0, 16)},
     "kyo": {48: (0x0300, 14), 49: (0x0400, 18)},
     "rugal": {48: (0x0300, 16), 49: (0x0400, 20)},

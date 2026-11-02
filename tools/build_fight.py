@@ -2842,6 +2842,13 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None, char_scale=1.0):
                 if em:
                     frame = int(em.group(1)) - 1
                     break
+                # AnimElemTime(N) starts inside element N; the ActTab can
+                # only trigger at the element boundary, which is close
+                # enough for per-element velocity/physics changes.
+                am = re.search(r"\banimelemtime\s*\(\s*(\d+)", x, re.I)
+                if am:
+                    frame = int(am.group(1)) - 1
+                    break
                 # `time = 0` fires on the state-entry tick -> frame 0
                 # (throw's TargetState 815 binds through this)
                 if re.match(r"\s*time\s*=\s*0\s*$", x, re.I):
@@ -2957,8 +2964,23 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None, char_scale=1.0):
                 _window = INVUL_TICKS.get(char, {}).get(state)
                 if _window is not None:
                     arg = max(0, min(0xFE, int(_window)))
-                acts.setdefault(state, []).append(
-                    (frame if frame is not None else 0x80, 11, arg, 0))
+                # AnimElemTime(N) < 0 windows run from state entry until
+                # element N starts.  Arm at entry and clear at that element;
+                # using the generic frame here armed the invulnerability
+                # only after the startup (or for the whole state).
+                _stop = None
+                for _x in trig:
+                    _m = re.search(r"animelemtime\s*\(\s*(\d+)\s*\)"
+                                   r"\s*<\s*0", _x, re.I)
+                    if _m:
+                        _stop = int(_m.group(1)) - 1
+                        break
+                if _stop is not None:
+                    acts.setdefault(state, []).append((0x80, 11, arg, 0))
+                    acts.setdefault(state, []).append((_stop, 11, 0, 0))
+                else:
+                    acts.setdefault(state, []).append(
+                        (frame if frame is not None else 0x80, 11, arg, 0))
             elif ctype == "posfreeze":
                 # op13 arg1 = latch the x-freeze until the window's end elem
                 acts.setdefault(state, []).append((0x80, 13, 1, 0))
@@ -3158,6 +3180,14 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None, char_scale=1.0):
                 for x in trig:
                     frames = [int(em.group(1)) - 1 for em in
                               re.finditer(r"\banimelem\s*=\s*(\d+)", x, re.I)]
+                    # `AnimElemTime(N) = M` starts the velocity M ticks into
+                    # element N; the ActTab can only trigger at the element
+                    # boundary, which is close enough for launch moves such as
+                    # Chun-Li's Tenshou Kyaku (was completely dropped before,
+                    # leaving the move grounded).
+                    frames += [int(am.group(1)) - 1 for am in
+                               re.finditer(r"\banimelemtime\s*\(\s*(\d+)",
+                                           x, re.I)]
                     frames += [0x80 | int(tm.group(1)) for tm in
                                re.finditer(r"\btime\s*=\s*(\d+)\b", x, re.I)]
                     for fr in frames:
