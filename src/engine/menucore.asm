@@ -1725,6 +1725,10 @@ MtCell:
 ; title screen: art + blinking prompt; either pad START -> menu; ~22s idle
 ; replays the intro (matches the source attract loop)
 TitleEnter:
+    sep #$20
+    .ACCU 8
+    stz.b gamestate                      ; gs 0 before any NMI can still
+                                         ;   see the MSU video state (14)
     jsr VoiceQueueClear                  ; a fight quote must not follow us
     sep #$20                             ;   here; the title song load owns
     .ACCU 8                              ;   the SPC key-off below
@@ -1766,7 +1770,6 @@ TitleEnter:
     ; Consume edges but keep the held state so a still-held START cannot
     ; register a second press; it must be released before it counts again.
     jsr ConsumePadEdges
-    stz.b gamestate                       ; gs 0 after song upload
     rts
 
 ; draw the PRESS 1P OR 2P START row (20 cells at oamtop 0..79)

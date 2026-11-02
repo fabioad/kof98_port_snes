@@ -102,13 +102,9 @@ MsuIntroTickFar:
     ora FP+F_JOYPR+FP2OFS.w
     and #$1000.w                           ; START only
     beq +
-    sep #$20
-    .ACCU 8
-    lda #$80.b
-    sta.l INIDISP                          ; blank before the handoff
-    jml MsuTitleEnterBridge
+    jml MI_Handoff
 +   lda.w MV_FINISH
-    bne MIK_finish
+    bne MI_Handoff
     inc.w IN_MTICK
 MIK_done:
     jsr MV_StageChunk                       ; stage the next chunk while visible
@@ -119,11 +115,26 @@ MIK_done:
     rep #$20
     .ACCU 16
     jml MainLoop
-MIK_finish:
+; Leave gamestate 14 only after the video hook can no longer touch the
+; PPU/VRAM.  A pending NMI used to run MsuVideoVblank while TitleEnter was
+; loading the title art: it re-asserted TM=BG2, consumed a staged chunk
+; into the hidden tile/map buffer and could overwrite the title's OBJ font
+; or BG1 map.  That produced the periodically distorted title screen after
+; a full opening playback.
+MI_Handoff:
     sep #$20
     .ACCU 8
+    lda #0
+    sta.l $4200                            ; NMI off until TitleEnter re-enables
     lda #$80.b
-    sta.l INIDISP
+    sta.l INIDISP                          ; blank before the handoff
+    rep #$20
+    .ACCU 16
+    stz.w MV_STAGED                        ; no chunk left for a late vblank
+    stz.w MV_LOCK
+    stz.w MV_FINISH
+    stz.w MV_READY
+    stz.w MV_TOTAL
     jml MsuTitleEnterBridge
 
 ; ---------------------------------------------------------------------------
@@ -621,9 +632,14 @@ MISB_done:
 ; swap, and streams at most MV_CHUNK bytes into the hidden VRAM buffer.
 ; ---------------------------------------------------------------------------
 MsuVideoVblank:
-    ; Keep BG2 on the active buffer even if the library ISR touched the PPU.
+    ; Once the last frame has elapsed the visible tick owns the hand-off.
+    ; Never re-assert BG2 (or consume a staged chunk) afterwards: a late
+    ; vblank during TitleEnter used to overwrite the title map/OBJ.
     sep #$20
     .ACCU 8
+    lda.w MV_FINISH
+    bne MVV_out
+    ; Keep BG2 on the active buffer even if the library ISR touched the PPU.
     lda #$01.b
     sta.l $2105                            ; BGMODE 1
     lda #$02.b
