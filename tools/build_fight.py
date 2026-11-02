@@ -1465,6 +1465,11 @@ for _c in ("saisyu", "heidern", "takuma", "clark",
 # the move itself, but drop the invisible travelling shot the generator
 # inferred from a follow-up dash HitDef.
 PROJECTILE_EXCLUDE = {
+    # Ryo's ranbu slots are the melee flurry and its launcher.  The generic
+    # HitDef/ChangeState chain walked into a projectile state and gave the
+    # flurry an invisible 14-damage shot on every contact frame.  Robert's
+    # 85/86 join his existing exclusion row below.
+    "ryo": (88, 89),
     # Zan'eiken's close-range HitDefs are melee, not travelling shots.  The
     # follow-up states (1001/1011 and their 1005/1015 chain) were being
     # compiled as invisible projectiles by the HitDef heuristic.
@@ -1516,7 +1521,8 @@ PROJECTILE_EXCLUDE = {
     # follow-ups 1101/1111, whose HitDef inherits the jump VelSet (2,-6 and
     # 6,-8.5).  The heuristic read those follow-ups as travelling shots, so
     # both DP+P moves spawned an invisible projectile on top of the kick.
-    "robert": (50, 51),
+    # The ranbu slots 85/86 are the melee flurry/finish, not a shot either.
+    "robert": (50, 51, 85, 86),
 }
 
 REFLECTORS = {
@@ -1775,6 +1781,98 @@ if "sakura" in CHARS:
     _sakura["state_vel"] = {60: (6, 0), 61: (6, 0),
                             62: (6, 0), 63: (8, -10)}
     _sakura.setdefault("extra_trans", []).append((63, 56, 1, 0))
+
+# ---------------------------------------------------------------------------
+# Ryuko Ranbu family
+# ---------------------------------------------------------------------------
+# The source ranbus keep ONE HitDef and re-arm it between strikes through
+# MoveHitReset (Ryo 3120, Robert 3105) or by re-issuing the HitDef on each
+# AnimElem (Sakura 3100).  The native hit path latches the first contact in
+# F_HITDONE, so only the opening punch used to land.  The build now compiles
+# MoveHitReset into ActTab op18, which clears that latch (and the engine's
+# five-contact finisher counter) at every strike element.
+#
+# Runtime layout per fighter:
+#   flurry sid (super slot) -- multi-hit, no knockdown, chains at anim end
+#   launcher sid            -- single knockdown/launch HitDef
+# The source activations (Ryo 3100/3110, Robert 3100/3110) are skipped: the
+# reduced-ROM budget cannot hold their extra sprite sets too, and the flurry
+# opens with the same forward dash.  The victim is left in ordinary hitstun
+# (no TargetState): a bound victim is unhittable in the native engine, which
+# would drop every follow-up contact.  Intermediate hits clear the HitDef
+# fall flag; only the launcher knocks down.
+
+if "ryo" in CHARS:
+    _ryo = CHARS["ryo"]
+    # 88 = flurry 3120, 89 = finish 3121 (the source activations 3100/3110
+    # were dropped by the ROM diet).
+    _ryo["moves"].update({88: 3120, 89: 3121})
+    _ryo["anims"].update({88: 3120, 89: 3121})
+    _ryo["slice_no_fall"] = sorted(set(_ryo.get("slice_no_fall", ()))
+                                   | {88})
+    _ryo["hitdef_override"] = {
+        # 3120's damage expression divides by fvar(7), so the parser reads
+        # 0.  Keep the victim in place between strikes and cap blocked chip.
+        88: {"damage": 4, "gvx": 0, "gvy": 0, "gdamage": 1},
+        89: {"damage": 20, "gdamage": 1},
+    }
+    _ryo["hitdef_by_sid"] = {89: 1}       # 3121 second HitDef = launcher
+    _ryo["frame_cap"] = {3121: 6}         # hold the launch pose, drop the
+                                          # 255-tick trailing still
+    _ryo.setdefault("extra_trans", []).extend([
+        (88, 89, 0, 0),                   # flurry end -> finish
+        (89, 0, 1, 0),                    # finish lands -> stand
+    ])
+
+if "robert" in CHARS:
+    _robert = CHARS["robert"]
+    # 85 = flurry 3105, 86 = finish 3107 (source numbers the MAX variant
+    # 3120/3125, which the diet keeps out of the ROM).
+    _robert["moves"].update({85: 3105, 86: 3107})
+    _robert["anims"].update({85: 3105, 86: 3107})
+    # Sids 85/86 previously hosted the ranbu activations and carried stale
+    # Projectile rows (Ryuugeki Ken atlas, 24/30 damage).  They would fire
+    # in the middle of the flurry now that those slots are the chase/finish.
+    _robert["projs"] = {k: v for k, v in _robert.get("projs", {}).items()
+                        if k not in (85, 86)}
+    _robert["slice_no_fall"] = sorted(
+        set(_robert.get("slice_no_fall", ())) | {85})
+    _robert["hitdef_override"] = {
+        85: {"damage": 4, "gvx": 0, "gvy": 0, "gdamage": 1},
+        86: {"damage": 20, "gdamage": 1},
+    }
+    _robert["hitdef_by_sid"] = {86: 1}    # 3107 second HitDef = launcher
+    _robert["frame_cap"] = {3107: 8}      # launch pose is the last needed
+    _robert.setdefault("extra_trans", []).extend([
+        (85, 86, 0, 0),
+        (86, 0, 1, 0),
+    ])
+
+if "sakura" in CHARS:
+    _sakura2 = CHARS["sakura"]
+    # Haru Ichiban is a single source state (3100) whose five contacts are
+    # separate HitDef windows.  Split the launch element into a second sid
+    # so the final launcher keeps fall=1 while the rush does not knock down.
+    _sakura2["moves"].update({88: 3100, 89: 3100})
+    _sakura2["anims"].update({88: 3100, 89: 3100})
+    _sakura2["slices"] = dict(_sakura2.get("slices", {}))
+    _sakura2["slices"].update({88: (3100, 0, 24), 89: (3100, 25, 26)})
+    _sakura2["slice_hits"] = dict(_sakura2.get("slice_hits", {}))
+    _sakura2["slice_hits"].update({88: (0, 89), 89: (1, 0)})
+    _sakura2["hit_resets"] = dict(_sakura2.get("hit_resets", {}))
+    # Re-arm after each rush contact (elements 12/16/20).  The opening hit
+    # at element 8 is already armed by EnterState.
+    _sakura2["hit_resets"][3100] = [12, 16, 20]
+    _sakura2["slice_no_fall"] = sorted(
+        set(_sakura2.get("slice_no_fall", ())) | {88})
+    _sakura2["hitdef_override"] = {
+        88: {"damage": 5, "gvx": 0, "gvy": 0, "gdamage": 1},
+        89: {"damage": 20, "gdamage": 1},
+    }
+    # Haru Ichiban's input.  The reduced _SNES.cmd only carried the
+    # Shinkuu Hadouken supers, so the ranbu had no [State -1] rule at all;
+    # the commands themselves are added to Sakura_SNES.cmd.
+
 
 # Andy's Kuuha Dan (weak 1300 / strong 1310) is a close-range leaping
 # attack.  The source Clsn1 boxes only cover the outstretched arm, so a
@@ -2835,7 +2933,12 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None, char_scale=1.0):
         for ctrl in ctrls:
             ctype = ctrl.get("type", "").lower()
             trig = ctrl["triggers"]
-            cond = int(any("var(" in t.lower() for t in trig))
+            # cond bit0 is the throw's hold-forward variant, keyed by
+            # var(2).  Gating on any var() silently disabled the ranbu's
+            # forward VelSet (var(10)=0) and every other controller that
+            # uses the unmodelled MAX/AI vars as a plain true constant.
+            cond = int(any(re.search(r"var\s*\(\s*2\s*\)", t, re.I)
+                           for t in trig))
             frame = None
             for x in trig:
                 em = re.search(r"\banimelem\s*=\s*(\d+)", x, re.I)
@@ -2953,6 +3056,25 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None, char_scale=1.0):
                 acts.setdefault(state, []).append(
                     (frame if frame is not None else 0x80, 10,
                      ((min(amp, 7) << 5) | min(tt, 31)) & 0xFF, 0))
+            elif ctype == "movehitreset":
+                # Re-arm the HitDef at each listed strike element.  Ranbu
+                # flurries keep one HitDef row but reset MUGEN's movehit
+                # latch between contacts (Ryo 3120, Robert 3105).  Without
+                # this op the engine's F_HITDONE latch allowed only the
+                # first strike to connect.
+                if state not in moves:
+                    continue
+                elems = []
+                for x in trig:
+                    elems += [int(m.group(1)) - 1 for m in
+                              re.finditer(r"\banimelem\s*=\s*(\d+)",
+                                          x, re.I)]
+                    elems += [int(m.group(1)) - 1 for m in
+                              re.finditer(r"\banimelemtime\s*\(\s*(\d+)",
+                                          x, re.I)]
+                for fr in sorted(set(elems)):
+                    if 0 <= fr < 0x80:
+                        acts.setdefault(state, []).append((fr, 18, 0, 0))
             elif ctype == "nothitby":
                 # op11 arg = invuln ticks; mugen time <= 1 (constant refresh
                 # or one-symbolic-tick) becomes "for the whole state"
@@ -5486,6 +5608,16 @@ def build_char(name, cfg, global_pal=None):
             (frame, op, _life if op == 3 else arg, cond)
             for frame, op, arg, cond in cns_acts.get(_state, ())]
 
+    # Synthetic MoveHitReset rows for flurries whose source re-issues the
+    # HitDef on each strike element instead of using a MoveHitReset
+    # controller (Sakura's Haru Ichiban 3100).  Values are 1-based source
+    # animation elements, like AnimElem.
+    for _state, _elems in (cfg.get("hit_resets") or {}).items():
+        _rows = list(cns_acts.get(_state, ()))
+        for _e in _elems:
+            _rows.append((max(0, min(0x7F, int(_e) - 1)), 18, 0, 0))
+        cns_acts[_state] = sorted(set(_rows))
+
     # Optional verified calibration, preserving the existing native table ABI.
     # Stale source hashes or changed manual values fail closed at build time.
     from calibration.native import apply_profile
@@ -6689,6 +6821,15 @@ def build_char(name, cfg, global_pal=None):
             row = dict(lst[0])
             row.update(overrides)
             move_rows[sid] = row
+    # Per-sid HitDef field overrides.  Used by ranbu flurries: the source's
+    # damage/velocity expressions divide by custom vars, so the generic
+    # parser reads 0.  Keep the calibrated timing but supply the port-scale
+    # damage, keep the victim in place (gvx=0) and cap blocked chip.
+    for sid, overrides in (cfg.get("hitdef_override") or {}).items():
+        if 0 <= sid < len(move_rows):
+            row = dict(move_rows[sid])
+            row.update(overrides)
+            move_rows[sid] = row
     # AIR trimming shifts the HitDef's animelem start: the engine activates
     # hits only on frames >= active-1, so when no surviving frame at/after
     # that index carries an atkbox the move whiffs forever.  Re-anchor the
@@ -7210,7 +7351,7 @@ def build_char(name, cfg, global_pal=None):
     # 3=target life add, 4=target state (mugen state, resolved here),
     # 5=velset x (px/frame, facing-relative), 6=global pause ticks,
     # 7=playsnd (arg = runtime sfx id), 16=velmul x (arg = Q8 factor),
-    # 17=clear velmul.
+    # 17=clear velmul, 18=MoveHitReset (re-arm HitDef for the next strike).
     # cond bit0 = only when the F_TFLAGS fwd bit was set at grab time.
     inc.append(f"{name}ActTab:\n")
     act_sids = {}
@@ -9507,29 +9648,79 @@ def emit_newchars_inc(new_keys, msu_slices):
     pvs_guard = 0
     cancel_size = len(CANCEL_NORMAL_SIDS) * len(CANCEL_OPENS)
 
-    def grab(sz_map, guard=None, prefer_max_slot=None, defer_no_fit=False):
-        guard = pvs_guard if guard is None else guard
+    def _pack(sz_map, base, guard, order, pack_small, rng=None):
+        """Greedy placement over a copy of ``base``; returns (alloc, free)."""
+        state = [[s[0], s[1], s[2]] for s in base]
         alloc = {}
-        for k in sorted(sz_map, key=lambda k: -sz_map[k]):
-            candidates = [slot for slot in free
+        for k in order:
+            candidates = [slot for slot in state
                           if sz_map[k] <= slot[2] - guard]
-            if prefer_max_slot is not None:
-                compact = [slot for slot in candidates
-                           if slot[2] <= prefer_max_slot]
-                if compact:
-                    candidates = compact
             if not candidates:
-                if defer_no_fit:
-                    continue
-                raise ValueError(f"{k}: no free PVS bank window for "
-                                 f"{sz_map[k]} bytes")
-            # Best-fit prevents a medium section from wasting a large span
-            # and leaving only fragments too small for later tables.
-            slot = min(candidates, key=lambda candidate: candidate[2])
+                return None, None
+            if pack_small and sz_map[k] <= 16384 and rng is not None:
+                # Diversify the small-table placements so the retry loop
+                # is not stuck on one best-fit fragmentation pattern.
+                pool = sorted(candidates,
+                              key=lambda c: (c[2], c[0], c[1]))[:3]
+                slot = pool[rng.randrange(len(pool))]
+            elif pack_small and sz_map[k] <= 16384:
+                slot = min(candidates,
+                           key=lambda c: (c[0], c[1]))
+            else:
+                slot = min(candidates, key=lambda c: c[2])
             alloc[k] = (slot[0], slot[1])
             slot[1] += sz_map[k] + guard
             slot[2] -= sz_map[k] + guard
-        return alloc
+        return alloc, state
+
+    def grab(sz_map, guard=None, prefer_max_slot=None, defer_no_fit=False,
+             pack_small=False, tries=1, reserve=()):
+        """Place sections into the free PVS windows.
+
+        Best-fit decreasing handled the large metas but shaved every
+        remaining window down to just below the next block size.  After a
+        few hundred placements the free list held tens of KiB in ~10 KiB
+        fragments and a 10 KiB table could not fit.  Try the deterministic
+        order first; on failure, retry with the small items shuffled.  If
+        ``reserve`` is given, a packing is accepted only when those later
+        allocations still fit too (the fixed 4 KiB projectile atlases
+        cannot be split).  The RNG seed is fixed, so the layout is
+        reproducible.
+        """
+        guard = pvs_guard if guard is None else guard
+        base = [[s[0], s[1], s[2]] for s in free]
+        items = sorted(sz_map, key=lambda k: -sz_map[k])
+        big = [k for k in items if sz_map[k] > 16384]
+        small = [k for k in items if sz_map[k] <= 16384]
+        import random
+        rng = random.Random(1)
+        last = None
+        for attempt in range(max(1, tries)):
+            shuffled = small[:]
+            if attempt:
+                rng.shuffle(shuffled)
+            order = big + shuffled
+            alloc, state = _pack(sz_map, base, guard, order, pack_small,
+                                 rng if attempt else None)
+            if alloc is None:
+                # Locate the first item that failed, for the error message.
+                last = order[-1], sz_map[order[-1]]
+                continue
+            ok = True
+            _state = state
+            for r_map, r_guard in reserve:
+                r_items = sorted(r_map, key=lambda k: -r_map[k])
+                _a, _state2 = _pack(r_map, _state, r_guard, r_items, False)
+                if _a is None:
+                    ok = False
+                    break
+                _state = _state2
+            if not ok:
+                continue
+            free[:] = state
+            return alloc
+        raise ValueError(f"{last and last[0] or '?'}: no free PVS bank "
+                         f"window for {last and last[1] or 0} bytes")
     # Animation records share one bank; 2x frame pages are scattered into
     # free ROM windows and carry their own bank byte for DMA.
     proj_order = [k for k in CHARS if k in PROJECTILE_BLOBS]
@@ -9644,14 +9835,19 @@ def emit_newchars_inc(new_keys, msu_slices):
     # last 10 KiB window and left a character table with nowhere to go.
     combined_sizes = ({("meta", k): size for k, size in meta_sz.items()} |
                       {("table", k): size for k, size in tab_sz.items()})
-    combined_alloc = grab(combined_sizes)
+    # Projectile atlases are a fixed 4 KiB each and must be contiguous;
+    # the character packing is only accepted when they (and the AI table)
+    # still fit in the leftover windows.
+    ai_sz = _inc_size("ai_tables.inc")
+    combined_alloc = grab(combined_sizes, tries=8000,
+                          reserve=((proj_lengths, 16),
+                                   ({"__ai": ai_sz}, 0)))
     pvs_meta = {k: combined_alloc[("meta", k)] for k in meta_sz}
     pvs_tab = {k: combined_alloc[("table", k)] for k in tab_sz}
-    # Projectile atlases are a fixed 4 KiB each and must be contiguous; the
-    # AI table avoids the per-character section banks so a 30K table never
-    # pushes Vice/Kyo's shared bank 60 over its 32K window.
-    pvs_projgfx = grab(proj_lengths, guard=16)
-    pvs_ai = grab({"__ai": _inc_size("ai_tables.inc")})["__ai"]
+    # Projectile atlases (4 KiB, contiguous) and the AI table use the
+    # leftover windows that the combined pass reserved above.
+    pvs_projgfx = grab(proj_lengths, guard=16, tries=40)
+    pvs_ai = grab({"__ai": ai_sz}, tries=40)["__ai"]
     # The shared projectile descriptor table is small; allocate it after the
     # 64 KiB Chang meta section has claimed the full-window slot.
     proj_slot = max((slot for slot in free

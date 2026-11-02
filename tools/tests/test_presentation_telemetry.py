@@ -33,7 +33,10 @@ class PresentationTelemetryTests(unittest.TestCase):
             self.assertIn(band, FIGHT)
         # Live path must select a band; full flush is opt-in via HUD_FULL.
         self.assertIn("beq FlushHudLive", FIGHT)
-        self.assertIn("jsr FlushHudRange", FIGHT)
+        # The call may be a tail jmp: the Fight bank is full and the helper
+        # returns directly to the frame routine either way.
+        self.assertTrue("jsr FlushHudRange" in FIGHT
+                        or "jmp FlushHudRange" in FIGHT)
         self.assertIn("inc.w TEL_HUD_FRAMES", FIGHT)
 
     def test_coalesced_pose_counter_is_wired(self):

@@ -274,6 +274,20 @@ triggerall = command = "MFDB_a+db+df"
 triggerall = statetype != A
 trigger1 = ctrl
 
+[State -1, special_85]
+type = ChangeState
+value = 3105
+triggerall = command = "MDFDB_db+df+x"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_86]
+type = ChangeState
+value = 3105
+triggerall = command = "MDFDB_db+df+y"
+triggerall = statetype != A
+trigger1 = ctrl
+
 [State -1, special_58]
 type = ChangeState
 value = 1000
@@ -285,20 +299,6 @@ trigger1 = ctrl
 type = ChangeState
 value = 1010
 triggerall = command = "QCF_Y"
-triggerall = statetype != A
-trigger1 = ctrl
-
-[State -1, special_85]
-type = ChangeState
-value = 3100
-triggerall = command = "MDFDB_db+df+x"
-triggerall = statetype != A
-trigger1 = ctrl
-
-[State -1, special_86]
-type = ChangeState
-value = 3110
-triggerall = command = "MDFDB_db+df+y"
 triggerall = statetype != A
 trigger1 = ctrl
 

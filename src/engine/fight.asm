@@ -1703,8 +1703,8 @@ FHB_next_ok:
     sta scr1
     lda.l HudBandTab+5,x
     sta scr2
-    jsr FlushHudRange
-    rts
+    jmp FlushHudRange
+
 FlushHudDone:
     rts
 
@@ -2240,8 +2240,8 @@ ST_round_voice:
 ST_finalrd:
     lda #8
 ST_rdplay:
-    jsr RoundVoice
-    rts
+    jmp RoundVoice
+
 
 ; (SelNameTab removed: .l loads resolve the code bank wrong; sel*<Str strings
 ;  are branched on directly in DrawSelect/DrawBanner)
@@ -3073,8 +3073,8 @@ SLC_roll:
     bra SLC_try
 SLC_go:
     ldx.b scr5
-    jsr SelLockN
-    rts
+    jmp SelLockN
+
 
 ; names follow the cursors: track which char each side's cursor sits on
 ; (SFACE1/2 feeds the OBJ name row in SelDrawOam).
@@ -3379,8 +3379,8 @@ ST_cpuflow:
 +   jsr StartFight
     rts
 ST_refresh:
-    jsr SelDrawOam
-    rts
+    jmp SelDrawOam
+
 
 ; ---------------------------------------------------------------------------
 ; Mid-fight join (Single Play / Team Play).  START on a CPU-driven pad opens
@@ -3874,8 +3874,8 @@ DrawBanner:
     rep #$20
     .ACCU 16
     lda #14.w
-    jsr DrawQuoteRow
-    rts
+    jmp DrawQuoteRow
+
 ; A = HUD row, scr2 = quote string (24-bit far pointer into a quote bank).
 ; Centres the row; empty strings (len 0) are skipped.
 DrawQuoteRow:
@@ -3917,8 +3917,8 @@ DB_draw:
     sta scr0
     lda #BStrDraw.w
     sta scr2
-    jsr WriteStrBigData
-    rts
+    jmp WriteStrBigData
+
 
 TitleTick:
     sep #$20
@@ -3980,8 +3980,8 @@ TT_start:
     beq TT_campaign
     bra TT_free
 TT_campaign:
-    jsr CampResolve
-    rts
+    jmp CampResolve
+
 TT_free:
     stz wins1                           ; fresh match
     stz wins2
@@ -5688,6 +5688,9 @@ ActOp:
 +   cmp #17
     bne +
     jmp AO_velmuloff
++   cmp #18
+    bne +
+    jsr AO_hitreset                      ; low-bank MoveHitReset helper
 +   rts
 AO_pfx:                                 ; PalFX: arg = bright-flash ticks
     ldx fofs
@@ -7822,8 +7825,7 @@ StateRet:
     ; attacker must keep re-seating it from the generated BindTab every
     ; tick.  ThrowBind returns immediately when nobody is held or the
     ; current state has no bind rows.
-    jsr ThrowBind
-    rts                                 ; ClampX lives in the FightMenuTail
+    jmp ThrowBind                       ; ClampX lives in the FightMenuTail
 
 ; BodySep: grounded, non-grabbed fighters keep BODY_SEP pixels between
 ; axes (the mugen pushbox).  Without it a forward-moving attack glides
@@ -8457,8 +8459,8 @@ StVictimHeld:                           ; 820: bound pose, own anim data
     and #(JOY_Y|JOY_B).w
     bne VH_escape
 VH_no_tech:
-    jsr AnimTick                        ; victim's own anim 820; position
-    rts                                 ;   is owned by the attacker's bind
+    jmp AnimTick                        ; victim's own anim 820; position
+                                        ;   is owned by the attacker's bind
 VH_escape:                              ; tech: both fighters back to neutral
     ldx fofs
     stz FP+F_GRAB,x                     ; victim released (clears F_OWNER too)
@@ -9995,8 +9997,7 @@ AnimTick:
     bne +
     jmp AT_rec
 +   jsr PickJumpState                     ; hitstun ended mid-air: fall again
-    jsr EnterState
-    rts
+    jmp EnterState
 ++  jmp AT_stay
 AT_nothit:
     .ACCU 8                               ; runtime acc is still 8-bit here;
@@ -10055,8 +10056,7 @@ AT_nodown:
     bne +
     rep #$20
     .ACCU 16
-    jsr JumpTakeoff                       ; squat over: launch and pick air anim
-    rts
+    jmp JumpTakeoff                       ; squat over: launch and pick air anim
     + 
     .ACCU 8
     sec
@@ -19468,6 +19468,22 @@ TL_next:
     bra TL_row
 TL_no:
     lda #0
+    rts
+.ENDS
+
+; MoveHitReset helper: the Fight window is full, so the routine lives in
+; the free low-bank gap between TransLive ($0E36) and ProjClash ($0F00).
+; ActOp calls it with a 16-bit jsr (same 64K bank).
+.BANK 50 SLOT 0
+.ORGA $0E80
+.SECTION "HitResetLow" FORCE
+AO_hitreset:                            ; re-arm the current state's HitDef
+    ldx fofs                            ;   for the next strike of a
+    sep #$20                            ;   ranbu-style flurry.  Clearing
+    .ACCU 8                             ;   the per-move counter also keeps
+    stz FP+F_HITDONE,x                  ;   MoveHitFinisher from forcing a
+    stz movehits,x                      ;   knockdown on the fifth contact.
+    stz lastsid,x
     rts
 .ENDS
 

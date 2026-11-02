@@ -1,44 +1,7 @@
 {
   "character": "robert",
-  "config_hash": "55a7d689d8a51562d179342581a3a52bd278a659e7ffb066b39016d04f585556",
-  "corrections": [
-    {
-      "after": 0,
-      "before": 1152,
-      "confidence": "ALTA",
-      "controller": 12,
-      "expression": "0",
-      "key": "grvx",
-      "kind": "combat",
-      "property": "guard.velocity",
-      "runtime_scope": "native_scalar",
-      "sid": 85,
-      "source": {
-        "file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Robert-KOF98/Robert-H.cns",
-        "line": 852
-      },
-      "state": 3100,
-      "status": "correctable"
-    },
-    {
-      "after": 0,
-      "before": 1152,
-      "confidence": "ALTA",
-      "controller": 12,
-      "expression": "0",
-      "key": "grvx",
-      "kind": "combat",
-      "property": "guard.velocity",
-      "runtime_scope": "native_scalar",
-      "sid": 86,
-      "source": {
-        "file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Robert-KOF98/Robert-H.cns",
-        "line": 1064
-      },
-      "state": 3110,
-      "status": "correctable"
-    }
-  ],
+  "config_hash": "dc4764d87622f7273626bf9ff4681b72ebaa40bb592ca1374cff3fc5d7158064",
+  "corrections": [],
   "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Robert-KOF98/Robert-KOF98.def",
   "inputs": {
     "assets/characters/Robert-KOF98/Config.cns": "c5fad60a80039d31bf3d62abe24fcf8cd8a3d1109c65620223d38c92efdd50ad",
@@ -55,7 +18,7 @@
     "assets/characters/Robert-KOF98/Robert.cns": "d0cbc03af5998aa5bd851665c7a18489ed63774d4f7f5a05517a3fe940f25162",
     "assets/characters/Robert-KOF98/Robert.sff": "ecce5a5248cc2f98511bc47da57b62927105d2c28b5c30701eee53b3f2864f80",
     "assets/characters/Robert-KOF98/Robert.snd": "63af8d30297fa915f06da4bbb73b72732b0874519b3a6801acfc85798143426e",
-    "assets/characters/Robert-KOF98/Robert_SNES.cmd": "a69593c75129b95dc09a78e7decb0846ad818d0263d82ff81a9fb0a16181d481",
+    "assets/characters/Robert-KOF98/Robert_SNES.cmd": "c976a73b519dca6bba0ebd0b7d014ef25ec4cf77ea68d82e6aa8eb6b213e644c",
     "assets/characters/Robert-KOF98/Robert_SNES.cns": "9f6e508bcc6e0b03c9768d902fd9942de74536818080b0f773f3e79818f20792",
     "assets/characters/Robert-KOF98/act/act01.act": "83959a3d111ad4dbe9a4cb098812ff8d1a663d3fb1ce544520c54acea8b57864",
     "assets/characters/Robert-KOF98/act/act02.act": "14bf4b3ed190051cec102f9362cd68550d6f9551a6762ea7c619fc5dc5871b12",

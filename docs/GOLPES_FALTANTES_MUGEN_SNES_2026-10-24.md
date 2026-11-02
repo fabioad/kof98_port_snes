@@ -116,11 +116,13 @@ Foram encontrados **61 diretórios de personagens ativos nos assets**, dos quais
 
 - **Especiais/variações:** Ko'ou Ken EX/ura (1050); Koho EX/ura (1150/1160); Hien Shippuu Kyaku '95 (1250/1260); Kyokugenryuu Renbu Ken (1400); Ko'ou Ken aéreo (2000/2010); Ko'ou Geki (2100).
 - **Supers:** MAX Haoh Shokou Ken (3050); Ryuuko Ranbu normal/MAX (3100/3110/3150); MAX Tenchi Haoh Ken (3250); super descartado/experimental `MAX没超必殺技` (3350).
+- **Implementado:** Ryuuko Ranbu normal/forte — o golpe entra direto no flurry 3120 (Multi-Hit com MoveHitReset) e finaliza em 3121. O MAX 3150 continua ausente.
 
 ### Robert
 
 - **Especiais/variações:** Ryuugeki Ken EX/ura (1050); Hien Shippuu Kyaku e versão '95 (1250/1260); Kyokugenryuu Renbu Kyaku (1400); Sen'en Renbu Kyaku (1450).
 - **Supers:** Haoh Shokou Ken normal/MAX (3000/3010/3020); MAX Ryuuko Ranbu (3120); Muei Shippuu Juudan Kyaku normal/MAX (3200/3210/3220); Muei Senpuu Juudan Kyaku normal/MAX (3250/3260/3270).
+- **Implementado:** Ryuuko Ranbu normal/forte — o flurry 3105 (MoveHitReset) finaliza em 3107. A variante MAX 3120/3125 continua ausente.
 - **Comando ausente:** Ryuugeki Ken forte 1010 tem mapeamento no gerador, mas não aparece como entrada de comando na tabela compilada examinada.
 - A entrada original que menciona 3050 não tem esse Statedef no CNS mesclado; não a contei como golpe adicional válido.
 
@@ -286,6 +288,7 @@ Foram encontrados **61 diretórios de personagens ativos nos assets**, dos quais
 
 - **Especial:** Ouka Kyaku (1400).
 - **Supers:** MAX Shinkuu Hadouken (3050); Haru Ichiban normal/MAX (3100/3150); Midare Zakura normal/MAX (3200/3250); Haru Goku Satsu (3300).
+- **Implementado:** Haru Ichiban normal (3100) como flurry de quatro contatos + finalizador, em duas fatias de animação. O MAX 3150 continua ausente.
 
 ## Personagens dos assets que ainda estão inteiramente fora da ROM
 

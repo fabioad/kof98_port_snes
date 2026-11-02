@@ -59,6 +59,16 @@ command = ~D, DF, F, D, DF, F, x+y
 time = 18
 
 [Command]
+name = "MDFDF_df+a"
+command = ~D, DF, F, D, DF, F, a
+time = 18
+
+[Command]
+name = "MDFDF_df+b"
+command = ~D, DF, F, D, DF, F, b
+time = 18
+
+[Command]
 name = "FF"
 command = F, F
 time = 18
@@ -260,6 +270,20 @@ trigger1 = ctrl
 type = ChangeState
 value = 3050
 triggerall = command = "MDFDF_df+xy"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_88]
+type = ChangeState
+value = 3100
+triggerall = command = "MDFDF_df+a"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_89]
+type = ChangeState
+value = 3100
+triggerall = command = "MDFDF_df+b"
 triggerall = statetype != A
 trigger1 = ctrl
 

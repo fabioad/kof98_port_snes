@@ -81,7 +81,9 @@ class ProjectileCalibrationTests(unittest.TestCase):
                          (48, 49, 85, 86))
         # Robert's Ryuga anti-airs chain into airborne follow-ups whose
         # HitDef inherits the jump VelSet, so they used to launch a shot.
-        self.assertEqual(build_fight.PROJECTILE_EXCLUDE["robert"], (50, 51))
+        # 85/86 are the ranbu flurry/finish, also melee.
+        self.assertEqual(build_fight.PROJECTILE_EXCLUDE["robert"],
+                         (50, 51, 85, 86))
 
     def test_extra_projectile_moves_are_wired(self):
         self.assertEqual(build_fight.EXTRA_PROJECTILE_MOVES["andy"], {58: 1150})

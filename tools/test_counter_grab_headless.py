@@ -56,8 +56,12 @@ def wait(core, pred, label, limit=8000):
 
 
 def boot_select(core):
-    wait(core, lambda: core.word(GS) == 7, "opening")
-    tap(core, START)
+    # The shipping build opens with the MSU video (gs14); older ROMs went
+    # straight to the short intro (gs7).  Skip whichever is present, then
+    # wait for the title.
+    wait(core, lambda: core.word(GS) in (7, 14), "opening")
+    if core.word(GS) == 14:
+        tap(core, START)
     wait(core, lambda: core.word(GS) == 0, "title")
     core.step(60)
     tap(core, START)
