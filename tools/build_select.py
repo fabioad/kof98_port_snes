@@ -27,6 +27,7 @@ import struct
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from asset_paths import resolve as resolve_asset
 from sff import Sff, tiles4bpp  # noqa: E402
 from PIL import Image  # noqa: E402
 
@@ -270,7 +271,7 @@ def main():
     faces_px = {}   # charid -> RGBA icon sized to the detected box
     for cid, cell in vis:
         sff_rel = ROSTER[cid][0]
-        csff = Sff(os.path.join(CHARS, sff_rel))
+        csff = Sff(resolve_asset(ROOT, os.path.join("assets", "characters", sff_rel)))
         icon, _ = sprite_rgb(csff, *ICON_SPR)
         box = cells[cell]
         iw, ih = box[2] - box[0] - 1, box[3] - box[1] - 1

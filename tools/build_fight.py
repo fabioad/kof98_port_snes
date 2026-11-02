@@ -20,6 +20,7 @@ import unicodedata
 import zlib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from asset_paths import resolve as resolve_asset
 from sff import Sff, Sprite, snes_pal, tiles4bpp
 from runtime_abi import ABI as RUNTIME_ABI, emit as emit_runtime_abi
 from calibration.projectiles import (PROJECTILE_ACTIONS,
@@ -43,6 +44,11 @@ from calibration.projectiles import (PROJECTILE_ACTIONS,
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "build", "gen_fight")
+
+
+def asset_path(rel):
+    """Absolute project path with case-insensitive fallback."""
+    return resolve_asset(ROOT, rel)
 
 # (name, chr-bytes) pairs appended to kof98-snes.msu at 32 KiB alignment;
 # emitted as msu1_bases.inc + the data file at the end of the build.  Keyed by
@@ -1406,6 +1412,9 @@ CHARS = {
         # air-whiff; see the hit path in fight.asm.
         "hitdef_from_state": {48: (1005, {"active": 7, "guard": 0x2})},
         "pow_override": {96: -1000},
+        # Stream Daimon's CHR from MSU: the reactivated supers pushed the
+        # ROM-resident blob into bank 43, where EndData0 lives.
+        "msu": True,
         "display": "DAIMON",
     },
 }
@@ -1554,9 +1563,93 @@ MAX_SIDS_OVERRIDE = {
     # Ryu's 88 is the explicit MAX hadouken.  87 is wired as the normal
     # QCBx2 kick super even though the source state has the SDM cost shape.
     "ryu": (88,),
+    # Reactivated MAX/SDM variants whose source comments do not carry the
+    # MAX/SDM tag: Leona's strong Rebel Spark, Chizuru's HSDM/MAX2 and
+    # Mr. Big's Blaster Wave MAX + unnamed MAX super.
+    "leona": (88,),
+    "chizuru": (87,),
+    "mrbig": (88, 89),
 }
 # name -> byte mask, bit0 = sid85 ... bit4 = sid89.
 MAX_MASKS = {}
+
+# --- command-state reactivation (2026-11-02) ------------------------------
+# The generated import only wired the first super pair (85/86).  These rows
+# restore the remaining command targets after apply_profile, so profiles
+# created against the reduced config stay valid.  Each row is
+# (sid, mugen state, AIR action).  Follow-up states that carry the active
+# HitDef are included so the root animation does not freeze.
+POST_CAL_REACTIVATED = {
+    "iori":     [(103, 3050, 3050)],
+    "saisyu":   [(87, 3050, 3000), (88, 3100, 3101),
+                 (89, 3110, 3111), (66, 3150, 3151)],
+    "heidern":  [(87, 3050, 3000), (88, 3100, 3100),
+                 (89, 3110, 3110), (66, 3150, 3150)],
+    "takuma":   [(87, 3020, 3020), (58, 3220, 3210),
+                 (88, 3100, 3100), (89, 3120, 3100)],
+    "clark":    [(58, 1500, 1500), (59, 1510, 1510),
+                 (87, 3050, 3000), (88, 3100, 3100),
+                 (89, 3110, 3110), (66, 3150, 3100)],
+    "ralf":     [(87, 510, 510), (88, 511, 510),
+                 (89, 520, 520), (58, 521, 521),
+                 (59, 550, 550), (60, 570, 570),
+                 (61, 512, 512)],
+    "leona":    [(58, 3250, 4020), (87, 3100, 3100),
+                 (88, 3150, 3150), (89, 3300, 3300),
+                 (61, 3102, 3102), (62, 3101, 3101),
+                 (63, 3151, 3151), (64, 3152, 3152),
+                 (65, 3301, 3301), (66, 3302, 3302)],
+    "benimaru": [(60, 1300, 1300), (61, 1310, 1300),
+                 (62, 1600, 1600), (87, 3050, 3050),
+                 (89, 3100, 3100), (88, 3150, 3150),
+                 (66, 3300, 3300), (63, 1211, 1211)],
+    "daimon":   [(63, 1400, 1400), (59, 1600, 1600),
+                 (87, 3050, 3000), (89, 3100, 3100),
+                 (88, 3150, 3100), (60, 3160, 3110),
+                 (61, 3161, 3111), (62, 3170, 3120)],
+    "terry":    [(87, 3050, 3050)],
+    "andy":     [(87, 3150, 3150)],
+    "ryo":      [(87, 3050, 3050)],
+    "robert":   [(87, 3120, 3120), (88, 3250, 3250),
+                 (89, 3260, 3260)],
+    "athena":   [(87, 3100, 3100), (88, 4000, 4000)],
+    "king":     [(87, 3500, 3500)],
+    "chizuru":  [(87, 2200, 2200)],
+    "kim":      [(87, 3120, 3100)],
+    "chang":    [(87, 3500, 3500)],
+    "choi":     [(87, 3000, 3000), (88, 3500, 3500)],
+    "yashiro":  [(87, 3500, 3500)],
+    "shermie":  [(60, 7000, 7000), (61, 7050, 7050)],
+    "chris":    [(60, 7100, 7100), (61, 7150, 7150)],
+    "billy":    [(62, 3100, 3100), (64, 1800, 1800),
+                 (66, 1850, 1800)],
+    "lucky":    [(88, 2900, 2900), (89, 3000, 2900)],
+    "mrbig":    [(87, 3000, 3000), (88, 3010, 3010),
+                 (89, 3250, 3250)],
+    "eiji":     [(87, 3020, 3020)],
+    "sakura":   [(87, 3050, 3000)],
+}
+# Command-list categories for states parked outside 85-89.  2 = SPC,
+# 3 = SUP, 4 = MAX.
+POST_CAL_CATEGORIES = {
+    "iori":     {103: 4},
+    "saisyu":   {66: 4},
+    "heidern":  {66: 4},
+    "takuma":   {58: 4},
+    "clark":    {58: 2, 59: 2, 66: 4},
+    "ralf":     {58: 3, 59: 4, 60: 4},
+    "leona":    {58: 4},
+    "benimaru": {66: 3},
+    "daimon":   {60: 3},
+    "shermie":  {60: 2, 61: 2},
+    "chris":    {60: 2, 61: 2},
+    "billy":    {62: 2, 64: 2, 66: 2},
+}
+# States whose source has no PowerAdd of their own but are reached by a
+# super command.
+POST_CAL_POW_OVERRIDE = {
+    "daimon": {60: -1000},
+}
 
 
 def max_sid_mask(sids):
@@ -2025,6 +2118,7 @@ if "andy" in CHARS:
 # their QCB+X stance never reached the port's command table, so it is not
 # listed here until that stance gets a runtime slot.
 COUNTER_GRAB_STATES = {
+    "daimon":  {"hi": (1410, 1415, 1410)},
     "geese":   {"hi": (1410, 1411, 1410), "lo": (1420, 1421, 1420)},
     "heidern": {"hi": (1420, 1430, 1420)},
     "mary":    {"hi": (1505, 1510, 1505)},
@@ -2152,7 +2246,10 @@ CELL = 16
 # windows (fight.asm).  Their metasprite blob is split into _meta.inc so the
 # restored AIR frames do not push the table section past that window; the
 # descriptor already resolves CH_MBANK through the SprData label.
-SPLIT_OLD = ("vice", "mature", "leona", "ralf")
+SPLIT_OLD = ("vice", "mature", "leona", "ralf",
+             # Reactivated supers need their metasprite banks separated
+             # from the near-full 32 KiB table windows.
+             "saisyu", "clark")
 CHARSET = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:!?'-/+>,@\""
 
 # Victory-quote languages.  The first item is the JSON file name, the second
@@ -4215,7 +4312,7 @@ def _read_text_any(path):
 
 def _source_cmd_path(cfg):
     """Original MUGEN CMD next to the sanitized <Char>_SNES.cmd, if any."""
-    snes = os.path.join(ROOT, cfg["cmd"])
+    snes = asset_path(cfg["cmd"])
     cdir = os.path.dirname(snes)
     if not os.path.isdir(cdir):
         return None
@@ -4257,7 +4354,7 @@ def _state_labels(path):
 
 def _readme_moves(cfg):
     """English move names from <char>/txt/ReadMe(ENG).txt (best effort)."""
-    snes = os.path.join(ROOT, cfg["cmd"])
+    snes = asset_path(cfg["cmd"])
     cdir = os.path.dirname(snes)
     paths = []
     for root, _dirs, files in os.walk(cdir):
@@ -5294,7 +5391,7 @@ def kyo_damage_profile():
     global _KYO_DAMAGE_PROFILE
     if _KYO_DAMAGE_PROFILE is None:
         cfg = CHARS["kyo"]
-        cns = parse_cns(os.path.join(ROOT, cfg["cns"]),
+        cns = parse_cns(asset_path(cfg["cns"]),
                         cfg.get("coord_scale", 1),
                         cfg.get("damage_scale", 1))
         moves = cns[0]
@@ -5598,7 +5695,7 @@ def resolve_p2_candidates(name, cfg):
     if override:
         return cfg.get("palette_act"), [override]
 
-    def_path, text = _find_char_def(cfg["sff"])
+    def_path, text = _find_char_def(asset_path(cfg["sff"]))
     if not text:
         return cfg.get("palette_act"), []
     pals, defaults = _parse_def_palettes(text)
@@ -5690,7 +5787,7 @@ def _shift_palette(pal, degrees=140):
 def build_char(name, cfg, global_pal=None):
     coord_scale = cfg.get("coord_scale", 1)
     char_scale = cfg.get("char_scale", 1.0)
-    sff = Sff(os.path.join(ROOT, cfg["sff"]))
+    sff = Sff(asset_path(cfg["sff"]))
     # Some SFFv1 imports point the body cels at a shadow/alternate palette
     # bank (e.g. Athena ships palette 1 as a dark-red dim copy while palette
     # 0 carries the normal blue/white colours).  Force the intended bank
@@ -5699,7 +5796,7 @@ def build_char(name, cfg, global_pal=None):
     if palette_bank is not None:
         for sprite in sff.sprites:
             sprite.palidx = palette_bank
-    air = parse_air(os.path.join(ROOT, cfg["air"]))
+    air = parse_air(asset_path(cfg["air"]))
     # A few imported clips end a phase with a trailing t=255 "hold until the
     # next ChangeState" element.  When the caller only needs a short recovery
     # (or an anim-end hand-over), replace that hold with a bounded tick count.
@@ -5749,7 +5846,7 @@ def build_char(name, cfg, global_pal=None):
      cns_statedefs, cns_binds, cns_acts,
      cns_reversals, cns_hitdef_lists,
      cns_snds, cns_hitsnds, cns_exprows) = parse_cns(
-        os.path.join(ROOT, cfg["cns"]), coord_scale,
+        asset_path(cfg["cns"]), coord_scale,
         cfg.get("damage_scale", 1), char=name,
         char_scale=char_scale)
 
@@ -5807,6 +5904,18 @@ def build_char(name, cfg, global_pal=None):
         cfg["anims"][_sid] = _anim
         anims[_sid] = _anim
 
+    # Reactivate command targets that the generated import never wired.
+    # Runs after apply_profile so profiles written against the reduced
+    # config stay valid.
+    for _sid, _state, _anim in POST_CAL_REACTIVATED.get(name, ()):
+        cfg["moves"][_sid] = _state
+        cfg["anims"][_sid] = _anim
+        anims[_sid] = _anim
+    for _sid, _cat in POST_CAL_CATEGORIES.get(name, {}).items():
+        cfg.setdefault("cmd_categories", {})[_sid] = _cat
+    for _sid, _delta in POST_CAL_POW_OVERRIDE.get(name, {}).items():
+        cfg.setdefault("pow_override", {})[_sid] = _delta
+
     # Which super slots are MAX/SDM versions?  Stored in a descriptor byte
     # (CH_MAXMASK) so the matcher no longer guesses from the sid number.
     if "max_sids" in cfg:
@@ -5819,7 +5928,7 @@ def build_char(name, cfg, global_pal=None):
             _state = cfg.get("moves", {}).get(_sid)
             if _state is None:
                 continue
-            if state_is_max(cfg["cns"], cns_headers, cns_statedefs,
+            if state_is_max(asset_path(cfg["cns"]), cns_headers, cns_statedefs,
                             _state):
                 _max_sids.add(_sid)
     _max_sids = {x for x in _max_sids if x in cfg.get("moves", {})}
@@ -5928,7 +6037,7 @@ def build_char(name, cfg, global_pal=None):
     # Resolve the calibrator before parse_cmd so a per-character button
     # override reaches ButtonTab and the command-list labels too.
     calibration = resolve_input_calibration(name, cfg)
-    button_rows = parse_cmd(os.path.join(ROOT, cfg["cmd"]),
+    button_rows = parse_cmd(asset_path(cfg["cmd"]),
                             cfg["buttons"], cfg["moves"])
 
     # ProjTab rows are needed both for the animation pass below (recovery
@@ -6058,7 +6167,7 @@ def build_char(name, cfg, global_pal=None):
     # even when its SFF stores a different palette in every sprite.
     palette_ref = None
     if cfg.get("palette_act"):
-        with open(os.path.join(ROOT, cfg["palette_act"]), "rb") as f:
+        with open(asset_path(cfg["palette_act"]), "rb") as f:
             raw_pal = f.read()
         if len(raw_pal) < 768:
             raise ValueError(f"invalid ACT palette: {cfg['palette_act']}")
@@ -7175,12 +7284,12 @@ def build_char(name, cfg, global_pal=None):
     # motion idx, held dirs, forbidden held dirs, posture mask, state.
     # MotTab points at motion records: .db nelem,window then (dir,btn)
     # element bytes in input order.
-    cmddefs = parse_command_defs(os.path.join(ROOT, cfg["cmd"]))
+    cmddefs = parse_command_defs(asset_path(cfg["cmd"]))
     # MUGEN allows literal button combos as command names in State -1
     # triggers (Terry/Athena/KOF98 throw "x+y") without a [Command] block.
     # The native matcher only knows named commands, so synthesize their
     # button definition or the throw rule is silently dropped.
-    _cmd_text = open(os.path.join(ROOT, cfg["cmd"]), encoding="utf-8-sig",
+    _cmd_text = open(asset_path(cfg["cmd"]), encoding="utf-8-sig",
                      errors="replace").read()
     for _cname in re.findall(r'command\s*=\s*"([^"]+)"', _cmd_text):
         if _cname in cmddefs or "+" not in _cname:
@@ -7209,7 +7318,7 @@ def build_char(name, cfg, global_pal=None):
     # uses the diagonal-free HCF/HCB forms plus DP/RDP shortcut rules.
     display_defs = dict(cmddefs)
     apply_half_circle_shortcuts(cmddefs)
-    rules = cmd_rules(os.path.join(ROOT, cfg["cmd"]), cmddefs, wired)
+    rules = cmd_rules(asset_path(cfg["cmd"]), cmddefs, wired)
     rules = add_shortcut_rules(rules, cmddefs)
     # A few source packages have a throw state but no [State -1, Throw]
     # command (Billy) or point it at a non-throw state (Chin 900).  Give
@@ -8499,11 +8608,13 @@ def build_spark():
     air_cache = {}
 
     def spark_source(sff_rel, air_rel):
-        if sff_rel not in sff_cache:
-            sff_cache[sff_rel] = Sff(os.path.join(ROOT, sff_rel))
-        if air_rel not in air_cache:
-            air_cache[air_rel] = parse_air(os.path.join(ROOT, air_rel))
-        return sff_cache[sff_rel], air_cache[air_rel]
+        sff_abs = resolve_asset(ROOT, sff_rel)
+        air_abs = resolve_asset(ROOT, air_rel)
+        if sff_abs not in sff_cache:
+            sff_cache[sff_abs] = Sff(sff_abs)
+        if air_abs not in air_cache:
+            air_cache[air_abs] = parse_air(air_abs)
+        return sff_cache[sff_abs], air_cache[air_abs]
 
     # Palette 2 is shared by impact sparks and all character projectiles.
     # Build it from the actual effect pixels across the roster so each source
@@ -8527,12 +8638,12 @@ def build_spark():
     for name, cfg in CHARS.items():
         if not cfg.get("sff") or not cfg.get("air") or not cfg.get("cns"):
             continue
-        sff, air = spark_source(cfg["sff"], cfg["air"])
+        sff, air = spark_source(asset_path(cfg["sff"]), asset_path(cfg["air"]))
         sequence = PROJECTILE_ACTION_SEQUENCES.get(name)
         if sequence is not None:
             selected = projectile_collect_usable(sff, air, sequence)
         else:
-            cns = parse_cns(os.path.join(ROOT, cfg["cns"]),
+            cns = parse_cns(asset_path(cfg["cns"]),
                             cfg.get("coord_scale", 1),
                             cfg.get("damage_scale", 1))
             statedefs = cns[4]
@@ -8744,7 +8855,7 @@ def build_intro_girls():
     cfg = CHARS.get("mrbig")
     pal_path = os.path.join(OUT, "mrbig_pal.bin")
     if cfg and os.path.exists(pal_path):
-        sff = Sff(os.path.join(ROOT, cfg["sff"]))
+        sff = Sff(asset_path(cfg["sff"]))
         raw = open(pal_path, "rb").read()
         pal = []
         for i in range(0, len(raw) - 1, 2):
@@ -9060,7 +9171,7 @@ def build_portraits():
     table_p2 = []
     for entry in ROSTER:
         rel = entry[0]
-        path = os.path.join(ROOT, "assets/characters", rel)
+        path = asset_path(os.path.join("assets/characters", rel))
         try:
             im, _ = sprite_rgb(Sff(path), 9000, 0)
             im = im.convert("RGBA").resize((24, 24), Image.LANCZOS)
@@ -9072,8 +9183,14 @@ def build_portraits():
         rgb.paste(im, (0, 0), im)
         q = rgb.quantize(colors=3, method=Image.MEDIANCUT,
                          dither=Image.NONE)
-        qp = q.getpalette()
-        cols = [tuple(qp[i * 3:i * 3 + 3]) for i in range(3)]
+        qp = q.getpalette() or []
+        # A fully transparent/blank portrait may quantize to one colour.
+        # Pad the missing entries instead of producing an empty tuple (the
+        # unpack below expects exactly three components per palette row).
+        cols = []
+        for i in range(3):
+            chunk = qp[i * 3:i * 3 + 3]
+            cols.append(tuple(chunk) if len(chunk) == 3 else (0, 0, 0))
         pal = [(0, 0, 0)] + cols
         for r, g, b in pal:
             c = (r * 31 // 255) | ((g * 31 // 255) << 5) \
@@ -9790,6 +9907,9 @@ def emit_newchars_inc(new_keys, msu_slices):
     # 64 KiB window is free and is the only remaining slot large enough for
     # a 33-34 KiB generated table/meta blob (Heavyd/Billy/Mrbig).
     PVS_SLOTS += [(48, 0x6600, 0x10000 - 0x6600)]
+    # Daimon's CHR now streams from MSU, leaving the low halves of banks
+    # 27-42 free (Kyo's CHR uses only their high halves).
+    PVS_SLOTS += [(bank, 0, 0x8000) for bank in range(27, 43)]
     # Bank 56's low half is empty in the hybrid map; its full 32 KiB window
     # keeps 12 KiB projectile atlases from fragmenting the upper banks.
     PVS_SLOTS += [(56, 0x0000, 0x8000)]
@@ -9818,6 +9938,32 @@ def emit_newchars_inc(new_keys, msu_slices):
     PVS_SLOTS += [(119, omega_meta_end, 0x8000 - omega_meta_end),
                   (121, end22_end, 0x8000 - end22_end),
                   (123, end01_end, 0x8000 - end01_end)]
+    # High-half tails after the fixed ending stills.  These banks already
+    # carry EndData9/10/7 in their upper half; exposing the tail after each
+    # fixed block gives the packer three more ~13-18 KiB windows instead of
+    # fragmenting the last 32 KiB slots.
+    def _ending_tail(asset, start):
+        size = ((os.path.getsize(os.path.join(
+            ROOT, "src/gen_menu/end", asset)) + 0xFF) & ~0xFF) + 0x100
+        return start + size, 0x10000 - (start + size)
+
+    for _bank, _asset in ((118, "end04.chr"), (119, "end05.chr"),
+                          (120, "end06.chr"), (121, "end07.chr"),
+                          (122, "end08.chr"), (123, "end09.chr"),
+                          (124, "end10.chr")):
+        _offset, _size = _ending_tail(_asset, 0x8000)
+        if _size > 0:
+            PVS_SLOTS += [(_bank, _offset, _size)]
+    # Bank 125's low half carries EndData3 and its high half EndDataMP;
+    # both fixed blocks leave usable tails.
+    _e3_end = ((os.path.getsize(os.path.join(
+        ROOT, "src/gen_menu/end/end03.chr")) + 0xFF) & ~0xFF) + 0x100
+    PVS_SLOTS += [(125, _e3_end, 0x8000 - _e3_end)]
+    _mp_sz = sum(os.path.getsize(os.path.join(
+        ROOT, "src/gen_menu/end", f"end{i:02d}.{ext}"))
+        for i in range(11) for ext in ("map", "pal"))
+    _mp_end = 0x8000 + ((_mp_sz + 0xFF) & ~0xFF) + 0x100
+    PVS_SLOTS += [(125, _mp_end, 0x10000 - _mp_end)]
 
     def pvs_bank(bank):
         if bank in (126, 127):
@@ -9896,25 +10042,26 @@ def emit_newchars_inc(new_keys, msu_slices):
         remaining window down to just below the next block size.  After a
         few hundred placements the free list held tens of KiB in ~10 KiB
         fragments and a 10 KiB table could not fit.  Try the deterministic
-        order first; on failure, retry with the small items shuffled.  If
-        ``reserve`` is given, a packing is accepted only when those later
-        allocations still fit too (the fixed 4 KiB projectile atlases
-        cannot be split).  The RNG seed is fixed, so the layout is
+        order first; on failure, retry with the full item order shuffled.
+        Shuffling only the small tables kept the large metas in a fixed
+        best-fit pattern that left ~10 KiB tails, so every retry failed the
+        same way.  If ``reserve`` is given, a packing is accepted only when
+        those later allocations still fit too (the fixed 4 KiB projectile
+        atlases cannot be split).  The RNG seed is fixed, so the layout is
         reproducible.
         """
         guard = pvs_guard if guard is None else guard
         base = [[s[0], s[1], s[2]] for s in free]
         items = sorted(sz_map, key=lambda k: -sz_map[k])
-        big = [k for k in items if sz_map[k] > 16384]
-        small = [k for k in items if sz_map[k] <= 16384]
         import random
         rng = random.Random(1)
         last = None
         for attempt in range(max(1, tries)):
-            shuffled = small[:]
             if attempt:
-                rng.shuffle(shuffled)
-            order = big + shuffled
+                order = items[:]
+                rng.shuffle(order)
+            else:
+                order = items
             alloc, state = _pack(sz_map, base, guard, order, pack_small,
                                  rng if attempt else None)
             if alloc is None:
@@ -10048,21 +10195,24 @@ def emit_newchars_inc(new_keys, msu_slices):
     # The small/fixed projectile atlases and the AI table fit in the leftover
     # fragments afterwards.  Allocating the small pieces first fragmented the
     # last 10 KiB window and left a character table with nowhere to go.
-    combined_sizes = ({("meta", k): size for k, size in meta_sz.items()} |
-                      {("table", k): size for k, size in tab_sz.items()})
-    # Projectile atlases are a fixed 4 KiB each and must be contiguous;
-    # the character packing is only accepted when they (and the AI table)
-    # still fit in the leftover windows.
+    # Pack character tables/metasprites together with the fixed projectile
+    # atlases and AI table.  The old two-pass scheme reserved the atlases
+    # after the fact; once the roster grew, random restarts kept producing
+    # layouts where a 4 KiB atlas no longer had a contiguous hole.  Packing
+    # everything in one pass makes the atlas placement part of the same
+    # search, and the 16-byte guard is folded into each atlas item.
     ai_sz = _inc_size("ai_tables.inc")
-    combined_alloc = grab(combined_sizes, tries=8000,
-                          reserve=((proj_lengths, 16),
-                                   ({"__ai": ai_sz}, 0)))
+    all_sizes = {("meta", k): size for k, size in meta_sz.items()}
+    all_sizes.update({("table", k): size for k, size in tab_sz.items()})
+    all_sizes.update({("proj", k): size + 16
+                      for k, size in proj_lengths.items()})
+    all_sizes[("ai",)] = ai_sz
+    combined_alloc = grab(all_sizes, tries=2000000)
     pvs_meta = {k: combined_alloc[("meta", k)] for k in meta_sz}
     pvs_tab = {k: combined_alloc[("table", k)] for k in tab_sz}
-    # Projectile atlases (4 KiB, contiguous) and the AI table use the
-    # leftover windows that the combined pass reserved above.
-    pvs_projgfx = grab(proj_lengths, guard=16, tries=40)
-    pvs_ai = grab({"__ai": ai_sz}, tries=40)["__ai"]
+    pvs_projgfx = {k: combined_alloc[("proj", k)]
+                   for k in proj_lengths}
+    pvs_ai = combined_alloc[("ai",)]
     # The shared projectile descriptor table is small; allocate it after the
     # 64 KiB Chang meta section has claimed the full-window slot.
     proj_slot = max((slot for slot in free
@@ -10080,13 +10230,18 @@ def emit_newchars_inc(new_keys, msu_slices):
     assert _inc_size("vice_spr.inc") <= 0x7000     # remainder of bank 60
     # MatureData uses the free tail of sound bank 55 ($794C-$FFFF).
     assert _inc_size("mature_spr.inc") <= 0x10000 - 0x794C
+    # TakumaData shares bank 83's low half with ShingoChrN.
+    assert _inc_size("takuma_spr.inc") <= 0x8000
     assert _inc_size("rugal_spr.inc") <= 0x3000
     assert 0x3000 + qstr_sz["en"] <= 0x5000
     assert 0x5000 + qstr_sz["fr"] <= 0x8000
     assert _inc_size("iori_spr.inc") <= 0x9000
     assert 0x9000 + qstr_sz["pt"] <= 0x10000
-    assert _inc_size("heidern_spr.inc") <= 0xA000
-    assert 0xA000 + qstr_sz["es"] <= 0x10000
+    # Heidern's reactivated supers push its table past $A000.  Keep the ES
+    # quote strings in the same bank, immediately after the table instead of
+    # at a hard-coded offset.
+    es_off = (_inc_size("heidern_spr.inc") + 0xFF) & ~0xFF
+    assert es_off + qstr_sz["es"] <= 0x10000
     qtab_sz = (_inc_size("quote_tables.inc") +
                _inc_size("char_names.inc") +
                _inc_size("survival_msu.inc"))
@@ -10094,7 +10249,7 @@ def emit_newchars_inc(new_keys, msu_slices):
     assert sum(qstr_sz.values()) <= 0x8000        # standalone bank 52
     assert 0x8000 + qtab_sz <= 0x10000
     pvs_qstr = {"en": (44, 0x3000), "fr": (44, 0x5000),
-                "pt": (58, 0x9000), "es": (59, 0xA000)}
+                "pt": (58, 0x9000), "es": (59, es_off)}
     gfx_inc = ["; per-frame 2x projectile atlases\n.IFDEF PVSNESLIB\n"]
     for k in proj_order:
         bk, org = pvs_projgfx[k]
@@ -10517,6 +10672,11 @@ if __name__ == "__main__":
                 json.dump(manifest, mf, indent=2, ensure_ascii=False)
                 mf.write("\n")
     if MSU_BLOBS or sv_count or video_blob:
+        # MSU-1 data files are read in 512-byte sectors.  Pad the final
+        # partial sector so flashcarts/cores never see a short tail (the
+        # previous layout happened to end aligned; larger voice/video data
+        # can leave a partial sector).
+        msu += b"\0" * ((-len(msu)) % 512)
         defs.append(f"MSU_LAYOUT = ${layout:04X}\n")
         # Write through a temp file and rename: an emulator running during a
         # rebuild keeps this file open, and truncating it in place makes

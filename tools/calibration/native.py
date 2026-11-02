@@ -7,6 +7,7 @@ references fail the build instead of silently applying an obsolete correction.
 import json
 import re
 from pathlib import Path
+from asset_paths import resolve as resolve_asset
 from . import mugen
 from .extract import json_bytes
 
@@ -76,7 +77,7 @@ def read_profile(root, name, cfg):
     if p.get('schema') != 1 or p.get('config_hash') != config_hash(cfg):
         raise ValueError(f'{name}: stale calibration configuration; run tools/calibrate.py again')
     for f, digest in p['inputs'].items():
-        fpath = Path(root) / f
+        fpath = Path(resolve_asset(root, f))
         if not fpath.exists() or mugen.sha(fpath) != digest:
             raise ValueError(f'{name}: stale calibration input {f}; recalibrate before build')
     return p

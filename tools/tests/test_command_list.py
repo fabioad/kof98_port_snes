@@ -62,7 +62,10 @@ class CommandListTests(unittest.TestCase):
                 self.assertGreaterEqual(
                     sum(1 for row in rows if row[1] == 0), 4, name)
                 for sid, cat, move, command in rows:
-                    self.assertLessEqual(sid, 97, (name, sid))
+                    # 103-111 are the imported follow-up/Reversal slots;
+                    # they are valid command targets and still fit the
+                    # one-byte sid field used by CmdList.
+                    self.assertLessEqual(sid, 111, (name, sid))
                     self.assertIn(cat, range(7), (name, sid, cat))
                     self.assertTrue(move and move.strip(), (name, sid))
                     self.assertLessEqual(len(move), 16, (name, move))

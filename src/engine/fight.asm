@@ -21810,8 +21810,8 @@ CharDaimon:
     .dw daimonActiveTab, daimonDamageTab, daimonHitTimeTab
     .dw daimonSlideTab, daimonHitVelTab, daimonButtonTab
     .db $30, 0
-    .dw DaimonChr
-    .db :DaimonChr, 0
+    .dw 0
+    .db MSU_DAIMON_SLICE, 1
     .dw DaimonPal
     .db :DaimonPal, 0
     .dw daimonName
