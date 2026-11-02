@@ -96,3 +96,19 @@ Resultados:
 - O arquivo `.msu` agora é preenchido até múltiplo de 512 bytes.
 - Sempre copie **kof98-snes.sfc e kof98-snes.msu do mesmo build**.
 - Layout MSU atual: `$F416`.
+
+## Correção de travamento Clark × Ralf (02/11/2026)
+
+Os states novos do Clark que não tinham a cadeia completa foram desativados
+temporariamente:
+
+- 1500/1510 (Super Argentine/Napalm) -> faltavam 1511/1520/5690;
+- 3050 (MAX Ultra Argentine) -> faltava 3060 e a cadeia 3061-3067;
+- 3100/3110/3150 (Running Three) -> faltavam 3105/3155/3120/3121/1201.
+
+Entrar nesses states deixava o Clark preso na pose final, com o resto da
+luta ainda rodando. O Ultra Argentine original (3000 -> 109-111) continua
+ligado e é a versão estável. Os comandos ficam sem `sid` até as cadeias
+completas serem importadas e testadas.
+
+Build/verify: ROM checksum `$6B6B`, `make pvsnes-verify` OK.
