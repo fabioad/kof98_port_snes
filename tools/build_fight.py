@@ -1944,18 +1944,24 @@ if "billy" in CHARS:
     ])
 
 # ---------------------------------------------------------------------------
-# Chin: the drink command throw (850 -> 860, release 865/866) and its bottle.
+# Chin: the drink command throw (850 -> 860, release 865/866) and the
+# Zake Attack specials (1000/1100, QCB+P) that drink from the gourd and then
+# swing the flail.  The bottle itself is painted into the 350/850 sprite
+# frames; the 861 Explod is the separate spray effect.
 # ---------------------------------------------------------------------------
 # The generic throw slot 74 was pointing at the blowback state 900, so Chin
 # had no drink hold.  Put the source 850 on 74, keep 860 on the standard bind
 # slot 75 so the victim stays held, and move the CD blowback to free slot 88.
-# The 861 Explod is compiled as a compact one-cell bottle.
+# Slots 62/65 carry the Zake Attack x/y states so the QCB commands reach the
+# gourd-drinking animation instead of being swallowed by the QCF fireball.
 if "chin" in CHARS:
     _chin = CHARS["chin"]
-    _chin["moves"].update({74: 850, 75: 860, 59: 865, 61: 866, 88: 900})
+    _chin["moves"].update({62: 1000, 65: 1100,
+                           74: 850, 75: 860, 59: 865, 61: 866, 88: 900})
     # The package's AIR has no action 900; the CD blowback reuses the
     # existing knockdown/throw pose.
-    _chin["anims"].update({74: 850, 75: 860, 59: 865, 61: 866, 88: 300})
+    _chin["anims"].update({62: 1000, 65: 1100,
+                           74: 850, 75: 860, 59: 865, 61: 866, 88: 300})
     _chin["target_life_fix"] = dict(_chin.get("target_life_fix", {}))
     _chin["target_life_fix"][860] = -8       # eight sips, not the source -120
     _chin["tail_ticks"] = dict(_chin.get("tail_ticks", {}))
@@ -7741,13 +7747,10 @@ SPARK_ANIMS = {
 # (group -1) animate the flicker of the breaking chunk.
 WOOD_SCALE = 4
 EXPLODS = {
-    # One key pose per wood chunk: the intro still shows the flying debris,
-    # and the two freed cells are used by the magic/effect clips below.
+    # One key pose for the intro's flying debris.  Both source Explods
+    # (anim 191/192) reuse it so a full 2x2 magic burst fits in the page.
     "WoodA": ("assets/characters/_excluded/kfm/kfm.sff", WOOD_SCALE,
               [(191, 3, 8)],
-              0x3E),
-    "WoodB": ("assets/characters/_excluded/kfm/kfm.sff", WOOD_SCALE,
-              [(192, 0, 5)],
               0x3E),
     # Oniyaki flame pillar + crest (Kyo 1120/1121, Iori 1101/1102 -- the
     # sprite sheets are identical between the two chars).  The full clips
@@ -7761,23 +7764,22 @@ EXPLODS = {
     "FlameTop": ("assets/characters/Kyo-KOF98/Kyo.sff", 2,
                  [(1110, 3, 12)],
                  0x3E),
-    # Compact one-cell magic clips.  The spark page has only 16 cells and
-    # the two wood frames above were trimmed to make room.
-    # OBJ palette 2 = the shared magic/spark palette; 0x2A keeps the
-    # projectile hues instead of remapping the orb onto the wood palette.
-    "MagicOrbA": ("assets/characters/Athena-98/Athena-98.sff", 2,
-                  [(7700, 0, 8)],
-                  0x2A),
-    "MagicOrbK": ("assets/characters/Kensou/kensou.sff", 4,
-                  [(3030, 0, 8)],
-                  0x2A),
+    # Full-size magic bursts (Athena's Phoenix Fang Arrow / Shining Crystal
+    # Bit and Kensou's Niku Man / Sen Ki Hakkei / Chouryuu Renken).  The
+    # 147x147 source cel at 1/5 scale needs a 2x2 block of 16x16 cells; all
+    # Athena/Kensou magic Explods share this one clip to stay within the
+    # 16-cell page.  OBJ palette 2 = the shared magic palette.
+    "MagicBurst": ("assets/characters/Athena-98/Athena-98.sff", 5,
+                   [(7000, 0, 10)],
+                   0x2A),
     "Bottle": ("assets/characters/chin-kofa/Chin-KOFM.sff", 4,
                [(1005, 0, 10)],
                0x3E),
 }
 # mugen explod anim id -> compiled clip label.  Kyo's flames ride AIR
-# actions 1120/1121; Iori's (identical art) ride 1101/1102.
-EXPLOD_ANIM = {191: "WoodA", 192: "WoodB",
+# actions 1120/1121; Iori's (identical art) ride 1101/1102.  KFM's two intro
+# debris anims share the one compiled chunk.
+EXPLOD_ANIM = {191: "WoodA", 192: "WoodA",
                1120: "FlameRise", 1121: "FlameTop",
                1101: "FlameRise", 1102: "FlameTop"}
 # Per-character overrides for source anim ids that collide across packages.
@@ -7786,12 +7788,21 @@ EXPLOD_ANIM = {191: "WoodA", 192: "WoodB",
 # vertical effect without adding another atlas to the shared 32-cell pool.
 EXPLOD_ANIM_BY_CHAR = {
     "geese": {3001: "FlameRise", 3002: "FlameTop"},
-    # Athena's Psycho Ball / Crystal Bit orbs and the reflected-shield
-    # flashes share a compact one-cell orb.
-    "athena": {7010: "MagicOrbA", 7110: "MagicOrbA",
-               1022: "MagicOrbA", 1023: "MagicOrbA", 1024: "MagicOrbA"},
-    # Kensou's SDM bursts (Niku Man / Sen Ki Hakkei / Chouryuu Renken).
-    "kensou": {3030: "MagicOrbK", 2180: "MagicOrbK"},
+    # Athena's magic: Phoenix Fang Arrow / Shining Crystal Bit bursts plus
+    # the Psycho Ball orbs and the teleport puff.
+    "athena": {7000: "MagicBurst", 7010: "MagicBurst",
+               7100: "MagicBurst", 7110: "MagicBurst",
+               7015: "MagicBurst", 7700: "MagicBurst",
+               1022: "MagicBurst", 1023: "MagicBurst",
+               1024: "MagicBurst"},
+    # Kensou's magic: normal/SDM Niku Man, Sen Ki Hakkei and Chouryuu
+    # Renken bursts, plus the power-up orbs.
+    "kensou": {3000: "MagicBurst", 3010: "MagicBurst",
+               3020: "MagicBurst", 3030: "MagicBurst",
+               2170: "MagicBurst", 2180: "MagicBurst",
+               2120: "MagicBurst", 2130: "MagicBurst",
+               2140: "MagicBurst", 2190: "MagicBurst",
+               711: "MagicBurst", 720: "MagicBurst"},
     # Chin's drink hold: the bottle at his mouth.
     "chin": {861: "Bottle"},
 }
@@ -9760,6 +9771,17 @@ def emit_newchars_inc(new_keys, msu_slices):
     # only the tail after the packed projectile atlases is really free.
     PVS_SLOTS += [(118, 0x6B86, 0x8000 - 0x6B86),
                   (120, 0x0E20, 0x71E0), (122, 0x0000, 0x8000)]
+    # Other low halves are fixed ending stills, but their tails are ROM.
+    # Exposing them keeps the character packer from fragmenting the last
+    # ~10 KiB windows when a new move adds a few metasprite descriptors.
+    omega_meta_end = (_inc_size("omegarugal_meta.inc") + 0x1FF) & ~0xFF
+    end01_end = ((os.path.getsize(os.path.join(
+        ROOT, "src/gen_menu/end/end01.chr")) + 0xFF) & ~0xFF) + 0x100
+    end22_end = ((os.path.getsize(os.path.join(
+        ROOT, "src/gen_menu/end/end22.chr")) + 0xFF) & ~0xFF) + 0x100
+    PVS_SLOTS += [(119, omega_meta_end, 0x8000 - omega_meta_end),
+                  (121, end22_end, 0x8000 - end22_end),
+                  (123, end01_end, 0x8000 - end01_end)]
 
     def pvs_bank(bank):
         if bank in (126, 127):

@@ -1,9 +1,9 @@
-"""Static regressions for the compact magic effects and Chin's bottle.
+"""Static regressions for the magic bursts and Chin's drink bottle.
 
-Athena/Kensou's Explod orbs and Chin's drink bottle were not in the shared
-spark atlas, so their moves played without the visible magic.  The effects
-are compiled as one-cell clips; Chin's bottle is emitted by the 860 drink
-hold at each sip.
+Athena/Kensou's big Explod bursts and Chin's Zake Attack were not wired, so
+the moves played without the visible magic/gourd.  Athena and Kensou share a
+2x2 burst clip; Chin's bottle is painted into the 350/850 sprite frames and
+his drink throw also emits the 861 spray at each sip.
 """
 import re
 import unittest
@@ -55,6 +55,25 @@ def exp_rows(text, label):
     return rows
 
 
+def spark_labels(text):
+    start = text.index("SparkAnimTab:")
+    block = text[start:text.index("SparkHit:", start)]
+    return re.findall(r"\.dw (\w+)", block)
+
+
+def exp_indexes(text, label, label_index):
+    """ExpTab row numbers whose animation byte is the given spark label."""
+    return {i for i, row in enumerate(exp_rows(text, label))
+            if row[0] == label_index}
+
+
+def air_groups(path, action):
+    text = Path(path).read_text(errors="replace")
+    start = text.index(f"[Begin Action {action}]")
+    block = text[start:].split("\n", 1)[1].split("[Begin Action", 1)[0]
+    return [int(g) for g in re.findall(r"^\s*(-?\d+),", block, re.M)]
+
+
 class MagicEffectTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -62,39 +81,74 @@ class MagicEffectTests(unittest.TestCase):
         cls.athena = read("athena_spr.inc")
         cls.kensou = read("kensou_spr.inc")
         cls.chin = read("chin_spr.inc")
+        cls.labels = spark_labels(cls.spark)
 
-    def test_spark_labels_have_cells(self):
-        for label in ("MagicOrbA", "MagicOrbK", "Bottle"):
-            self.assertIn(label + ":", self.spark)
-            start = self.spark.index(label + ":")
-            block = self.spark[start:self.spark.index("f0:", start) + 4]
-            # label -> one frame row `.db ticks,count`; count must be >= 1
-            m = re.search(r"f0:\s*\n\s*\.db (\d+),(\d+)", self.spark[start:])
-            self.assertIsNotNone(m, label)
-            self.assertGreaterEqual(int(m.group(2)), 1, label)
+    def index_of(self, label):
+        self.assertIn(label, self.labels)
+        return self.labels.index(label)
+
+    def test_shared_page_holds_the_effects(self):
+        tiles = set(re.findall(r"\.dw \$(00[0-9A-F]{2})", self.spark))
+        self.assertLessEqual(len(tiles), 16, sorted(tiles))
+        for label in ("MagicBurst", "Bottle"):
+            self.index_of(label)
+        # The shared burst is a 2x2 block, not a one-cell dot.
+        start = self.spark.index("MagicBurstf0:")
+        m = re.search(r"\.db (\d+),(\d+)", self.spark[start:])
+        self.assertIsNotNone(m)
+        self.assertEqual(int(m.group(2)), 4)
 
     def test_explod_rows_use_the_new_clips(self):
-        self.assertTrue(any(row[0] == 6 for row in exp_rows(self.athena, "athenaExpTab")))
-        self.assertTrue(any(row[0] == 7 for row in exp_rows(self.kensou, "kensouExpTab")))
-        self.assertTrue(any(row[0] == 8 for row in exp_rows(self.chin, "chinExpTab")))
+        burst = self.index_of("MagicBurst")
+        bottle = self.index_of("Bottle")
+        self.assertTrue(any(row[0] == burst
+                            for row in exp_rows(self.athena, "athenaExpTab")))
+        self.assertTrue(any(row[0] == burst
+                            for row in exp_rows(self.kensou, "kensouExpTab")))
+        self.assertTrue(any(row[0] == bottle
+                            for row in exp_rows(self.chin, "chinExpTab")))
 
     def test_athena_and_kensou_acts_emit_the_effect(self):
-        for text, sid in ((self.athena, 49), (self.athena, 85),
-                          (self.kensou, 48), (self.kensou, 85)):
-            rows = db_rows(text, f"{'athena' if text is self.athena else 'kensou'}Act{sid}")
-            self.assertTrue(any(row[1] == 14 for row in rows), (sid, rows))
+        burst = self.index_of("MagicBurst")
+        for text, name, sid in ((self.athena, "athena", 49),
+                                (self.athena, "athena", 85),
+                                (self.kensou, "kensou", 48),
+                                (self.kensou, "kensou", 85)):
+            rows = db_rows(text, f"{name}Act{sid}")
+            valid = exp_indexes(text, f"{name}ExpTab", burst)
+            self.assertTrue(any(row[1] == 14 and row[2] in valid
+                                for row in rows), (sid, rows))
 
     def test_chin_bottle_follows_each_sip(self):
-        # ExpTab row 1 is the Bottle; op14 must fire at the eight sip times.
+        bottle = self.index_of("Bottle")
         rows = db_rows(self.chin, "chinAct75")
-        bottle = [row for row in rows if row[1] == 14 and row[2] == 1]
-        self.assertEqual(len(bottle), 8, bottle)
-        sip_times = {row[0] & 0x7F for row in bottle}
+        valid = exp_indexes(self.chin, "chinExpTab", bottle)
+        bottle_rows = [row for row in rows
+                       if row[1] == 14 and row[2] in valid]
+        self.assertEqual(len(bottle_rows), 8, bottle_rows)
+        sip_times = {row[0] & 0x7F for row in bottle_rows}
         self.assertTrue({8, 20, 30, 40, 50, 60, 70, 80} <= sip_times,
                         sip_times)
         drain = [row for row in rows if row[1] == 3]
         self.assertEqual(len(drain), 8, drain)
         self.assertEqual(drain[0][2], 0xF8)       # -8 life
+
+    def test_chin_zake_attack_plays_the_gourd_frames(self):
+        # QCB+x/y reach states 1000/1100, whose first frames carry the
+        # gourd-to-mouth poses (group 350).
+        cmd = (ROOT / "assets/characters/chin-kofa/Chin_SNES.cmd").read_text(
+            errors="replace")
+        self.assertIn('name = "QCB_x"', cmd)
+        self.assertIn('name = "QCB_y"', cmd)
+        self.assertIn("value = 1000", cmd)
+        self.assertIn("value = 1100", cmd)
+        air = ROOT / "assets/characters/chin-kofa/Chin-KOFM.air"
+        for action in (1000, 1100):
+            groups = air_groups(air, action)
+            self.assertIn(350, groups[:4], (action, groups[:8]))
+            self.assertTrue(groups, action)
+        for sid in (62, 65):
+            self.assertTrue(db_rows(self.chin, f"chinAct{sid}"), sid)
 
 
 if __name__ == "__main__":

@@ -54,6 +54,16 @@ command = ~F,D,DF,x
 time = 18
 
 [Command]
+name = "QCB_x"
+command = ~D,DB,B,x
+time = 18
+
+[Command]
+name = "QCB_y"
+command = ~D,DB,B,y
+time = 18
+
+[Command]
 name = "MDFDF_df+z"
 command = ~D,DF,F,D,DF,F,z
 time = 18
@@ -185,6 +195,20 @@ name = "down"
 command = D
 
 [Statedef -1]
+
+[State -1, Zake Attack x]
+type = ChangeState
+value = 1000
+triggerall = command = "QCB_x"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, Zake Attack y]
+type = ChangeState
+value = 1100
+triggerall = command = "QCB_y"
+triggerall = statetype != A
+trigger1 = ctrl
 
 [State -1, special_48]
 type = ChangeState
