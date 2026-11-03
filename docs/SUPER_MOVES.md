@@ -118,3 +118,40 @@ make pvsnes PVSNESLIB_HOME=/caminho/do/pvsneslib
 
 `build/gen_fight/max_masks.inc` mostra a máscara final por personagem. A
 command list usa a mesma máscara para escolher as tags `SUP` e `MAX`.
+
+## 7. Flash e escurecimento do fundo
+
+No arcade, o início de um super faz um flash branco e escurece o fundo por
+alguns frames. O efeito está no helper 7000 do Kyo (`Kyo/Helper.cns`):
+
+- anim 7005 / sprite `8010,0` (branco 320x240) nos primeiros 4 ticks;
+- anim 7006 / sprite `8010,1` (preto 320x240, `sprpriority = -6`) até
+  `Time = 28`;
+- `PlaySnd s9,0` no tick 4.
+
+O port não usa o helper/Explod; implementou o mesmo efeito genericamente
+com color math do SNES:
+
+- `EnterState` chama `SuperFxCheck` para todo estado cujo delta do
+  `PowTab` é menor ou igual a `-1000`. Isso cobre os supers 85-89, os
+  supers extras em slots especiais (Ralf 58-60, Daimon 60, ...) e a
+  ativação do MAX (96).
+- `SuperFxStart` arma 32 frames: 4 de flash e 28 de escurecimento, e toca
+  `SFX_DASH` (o whoosh compartilhado). O sample exato `s9,0` do Kyo não
+  entrou no soundbank do PVSnesLib: o SNESMOD tem 16 sources fixos e todos
+  os 16 já são usados (rodadas 1-5/FINAL ROUND, menu, vozes e impactos).
+  Criar um `SFX_SUPER=21` colidia com `SFX_SELECT=21` no `IkSfxMap`; durante
+  a luta isso caía no caminho de menu/UI e travava no hardware real. Por
+  isso o efeito usa o source de whoosh que já existe.
+- `SuperFxAdvance`/`SuperFxApply` fazem add branco em BG1/BG2 durante o
+  flash e subtract half com fixed color 20 durante o escurecimento. O HUD
+  (BG3) e os lutadores (OBJ) ficam fora do color math.
+- `SuperFxPresent` roda no vblank do PVSnesLib; `SuperFxApplyNmi` cobre o
+  caminho standalone. O estado fica em `$7E51F0`/`$7E51F1`, fora do
+  save/restore de DP do NMI.
+
+Build/verify: checksum `$A872`, layout MSU `0x01EE`. O teste
+`tools/test_super_fx_headless.py` dispara o QCFx2+X do Kyo e confere as
+fases de flash/escuro pela luminosidade do fundo. O
+`test_command_list` também exige custo de pelo menos um estoque para toda
+linha de comando com categoria SUP/MAX.

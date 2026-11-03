@@ -158,7 +158,11 @@ class CommandListTests(unittest.TestCase):
                     powtab.append(int(row.group(1)))
                 rows = _parse_table(name)
                 for sid, cat, move, command in rows:
-                    if 85 <= sid <= 89:
+                    # 3 = SUP, 4 = MAX.  The generic super flash/dim trigger
+                    # keys off a one-stock (or larger) PowTab cost, so every
+                    # command-list super must carry one, including the extra
+                    # supers parked in special slots (Ralf 58-60, Daimon 60).
+                    if 85 <= sid <= 89 or cat in (3, 4):
                         self.assertLessEqual(
                             powtab[sid], -1000,
                             (name, sid, move, powtab[sid]))

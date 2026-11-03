@@ -51,6 +51,9 @@
 .DEFINE VMDATAL     $002118
 .DEFINE CGADD       $002121
 .DEFINE CGDATA      $002122
+.DEFINE CGWSEL      $002130               ; color math control A
+.DEFINE CGADSUB     $002131               ; color math control B
+.DEFINE COLDATA     $002132               ; fixed color (super flash/dim)
 .DEFINE TM          $00212C
 .DEFINE NMITIMEN    $004200
 .DEFINE JOY1L       $004218
@@ -538,6 +541,10 @@
 .DEFINE histp       $70                 ; 3-byte ptr to this fighter's ring
 .DEFINE pausecnt    $73                 ; global freeze (Pause/SuperPause):
                                         ;   FightTick stalls while nonzero
+.DEFINE SUPERFX     $7E51F0             ; super flash/dim frames remaining
+.DEFINE SUPERFX_MODE $7E51F1             ; 0 off, 1 white flash, 2 darken
+.DEFINE SUPERFX_TICKS 32                ; 4 flash + 28 dim (Kyo helper 7000)
+.DEFINE SUPERFX_FLASH 4
 .DEFINE shaketmr    $74                 ; EnvShake ticks remaining
 .DEFINE shakeamp    $75                 ; EnvShake amplitude (px)
 .DEFINE rsecs       $76                 ; round timer seconds
@@ -5171,7 +5178,8 @@ EnterState:
     asl a
     tay
     lda [lptr],y
-    clc
+    jsl SuperFxCheck                    ; negative delta <= -1000 = super
+    clc                                 ;   (or MAX activation) -> flash/dim
     adc FP+F_POWER,x
     bpl +
     lda #0
@@ -15336,12 +15344,7 @@ FP_present_vis_done:
 FP_present_opn:
     jsr OpnApply                          ;   (IN_FX==6 -> OpnFade flush)
 FP_present_on:
-    sep #$20
-    .ACCU 8
-    lda #$0F.b
-    sta.l INIDISP
-    inc framecnt
-    .ACCU 8
+    jsl SuperFxPresent                   ; super flash/dim, INIDISP, framecnt
     rts
 .ELSE
 ; Standalone build owns the native NMI vector.
@@ -15439,6 +15442,7 @@ FP_dma_done:
     beq +
     jsr FlushHud
 +   jsr StageAnimTick                     ; crowd pose commits (map only)
+    jsl SuperFxApplyNmi                   ; super flash/dim color math
     lda #$0F.b
     sta.l INIDISP
     sta nmiflag
@@ -19561,6 +19565,17 @@ PC_out:
     rts
 .ENDS
 
+; Super flash/dim: the main helpers live in bank 126's free tail so the
+; full Fight window does not grow.  This low-bank trampoline reaches
+; SfxPlay (same Fight bank) from the far start routine.
+.BANK 50 SLOT 0
+.ORGA $0F60
+.SECTION "SuperFxSfx" FORCE
+SuperFxSfx:
+    jsr SfxPlay
+    rtl
+.ENDS
+
 ; Ballistic projectile helpers.  They live in bank 126's free tail (same
 ; 24-bit bank as the select-cursor helpers) and are reached with jsl; the
 ; Fight bank is full.
@@ -19795,6 +19810,138 @@ ProjRadius:
 
 BallBounceVY:
     .dw $FB00, $FC00, $FE00            ; -5, -4, -2 px/tick
+.ENDS
+
+; Super flash/dim (Kyo helper 7000): four frames of additive white on the
+; stage layers, then a half-subtractive dim for the rest of the 28-frame
+; super freeze.  BG1/BG2 are the stage; BG3 (HUD) and OBJ (fighters) stay
+; bright.  Called with jsl from EnterState / the presentation paths.
+.BANK 126 SLOT 0
+.ORGA $DF00
+.SECTION "SuperFx" FORCE
+; A = PowTab delta in 16-bit mode.  A negative delta of at least one stock
+; is a super (or the MAX activation); preserve A for the caller.
+SuperFxCheck:
+    cmp #$FC19.w
+    bpl +
+    pha
+    jsr SuperFxStart
+    pla
++   rtl
+
+SuperFxStart:
+    php
+    sep #$20
+    .ACCU 8
+    lda #SUPERFX_TICKS
+    sta.l SUPERFX
+    lda #1
+    sta.l SUPERFX_MODE
+    ; Fixed white colour for the additive flash.  SuperFxApply lowers the
+    ; fixed colour to 20 when the dim phase starts.  COLDATA masks: bit5
+    ; red, bit6 green, bit7 blue.
+    lda #$3F
+    sta.l COLDATA
+    lda #$5F
+    sta.l COLDATA
+    lda #$9F
+    sta.l COLDATA
+    lda #SFX_DASH
+    jsl SuperFxSfx
+    plp
+    rts
+
+SuperFxAdvance:
+    sep #$20
+    .ACCU 8
+    lda.l SUPERFX_MODE
+    cmp #1
+    beq SFA_valid
+    cmp #2
+    beq SFA_valid
+    lda #0
+    sta.l SUPERFX
+    sta.l SUPERFX_MODE
+    rts
+SFA_valid:
+    lda.l SUPERFX
+    cmp #(SUPERFX_TICKS+1)
+    bcc +
+    lda #0
+    sta.l SUPERFX
+    sta.l SUPERFX_MODE
+    rts
++   beq SFA_zero
+    dec a
+    sta.l SUPERFX
+    beq SFA_zero
+    cmp #(SUPERFX_TICKS-SUPERFX_FLASH)
+    bcc SFA_dim
+    lda #1
+    sta.l SUPERFX_MODE
+    rts
+SFA_dim:
+    lda #2
+    sta.l SUPERFX_MODE
+    rts
+SFA_zero:
+    lda #0
+    sta.l SUPERFX_MODE
+    rts
+
+SuperFxApply:
+    sep #$20
+    .ACCU 8
+    lda #0
+    sta.l CGWSEL
+    lda.l SUPERFX_MODE
+    beq SFA_off
+    phy
+    ldy #$23                            ; add full white (flash)
+    cmp #1
+    beq +
+    ldy #$E3                            ; subtract half (dim)
+    ; Fixed colour 20: half subtract removes 10/31 of each stage channel,
+    ; so the background dims without clipping to black.
+    lda #$34
+    sta.l COLDATA
+    lda #$54
+    sta.l COLDATA
+    lda #$94
+    sta.l COLDATA
++   tya
+    sta.l CGADSUB
+    ply
+    rts
+SFA_off:
+    lda #0
+    sta.l CGADSUB
+    rts
+
+; PVSnesLib presentation tail: advance the effect, apply it, turn the
+; screen on and count the frame.  FightPresent then just returns.
+SuperFxPresent:
+    php
+    sep #$20
+    .ACCU 8
+    jsr SuperFxAdvance
+    jsr SuperFxApply
+    lda #$0F
+    sta.l INIDISP
+    inc framecnt
+    plp
+    rtl
+
+; Standalone NMI path: advance/apply only; FightVblank owns INIDISP and the
+; frame counter.
+SuperFxApplyNmi:
+    php
+    sep #$20
+    .ACCU 8
+    jsr SuperFxAdvance
+    jsr SuperFxApply
+    plp
+    rtl
 .ENDS
 
 ; Mr. Big's round-1 intro girlfriend overlay lives outside the full Fight
