@@ -33,11 +33,24 @@ CGADSUB = 0
 Assim o próximo combate sempre começa com o color math desligado,
 independentemente de como a luta anterior terminou.
 
+## Char invisíveis no round 3
+
+O `TeamSwap` reaproveitava o stage/CGRAM, mas não restaurava o contexto de
+PPU do combate (OBSEL, bases de BG, paleta do stage). Depois do banner/
+intermission da segunda luta, os atores do round 3 podiam ser desenhados
+fora da página de OBJ correta e ficar invisíveis no console.
+
+`TeamSwap` agora chama `TeamPpuSetup` (banco 50, `$0F9A`): `PpuInit`,
+`LoadStaticGfx`, `CampStage` e `StagePick`. Isso restaura OBSEL/BG/stage
+sem tocar em HP, meter ou posição do sobrevivente; o NMI fica desligado
+durante a troca e é religado no fim. `test_team_swap_headless` continua
+passando os 6 casos de posição/facing.
+
 ## Build
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$DC74`**
+- checksum **`$E88D`**
 - layout MSU **`0xC276`**
-- `.sfc` SHA-256 `81ed4c06…2e178282`
+- `.sfc` SHA-256 `1810afb7…bdcaf8ab`
 - `.msu` SHA-256 `471f5983…ce53dcb6`

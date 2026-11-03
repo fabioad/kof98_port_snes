@@ -18380,6 +18380,9 @@ TeamSwap:
     .ACCU 8
     lda #0                              ; vblank ISR clobbers DP scratch
     sta.l NMITIMEN                      ;   (lptr/cptr/boxp) -> hold it off
+    jsr TeamPpuSetup                    ; full PPU/stage context for the swap
+    lda #0
+    sta.l NMITIMEN                      ; StagePick re-enables NMI; hold it off
     rep #$10                            ; pin index16: callers differ
     .INDEX 16
     lda.w T_SWAP
@@ -19636,6 +19639,26 @@ TeamNextRound:                          ; intermission ROUND = bout just played
     lda.w T_I2
 +   inc a
     sta.b roundno
+    rts
+.ENDS
+
+; TeamSwap reuses the stage and CGRAM but must restore the full fight PPU
+;/graphics context: the intermission/team banner can leave OBSEL/BG bases or
+; the stage palette in a different state, which made the third-fight actors
+; invisible on hardware.  PpuInit + LoadStaticGfx + StagePick are safe here:
+; they do not touch fighter HP/meter/position.
+.BANK 50 SLOT 0
+.ORGA $0F9A
+.SECTION "TeamPpuSetup" FORCE
+TeamPpuSetup:
+    sep #$20
+    .ACCU 8
+    jsr PpuInit
+    jsr LoadStaticGfx
+    jsr CampStage
+    lda #1
+    sta.b stagehold
+    jsr StagePick
     rts
 .ENDS
 
