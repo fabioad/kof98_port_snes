@@ -28,10 +28,13 @@ def main():
     core = Core("/usr/lib/x86_64-linux-gnu/libretro/snes9x_libretro.so",
                 ROOT / "kof98-snes.sfc")
     try:
-        wait(core, lambda: core.ram[GS] == 7, "opening")
-        tap(core, 3)
+        # Current builds open with the MSU video (gs14); older ones went
+        # straight to the short intro (gs7).  Skip whichever is present.
+        wait(core, lambda: core.ram[GS] in (7, 14), "opening")
+        if core.ram[GS] == 14:
+            tap(core, 3)
         wait(core, lambda: core.ram[GS] == 0, "title")
-        core.step(4)
+        core.step(60)
         tap(core, 3)
         wait(core, lambda: core.ram[GS] == 6, "menu")
         core.ram[M_ITEM] = 2                      # TEAM PLAY

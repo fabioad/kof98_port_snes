@@ -3749,6 +3749,10 @@ TVS_full_team:
     bra TVS_draw
 TVS_p2_full:
 TVS_done:
+    jsr CampStart                       ; C_STAGE + fresh match state (Team VS
+                                        ;   never went through this; StartFight
+                                        ;   then used uninitialised C_STAGE and
+                                        ;   hung in StagePick)
     lda #1
     sta.b lock2
     stz.w T_SWAP
@@ -18356,6 +18360,9 @@ TeamSwap:
     jsr TeamPpuSetup                    ; full PPU/stage context for the swap
     lda #0
     sta.l NMITIMEN                      ; StagePick re-enables NMI; hold it off
+    lda #$8F.b                          ; StagePick leaves the display on; keep
+    sta.l INIDISP                       ;   it blanked for the CGRAM reload in
+                                        ;   TeamMemberIn (LoadCharPals)
     rep #$10                            ; pin index16: callers differ
     .INDEX 16
     lda.w T_SWAP
