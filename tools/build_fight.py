@@ -1177,7 +1177,14 @@ CHARS = {
                   67: 240, 69: 310, 94: 360, 95: 350, 96: 910,
                   74: 800, 75: 810, 76: 810, 77: 810,
                   85: 3000, 86: 3001, 87: 3100, 88: 3150, 89: 3300,
-                  90: 181, 91: 170, 92: 191},
+                  90: 181, 91: 170,
+                  # Leona's SNES source pairs Anim 191 with Statedef 192;
+                  # Statedef 191 uses Anim 190 (the blue-haired flip).  The
+                  # port plays Anim 191, so its actions must come from 192.
+                  # Taking them from 191 applied that state's animelem-11
+                  # VelSet to the arm-pose intro, making Leona levitate for
+                  # the whole 30-tick hold with no jump cels.
+                  92: 192},
         "coord_scale": 1,
         "char_scale": 0.78,
         "msu": True,
