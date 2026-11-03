@@ -24,9 +24,11 @@ durante toda a descida, e o Ralf caía apenas com a gravidade
 
 ## Correção
 
-`AirBlitzDive` (banco 50, janela baixa livre em `$0FD0`) é chamado por
-`StSpecial` logo depois de `PinVXUnlessVelSet`. Quando `F_STATE == 54` e
-`F_FRAME >= 3` (o frame do mergulho), ele aplica:
+`AirBlitzDive` (banco 50, janela baixa livre em `$0FC8`) é chamado por
+`StSpecial` logo depois de `PinVXUnlessVelSet`. O sid 54 é um slot
+compartilhado (o Clark usa o mesmo 54 para o Super Argentine run), então o
+handler confere `F_CHAR == CharRalf` antes de agir. Quando o personagem é o
+Ralf, `F_STATE == 54` e `F_FRAME >= 3` (o frame do mergulho), ele aplica:
 
 - `F_VX = 10 px/tick`
 - `F_VY = 15 px/tick`
@@ -65,8 +67,8 @@ impulso para trás do 456 (sobe até ~38 px e cai) e o levantar do 457.
 
 Build de teste em `build/ralf_airblitz_fix_20261103/`:
 
-- ROM checksum **`$A1BA`**
+- ROM checksum **`$C13C`**
 - layout MSU **`0xC276`** (mudou por causa das animações 456/457;
   copie `.sfc` e `.msu` juntos)
-- `.sfc` SHA-256 `f6226727…ae4e6c13`
+- `.sfc` SHA-256 `5e97cba2…08bdc3b`
 - `.msu` SHA-256 `471f5983…ce53dcb6`

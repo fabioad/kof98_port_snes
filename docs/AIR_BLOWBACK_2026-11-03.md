@@ -44,9 +44,9 @@ Também passaram `test_super_fx_headless`, `test_ranbu_headless`,
 
 `build/ralf_airblow_20261103/`
 
-- checksum **`$BD8F`**
+- checksum **`$C13C`**
 - layout MSU **`0xC276`**
-- `.sfc` SHA-256 `ee015196…ddb70c9`
+- `.sfc` SHA-256 `5e97cba2…08bdc3b`
 - `.msu` SHA-256 `471f5983…ce53dcb6`
 
 O `.msu` é o mesmo da build anterior do Air Blitz; copie `.sfc` e `.msu`

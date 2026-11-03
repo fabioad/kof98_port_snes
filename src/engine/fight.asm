@@ -19519,12 +19519,17 @@ StAirSpecTail:
 ; (~0.44 px/tick) and looked far too slow.  Apply the source velocity once
 ; the dive frame is on screen.  Lives in the free low-bank gap.
 .BANK 50 SLOT 0
-.ORGA $0FD0
+.ORGA $0FC8
 .SECTION "AirBlitzDive" FORCE
 AirBlitzDive:
     rep #$20
     .ACCU 16
     ldx fofs
+    ; sid 54 is a shared special slot: Clark uses it for the Super
+    ; Argentine run, only Ralf has the Air Blitz (MUGEN state 455).
+    lda FP+F_CHAR,x
+    cmp #CharRalf.w
+    bne +
     lda FP+F_STATE,x
     and #$00FF.w
     cmp #54.w
