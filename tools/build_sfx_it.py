@@ -28,6 +28,7 @@ INC = ROOT / "build" / "gen_audio" / "spc_sfxmap.inc"
 SAMPLE_RATE = 4000
 
 KYO = "assets/characters/Kyo-KOF98/Kyo.snd"
+IORI = "assets/characters/Iori-KOF98/Iori.snd"
 
 UI = "assets/ui"
 WINNER_VOICE = "assets/audio/announcer/common_00052.wav"
@@ -45,7 +46,11 @@ FIGHT_VOICES = (
 # unused later-round slots carry menu navigation and back sounds.
 SNDX = "assets/kof98data/Lifebar/snd_extract"
 SOURCES = [
-    ("swing",     KYO,    (0, 0), None),      # 0: attack swing, not a voice
+    # Iori's short claw cut (sample 4,0) is the sharp "cortante" used by his
+    # normals, specials and supers; Leona reuses the same source.
+    # Cap at the old swing length so the SPC bank-55 tail stays unchanged;
+    # the first 126 ms of Iori's cut are the whole transient.
+    ("slash",     IORI,   (4, 0), 504),       # 0: attack cut, not a voice
     ("hit_light", KYO,    (1, 0), None),      # 1: light HitDef impact
     ("hit_heavy", KYO,    (1, 3), None),      # 2: strong HitDef impact
     ("winner_voice", WINNER_VOICE, None, None),  # 3: winner-screen announcer

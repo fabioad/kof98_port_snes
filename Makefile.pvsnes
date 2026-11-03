@@ -147,12 +147,14 @@ $(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json asse
 	python3 tools/build_fight.py
 
 $(AUDIO_GEN) &: tools/build_audio.py tools/build_sfx_it.py \
-	tools/build_spc_neogeo.py $(AUDIO_SRC) $(ANNOUNCER_WAVS)
+	tools/build_spc_neogeo.py $(AUDIO_SRC) $(ANNOUNCER_WAVS) \
+	assets/characters/Iori-KOF98/Iori.snd
 	python3 tools/build_audio.py
 	python3 tools/build_sfx_it.py
 
 assets/audio/esaka/sfx.it: tools/build_sfx_it.py tools/build_spc_neogeo.py \
-	assets/characters/Kyo-KOF98/Kyo.snd $(ANNOUNCER_WAVS) \
+	assets/characters/Kyo-KOF98/Kyo.snd \
+	assets/characters/Iori-KOF98/Iori.snd $(ANNOUNCER_WAVS) \
 	$(wildcard assets/ui/*.wav)
 	python3 tools/build_sfx_it.py
 
