@@ -242,6 +242,11 @@ MRA_more:
     lda scr0
     and #$FE00.w
     sta scr0
+    ; prefix + payload must stay inside one 8 KiB MSU cache page here too:
+    ; a voice chunk that starts in the final sector of a page crossed the
+    ; boundary and could leave the CPU spinning on MSU_DATA.  The loop below
+    ; advances MRD_POS by the clamped count, so the rest is read next.
+    jsl MsuChrPageClamp
     sep #$20
     .ACCU 8
     lda scr0
@@ -291,6 +296,8 @@ MRA_copy_in:
     ; copy only the requested payload, skipping the sector prefix
     rep #$20
     .ACCU 16
+    lda scr3                            ; payload count; scr2+2 (the pointer
+    sta scr6                            ; bank byte) aliases scr3 at $16
     lda #(MsuStageBuf & $FFFF).w
     clc
     adc.w MSU_PREFIX
@@ -312,11 +319,11 @@ MRA_copy:
     lda [scr0],y
     sta [scr2],y
     iny
-    cpy scr3
+    cpy scr6
     bcc MRA_copy
     lda.l MRD_POS
     clc
-    adc scr3
+    adc scr6
     sta.l MRD_POS
     jmp MRA_loop
 MRA_done:
@@ -327,14 +334,16 @@ MRA_done:
     rtl
 .ENDS
 
-; Clamp a streamed CHR payload so the staged MSU read stays inside one
-; 8 KiB data-cache page.  The seek itself is already aligned down to a
-; 512-byte sector, but prefix + payload can still straddle the page end;
-; on the SD2SNES that can leave the MSU data port (and the CPU/DMA waiting
-; on it) stalled while the audio keeps playing.  The failure is
-; deterministic for sprites whose tile chunk sits at the end of a page --
-; Ralf's idle loop was the known case.  The caller advances its cursor by
-; this same scr3, so the following vblank resumes on the next page.
+; Clamp a staged MSU read so prefix + payload stays inside one 8 KiB
+; data-cache page.  The seek itself is already aligned down to a 512-byte
+; sector, but prefix + payload can still straddle the page end; on the
+; SD2SNES that can leave the MSU data port (and the CPU/DMA waiting on it)
+; stalled while the audio keeps playing.  The failure is deterministic for
+; chunks that sit at the end of a page: Ralf's idle tile chunk was the
+; known CHR case, and several streamed voice samples (Ralf 34/36, Daimon
+; 0/4/11/18) have the same layout.  Both MsuStageUploadFar and
+; MsuReadAlignedFar call this routine; each advances its cursor by the
+; clamped scr3, so the next read resumes on the next page.
 ; In: scr0 = sector-aligned seek address, MSU_PREFIX = in-sector offset,
 ;     scr3 = requested payload bytes.  Out: scr3 possibly shortened.
 ; A16 on entry and exit; direct page is the engine's.

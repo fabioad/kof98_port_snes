@@ -60,6 +60,12 @@ def check(core, msu, ptr, index):
     core.ram[VQ_TAIL] = (tail + 4) & 0x3F
     core.ram[VQ_TAIL + 1] = 0
 
+    # VQ_TOTAL/POS and MSUOFS still hold the previous sample's values.  Wait
+    # until the streamer resolves this record's offset (a one-chunk voice can
+    # finish inside a single tick, so a BUSY edge is not guaranteed).
+    previous_offset = u32(core, VQ_MSUOFS)
+    wait(core, lambda: u32(core, VQ_MSUOFS) != previous_offset,
+         f"voice {index} start")
     wait(core, lambda: u16(core, VQ_TOTAL) != 0
          and u16(core, VQ_POS) == u16(core, VQ_TOTAL),
          f"voice {index} stream")

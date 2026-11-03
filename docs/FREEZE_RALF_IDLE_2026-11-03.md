@@ -71,3 +71,9 @@ O próximo suspeito é o caminho de voz (`MsuReadAlignedFar`), que já lê em
 blocos de 512 bytes alinhados e, portanto, não cruza a página de 8 KiB.
 Se o sintoma mudar de quadro, vale instrumentar `TEL_DROP_P1`/`TEL_DMA_P1`
 e conferir se o layout do `.msu` no SD é o mesmo do ROM (`0x01EE`).
+
+> Atualização de 03/11/2026: o caminho de voz tinha dois defeitos reais —
+> o contador do chunk era sobrescrito pelo banco do ponteiro de destino e
+> as leituras não passavam pelo clamp de página. Os dois foram corrigidos
+> em `src/snes/fight_bridge.asm`; veja
+> [`FREEZE_DAIMON_WIN_2026-11-03.md`](FREEZE_DAIMON_WIN_2026-11-03.md).
