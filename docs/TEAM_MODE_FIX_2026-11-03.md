@@ -46,11 +46,23 @@ sem tocar em HP, meter ou posição do sobrevivente; o NMI fica desligado
 durante a troca e é religado no fim. `test_team_swap_headless` continua
 passando os 6 casos de posição/facing.
 
+## Cores do stage depois da terceira luta (Team Versus)
+
+Na luta final o combate pode terminar com um super/MAX, e a tela de
+vencedor (`ShowTitle`/`DrawBanner`) **não roda `StartFight`**, então o
+color math genérico podia continuar armado e o stage aparecia com parte
+das cores faltando.
+
+`ShowTitle` agora chama `ResetSuperFx` antes de montar o ROUND/banner:
+zera `SUPERFX`, `SUPERFX_MODE`, `CGWSEL` e `CGADSUB` (e descarta a voz de
+vencedor pendente). O reset que já existia no `StartFight` continua
+cobrindo a próxima luta.
+
 ## Build
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$E88D`**
+- checksum **`$EA8A`**
 - layout MSU **`0xC276`**
-- `.sfc` SHA-256 `1810afb7…bdcaf8ab`
+- `.sfc` SHA-256 `09b27bd4…a5cfe406`
 - `.msu` SHA-256 `471f5983…ce53dcb6`

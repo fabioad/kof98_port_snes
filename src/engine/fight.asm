@@ -2127,7 +2127,8 @@ ClearBanner:
 
 ShowTitle:
     .ACCU 8
-    stz.b winvoice                      ; drop a deferred voice from the last
+    jsr ResetSuperFx                    ; no super dim/tint may survive into
+                                        ;   the ROUND/winner screen or stage
     lda #$15.b                          ; BG1 stage + BG3 HUD + OBJ
     sta.l TM
     rep #$20
@@ -19629,6 +19630,7 @@ ResetSuperFx:                           ; clear a leftover flash/dim color math
     sta.l SUPERFX_MODE
     sta.l CGWSEL
     sta.l CGADSUB
+    stz.b winvoice                      ; also drop any deferred winner voice
     rts
 TeamNextRound:                          ; intermission ROUND = bout just played
     sep #$20
