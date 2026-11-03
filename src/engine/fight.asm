@@ -17790,6 +17790,10 @@ CS_team_challenger:
 CampNext:
     sep #$20
     .ACCU 8
+    ; The last member KO set T_SWAP; if it survives into the next
+    ; confrontation, StartFight takes the partial TeamSwap path and keeps
+    ; the survivor's HP/position instead of restoring the player's trio.
+    stz.w T_SWAP
     stz.w MUSIC_VALID                    ; winner theme ran; reload next battle
     lda.w G_MODE
     cmp #4
@@ -17911,7 +17915,8 @@ CNF_go:
 CampResolve:
     sep #$20
     .ACCU 8
-    lda.w C_PVP
+    stz.w T_SWAP                         ; match over: no member swap may leak
+    lda.w C_PVP                          ;   into the next confrontation
     beq CR_regular
     ; The first campaign match was P1 vs P2. Keep the winner's pad and
     ; replace the other side with the first CPU opponent.
@@ -18522,6 +18527,34 @@ TeamMemberIn:
     stz FP+F_DMAREQ,x
     stz FP+F_DMAPOS,x
     stz FP+F_TILEPG,x
+    ; Drop any CHR chunk staged for the outgoing member.  When both sides
+    ; stream in the same frame the vblank serves only one (alternating), so
+    ; the other side's chunk stays in SP_KIND.  TeamMemberIn sets the new
+    ; member's F_DMAREQ via EnterState; without this clear, the next vblank
+    ; would DMA the old chunk into the newcomer's page and commit the old
+    ; SP_META (mixed tiles and a stale hurtbox, so hits no longer connect).
+    ; Daimon's large MSU CHR makes this race easy to hit in Team Play.
+    phx
+    rep #$20
+    .ACCU 16
+    txa
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    lsr a                               ; fofs >> 5 -> 0 (P1) or 2 (P2)
+    tax
+    stz.w SP_KIND,x
+    stz.w SP_COUNT,x
+    stz.w SP_LEN,x
+    stz.w SP_SRC,x
+    stz.w SP_SRCBANK,x
+    stz.w SP_DST,x
+    stz.w SP_PREFIX,x
+    stz.w SP_META,x
+    sep #$20
+    .ACCU 8
+    plx
     stz FP+F_MAX,x
     lda #$FF.b
     sta FP+F_PSPRID,x
