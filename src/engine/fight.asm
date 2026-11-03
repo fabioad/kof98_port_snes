@@ -4037,6 +4037,10 @@ StartFight:
     .ACCU 8                              ;   before rewriting SPC RAM
     lda #0
     sta.b hudband                       ; select-screen scratch shares $8B:
+    ; A super flash/dim left over from the previous fight must not tint the
+    ; next stage.  Team member swaps reuse the same stage/CGRAM but skip
+    ; PpuInit, so clear the color-math state here for every fight.
+    jsr ResetSuperFx
     rep #$10                            ;   start the live flush at a valid band
     .INDEX 16
     lda.w G_MODE
@@ -13863,7 +13867,7 @@ PS_ground:
     eor #$FFFF.w
     inc a
 ++  sta.w SPARKS+SPK_VX,x
-    stz.w SPARKS+SPK_VY,x
+    jsr ProjVyFix                       ; default vy=0; Benimaru strong arcs up
     lda scr1                            ; dmg byte -> SPK_AY low
     and #$00FF.w
     sta.w SPARKS+SPK_AY,x
@@ -18325,14 +18329,11 @@ TRE_continue:
     bne +
     ldx #FP2OFS
     jsr TeamRecover
-+   lda.w T_I1                            ; player's 3rd member entering a
-    cmp #2                                ;   wharf stage -> arm the A/B
-    bne +                                 ;   swap for CampStage
-    lda.w C_WHARF
-    bne +
++   ; Round X shown by the intermission is the team bout number.  Team
+    ; modes skip the best-of-3 scoring, so roundno used to stay 1; use the
+    ; current member indices (the larger one is the bout just played).
+    jsr TeamNextRound
     lda #1
-    sta.w C_WHARF
-+   lda #1
     sta.b nextflag                        ; intermission -> TeamSwap
     jmp ShowTitle
 
@@ -19584,6 +19585,58 @@ AirBlowForce:
     ora #$0001.w
     sta scr5
 +   rts
+.ENDS
+
+; Benimaru's strong Raikouken: the source hand is at -116 (the weak hand is
+; at -76) and the port's synthetic shot only had a horizontal VX.  Spawn the
+; strong shot at the raised hand and give it a slight upward VY so the ball
+; follows the hand instead of flying flat at torso height.  Kept out of the
+; full Fight bank; X = spark slot, fofs = caster.
+.BANK 50 SLOT 0
+.ORGA $0E36
+.SECTION "ProjVyFix" FORCE
+ProjVyFix:
+    rep #$20
+    .ACCU 16
+    stz.w SPARKS+SPK_VY,x                ; default: flat projectile
+    ldy fofs
+    lda FP+F_CHAR,y
+    cmp #CharBenimaru.w
+    bne +
+    lda FP+F_STATE,y
+    and #$00FF.w
+    cmp #49.w                            ; strong ground Raikouken
+    bne +
+    lda #$FF00.w                         ; -1 px/tick upward
+    sta.w SPARKS+SPK_VY,x
+    lda #(GROUND_Y-96).w                 ; spawn at the raised hand
+    sta.w SPARKS+2,x
++   rts
+.ENDS
+
+; Team-mode fixups kept out of the full Fight bank.
+.BANK 50 SLOT 0
+.ORGA $0F70
+.SECTION "TeamFixLow" FORCE
+ResetSuperFx:                           ; clear a leftover flash/dim color math
+    sep #$20
+    .ACCU 8
+    lda #0
+    sta.l SUPERFX
+    sta.l SUPERFX_MODE
+    sta.l CGWSEL
+    sta.l CGADSUB
+    rts
+TeamNextRound:                          ; intermission ROUND = bout just played
+    sep #$20
+    .ACCU 8
+    lda.w T_I1
+    cmp.w T_I2
+    bcs +
+    lda.w T_I2
++   inc a
+    sta.b roundno
+    rts
 .ENDS
 
 ; The Fight bank is full, so the projectile-clash helper lives in the free
