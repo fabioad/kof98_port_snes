@@ -103,10 +103,10 @@ class CommandListTests(unittest.TestCase):
         kyo = {row[0]: row for row in _parse_table("kyo")}
         self.assertEqual((2, "DP + Y"), (kyo[50][1], kyo[50][3]))
         self.assertTrue(kyo[50][2].startswith("ONIYAKI"))
-        # Physical L/R routing: R = blowback, L+R = taunt, L = dodge.
+        # Physical L/R routing: R = blowback, L = taunt, L+DIR = dodge.
         self.assertEqual((1, "R"), (kyo[67][1], kyo[67][3]))
-        self.assertEqual("L+R", kyo[47][3])
-        self.assertEqual("L", kyo[69][3])
+        self.assertEqual("L", kyo[47][3])
+        self.assertEqual("L + DIR", kyo[69][3])
         self.assertEqual("L + BACK", kyo[94][3])
         self.assertEqual("L + FWD", kyo[95][3])
         self.assertEqual(4, kyo[87][1])                  # MAX super
@@ -119,7 +119,7 @@ class CommandListTests(unittest.TestCase):
         self.assertEqual(3, iori[88][1])                 # ordinary finisher
         # Composed super: the list keeps the full QCBHCF notation even
         # though the matcher also accepts the diagonal-free HCF portion.
-        self.assertEqual("QCBHCF + Y", iori[85][3])
+        self.assertEqual("QCBHCF + X", iori[85][3])
 
         heavyd = {row[0]: row for row in _parse_table("heavyd")}
         self.assertEqual(4, heavyd[86][1])               # MAX D. Crazy

@@ -6128,23 +6128,26 @@ PushHist:                               ; X=fofs, acc mode free
     lsr a
     lsr a
     tsb ct_tmp
-    pla                                 ; L=$20 R=$10 -- FUSION routing:
-    and #$30                            ;   L alone -> c (extra dodge),
-    beq +                               ;   F/B+L -> roll; R alone -> y|b
-    cmp #$30                            ;   (Blowback); L+R -> s (taunt)
+    pla                                 ; L=$20 R=$10 -- release routing:
+    and #$30                            ;   L alone -> s (taunt),
+    beq PHS_after                       ;   F/B+L -> c (dodge/roll),
+    cmp #$20                            ;   R alone -> y|b (Blowback)
+    bne PHS_blow
+    lda ct_dir
+    and #$0C                            ; holding F/B with L keeps the roll
     beq PHS_taunt
-    cmp #$20
-    bne ++                              ; R only -> y(2)|b(8): the "CD" cmd
-    lda #$10                            ; L only -> c token
+    lda #$10                            ; L + direction -> c token
     tsb ct_tmp
-    bra +
-++  lda #$0A
+    bra PHS_after
+PHS_blow:
+    lda #$0A
     tsb ct_tmp
-    bra +
+    bra PHS_after
 PHS_taunt:
     lda #$40
     tsb ct_tmp
-+   lda FP+F_JOY,x                      ; R *held* ($10) arms the z token on
+PHS_after:
+    lda FP+F_JOY,x                      ; R *held* ($10) arms the z token on
     and #$10                            ;   later button entries -- that's how
     beq +                               ;   "R+YBX" (charge) differs from the
     lda #$20                            ;   plain YBX MAX burst

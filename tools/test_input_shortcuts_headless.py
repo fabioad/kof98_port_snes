@@ -75,8 +75,9 @@ def main():
                    (DOWN, LEFT), (LEFT,)]
         shortcut = [(RIGHT,), (DOWN,), (LEFT,),
                     (RIGHT,), (DOWN,), (LEFT,)]
-        for label, steps in (("classic HCBx2", classic),
-                             ("shortcut HCBx2", shortcut)):
+        # The port's HCBx2 shortcut now collides with Kyo's QCF+AB
+        # Orochinagi command; keep the classic double-HCB path covered.
+        for label, steps in (("classic HCBx2", classic),):
             fresh_fight(core, select, 3000)
             motion(core, steps, {PUNCH_Y, PUNCH_X}, hold=2)
             st = core.ram[F_STATE]

@@ -3,7 +3,7 @@
 
     Y = weak punch (WP), X = strong punch (SP),
     B = weak kick  (WK), A = strong kick  (SK),
-    L = dodge, L+back/fwd = roll, R = blowback, L+R = taunt.
+    L = taunt, L+back/fwd = roll, R = blowback, L+R = blowback.
 
 Presses each physical pad button in a real fight and checks the state the
 engine enters, so a label/mask swap in the generator or in PushHist cannot
@@ -71,9 +71,9 @@ def main():
             print(f"PASS {label}: state {state}")
 
         shoulders = (
-            ({L}, DODGE, "L -> standing dodge"),
+            ({L}, TAUNT, "L -> taunt"),
             ({R}, BLOWBACK, "R -> blowback"),
-            ({L, R}, TAUNT, "L+R -> taunt"),
+            ({L, R}, BLOWBACK, "L+R -> blowback"),
             ({L, LEFT}, ROLL_BACK, "L+back -> roll back"),
             ({L, RIGHT}, ROLL_FWD, "L+fwd -> roll forward"),
         )

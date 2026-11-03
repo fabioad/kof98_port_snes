@@ -331,8 +331,8 @@ def test_system_moves_show_shoulder_buttons():
             return next(cmd for name, cmd in rows.items() if label in name)
 
         assert command_for("BLOWBACK") == "R", rows
-        assert command_for("TAUNT") == "L+R", rows
-        assert command_for("DODGE") == "L", rows
+        assert command_for("TAUNT") == "L", rows
+        assert command_for("DODGE") == "L + DIR", rows
         assert command_for("ROLL BACK") == "L + BACK", rows
         assert command_for("ROLL FWD") == "L + FWD", rows
         print("PASS command list: L/R shoulder moves show physical buttons")

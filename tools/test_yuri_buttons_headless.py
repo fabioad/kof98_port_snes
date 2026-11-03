@@ -94,15 +94,15 @@ def main():
             assert state == expected, (label, state, expected)
             print(f"PASS {label}: state {state}")
 
-        # Shoulder shortcuts use the shared pad: L dodge, L+back/fwd rolls,
-        # R blowback and L+R taunt.  The forward roll is the one that used to
+        # Shoulder shortcuts use the shared pad: L taunt, L+back/fwd rolls,
+        # R blowback and L+R blowback.  The forward roll is the one that used to
         # exit on the first tick for Yuri.
         for label, buttons, expected in (
-                ("L dodge", {10}, 69),
+                ("L taunt", {10}, 47),
                 ("L+back roll", {10, LEFT}, 94),
                 ("L+fwd roll", {10, RIGHT}, 95),
                 ("R blowback", {11}, 67),
-                ("L+R taunt", {10, 11}, 47)):
+                ("L+R blowback", {10, 11}, 67)):
             core.load(base)
             core.buttons[0] = set()
             core.step(2)
