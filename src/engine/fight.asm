@@ -3961,7 +3961,8 @@ TT_win_timer:
     bcc TT_win_wait
     sep #$20
     .ACCU 8
-    jmp TT_start
+    jmp StopWinnerMusic                   ; stop the W.mid before leaving the
+                                          ;   winner screen (it used to loop)
 TT_win_wait:
     sep #$20
     .ACCU 8
@@ -19662,6 +19663,21 @@ TeamPpuSetup:
     sta.b stagehold
     jsr StagePick
     rts
+.ENDS
+
+; The winner screen auto-advances after 420 frames.  SNESMOD restarts a
+; module that reaches its sequence end, so W.mid would loop if the screen
+; stayed longer (or if the next screen reused the music).  Stop the module
+; exactly at the transition, then tail-jump back into TitleTick's start.
+.BANK 50 SLOT 0
+.ORGA $0FB0
+.SECTION "StopWinnerMusic" FORCE
+StopWinnerMusic:
+    sep #$20
+    .ACCU 8
+    lda #SPC_MUS_STOP.b
+    jsr SfxPlay
+    jmp TT_start
 .ENDS
 
 ; The Fight bank is full, so the projectile-clash helper lives in the free
