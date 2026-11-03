@@ -1422,8 +1422,10 @@ CHARS = {
             48: 1000, 49: 1010,  # Raikouken weak/strong
             50: 1100, 51: 1110,  # Kuuchuu Raikouken weak/strong
             52: 1200, 53: 1210,  # Shinkuu Katategoma weak/strong
-            54: 1400, 55: 1410,  # Super Inazuma weak/strong
+            54: 1400, 55: 1410,  # Super Inazuma weak/strong intro
             56: 1500, 57: 1501,  # Handou Sandan weak/strong
+            107: 1401, 108: 1411,  # Super Inazuma kick (air phase)
+            109: 1402, 110: 1412,  # Super Inazuma landing
             67: 250, 69: 720,
             70: 5020, 71: 5030, 72: 5050, 73: 5050,
             74: 800, 75: 800, 76: 5000, 77: 5050,
@@ -1440,6 +1442,7 @@ CHARS = {
                   48: 1000, 49: 1010, 50: 1100, 51: 1110,
                   52: 1200, 53: 1210, 54: 1400, 55: 1410,
                   56: 1500, 57: 1510,
+                  107: 1401, 108: 1411, 109: 1402, 110: 1412,
                   67: 250, 69: 720, 94: 710, 95: 700, 96: 750, 97: 760,
                   74: 800, 75: 810, 76: 815, 77: 816,
                   85: 3000, 86: 3010, 87: 3050, 89: 3100,
@@ -1451,7 +1454,12 @@ CHARS = {
                   50: (0x0300, 14, 4), 51: (0x0400, 18, 4)},
         "pow_override": {96: -1000},
         "extra_trans": [(50, 17, 1, 0), (50, 0, 0, 0),
-                        (51, 17, 1, 0), (51, 0, 0, 0)],
+                        (51, 17, 1, 0), (51, 0, 0, 0),
+                        # Super Inazuma is three source states; the import
+                        # only kept the 3-frame intro.  Chain intro -> flying
+                        # kick -> landing so the DP anti-air reaches the foe.
+                        (54, 107, 0, 0), (55, 108, 0, 0),
+                        (107, 109, 0, 0), (108, 110, 0, 0)],
         "display": "BENIMARU",
     },
     "daimon": {
