@@ -16626,8 +16626,8 @@ SD_msu:
     ; offset.  Live CHR chunks are only 32-byte aligned, so every chunk used
     ; to depend on a non-zero in-sector pointer (and on page-2 cache hits).
     ; Align the seek to the sector and stage prefix+payload; the VRAM DMA
-    ; then starts at the saved prefix.  This starts every transfer at
-    ; buffer offset 0 and keeps the whole read inside one 8 KiB cache page.
+    ; then starts at the saved prefix.  MsuStageUploadFar clamps the payload
+    ; so the whole staged read stays inside the current 8 KiB cache page.
     lda scr0
     and #$01FF.w
     sta.w MSU_PREFIX

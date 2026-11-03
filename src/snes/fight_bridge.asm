@@ -129,6 +129,7 @@ MsuUnavailable: .db 2,14,15
 MsuStageUploadFar:
     rep #$20
     .ACCU 16
+    jsl MsuChrPageClamp                 ; keep prefix+payload in one 8 KiB page
     ; Both DMAs below write through the PPU ports ($2181 WMDATA and
     ; $2118/$2119 VRAM).  On the SD2SNES those transfers are not reliable
     ; while the display is rendering, so blank around them.  The caller has
@@ -324,4 +325,35 @@ MRA_done:
     .INDEX 16
     sec
     rtl
+.ENDS
+
+; Clamp a streamed CHR payload so the staged MSU read stays inside one
+; 8 KiB data-cache page.  The seek itself is already aligned down to a
+; 512-byte sector, but prefix + payload can still straddle the page end;
+; on the SD2SNES that can leave the MSU data port (and the CPU/DMA waiting
+; on it) stalled while the audio keeps playing.  The failure is
+; deterministic for sprites whose tile chunk sits at the end of a page --
+; Ralf's idle loop was the known case.  The caller advances its cursor by
+; this same scr3, so the following vblank resumes on the next page.
+; In: scr0 = sector-aligned seek address, MSU_PREFIX = in-sector offset,
+;     scr3 = requested payload bytes.  Out: scr3 possibly shortened.
+; A16 on entry and exit; direct page is the engine's.
+.BASE $C0
+.BANK 126 SLOT 0
+.ORGA $E600                          ; free window after SelectHelpers
+.SECTION "MsuChrPageClamp" FORCE
+MsuChrPageClamp:
+    rep #$20
+    .ACCU 16
+    lda scr0
+    and #$1FFF.w
+    eor #$1FFF.w
+    inc a                               ; bytes left in this 8 KiB page
+    sec
+    sbc.w MSU_PREFIX
+    bcc +
+    cmp scr3
+    bcs +
+    sta scr3
++   rtl
 .ENDS
