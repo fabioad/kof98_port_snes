@@ -113,23 +113,111 @@ completas serem importadas e testadas.
 
 Build/verify: ROM checksum `$6B6B`, `make pvsnes-verify` OK.
 
-## Correção de travamento/glitches do Ralf (02/11/2026)
+## Reativação funcional dos golpes do Ralf (02/11/2026)
 
-Os states reativados do Ralf também dependiam de cadeias que o motor não
-importa:
+Os states do Ralf que estavam desligados foram religados usando as
+cadeias que o motor já suporta. O objetivo foi golpe funcional e dano,
+não fidelidade visual dos explods/palFX.
 
-- 510/511 (Running Super) precisam do `ChangeState` para 512, que depende
-  de `p2bodydist X`; sem ele o Ralf atravessa o oponente e não acerta;
-- 512 (montaria) usa `p1stateno = 515` e a cadeia 515-518, que não estão
-  ligadas;
-- 520/521 (Ultra Vulcan) apontam para os victim states 80010/80011, que
-  não existem no runtime; a animação roda, mas não causa dano;
-- 550 (MAX V-Slasher) usa os victim states 80002/80018 e só registra
-  parte dos hits;
-- 570 (MAX Galactica) é baseado em Helpers, que o motor não suporta.
+- 510/511 -> 512 (Running Super): a transição usa o gate de distância
+  existente (`TransDistGate`, kind 4) no frame 7 com 70 px de centro.
+  512 foi para o sid 103 e seu HitDef prende a vítima no slot 76.
+- 512 -> 515 -> 516/517/518 (montaria): 515 foi para o sid 104 e usa o
+  mesmo pipeline TargetBind/TargetState/TargetLifeAdd do Ultra Argentine
+  do Clark. 516/517 usam o slot segurado (76) e 518 o arremessado (77).
+  São 13 contatos de 2 pontos (~23 de dano).
+- 520/521 (Ultra Vulcan): dash reduzido de 16/8/4 para 12/6/3 px/tick e
+  o posadd de -16/+8/+8/+16 removido; o HitDef acerta por 80.
+- 550 (MAX V-Slasher): a vítima fica presa em hitstun (sem launch) e os
+  13 contatos usam o MoveHitReset existente; 4 pontos nos primeiros e 3
+  nos últimos, ~49 de dano.
+- 570 (MAX Galactica): sem Helper, virou um único golpe de 80 pontos no
+  frame final. A parte visual do helper não existe.
+- 85/86 (Galactica Phantom fraco/forte) continuam como antes.
 
-Como no Clark, os comandos foram desligados até a cadeia completa ser
-importada e testada. O par estável 85/86 (Galactica Phantom fraco/forte)
-continua ativo. A tabela de IA do Ralf deixa de listar os sids 87-89.
+Limites conhecidos: os victim states de queimadura 80010/80011 e
+80002/80018 não foram portados; os efeitos de explod/palFX dos golpes
+continuam ausentes. O dano e a sequência funcional estão no lugar.
 
-Build: `make pvsnes` e `make pvsnes-verify` OK.
+Build/verify: checksum `$34A5`, layout MSU `0x01EE`. Copie `.sfc` e
+`.msu` do mesmo build.
+
+## Vulcan Punch com múltiplos hits (03/11/2026)
+
+Ralf (states 400/401, sids 48/49) e Clark (states 1000/1010, sids 48/49)
+agora acertam cinco contatos antes de derrubar:
+
+- `hit_soft_resets` rearma o HitDef em cada uma das cinco janelas de
+  ataque do CNS (Ralf 3/6/9/12/15 e 5/8/11/14/17; Clark 4/7/10/13/16 e
+  3/5/7/9/11);
+- `hitdef_override` mantém a vítima em hitstun (`fall = 0`, `gvx/gvy = 0`)
+  até o quinto contato;
+- `MoveHitFinisher` força o knockdown no quinto contato;
+- `air_box_patch_frames` acrescenta uma caixa de corpo nas cinco janelas,
+  porque a caixa final original não cobria todas as animações de hit e o
+  quinto golpe passava por alguns personagens.
+
+Dano medido no headless:
+
+- Ralf: 4 + 4 + 4 + 4 + 3 = 19;
+- Clark: 6 + 6 + 6 + 6 + 5 = 29.
+
+Testado contra Heidern, Clark e Kyo, em pé e na guarda, a 20/40/70 px.
+Build/verify: checksum `$22DE`, layout MSU `0x01EE`.
+
+## Agarres de Ralf e Clark (03/11/2026)
+
+Os especiais de agarre que só tocavam a animação foram ligados à cadeia de
+bind/dano do motor:
+
+- **Ralf Running Super** (510/511 -> 512 -> 515): a montaria já usava o
+  pipeline do Ultra Argentine; agora o whiff corta o dash no frame 10 e a
+  tentativa no frame 4.
+- **Clark Mount Tackle** (HCF + X/Y): 1200 -> 1205 (sid 53) -> 1210
+  (sid 99); 21 de dano e knockdown.
+- **Clark Super Argentine** (HCF + A/B): 1300 -> 1305 (sid 55) -> 1310
+  (sid 101); quatro contatos de 20, ~81 de dano.
+- **Clark Frankensteiner** (DP + A/B): 1400/1410 -> 1420 (sid 107); 25
+  de dano.
+- **Clark Napalm Stretch** (DP + X/Y): 1500 (sid 58) -> 1510 (sid 108);
+  20 de dano.
+
+Detalhes técnicos:
+
+- `S_EXT_GRAB` passou de 103 para 98; os slots 98/99/101/107/108 agora
+  mantêm a vítima presa e o `ThrowBind` reposiciona o corpo.
+- `StAirSpec` ganhou uma cauda em banco baixo (`StAirSpecTail`) para
+  chamar `ThrowBind` sem estourar a janela de 32 KiB do banco Fight,
+  preservando o `ClampX` dos especiais aéreos.
+- Os estados de tentativa usam gate de distância kind 4 (corpo <= 8 px,
+  convertido para 38 px de centro).
+- Os comandos "strong" do CMD do Clark entram no estado de tentativa, não
+  no estado de vítima segurada.
+- `frame_cap` corta os primeiros frames dos roots/tentativas quando o
+  agarre não conecta: Ralf 87/88/103, Clark 52/54/56/57/58.
+
+Continuam desligados: Clark Running Three (3100/3110/3150) e o MAX 3050,
+que ainda dependem das cadeias 3105/3155/3120/3121/1201 e 3060/3061-3067.
+
+Build/verify: checksum `$40BE`, layout MSU `0x01EE`. Copie `.sfc` e `.msu`
+do mesmo build.
+
+Observação: o teste headless `test_sakura_antiair_headless` ainda acusa
+30 de dano no Shou'ou Ken forte contra um orçamento de 26; é uma diferença
+de calibração de dano da Sakura, não dos agarres.
+
+## Correção do “um frame” nos chars (03/11/2026)
+
+Os primeiros builds da cadeia de agarres adicionaram animações novas do
+Clark (1205/1420) ao blob CHR, mudando o layout do MSU para `0xBDAF`.
+No SNES real isso reintroduziu o sintoma de personagens presos em um
+frame (o loader do SD2SNES é sensível ao layout/setor).
+
+As tentativas 1205/1305 reutilizam agora o anim 1200 já existente, e o
+follow-up do Frankensteiner (1420) reutiliza o anim 3011 do Ultra
+Argentine. O conjunto de sprites do Clark voltou a 222 cels/16.608 tiles,
+o layout do MSU voltou para `0x01EE` (o mesmo da build estável) e os
+agarres continuam funcionais com dano e bind. A pose visual de alguns
+follow-ups é reaproveitada; o dano e o knockdown são os mesmos.
+
+Build/verify: checksum `$40BE`, layout MSU `0x01EE`.

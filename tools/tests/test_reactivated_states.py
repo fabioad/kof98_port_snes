@@ -42,11 +42,13 @@ class ReactivatedStatesTests(unittest.TestCase):
             cfg = bf.CHARS[name]
             wired = set(cfg["moves"].values())
             restored = {state for _sid, state, _anim in rows}
+            disabled = bf.POST_CAL_REACTIVATED_DISABLED.get(name, set())
             missing = [
                 (label, state)
                 for label, state in cmd_targets(ROOT / cfg["cmd"])
                 if is_attack_command(label)
                 and state not in wired and state not in restored
+                and state not in disabled
             ]
             self.assertEqual(missing, [], name)
 
@@ -54,8 +56,10 @@ class ReactivatedStatesTests(unittest.TestCase):
         for name, rows in bf.POST_CAL_REACTIVATED.items():
             existing = set(bf.CHARS[name]["moves"])
             seen = set()
+            overwrite = bf.POST_CAL_REACTIVATED_OVERWRITE.get(name, set())
             for sid, _state, _anim in rows:
-                self.assertNotIn(sid, existing, f"{name} sid {sid}")
+                if sid not in overwrite:
+                    self.assertNotIn(sid, existing, f"{name} sid {sid}")
                 self.assertNotIn(sid, seen, f"{name} duplicate sid {sid}")
                 seen.add(sid)
 

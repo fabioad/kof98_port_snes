@@ -109,8 +109,10 @@ class ClarkUltraArgentineTests(unittest.TestCase):
         seg = self.text.split("clarkTransTab:", 1)[1]
         trans = [(int(a), int(b), int(c)) for a, b, c
                  in re.findall(r"\.db\s+(\d+),(\d+),(\d+)\n\s*\.dw", seg)]
+        # 107 is the separate Frankensteiner held chain.
+        ultra = {103, 104, 105, 106, 109, 110, 111}
         self.assertEqual(
-            [(a, b) for a, b, _k in trans if a >= 103],
+            [(a, b) for a, b, _k in trans if a in ultra],
             [(103, 104), (104, 105), (105, 106), (106, 0),
              (109, 110), (110, 111), (111, 103)])
         for sid in (109, 110, 111, 103, 104, 105, 106):
@@ -118,9 +120,9 @@ class ClarkUltraArgentineTests(unittest.TestCase):
                             f"clarkAct{sid} missing")
 
     def test_mount_bind_follows_each_element(self):
-        """clarkBind53 (state 1210) used to glue the victim to one offset."""
-        rows = rows_of(self.text, "clarkBind53")
-        self.assertIsNotNone(rows, "clarkBind53 missing")
+        """clarkBind99 (state 1210) used to glue the victim to one offset."""
+        rows = rows_of(self.text, "clarkBind99")
+        self.assertIsNotNone(rows, "clarkBind99 missing")
         self.assertNotIn((0, 254), [r[:2] for r in rows])
         self.assertIn((1, 1, sc(6), 0), rows)
         self.assertTrue(any(r[0] == 2 and r[1] == 3 and r[2] == sc(8)

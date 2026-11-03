@@ -1027,8 +1027,8 @@ CHARS = {
             45: 100, 46: 105, 47: 160,
             48: 1000, 49: 1010,  # Vulcan Punch weak/strong
             50: 1100, 51: 1110,  # Gatling Attack weak/strong
-            52: 1200, 53: 1210,  # Mount Tackle weak/strong
-            54: 1300, 55: 1310,  # Super Argentine weak/strong
+            52: 1200, 53: 1200,  # Mount Tackle run/attempt
+            54: 1300, 55: 1200,  # Super Argentine run/attempt
             56: 1400, 57: 1410,  # Frankensteiner weak/strong
             58: 1500, 59: 1510,  # Napalm Stretch weak/strong
             60: 3100,            # Running Three MAX
@@ -1046,6 +1046,7 @@ CHARS = {
             # 3011/3012 poses.
             109: 3010, 110: 3011, 111: 3012,
             103: 3011, 104: 3012, 105: 3015, 106: 3016,
+            107: 3011,
             88: 3100, 89: 3110,            # Running Three w/s
             90: 181, 91: 170, 92: 191,
             94: 710, 95: 700, 96: 750, 97: 760,
@@ -1055,8 +1056,8 @@ CHARS = {
                   23: 600, 24: 610, 25: 630, 26: 640,
                   45: 100, 46: 105, 47: 160,
                   48: 1000, 49: 1010, 50: 1100, 51: 1110,
-                  52: 1200, 53: 1210, 54: 1300, 55: 1310,
-                  56: 1400, 57: 1410, 58: 1500, 59: 1510,
+                  52: 1200, 53: 1205, 54: 1300, 55: 1305,
+                  56: 1400, 57: 1410, 58: 1500,
                   60: 3150,
                   67: 250, 69: 720, 94: 710, 95: 700, 96: 750, 97: 760,
                   74: 800, 75: 810, 76: 815, 77: 816,
@@ -1069,6 +1070,37 @@ CHARS = {
         "msu": True,
         "damage_scale": 2.0,
         "pow_override": {96: -1000},
+        # Vulcan Punch: five contacts of 6 points; the fifth contact is
+        # the forced knockdown.  The source's later hits would otherwise
+        # launch the victim out of range.
+        "hit_soft_resets": {
+            1000: [4, 7, 10, 13, 16],
+            1010: [3, 5, 7, 9, 11, 13, 15, 17, 19, 21],
+        },
+        # Grab-command support: the close-range attempts are gated at the
+        # same distance the source uses (body <= 8 px, widened for centre
+        # distance); the follow-ups use the bind/life pipeline.
+        "extra_trans": [(52, 53, 4, (1 << 8) | 38),
+                        (54, 55, 4, (1 << 8) | 38)],
+        "target_life_fix": {1210: -20, 1310: -20, 1420: -24, 1510: -20},
+        "act_override": {1510: [(6, 3, -20, 0)]},
+        # On a whiff the source returns to stand after the active window.
+        # Cap the root/attempt clips so Ralf/Clark do not play the whole
+        # grab animation when nobody is grabbed.
+        "frame_cap": {52: 4, 53: 4, 54: 4, 55: 4, 56: 6, 57: 6, 58: 2},
+        "air_box_patch_frames": {
+            1000: {3: [(-30, -130, 90, 0)], 6: [(-30, -130, 90, 0)], 9: [(-30, -130, 90, 0)],
+                   12: [(-30, -130, 90, 0)], 15: [(-30, -130, 90, 0)]},
+            1010: {2: [(-30, -130, 90, 0)], 4: [(-30, -130, 90, 0)], 6: [(-30, -130, 90, 0)],
+                   8: [(-30, -130, 90, 0)], 10: [(-30, -130, 90, 0)]},
+            1200: {1: [(1, -80, 80, -1)]},
+        },
+        "hitdef_override": {
+            48: {"damage": 6, "gvx": 0, "gvy": 0, "fall": 0,
+                 "gdamage": 1},
+            49: {"damage": 6, "gvx": 0, "gvy": 0, "fall": 0,
+                 "gdamage": 1},
+        },
         "display": "CLARK",
     },
     "ralf": {
@@ -1123,7 +1155,60 @@ CHARS = {
         "msu": True,
         "damage_scale": 2.0,
         "pow_override": {96: -1000},
-        "extra_trans": [(54, 17, 1, 0), (54, 0, 0, 0)],
+        # 512's HitDef has p2stateno commented out in the source because
+        # Mugen relies on 515's TargetState 516.  The native hit path needs
+        # the victim bound from the start, so force the held slot.
+        "hitdef_override": {
+            103: {"p2state": 76},
+            # 550 is a ranbu: keep the victim in place so the later attack
+            # boxes connect instead of launching them out of range after
+            # the first three contacts.  Uniform 2-point contacts.
+            59: {"damage": 4, "gvx": 0, "gvy": 0, "fall": 0,
+                 "gdamage": 1},
+            # 570's helper carried most of the source damage; the main
+            # state has one final HitDef.  Keep it as a single 80-point
+            # finisher instead of the old 130-point one-hit.
+            60: {"damage": 80, "gdamage": 1},
+            # Vulcan Punch weak/strong: five 4-point contacts, no early
+            # knockdown (MoveHitFinisher handles the fifth).
+            48: {"damage": 4, "gvx": 0, "gvy": 0, "fall": 0,
+                 "gdamage": 1},
+            49: {"damage": 4, "gvx": 0, "gvy": 0, "fall": 0,
+                 "gdamage": 1},
+        },
+        # One point per mount strike (12 strikes + finish = 13).
+        "target_life_fix": {515: -2},
+        # Ultra Vulcan dash: 12/6/3 px per tick instead of 16/8/4 so the
+        # active frame reaches the opponent before Ralf passes through.
+        "act_override": {
+            520: [(4, 5, 12, 0), (5, 5, 6, 0), (6, 5, 3, 0)],
+            521: [(4, 5, 12, 0), (5, 5, 6, 0), (6, 5, 3, 0)],
+        },
+        # Vulcan Punch: five attack windows.  Soft-reset the per-move
+        # counter at each window so MoveHitFinisher forces the knockdown
+        # on the fifth contact; the HitDef itself must not knockdown early.
+        "hit_soft_resets": {
+            400: [3, 6, 9, 12, 15],
+            401: [5, 8, 11, 14, 17],
+        },
+        # The final source box misses some hit animations; a wider/taller
+        # box on the last contact guarantees the fifth hit and knockdown.
+        "air_box_patch_frames": {
+            400: {2: [(-30, -130, 90, 0)], 5: [(-30, -130, 90, 0)], 8: [(-30, -130, 90, 0)],
+                  11: [(-30, -130, 90, 0)], 14: [(-30, -130, 90, 0)]},
+            401: {4: [(-30, -130, 90, 0)], 7: [(-30, -130, 90, 0)], 10: [(-30, -130, 90, 0)],
+                  13: [(-30, -130, 90, 0)], 16: [(-30, -130, 90, 0)]},
+        },
+        "posadd_override": {520: [], 521: []},
+        # Whiffed running super: stop after the first dash frames; a
+        # successful grab leaves the state through the kind-4 gate.
+        "frame_cap": {87: 10, 88: 10, 103: 4},
+        "extra_trans": [(54, 17, 1, 0), (54, 0, 0, 0),
+                        # 510/511 -> 512: frame 7, centre distance 70 px
+                        # (source p2bodydist X = [-10,40] + body halves).
+                        (87, 103, 4, (7 << 8) | 70),
+                        (88, 103, 4, (7 << 8) | 70),
+                        (103, 0, 0, 0), (104, 0, 0, 0)],
         "display": "RALF",
     },
     "leona": {
@@ -1594,17 +1679,23 @@ POST_CAL_REACTIVATED = {
                  (89, 3110, 3110), (66, 3150, 3150)],
     "takuma":   [(87, 3020, 3020), (58, 3220, 3210),
                  (88, 3100, 3100), (89, 3120, 3100)],
-    # Ralf's reactivated entries are incomplete: 510/511 never chain into
-    # 512 (the p2bodydist gate is not representable), 512 still needs the
-    # missing 515-518 bind chain, 520/521 target the unmapped 80010/80011
-    # ranbu states, and 570 is helper-driven.  Keeping them produced
-    # no-damage dashes, a 130-damage one-hit MAX and the Ralf reports of
-    # glitches/freezes.  Leave them off like Clark's incomplete grabs; the
-    # stable 85/86 Galactica Phantom pair stays wired.
-    # "ralf":   [(87, 510, 510), (88, 511, 510),
-    #            (89, 520, 520), (58, 521, 521),
-    #            (59, 550, 550), (60, 570, 570),
-    #            (61, 512, 512)],
+    # Ralf: restore the Running Super and its mount chain on free sids.
+    # 510/511 dash into 512 through the existing kind-4 distance gate;
+    # 512's HitDef binds the victim (p2state 76) and redirects Ralf to 515.
+    # 515 then uses the same TargetBind/TargetState/TargetLifeAdd pipeline
+    # as Clark's Ultra Argentine.  The remaining source states (520/521,
+    # 550, 570) still need their victim/helper chains and stay off.
+    "ralf":     [(87, 510, 510), (88, 511, 510),
+                 (103, 512, 512), (104, 515, 515),
+                 (89, 520, 520), (58, 521, 521),
+                 (59, 550, 550), (60, 570, 570)],
+    # Clark's command grabs: 1205/1305 are the close-range attempts, while
+    # 1210/1310/1420/1510 are the bind/life-add follow-ups.  The follow-ups
+    # live in 98..111 so StVictimHeld/ThrowBind keep the victim attached.
+    "clark":    [(53, 1205, 1200), (55, 1305, 1200),
+                 (58, 1500, 1500), (99, 1210, 1210),
+                 (101, 1310, 1310), (107, 1420, 3011),
+                 (108, 1510, 1510)],
     "leona":    [(58, 3250, 4020), (87, 3100, 3100),
                  (88, 3150, 3150), (89, 3300, 3300),
                  (61, 3102, 3102), (62, 3101, 3101),
@@ -1640,6 +1731,17 @@ POST_CAL_REACTIVATED = {
     "eiji":     [(87, 3020, 3020)],
     "sakura":   [(87, 3050, 3000)],
 }
+# Reactivated command targets intentionally left off until their victim or
+# helper chains are ported.  The regression test skips these states.
+POST_CAL_REACTIVATED_DISABLED = {
+    "clark": {3050, 3100, 3110, 3150},
+}
+# Existing low special slots that are intentionally retargeted from a held
+# follow-up to the close-range grab attempt (the source CMD's "strong"
+# commands enter the held state otherwise).
+POST_CAL_REACTIVATED_OVERWRITE = {
+    "clark": {53, 55, 58},
+}
 # Command-list categories for states parked outside 85-89.  2 = SPC,
 # 3 = SUP, 4 = MAX.
 POST_CAL_CATEGORIES = {
@@ -1647,6 +1749,7 @@ POST_CAL_CATEGORIES = {
     "saisyu":   {66: 4},
     "heidern":  {66: 4},
     "takuma":   {58: 4},
+    "ralf":     {87: 3, 88: 4, 89: 3, 58: 4, 59: 4, 60: 4},
     "leona":    {58: 4},
     "benimaru": {66: 3},
     "daimon":   {60: 3},
@@ -2319,7 +2422,10 @@ VICTIM_STATE_IDS = {1025: 70, 1026: 71, 1027: 72, 1028: 73,
                     # -> S_VTHROW (815/816 from the C throw, 825/826 from D)
                     815: 76, 816: 77, 825: 76, 826: 77,
                     # Iori Kuzukaze (1400) victims swap to held/thrown too
-                    1410: 76, 1420: 77}
+                    1410: 76, 1420: 77,
+                    # Ralf Running Super mount chain: 516/517 stay in the
+                    # held slot; 518 is the final throw.
+                    516: 76, 517: 76, 518: 77}
 
 # Runtime SFX ids -- kept in sync with the SAMPLES order in
 # tools/build_audio.py (spc_ids.inc is generated from that list).
@@ -5806,6 +5912,23 @@ def build_char(name, cfg, global_pal=None):
         for sprite in sff.sprites:
             sprite.palidx = palette_bank
     air = parse_air(asset_path(cfg["air"]))
+    # Per-frame Clsn1 patches for ports that need the last contact of a
+    # multi-hit move to land on every victim build.  The source's final
+    # Vulcan Punch box misses shorter/lower hit animations, so the fifth
+    # contact (and MoveHitFinisher's knockdown) never fires.
+    for anum, frame_patch in (cfg.get("air_box_patch_frames") or {}).items():
+        if anum not in air:
+            continue
+        frames, loopstart = air[anum]
+        frames = list(frames)
+        for idx, boxes in frame_patch.items():
+            idx = int(idx)
+            if not (0 <= idx < len(frames)):
+                continue
+            g, n, x, y, t, flip, atk, hurt = frames[idx]
+            frames[idx] = (g, n, x, y, t, flip,
+                           list(atk) + [tuple(b) for b in boxes], hurt)
+        air[anum] = (frames, loopstart)
     # A few imported clips end a phase with a trailing t=255 "hold until the
     # next ChangeState" element.  When the caller only needs a short recovery
     # (or an anim-end hand-over), replace that hold with a bounded tick count.
@@ -5867,6 +5990,22 @@ def build_char(name, cfg, global_pal=None):
             (frame, op, _life if op == 3 else arg, cond)
             for frame, op, arg, cond in cns_acts.get(_state, ())]
 
+    # Per-state ActTab overrides for port-side retuning.  Ralf's Ultra
+    # Vulcan dashes at 16/8/4 px/tick in the source; the native body
+    # separation cannot catch that and Ralf tunnels past the opponent
+    # before the active frame.  Replace the dash rows with 12/6/3.
+    for _state, _rows in (cfg.get("act_override") or {}).items():
+        _drop_ops = {op for _f, op, _a, _c in _rows}
+        cns_acts[_state] = [r for r in cns_acts.get(_state, ())
+                            if r[1] not in _drop_ops]
+        cns_acts[_state] += [(int(f), int(op), int(a), int(c))
+                             for f, op, a, c in _rows]
+    # Per-state PosTab overrides.  Ralf's Ultra Vulcan adds a -16/+8/+8/+16
+    # px lunge on top of the 16/8/4 dash; the native body separation cannot
+    # absorb that and Ralf tunnels past the opponent.  Drop the lunge and
+    # keep the retuned dash.
+    for _state, _rows in (cfg.get("posadd_override") or {}).items():
+        cns_posadds[_state] = [(int(f), int(dx)) for f, dx in _rows]
     # Extra PosAdd rows for attacks whose source moves through a
     # trigger form the extractor cannot represent (a lunging command grab).
     for _state, _rows in (cfg.get("posadd_extra") or {}).items():

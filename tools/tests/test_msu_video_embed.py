@@ -41,7 +41,11 @@ class MsuVideoEmbedTests(unittest.TestCase):
         self.assertEqual(length, len(self.video))
         self.assertEqual(hashlib.sha256(self.msu[off:off + length]).hexdigest(),
                          hashlib.sha256(self.video).hexdigest())
-        self.assertEqual(off + length, len(self.msu))
+        # The data file is padded to a 512-byte boundary after the video.
+        self.assertLessEqual(off + length, len(self.msu))
+        self.assertLessEqual(len(self.msu) - (off + length), 511)
+        self.assertEqual(self.msu[off + length:],
+                         b"\0" * (len(self.msu) - (off + length)))
 
     def test_engine_constants(self):
         off = int.from_bytes(self.msu[10:14], "little")

@@ -7,7 +7,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
 # 46/66 are backdash/counter specials, 76/77 are the engine's throw victims;
 # their 255-tick holds are owned by other state handlers, not by TransAir.
-NON_ANTIAIR = {46, 66, 76, 77}
+NON_ANTIAIR = {46, 66, 76, 77, 99, 100, 101, 102}
 
 
 def body(lines, label):

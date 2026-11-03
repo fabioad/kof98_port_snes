@@ -435,7 +435,7 @@ triggerall = statetype != A
 trigger1 = ctrl
 [State -1, Napalm Stretch strong]
 type = ChangeState
-value = 1510
+value = 1500
 triggerall = command = "DP_Y"
 triggerall = statetype != A
 trigger1 = ctrl
@@ -459,7 +459,7 @@ triggerall = statetype != A
 trigger1 = ctrl
 [State -1, Super Argentine strong]
 type = ChangeState
-value = 1310
+value = 1300
 triggerall = command = "HCF_B"
 triggerall = statetype != A
 trigger1 = ctrl
@@ -471,7 +471,7 @@ triggerall = statetype != A
 trigger1 = ctrl
 [State -1, Mount Tackle strong]
 type = ChangeState
-value = 1210
+value = 1200
 triggerall = command = "HCF_Y"
 triggerall = statetype != A
 trigger1 = ctrl

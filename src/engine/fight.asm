@@ -8103,7 +8103,7 @@ StAirSpec:                              ; knee-style air phases: gravity via
     jsr Physics                         ; press) ChangeState rules
     jsr TransAir
     jsr AnimTick
-    jmp ClampX
+    jmp StAirSpecTail                   ; tail runs ThrowBind + ClampX
 
 ; Fast-palm custom victim chain (MUGEN 1025-1028). F_GRAB bit1 makes
 ; CharPtr/animation DMA read the attacker's data for ChangeAnim2; bit0 keeps
@@ -19489,6 +19489,17 @@ AO_hitreset:                            ; re-arm the current state's HitDef
     stz lastsid,x                       ;   is soft: keep counting so
 +   stz FP+F_HITDONE,x                  ;   MoveHitFinisher fires on the
     rts                                 ;   fifth contact.
+.ENDS
+
+; StAirSpec tail: keep the air-special ClampX behavior while re-seating
+; an extended grab victim.  Lives in the same low-bank gap so the 32 KiB
+; Fight window does not grow.
+.BANK 50 SLOT 0
+.ORGA $0FC0
+.SECTION "StAirSpecTail" FORCE
+StAirSpecTail:
+    jsr ThrowBind
+    jmp ClampX
 .ENDS
 
 ; The Fight bank is full, so the projectile-clash helper lives in the free
