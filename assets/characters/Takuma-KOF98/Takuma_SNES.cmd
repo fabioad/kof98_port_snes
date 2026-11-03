@@ -417,13 +417,13 @@ triggerall = statetype != A
 trigger1 = ctrl
 [State -1, Ryuuko Ranbu weak]
 type = ChangeState
-value = 3100
+value = 3105
 triggerall = command = "QQCF_X"
 triggerall = statetype != A
 trigger1 = ctrl
 [State -1, Ryuuko Ranbu strong]
 type = ChangeState
-value = 3120
+value = 3105
 triggerall = command = "QQCF_Y"
 triggerall = statetype != A
 trigger1 = ctrl

@@ -19,14 +19,14 @@ command = ~D, DF, F, D, DF, F, x+y
 time = 25
 
 [Command]
-name = "QCBHCF_X"
-command = ~D, DB, B, DB, D, DF, F, x
-time = 25
+name = "AIR_QCF_X"
+command = ~D, DF, F, x
+time = 18
 
 [Command]
-name = "QCBHCF_Y"
-command = ~D, DB, B, DB, D, DF, F, y
-time = 25
+name = "AIR_QCF_Y"
+command = ~D, DF, F, y
+time = 18
 
 [Command]
 name = "QCBHCF_A"
@@ -397,11 +397,12 @@ value = 3300
 triggerall = command = "MAX_SUPER"
 triggerall = statetype != A
 trigger1 = ctrl
-[State -1, V-Slasher MAX]
+
+[State -1, Gravity Storm]
 type = ChangeState
-value = 3250
-triggerall = command = "SUPER_X"
-triggerall = statetype = A
+value = 3200
+triggerall = command = "QQCF_A"
+triggerall = statetype != A
 trigger1 = ctrl
 [State -1, Rebel Spark weak]
 type = ChangeState
@@ -418,13 +419,13 @@ trigger1 = ctrl
 [State -1, V-Slasher weak]
 type = ChangeState
 value = 3000
-triggerall = command = "QCBHCF_X"
+triggerall = command = "AIR_QCF_X"
 triggerall = statetype = A
 trigger1 = ctrl
 [State -1, V-Slasher strong]
 type = ChangeState
 value = 3001
-triggerall = command = "QCBHCF_Y"
+triggerall = command = "AIR_QCF_Y"
 triggerall = statetype = A
 trigger1 = ctrl
 [State -1, Earring Bomb weak]

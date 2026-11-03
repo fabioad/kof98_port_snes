@@ -1,44 +1,7 @@
 {
   "character": "yuri",
-  "config_hash": "5aa667a4a696822eaa969a4f46ddca5e4153def1e59cbcdb91de449961f7f8f6",
-  "corrections": [
-    {
-      "after": 0,
-      "before": 384,
-      "confidence": "ALTA",
-      "controller": 17,
-      "expression": "0",
-      "key": "gvx",
-      "kind": "combat",
-      "property": "ground.velocity",
-      "runtime_scope": "native_scalar",
-      "sid": 64,
-      "source": {
-        "file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Yuri/yuri_H.cns",
-        "line": 1980
-      },
-      "state": 513,
-      "status": "correctable"
-    },
-    {
-      "after": 0,
-      "before": 384,
-      "confidence": "ALTA",
-      "controller": 17,
-      "expression": "0",
-      "key": "avx",
-      "kind": "combat",
-      "property": "air.velocity",
-      "runtime_scope": "native_scalar",
-      "sid": 64,
-      "source": {
-        "file": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Yuri/yuri_H.cns",
-        "line": 1981
-      },
-      "state": 513,
-      "status": "correctable"
-    }
-  ],
+  "config_hash": "ed5f77f2c2aedb3d32f0cabd9c34941dc9163d15f015bbd34adbe7ff7c0135e6",
+  "corrections": [],
   "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Yuri/!yuri.def",
   "inputs": {
     "assets/characters/Yuri/!yuri.def": "88a322f6cabab673e838f6f88b4ac903b33284b8f3c52ba20e729fcc645bd74c",

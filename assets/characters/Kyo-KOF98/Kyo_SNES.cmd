@@ -13,12 +13,12 @@
 
 [Command]
 name = "MAX_SUPER"
-command = ~F, DF, D, DB, B, F, DF, D, DB, B, x+y
+command = F, DF, D, DB, B, F, DF, D, DB, B, x+y
 time = 30
 
 [Command]
 name = "SUPER_X"
-command = ~F, DF, D, DB, B, F, DF, D, DB, B, x
+command = F, DF, D, DB, B, F, DF, D, DB, B, x
 time = 30
 
 [Command]
@@ -54,6 +54,16 @@ time = 20
 [Command]
 name = "HCB_B"
 command = ~F, DF, D, DB, B, b
+time = 20
+
+[Command]
+name = "HCB_X"
+command = ~F, DF, D, DB, B, x
+time = 20
+
+[Command]
+name = "HCB_Y"
+command = ~F, DF, D, DB, B, y
 time = 20
 
 [Command]
@@ -124,6 +134,11 @@ time = 15
 [Command]
 name = "QCF_B"
 command = ~D, DF, F, b
+time = 15
+
+[Command]
+name = "QCF_AB"
+command = ~D, DF, F, a+b
 time = 15
 
 ; Yami Barai (108 Shiki): match Kyo's original MUGEN 40-frame back charge,
@@ -309,6 +324,20 @@ command = D
 type = ChangeState
 value = 3550
 triggerall = command = "MAX_SUPER"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, Orochinagi weak]
+type = ChangeState
+value = 3000
+triggerall = command = "QCF_AB"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, Orochinagi strong]
+type = ChangeState
+value = 3000
+triggerall = command = "QCF_AB"
 triggerall = statetype != A
 trigger1 = ctrl
 

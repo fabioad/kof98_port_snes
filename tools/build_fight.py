@@ -1516,7 +1516,8 @@ CHARS = {
 # A=strong kick.  The fight engine's JOY_* constants use these same labels.
 for _cfg in CHARS.values():
     _cfg["buttons"].update({"x": 0x4000, "y": 0x0040,
-                            "a": 0x8000, "b": 0x0080})
+                            "a": 0x8000, "b": 0x0080,
+                            "c": 0x0020, "z": 0x0010})
 
 # 8 MiB fallback build: KOF_BASE4=1 drops the extra chars back to the
 # original roster (Kyo/Iori/Shingo/Rugal).  Default build: 14 chars --
@@ -1830,6 +1831,13 @@ for _c, _cfg in NEW_CHARS.items():
     for _sid in range(98):
         _cfg["anims"].setdefault(_sid, 47)
     CHARS[_c] = _cfg
+
+# Re-apply the face-button contract after the mass-import configs join CHARS
+# (the pre-import loop above only covered the fixed descriptors).
+for _cfg in CHARS.values():
+    _cfg.setdefault("buttons", {}).update({
+        "x": 0x4000, "y": 0x0040, "a": 0x8000, "b": 0x0080,
+        "c": 0x0020, "z": 0x0010})
 
 # --- restored projectile moves --------------------------------------------
 # A few imported fighters keep their travelling shot in a helper state that
@@ -2219,6 +2227,204 @@ if "andy" in CHARS:
         1310: (-20, -110, 55, -5),
     }
 
+# ---------------------------------------------------------------------------
+# Release pass: the command supers whose source chain was not wired, plus the
+# helper-driven Leona moves.
+# ---------------------------------------------------------------------------
+# Iori's Ya Otome opens with a single HitDef in 3000/3010 and only then
+# enters the 3020 rush.  The MoveHit rule also tests NumTarget, which the
+# build cannot encode, so the rush never started: the opening punch knocked
+# the victim down and the super ended.  Chain the roots explicitly, clear the
+# fall flag on the whole rush, and re-arm the 3020 HitDef at each of its seven
+# source elements.  MoveHitFinisher forces the knockdown on the fifth contact.
+if "iori" in CHARS:
+    _iori = CHARS["iori"]
+    _iori.setdefault("extra_trans", []).extend([
+        (85, 87, 3, 0),               # 3000 hit -> 3020 rush
+    ])
+    _iori["hit_soft_resets"] = dict(_iori.get("hit_soft_resets", {}))
+    _iori["hit_soft_resets"][3020] = [10, 17, 26, 35]
+    _iori["slice_no_fall"] = sorted(
+        set(_iori.get("slice_no_fall", ())) | {85, 86, 87})
+    _iori["hitdef_override"] = dict(_iori.get("hitdef_override", {}))
+    _iori["hitdef_override"][85] = {
+        "damage": 2, "gdamage": 1, "gvx": 0, "gvy": 0,
+    }
+    _iori["hitdef_override"][87] = {
+        "damage": 6, "gdamage": 1, "gvx": 0, "gvy": 0,
+    }
+
+# Kyo's Orochinagi lives in 3000/3010 (charge) -> 3005 (attack) and a helper
+# flame (3020).  Neither the command rules nor the 3005 slot were wired.  Put
+# the charge states on 98/99, the attack on the special slot 60, and copy the
+# helper's flame HitDef onto the body.  The source flame animation is a wide
+# Clsn1 rectangle; the body anim has none, so patch the same box onto the
+# attack frames.  Soft resets turn the five-tick flame window into five
+# contacts and MoveHitFinisher drops the victim on the fifth.
+if "kyo" in CHARS:
+    _kyo = CHARS["kyo"]
+    # Reuse the already-loaded Oniyaki sprites (1100/1110) instead of the
+    # source's new 3000/3060 flame sheets; Kyo's CHR is ROM-resident and
+    # already fills its last bank.  3026 is a synthetic Oniyaki clip with
+    # the Orochinagi flame box patched onto the later elements.
+    POST_CAL_REACTIVATED.setdefault("kyo", []).extend([
+        (98, 3000, 1110), (60, 3005, 3026),
+    ])
+    _kyo.setdefault("extra_trans", []).extend([
+        (98, 60, 0, 0),               # charge/start -> Orochinagi attack
+    ])
+    POST_CAL_CATEGORIES.setdefault("kyo", {}).update({98: 3})
+    POST_CAL_POW_OVERRIDE.setdefault("kyo", {}).update({98: -1000})
+    _kyo["hitdef_from_state"] = dict(_kyo.get("hitdef_from_state", {}))
+    _kyo["hitdef_from_state"][60] = (
+        3020, {"active": 6, "damage": 12, "fall": 0, "gdamage": 2,
+               "gvx": 0, "gvy": 0})
+    # The 3005 clip's last attack frame is only 27 ticks.  Hold it longer
+    # and re-arm at exact state times so the flame can connect five times;
+    # MoveHitFinisher then forces the knockdown on the fifth contact.
+    _kyo["act_override"] = dict(_kyo.get("act_override", {}))
+    _kyo["act_override"][3005] = [
+        (0x80 | t, 18, 1, 0) for t in (25, 35, 45, 55)]
+    _kyo["tail_ticks"] = dict(_kyo.get("tail_ticks", {}))
+    _kyo["tail_ticks"][3026] = 80
+    _kyo["slice_no_fall"] = sorted(
+        set(_kyo.get("slice_no_fall", ())) | {60})
+
+# Takuma's Ryuuko Ranbu: the real flurry states (3105/3125) pull a large set
+# of new sprites into TakumaData, which already shares the tight bank 83 low
+# half.  Reuse the already-loaded 1320 held-kick sprites as a synthetic
+# action (1322) with attack boxes on five kicks, and run the source 3105
+# HitDef on the super slot 88.  The command rules now enter 3105 directly;
+# the weak/strong roots are bypassed like Ryo's and Robert's.
+if "takuma" in CHARS:
+    _takuma = CHARS["takuma"]
+    POST_CAL_REACTIVATED["takuma"] = [
+        r for r in POST_CAL_REACTIVATED.get("takuma", []) if r[0] != 88]
+    _takuma["moves"].update({88: 3105})
+    _takuma["anims"].update({88: 1322})
+    _takuma["hitdef_override"] = dict(_takuma.get("hitdef_override", {}))
+    _takuma["hitdef_override"][88] = {
+        "damage": 8, "gdamage": 1, "gvx": 0, "gvy": 0,
+    }
+    _takuma["slice_no_fall"] = sorted(
+        set(_takuma.get("slice_no_fall", ())) | {88})
+    # Re-arm after each kick (1-based elements 6/9/12/15).  The source
+    # MoveHitReset rows at 10/17 are replaced by act_override.
+    _takuma["act_override"] = dict(_takuma.get("act_override", {}))
+    _takuma["act_override"][3105] = [
+        (e - 1, 18, 1, 0) for e in (6, 9, 12, 15)]
+    _takuma["air_box_patch_frames"] = dict(
+        _takuma.get("air_box_patch_frames", {}))
+    _takuma["air_box_patch_frames"][1322] = {
+        f: [(-20, -100, 60, 0)] for f in (2, 5, 8, 11, 14)}
+    _takuma["frame_cap"] = dict(_takuma.get("frame_cap", {}))
+    _takuma["frame_cap"][88] = 18
+
+# Yuri's Hien Hou'ou Kyaku: 510/511 -> 512 -> 513 -> 514.  Every source
+# HitDef carries fall=1, so the opening kick knocked the victim down and the
+# later states had nothing to hit.  Keep the victim in hitstun through 513,
+# supply real damage to the 512/513 windows (the source uses TargetLifeAdd
+# there, which needs a grab), and let 514 launch.
+if "yuri" in CHARS:
+    _yuri = CHARS["yuri"]
+    _yuri["slice_no_fall"] = sorted(
+        set(_yuri.get("slice_no_fall", ())) | {86, 66, 63, 64})
+    _yuri["hitdef_override"] = dict(_yuri.get("hitdef_override", {}))
+    for _sid in (86, 66, 63):
+        _yuri["hitdef_override"][_sid] = {
+            "damage": 6, "gdamage": 1,
+            "gvx": 0, "gvy": 0, "avx": 0, "avy": 0,
+        }
+    _yuri["hitdef_override"][64] = {
+        "damage": 6, "gdamage": 1,
+        "gvx": 0, "gvy": 0, "avx": 0, "avy": 0,
+    }
+    _yuri["hitdef_override"][65] = {"damage": 12, "gdamage": 2}
+    _yuri["hit_soft_resets"] = dict(_yuri.get("hit_soft_resets", {}))
+    # 513 has attack boxes on elements 5 and 7; re-arm on 7 so the second
+    # box also lands.
+    _yuri["hit_soft_resets"][513] = [7]
+
+# Robert's strong Hien Shippuu Kyaku (1210) was missing from the generated
+# command table; wire it on the free slot 57 and let the existing special
+# category cover it.
+if "robert" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("robert", []).append((57, 1210, 1210))
+
+# Eiji's Kotsu Hazaki: 1300/1310 dash into 1305 when the opponent is within
+# 60 px.  1305 had no runtime slot, so the distance-gated ChangeState was
+# silently dropped and the dash recovered without the elbow.
+if "eiji" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("eiji", []).append((59, 1305, 1305))
+
+# Leona's Earring Bakudan: the damage/knockdown HitDef lives in the helper
+# states 1520/1521, which the native engine does not run.  Copy the helper
+# row onto the body at the explosion element (20) and patch an attack box
+# onto the last body frame (the earring explodes there).
+if "leona" in CHARS:
+    _leona = CHARS["leona"]
+    # The generated import pointed the V-Slasher body at the super-flash
+    # effect clip 4000; the source plays body animation 3000 (both strengths).
+    _leona["anims"].update({85: 3000, 86: 3000})
+    _leona["hitdef_from_state"] = dict(_leona.get("hitdef_from_state", {}))
+    for _sid, _src in ((56, 1520), (57, 1521)):
+        _leona["hitdef_from_state"][_sid] = (
+            _src, {"active": 20, "damage": 30, "fall": 1, "gdamage": 2})
+
+    # V-Slasher: its source whiff rule `Pos Y >= 10 && Vel Y > 0` is a
+    # ground-height test, but the native engine keeps screen Y >= 10 for the
+    # whole jump.  Drop the landing row and land only when the clip ends;
+    # the impact state 3010 also gets a bounded clip.
+    _leona["trans_drop"] = list(_leona.get("trans_drop", ())) + [(85, 1), (86, 1)]
+    _leona["extra_trans"] = [
+        r for r in _leona.get("extra_trans", ())
+        if not (r[0] in (85, 86) and r[1] in (0, 17))]
+    _leona["extra_trans"] += [
+        (85, 98, 3, 0), (86, 98, 3, 0),   # starter hit -> impact follow-up
+        (85, 17, 0, 0), (86, 17, 0, 0), (98, 17, 0, 0),
+    ]
+    _leona["frame_cap"] = dict(_leona.get("frame_cap", {}))
+    _leona["frame_cap"][98] = 5
+    # Source `Turn` at time 0 flips the already-facing fighter; the native
+    # engine's op0 is an unconditional toggle, so drop it and keep facing.
+    _leona["act_drop"] = {3000: [0], 3001: [0]}
+    _leona["air_box_patch_frames"] = dict(
+        _leona.get("air_box_patch_frames", {}))
+    for _anim in (1500, 1510):
+        _leona["air_box_patch_frames"][_anim] = {
+            f: [(10, -130, 90, -20)] for f in (18, 19)}
+
+    # The old free slot 58 pointed at SDM Gravity Storm but played the super
+    # flash animation 4020 as a body.  Drop that stale entry; the DM below
+    # uses the real 3200/3201 clips.
+    POST_CAL_REACTIVATED["leona"] = [
+        r for r in POST_CAL_REACTIVATED.get("leona", []) if r[0] != 58]
+    # Gravity Storm DM (3200 -> 3201).  The source body animations were
+    # dropped from the trimmed AIR; they are restored alongside this block.
+    POST_CAL_REACTIVATED.setdefault("leona", []).extend([
+        (59, 3200, 3200), (60, 3201, 3201),
+        # V-Slasher: the starter has no damage of its own; on contact it
+        # redirects to 3010, whose real impact row lives in 3011.
+        (98, 3010, 3011),
+    ])
+    _leona["hitdef_by_sid"] = dict(_leona.get("hitdef_by_sid", {}))
+    _leona["hitdef_by_sid"][59] = 1          # 3200 launcher row
+    _leona["hitdef_override"] = dict(_leona.get("hitdef_override", {}))
+    _leona["hitdef_override"][59] = {"damage": 30, "fall": 1, "gdamage": 2}
+    _leona["hitdef_override"][60] = {"damage": 30, "fall": 1, "gdamage": 2}
+    for _sid in (85, 86):
+        _leona["hitdef_override"][_sid] = {
+            "damage": 8, "fall": 0, "gvx": 0, "gvy": 0,
+        }
+    _leona["hitdef_from_state"][98] = (
+        3011, {"active": 1, "damage": 40, "fall": 1, "gdamage": 2})
+    # Leona's source life scale is normalized x0.17 after HitDef overrides.
+    # Pin the final values for the port-side helper copies.
+    _leona["slice_damage"] = dict(_leona.get("slice_damage", {}))
+    _leona["slice_damage"].update({
+        56: 30, 57: 30, 59: 30, 60: 30, 85: 8, 86: 8, 98: 40,
+    })
+
 # ReversalDef counter-grab follow-ups (p1stateno/p2stateno) share four
 # runtime slots: 99/100 for the high/mid counter (actor/held opponent) and
 # 101/102 for the low counter.  Wiring both MUGEN states into "moves" makes
@@ -2438,6 +2644,21 @@ SND_TO_SFX = {                          # character .snd (group,item) -> id
     (800, 0): 15,                       # throw slam
     (100, 0): 16,                       # dash whoosh
     (40, 0): 8,                         # landing
+}
+# Per-character overrides.  Source packages number their samples
+# independently, so Iori's s4,0 claw cut and Leona's (0,32)/(1,0)/(1,1)
+# swipes cannot be expressed in the shared table above.  SFX 0 now carries
+# that cortante sample (tools/build_sfx_it.py source 0).
+CHAR_SND_TO_SFX = {
+    "iori": {
+        (0, 0): 0, (0, 1): 0, (4, 0): 0,
+        (12, 0): 0, (12, 1): 0, (12, 2): 0,
+        (13, 0): 0, (13, 1): 0,
+    },
+    "leona": {
+        (0, 32): 0, (0, 0): 0, (0, 1): 0,
+        (1, 0): 0, (1, 1): 0, (4, 0): 0,
+    },
 }
 HIT_SND = {0: 4, 1: 5, 2: 6, 3: 18, 4: 19}   # common.snd group 5 -> id
 # PlaySnd's F prefix selects the common sound bank (not fight.snd).  The
@@ -3376,9 +3597,11 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None, char_scale=1.0):
                       if split is not None else None)
                 if gm and im:
                     pair = (int(gm.group(1)), int(im.group(1)))
-                    sfxid = (SND_TO_SFX.get(pair)
-                             if bank in ("", "s")
-                             else COMMON_SND.get(pair))
+                    if bank in ("", "s"):
+                        sfxid = CHAR_SND_TO_SFX.get(char, {}).get(
+                            pair, SND_TO_SFX.get(pair))
+                    else:
+                        sfxid = COMMON_SND.get(pair)
                     if sfxid is not None:
                         snds.setdefault(state, []).append((trig, sfxid))
                     elif bank in ("", "s"):
@@ -4402,9 +4625,9 @@ MOTION_TEXT = {
 # (L -> c, R -> y|b, L+R -> s), so the command list must show the button the
 # player actually presses instead of those internal tokens.
 PHYSICAL_SYS_CMD = {
-    47: "L+R",      # taunt
-    67: "R",        # blowback
-    69: "L",        # neutral dodge
+    47: "L",         # taunt (L alone)
+    67: "R",         # blowback
+    69: "L + DIR",   # dodge/roll while holding a direction
     94: "L + BACK",  # back roll
     95: "L + FWD",   # forward roll
 }
@@ -6000,6 +6223,12 @@ def build_char(name, cfg, global_pal=None):
                             if r[1] not in _drop_ops]
         cns_acts[_state] += [(int(f), int(op), int(a), int(c))
                              for f, op, a, c in _rows]
+    # Explicitly remove source ActTab ops the port cannot represent safely
+    # (an unconditional MUGEN Turn would flip an already-facing fighter).
+    for _state, _ops in (cfg.get("act_drop") or {}).items():
+        _drop = set(_ops)
+        cns_acts[_state] = [r for r in cns_acts.get(_state, ())
+                            if r[1] not in _drop]
     # Per-state PosTab overrides.  Ralf's Ultra Vulcan adds a -16/+8/+8/+16
     # px lunge on top of the 16/8/4 dash; the native body separation cannot
     # absorb that and Ralf tunnels past the opponent.  Drop the lunge and
@@ -7648,6 +7877,13 @@ def build_char(name, cfg, global_pal=None):
         state_to_sids.setdefault(mstate, []).append(sid)
     trows = trans_rules(cns_statedefs, cns_headers, state_to_sid,
                         cfg["buttons"], state_to_sids)
+    # Drop source-derived rows the port replaces with explicit extra_trans.
+    # Air supers whose `Pos Y >= ... && Vel Y > 0` fail rule was encoded as a
+    # landing row would otherwise touch down on entry (the engine's screen Y
+    # is always >= the threshold).
+    for _from, _kind in (cfg.get("trans_drop") or ()):
+        trows = [r for r in trows
+                 if not (r[0] == _from and r[2] == _kind)]
     # a sliced sid's statedef-derived "anim end -> stand" row is the
     # ORIGINAL mugen state's end-of-move; each slice exits through its
     # chain row instead.  TransEnd takes the first kind-0 match and

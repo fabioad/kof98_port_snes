@@ -49,6 +49,11 @@ command = ~F, DF, D, DB, B, a
 time = 18
 
 [Command]
+name = "MFDB_b+db+df"
+command = ~F, DF, D, DB, B, b
+time = 18
+
+[Command]
 name = "DF_df+x"
 command = ~D, DF, F, x
 time = 18
@@ -271,6 +276,13 @@ trigger1 = ctrl
 type = ChangeState
 value = 1200
 triggerall = command = "MFDB_a+db+df"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, Hien Shippuu Kyaku strong]
+type = ChangeState
+value = 1210
+triggerall = command = "MFDB_b+db+df"
 triggerall = statetype != A
 trigger1 = ctrl
 
