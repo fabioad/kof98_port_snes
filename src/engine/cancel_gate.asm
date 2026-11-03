@@ -734,43 +734,6 @@ BumpWord125:                            ; A signed -> A + A/4
     adc scr3
     rts
 
-CounterDraw:
-    rep #$20
-    .ACCU 16
-    lda #((10*32+12)*2).w
-    sta scr0
-    lda #CounterTxt.w
-    sta scr2
-    sep #$20
-    .ACCU 8
-    lda #:CounterTxt.b
-    sta scr2+2
-    jsr WriteStr
-    sep #$20
-    .ACCU 8
-    inc huddirty
-    rep #$20
-    .ACCU 16
-    rts
-
-CounterClear:
-    rep #$20
-    .ACCU 16
-    ldx #((10*32+12)*2).w
-    ldy #7
-    lda #0
--   sta HUDMAP,x
-    inx
-    inx
-    dey
-    bne -
-    sep #$20
-    .ACCU 8
-    inc huddirty
-    rep #$20
-    .ACCU 16
-    rts
-
 DizzyCheck:
     rep #$20
     .ACCU 16

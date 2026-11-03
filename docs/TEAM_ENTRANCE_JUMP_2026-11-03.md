@@ -53,9 +53,9 @@ Versus, SURVIVOR e PRACTICE continuam com a intro normal, sem pulo.
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$7363`**
+- checksum **`$92CE`**
 - layout MSU **`0xC276`**
-- `.sfc` SHA-256 `d6a2db34…c659a5`
+- `.sfc` SHA-256 `aca86b1a…6ee1cf`
 - `.msu` SHA-256 `01cc847d…9c3740` (copie os dois juntos)
 
 > O ROM mudou depois desta correção (mount do Ralf e AI_ScanMove). Este é o

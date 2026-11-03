@@ -22831,3 +22831,98 @@ SAO_cell:
 SAO_out:
     rts
 .ENDS
+
+; 8x16 string writer for the counter banner.  Same as WriteStrBig, but the
+; loop counter is scr0 (dead after the offset is copied to X): the hit path
+; keeps its attacker state index in scr4 and reads the damage tables after
+; CounterDraw returns.
+.BANK 50 SLOT 0
+.ORGA $70C0
+.SECTION "CounterStrBig" FORCE
+CounterStrBig:
+    rep #$20
+    .ACCU 16
+    lda scr0
+    tax
+    sep #$20
+    .ACCU 8
+    ldy #0
+    lda [scr2],y
+    sta scr0
+    iny
+-   lda [scr2],y
+    sta HUDMAP,x
+    inc a
+    sta HUDMAP+64,x                     ; bottom half on the row below
+    lda #ATT_YEL.b
+    sta HUDMAP+1,x
+    sta HUDMAP+65,x
+    iny
+    inx
+    inx
+    dec scr0
+    bne -
+    rep #$20
+    .ACCU 16
+    rts
+.ENDS
+
+; COUNTER banner: the string uses the shared 8x16 big font, so it needs two
+; rows.  Rows 10/11 are outside the live HUD bands, hence the full upload
+; request.  Kept in the free bank-50 tail so the CancelData window stays
+; below OamCache.
+.BANK 50 SLOT 0
+.ORGA $7F98
+.SECTION "CounterBanner" FORCE
+CounterDraw:
+    rep #$20
+    .ACCU 16
+    lda #((10*32+12)*2).w
+    sta scr0
+    lda #CounterTxt.w
+    sta scr2
+    sep #$20
+    .ACCU 8
+    lda #:CounterTxt.b
+    sta scr2+2
+    jsr CounterStrBig                    ; 8x16, but keeps scr4 for the hit path
+    sep #$20
+    .ACCU 8
+    lda huddirty                         ; rows 10/11 are outside the live HUD
+    ora #HUD_FULL                        ;   bands: force a complete upload so
+    sta huddirty                         ;   both halves reach VRAM
+    lda #1
+    sta.w RT_HUDFULL
+    rep #$20
+    .ACCU 16
+    rts
+
+CounterClear:
+    rep #$20
+    .ACCU 16
+    ldx #((10*32+12)*2).w
+    ldy #7
+    lda #0
+-   sta HUDMAP,x
+    inx
+    inx
+    dey
+    bne -
+    ldx #((11*32+12)*2).w                ; bottom half of the 8x16 glyphs
+    ldy #7
+-   sta HUDMAP,x
+    inx
+    inx
+    dey
+    bne -
+    sep #$20
+    .ACCU 8
+    lda huddirty
+    ora #HUD_FULL
+    sta huddirty
+    lda #1
+    sta.w RT_HUDFULL
+    rep #$20
+    .ACCU 16
+    rts
+.ENDS
