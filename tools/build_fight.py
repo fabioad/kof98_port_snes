@@ -1594,10 +1594,17 @@ POST_CAL_REACTIVATED = {
                  (89, 3110, 3110), (66, 3150, 3150)],
     "takuma":   [(87, 3020, 3020), (58, 3220, 3210),
                  (88, 3100, 3100), (89, 3120, 3100)],
-    "ralf":     [(87, 510, 510), (88, 511, 510),
-                 (89, 520, 520), (58, 521, 521),
-                 (59, 550, 550), (60, 570, 570),
-                 (61, 512, 512)],
+    # Ralf's reactivated entries are incomplete: 510/511 never chain into
+    # 512 (the p2bodydist gate is not representable), 512 still needs the
+    # missing 515-518 bind chain, 520/521 target the unmapped 80010/80011
+    # ranbu states, and 570 is helper-driven.  Keeping them produced
+    # no-damage dashes, a 130-damage one-hit MAX and the Ralf reports of
+    # glitches/freezes.  Leave them off like Clark's incomplete grabs; the
+    # stable 85/86 Galactica Phantom pair stays wired.
+    # "ralf":   [(87, 510, 510), (88, 511, 510),
+    #            (89, 520, 520), (58, 521, 521),
+    #            (59, 550, 550), (60, 570, 570),
+    #            (61, 512, 512)],
     "leona":    [(58, 3250, 4020), (87, 3100, 3100),
                  (88, 3150, 3150), (89, 3300, 3300),
                  (61, 3102, 3102), (62, 3101, 3101),
@@ -1640,7 +1647,6 @@ POST_CAL_CATEGORIES = {
     "saisyu":   {66: 4},
     "heidern":  {66: 4},
     "takuma":   {58: 4},
-    "ralf":     {58: 3, 59: 4, 60: 4},
     "leona":    {58: 4},
     "benimaru": {66: 3},
     "daimon":   {60: 3},

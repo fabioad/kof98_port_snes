@@ -112,3 +112,24 @@ ligado e é a versão estável. Os comandos ficam sem `sid` até as cadeias
 completas serem importadas e testadas.
 
 Build/verify: ROM checksum `$6B6B`, `make pvsnes-verify` OK.
+
+## Correção de travamento/glitches do Ralf (02/11/2026)
+
+Os states reativados do Ralf também dependiam de cadeias que o motor não
+importa:
+
+- 510/511 (Running Super) precisam do `ChangeState` para 512, que depende
+  de `p2bodydist X`; sem ele o Ralf atravessa o oponente e não acerta;
+- 512 (montaria) usa `p1stateno = 515` e a cadeia 515-518, que não estão
+  ligadas;
+- 520/521 (Ultra Vulcan) apontam para os victim states 80010/80011, que
+  não existem no runtime; a animação roda, mas não causa dano;
+- 550 (MAX V-Slasher) usa os victim states 80002/80018 e só registra
+  parte dos hits;
+- 570 (MAX Galactica) é baseado em Helpers, que o motor não suporta.
+
+Como no Clark, os comandos foram desligados até a cadeia completa ser
+importada e testada. O par estável 85/86 (Galactica Phantom fraco/forte)
+continua ativo. A tabela de IA do Ralf deixa de listar os sids 87-89.
+
+Build: `make pvsnes` e `make pvsnes-verify` OK.
