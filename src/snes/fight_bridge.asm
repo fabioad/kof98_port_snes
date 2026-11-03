@@ -57,6 +57,11 @@ FightStreamingCache dsb $3000
 .RAMSECTION ".msu_stage" BANK $7F SLOT 3 ORGA $5000 FORCE
 MsuStageBuf dsb $0800
 .ENDS
+; Second staging buffer: both fighters can have their next CHR chunk
+; prefetched during the logic phase, so the vblank only copies WRAM -> VRAM.
+.RAMSECTION ".msu_stage2" BANK $7F SLOT 3 ORGA $5800 FORCE
+MsuStageBuf2 dsb $0800
+.ENDS
 
 ; Arguments for the sector-aligned MSU reader used by the voice streamer.
 ; Kept in the free top of WRAM next to the select scratch bytes ($7F10/$7F20
@@ -183,6 +188,236 @@ MsuStageUploadFar:
     sta.l INIDISP
     rep #$20
     .ACCU 16
+    rtl
+.ENDS
+
+; ---------------------------------------------------------------------------
+; Sprite CHR upload, far half.  Kept out of the full Fight bank.
+; MsuStagePrepareFar fetches one chunk into a WRAM staging buffer during the
+; logic phase (display on, no vblank cost).
+;   In:  scr0 = sector-aligned .msu offset low word
+;        scr4 = .msu offset high word
+;        MSU_PREFIX = in-sector prefix
+;        scr3 = requested payload bytes
+;        scr1 = staging buffer word address (bank $7F)
+;   Out: C=1 and scr3 = clamped payload bytes when staged; C=0 on timeout.
+; Fixed window between YouLoseCode ($CA6D) and SelMoveCode ($CC00); the
+; Fight bank is full, so the upload helpers live in the bank-126 hole.
+.BANK 126 SLOT 0
+.ORGA $CA6D
+.SECTION "SprUploadFar" FORCE
+MsuStagePrepareFar:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    jsl MsuChrPageClamp                 ; keep prefix+payload in one 8 KiB page
+    ; Only MSU_STAT/MSU_DATA are polled here; the display stays on and the
+    ; WRAM DMA below does not touch the PPU.
+    sep #$20
+    .ACCU 8
+    lda scr0
+    sta.l MSU_STAT
+    lda scr0+1
+    sta.l MSU_DATA
+    lda scr4
+    sta.l $2002
+    lda scr4+1
+    sta.l $2003                         ; starts the seek
+    ldx #MSU_POLL_LIMIT.w
+MSP_poll:
+    lda.l MSU_STAT
+    bpl MSP_ready
+    dex
+    bne MSP_poll
+    rep #$20
+    .ACCU 16
+    inc.w RT_MSUFAIL
+    clc
+    rtl
+MSP_ready:
+    rep #$20
+    .ACCU 16
+    lda scr1
+    sta.l $2181                         ; WRAM destination
+    lda #$8008.w                        ; mode 0, fixed source -> WMDATA
+    sta.l $4350
+    lda #$2001.w
+    sta.l $4352
+    lda.w MSU_PREFIX
+    clc
+    adc scr3
+    sta.l $4355                         ; prefix + payload
+    sep #$20
+    .ACCU 8
+    lda #$7F.b
+    sta.l $2183
+    lda #$00.b
+    sta.l $4354
+    lda #$20.b
+    sta.l MDMAEN                        ; channel 5
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    sec
+    rtl
+
+; SprDmaFar: vblank half.  X = fighter offset, scr5 = base page VRAM word.
+; Copies the chunk staged by SprPrepOne into the hidden ping-pong page.
+SprDmaFar:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    stx fofs
+    txa
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    tay                                 ; state offset (0/2)
+    sep #$20
+    .ACCU 8
+    lda FP+F_DMAREQ,x
+    bne SDF_req
+    lda #0.b
+    sta.w SP_KIND,y
+    jmp SDF_ret
+SDF_req:
+    lda.w SP_KIND,y
+    bne SDF_go
+    jmp SDF_ret                         ; not staged yet: keep the old page
+SDF_go:
+    cmp #4.b                            ; 1 = ROM, 2 = MSU staged, 3 = commit
+    bcc SDF_kind_ok
+    lda #0.b                            ; stale/garbage staging state
+    sta.w SP_KIND,y
+    jmp SDF_ret
+SDF_kind_ok:
+    cmp #3.b
+    bne +
+    jmp SDF_commit
++   rep #$20
+    .ACCU 16
+    lda.w SP_COUNT,y
+    bne +
+    jmp SDF_commit                      ; 0 count = 64 KiB: never DMA it
++   sep #$20
+    .ACCU 8
+    lda.w SP_KIND,y
+    sta scr6                            ; 1 = ROM, 2 = MSU staging buffer
+    ; pos = F_DMAPOS*32
+    rep #$20
+    .ACCU 16
+    lda FP+F_DMAPOS,x
+    and #$00FF.w
+    asl a
+    asl a
+    asl a
+    asl a
+    asl a
+    sta scr2
+    ; VMADDL = hidden page base + pos/2
+    lda.w SP_DST,y
+    sta scr3
+    lda scr2
+    lsr a
+    clc
+    adc scr3
+    sta.l VMADDL
+    sep #$20
+    .ACCU 8
+    lda #$80.b
+    sta.l VMAIN
+    lda #$01.b
+    sta.l $4360
+    lda #$18.b
+    sta.l $4361
+    rep #$20
+    .ACCU 16
+    lda scr6
+    and #$00FF.w
+    cmp #2.w
+    beq SDF_msu
+    lda.w SP_SRC,y
+    sta.l $4362
+    sep #$20
+    .ACCU 8
+    lda.w SP_SRCBANK,y
+    sta.l $4364
+    bra SDF_count
+SDF_msu:
+    lda #(MsuStageBuf & $FFFF).w
+    cpy #0.w
+    beq +
+    lda #(MsuStageBuf2 & $FFFF).w
++   clc
+    adc.w SP_PREFIX,y
+    sta.l $4362
+    sep #$20
+    .ACCU 8
+    lda #$7F.b
+    sta.l $4364
+SDF_count:
+    rep #$20
+    .ACCU 16
+    lda.w SP_COUNT,y
+    sta.l $4365
+    sep #$20
+    .ACCU 8
+    lda #$40.b
+    sta.l MDMAEN                        ; channel 6: setup at $4360
+    ; advance the cursor; finish (flip/commit) when the whole sprite is sent
+    rep #$20
+    .ACCU 16
+    lda scr2
+    clc
+    adc.w SP_COUNT,y
+    sta scr0
+    ldx fofs
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    sep #$20
+    .ACCU 8
+    sta FP+F_DMAPOS,x
+    rep #$20
+    .ACCU 16
+    lda scr0
+    cmp.w SP_LEN,y
+    bcs SDF_commit
+    sep #$20
+    .ACCU 8
+    lda #0.b
+    sta.w SP_KIND,y                     ; ask the next logic phase for chunk 2
+    bra SDF_ret
+SDF_commit:
+    sep #$20
+    .ACCU 8
+    lda FP+F_TILEPG,x
+    eor #$60.b
+    sta FP+F_TILEPG,x                   ; newly-uploaded page becomes visible
+    stz FP+F_DMAREQ,x
+    lda FP+F_PXOFF,x
+    sta FP+F_XOFF,x
+    lda FP+F_PYOFF,x
+    sta FP+F_YOFF,x
+    lda FP+F_PFLAGS,x
+    sta FP+F_FLAGS,x
+    lda #0.b
+    sta.w SP_KIND,y
+    rep #$20
+    .ACCU 16
+    lda.w SP_META,y
+    sta FP+F_META,x
+    lda FP+F_PATKBOX,x
+    sta FP+F_ATKBOX,x
+    lda FP+F_PHURTBOX,x
+    sta FP+F_HURTBOX,x
+SDF_ret:
+    sep #$20                            ; callers continue in 8-bit A
+    .ACCU 8
     rtl
 .ENDS
 

@@ -239,7 +239,7 @@
 ; frame's offsets -- the pose visibly jumps until the upload finishes.
 .DEFINE F_PXOFF     F_PSPRID+$81        ; pending frame xoff/yoff/flags,
 .DEFINE F_PYOFF     F_PSPRID+$82        ;   copied to the live bytes by
-.DEFINE F_PFLAGS    F_PSPRID+$83        ;   SprDmaP's commit step
+.DEFINE F_PFLAGS    F_PSPRID+$83        ;   SprDmaFar's commit step
 .DEFINE F_VMUL      F_PSPRID+$84        ; Q8 VelMul x factor; 0 = inactive
 .DEFINE F_POWER     48                  ; word: 0..3000 power meter
 .DEFINE F_GRAB      52                  ; bit0 custom victim; bit1 attacker anim source
@@ -718,6 +718,18 @@
 .DEFINE RT_GHOSTGEN $5108               ; generation for P1a/P1b/P2a/P2b
 .DEFINE RT_FXUPLOAD $510C               ; cosmetic FX pages per presentation
                                         ;   (projectiles may also use the 2nd)
+; Sprite CHR upload staging.  SprPrepOne (logic phase) fills these for the
+; next chunk and SprDmaFar (bank $3E, vblank) only copies it into VRAM.
+; Indexed by side: 0 = P1, 2 = P2 (word fields, state ofs = fighter ofs >> 5).
+.DEFINE SP_KIND     $5200               ; 0 none, 1 ROM chunk, 2 MSU staged, 3 commit
+.DEFINE SP_COUNT    $5204               ; bytes in this chunk
+.DEFINE SP_LEN      $5208               ; whole sprite CHR length
+.DEFINE SP_SRC      $520C               ; ROM chunk source offset (pos included)
+.DEFINE SP_SRCBANK  $5210               ; ROM chunk source bank
+.DEFINE SP_DST      $5214               ; hidden ping-pong page base (VRAM word)
+.DEFINE SP_PREFIX   $5218               ; MSU in-sector prefix in the stage buffer
+.DEFINE SP_META     $521C               ; pending metasprite offset
+.DEFINE SP_SIDE     $5220               ; current SprPrepOne side (0/2)
 ; HUD dirty bands (huddirty is a bitmask during live play).  FlushHud sends
 ; at most one band per presentation: life first, then power/combo/timer.
 .DEFINE HUD_TOP1    $01                 ; row 1: names / team pips
@@ -828,6 +840,14 @@ FightMain:
     stz.w JOIN_ACTIVE                     ; no mid-fight join pending
     stz.w JOIN_SIDE
     stz.w DM_ON                           ; attract demo off at power-on
+    stz.w SP_KIND                         ; no staged CHR chunk survives a
+    stz.w SP_KIND+2                       ;   power-on/cold reset (WRAM can
+    stz.w SP_COUNT                        ;   hold random bytes on hardware)
+    stz.w SP_COUNT+2
+    stz.w SP_LEN
+    stz.w SP_LEN+2
+    stz.w SP_DST
+    stz.w SP_DST+2
     stz.b msuok                           ;   MSU-1 presence, set by MsuDetect
 .IFDEF PVSNESLIB
     sep #$20
@@ -965,6 +985,35 @@ ML_top_bad:
 ML_top_ok:
     ldx #$1FFF.w
     txs
+    ; Stage the next fighter CHR chunk during the active-display part of the
+    ; frame, never in vblank: a slow MSU seek must not postpone a presented
+    ; frame (that duplicated the previous pose for one frame).  The vblank
+    ; path (SprDmaFar) then only copies the staged chunk into VRAM.
+    rep #$20
+    .ACCU 16
+    lda #ENGINE_DP.w
+    tcd
+    sep #$20
+    .ACCU 8
+    lda #ENGINE_DB.b
+    pha
+    plb
+    lda.l $4212
+    bmi ML_prep_done                    ; vblank already started: next frame
+    lda gamestate                       ; only states that present fighters
+    cmp #1.b
+    beq ML_prep_fight
+    cmp #2.b
+    beq ML_prep_fight
+    cmp #4.b
+    beq ML_prep_fight
+    cmp #0.b
+    bne ML_prep_done
+    lda nextflag                        ; gs0: intermission/banner only
+    beq ML_prep_done
+ML_prep_fight:
+    jsr SprPrepBoth
+ML_prep_done:
 .IFDEF PVSNESLIB
     jsl WaitForVBlank
     rep #$20
@@ -4083,6 +4132,8 @@ SF_full:
     stz FP+F_TFLAGS+FP2OFS
     stz FP+F_DMAREQ
     stz FP+F_DMAREQ+FP2OFS
+    stz.w SP_KIND                         ; drop chunks staged for an old pick
+    stz.w SP_KIND+2
     stz FP+F_DMAPOS
     stz FP+F_DMAPOS+FP2OFS
     stz FP+F_TILEPG
@@ -15283,46 +15334,26 @@ FightPresent:
     ; doing it under forced blank makes this path valid even when the
     ; library skips a lag frame.
     jsr PushOamShadow
+    ; The next chunk of each fighter's sprite was already fetched from the
+    ; MSU into WRAM during the logic phase (SprPrepOne), so both sides can
+    ; be copied here with one 1280-byte DMA each.  No MSU seek/staging runs
+    ; in vblank anymore; alternating the two sides used to leave a pose
+    ; pending for two extra frames and drop animations during fast movement.
     ldx #0
-    ; Both fighters streaming their sprite pages in the same vblank run two
-    ; 1280-byte MSU->VRAM DMAs back to back.  The upload overruns vblank,
-    ; forced blank is still on during the first visible lines, and the top
-    ; of the screen flickers dark.  If both sides need tiles this frame,
-    ; upload one of them now and let the other take the next vblank.
-    stz sdmaside
-    lda FP+F_DMAREQ
-    beq FP_dma_pick
-    lda FP+F_DMAREQ+FP2OFS
-    beq FP_dma_pick
-    lda framecnt
-    and #1.b
-    inc a                               ; 1 = P1 now, 2 = P2 now
-    sta sdmaside
-FP_dma_pick:
-    lda sdmaside
-    cmp #2.b
-    beq FP_dma_p1done
-    lda FP+F_DMAREQ,x
-    beq FP_dma_p1done
     lda #<P1CHR
     sta scr5
     lda #>P1CHR
     sta scr5+1
-    jsr SprDmaP
-FP_dma_p1done:
+    jsl SprDmaFar
+    sep #$20
     .ACCU 8
-    lda sdmaside
-    cmp #1.b
-    beq FP_dma_done
     ldx #FP2OFS
-    lda FP+F_DMAREQ,x
-    beq FP_dma_done
     lda #<P2CHR
     sta scr5
     lda #>P2CHR
     sta scr5+1
-    jsr SprDmaP
-FP_dma_done:
+    jsl SprDmaFar
+    sep #$20
     .ACCU 8
 .IFDEF MSU_DIAG
     jsl MsuDiagOverlay
@@ -15435,7 +15466,9 @@ FP_dma_pick:
     sta scr5
     lda #>P1CHR
     sta scr5+1
-    jsr SprDmaP
+    jsl SprDmaFar
+    sep #$20
+    .ACCU 8
 FP_dma_p1done:
     lda sdmaside
     cmp #1.b
@@ -15447,7 +15480,9 @@ FP_dma_p1done:
     sta scr5
     lda #>P2CHR
     sta scr5+1
-    jsr SprDmaP
+    jsl SprDmaFar
+    sep #$20
+    .ACCU 8
 FP_dma_done:
     lda.w RT_FXUPLOAD                   ; a spark/projectile page already used
     bne +                               ;   this vblank's DMA budget
@@ -16383,27 +16418,69 @@ SS_wr:
     sta.l BG1VOFS
     rts
 
-; X = fighter ofs, scr5 = fighter's base page VRAM word addr (P?CHR).
-; Sends up to DMACHUNK bytes of the queued sprite (F_PSPRID) into the hidden
-; ping-pong page: GPDMA ch6 for ROM-resident CHR, ch7 from the MSU-1 data
-; port for streamed CHR.  On completion flips F_TILEPG so the new tiles
-; become visible and commits the pending meta and frame geometry to OAM.
-SprDmaP:
-    rep #$20
+; ---------------------------------------------------------------------------
+; Sprite CHR uploads are prepared during the logic phase so a slow MSU seek
+; can never steal a vblank.  Waiting for the next vblank inside the
+; presentation used to duplicate a displayed frame (the old pose stayed on
+; screen while positions/anim clocks advanced) -- the "one-frame freeze"
+; that showed up more often on the animated-crowd stages.  SprPrepBoth runs
+; with the display on: it fetches the next 1280-byte MSU chunk into WRAM and
+; records the chunk geometry.  SprDmaFar (bank $3E) then only copies that
+; chunk into the hidden OBJ page during vblank.
+SprPrepBoth:
+    rep #$30
     .ACCU 16
+    .INDEX 16
+    ldx #0
+    jsr SprPrepOne
+    ldx #FP2OFS.w
+    jsr SprPrepOne
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    rts
+
+; X = fighter offset.  A16/X16 on entry and exit.
+SprPrepOne:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
     stx fofs
+    txa
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    lsr a                               ; $40 -> 2, $00 -> 0 (state offset)
+    sta.w SP_SIDE
+    tay
     sep #$20
     .ACCU 8
+    lda FP+F_DMAREQ,x
+    bne SP_req
+    lda #0.b
+    sta.w SP_KIND,y                     ; no request: drop a stale staged chunk
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    rts
+SP_req:
+    lda.w SP_KIND,y
+    beq SP_new
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    rts                                 ; chunk already staged for this vblank
+SP_new:
+    ; invalidate the hidden page when a new sprite starts
     lda FP+F_DMAPOS,x
-    bne SD_gen_done
-    lda FP+F_TILEPG,x                   ; invalidate the hidden physical page
-    beq SD_hidden_b
-    lda #0.b                            ; visible B -> hidden A
-    bra SD_hidden_side
-SD_hidden_b:
-    lda #1.b                            ; visible A -> hidden B
-SD_hidden_side:
-    cpx #0.w
+    bne SP_gen_done
+    lda FP+F_TILEPG,x                   ; visible B -> hidden A / visible A -> B
+    beq +
+    lda #0.b
+    bra ++
++   lda #1.b
+++  cpx #0.w
     beq +
     clc
     adc #2.b                            ; P2 generations are slots 2/3
@@ -16411,9 +16488,10 @@ SD_hidden_side:
     lda.w RT_GHOSTGEN,y
     inc a
     sta.w RT_GHOSTGEN,y
-SD_gen_done:
-    rep #$20
+SP_gen_done:
+    rep #$30
     .ACCU 16
+    .INDEX 16
     ; pending meta = SprOfs[F_PSPRID]
     ldy #CH_SPROFS
     ldx #boxp
@@ -16471,12 +16549,11 @@ SD_gen_done:
     and #$0001.w
     beq +
     lda scr2                            ; MSU descriptors store the high
-    xba                                 ; slice byte in unused CH_CHR
+    xba                                 ;   slice byte in unused CH_CHR
     ora scr3
     sta scr3                            ; full 16-bit 32 KiB slice index
     stz scr2                            ; MSU tiles start at slice offset 0
-    +
-    lda scr0                            ; tilebase
++   lda scr0                            ; tilebase
     sta scr4
     and #$03FF.w
     asl a
@@ -16511,6 +16588,13 @@ SD_gen_done:
     asl a
     asl a                               ; *32
     sta scr2                            ; pos
+    ; dst page base comes from the side (the vblank caller used to pass it
+    ; in scr5; prep runs in the logic phase, so pick it here)
+    lda #P1CHR.w
+    cpx #0.w
+    beq +
+    lda #P2CHR.w
++   sta scr5
     ; dst = hidden page word addr + pos/2
     lda FP+F_TILEPG,x
     and #$00FF.w
@@ -16520,12 +16604,12 @@ SD_gen_done:
 +   lda #PGOF.w
 ++  clc
     adc scr5
-    sta scr3                            ; hidden page base
-    lda scr2
-    lsr a
-    clc
-    adc scr3
-    sta.l VMADDL
+    ldy.w SP_SIDE
+    sta.w SP_DST,y                      ; hidden page base
+    lda scr6
+    sta.w SP_META,y                     ; pending meta committed on flip
+    lda scr1
+    sta.w SP_LEN,y                      ; whole sprite CHR length
     ; count = min(DMACHUNK, dmalen - pos, page bytes left).  A bad sprite
     ; entry or a stale cursor must never write past the 3 KiB ping-pong
     ; page: that wraps VRAM into BG1/BG3 and shreds the stage.
@@ -16533,13 +16617,13 @@ SD_gen_done:
     sec
     sbc scr2
     bcs +
-    jmp SD_commit                       ; pos already past this page
+    jmp SP_commit_only                  ; pos already past this page
 +   sta scr3                            ; page bytes left
     lda scr1
     sec
     sbc scr2
     bcs +
-    jmp SD_commit                       ; pos >= dmalen
+    jmp SP_commit_only                  ; pos >= dmalen
 +   cmp scr3
     bcc +
     lda scr3
@@ -16547,71 +16631,42 @@ SD_gen_done:
     bcc +
     lda #DMACHUNK.w
 +   sta scr3                            ; count
-    tax                                 ; STA doesn't set flags; a zero-byte
-    bne SD_nonzero                      ;   DMA count means 64 KiB on the SNES
-    jmp SD_commit                       ; empty sprite: just flip/commit
-SD_nonzero:
+    lda scr3                            ; STA does not set flags; a zero
+    beq SP_commit_only                  ;   count would mean a 64 KiB DMA
     lda msuf
     and #$0001.w
-    bne SD_msu                          ; chr stream lives in the .msu file
-    ; GPDMA ch6: word writes to VMDATA
-    sep #$20
-    .ACCU 8
-    lda #$80.b
-    sta.l VMAIN
-    lda #$01.b                          ; mode 1: alternate $2118/$2119
-    sta.l $4360
-    lda #$18.b
-    sta.l $4361
-    rep #$20
-    .ACCU 16
+    bne SP_msu                          ; chr stream lives in the .msu file
+    ; ROM-resident CHR: the vblank path copies it straight from ROM.
     lda scr0
     clc
     adc scr2                            ; src offset + pos
-    sta.l $4362
-    sep #$20
-    .ACCU 8
+    ldy.w SP_SIDE
+    sta.w SP_SRC,y
     lda scr4
-    sta.l $4364                         ; src bank
-    rep #$20
-    .ACCU 16
+    sta.w SP_SRCBANK,y
     lda scr3
-    sta.l $4365                         ; byte count
+    sta.w SP_COUNT,y
     sep #$20
     .ACCU 8
-    lda #$40.b
-    sta.l MDMAEN                        ; fire ch6
-    ; advance cursor; on completion display the new page and commit meta
-    rep #$20
+    lda #1.b
+    sta.w SP_KIND,y
+    rep #$30
     .ACCU 16
-SD_advance:
-    lda scr2
-    clc
-    adc scr3                            ; new pos
-    ldx fofs
-    lsr a
-    lsr a
-    lsr a
-    lsr a
-    lsr a                               ; back to 32B units
+    .INDEX 16
+    rts
+SP_commit_only:
+    ldy.w SP_SIDE
     sep #$20
     .ACCU 8
-    sta FP+F_DMAPOS,x
-    rep #$20
+    lda #3.b
+    sta.w SP_KIND,y
+    rep #$30
     .ACCU 16
-    lda scr2
-    clc
-    adc scr3
-    cmp scr1
-    bcs +
-    jmp SD_ret                          ; more bytes to send
-+   jmp SD_commit
-
-; chr stream lives in kof98-snes.msu: scr4 = slice index (32 KiB units),
-; scr0 = offset inside the slice space, scr2 = pos, scr3 = count.
-; Seek the MSU-1 data pointer, then stream the chunk straight into VRAM with
-; GPDMA ch7 ($00:2001 -> $2118/$2119, fixed source); no vblank CPU copy.
-SD_msu:
+    .INDEX 16
+    rts
+SP_msu:
+    ; chr stream lives in kof98-snes.msu: scr4 = slice index (32 KiB units),
+    ; scr0 = offset inside the slice space, scr2 = pos, scr3 = count.
     lda scr0
     clc
     adc scr2
@@ -16622,8 +16677,7 @@ SD_msu:
     sbc #$8000.w
     sta scr0
     inc scr4                            ; chunk starts in the next slice
-    +
-    lda scr4
++   lda scr4
     lsr a
     sta scr4                            ; P_hi = slice >> 1
     bcc +
@@ -16633,120 +16687,37 @@ SD_msu:
     sta scr0
     bcc +
     inc scr4                            ; carry into byte 2 of the seek
-+
-    ; The sd2snes MSU extension refills its data cache from a 512-byte
-    ; aligned file sector and points the SNES read pointer at the in-sector
-    ; offset.  Live CHR chunks are only 32-byte aligned, so every chunk used
-    ; to depend on a non-zero in-sector pointer (and on page-2 cache hits).
-    ; Align the seek to the sector and stage prefix+payload; the VRAM DMA
-    ; then starts at the saved prefix.  MsuStageUploadFar clamps the payload
-    ; so the whole staged read stays inside the current 8 KiB cache page.
++   ; The SD2SNES refills its MSU data cache from a 512-byte aligned sector;
+   ; live CHR chunks are only 32-byte aligned, so the read is aligned down
+    ; and the in-sector prefix is carried in the staging buffer.  The far
+    ; routine also clamps prefix+payload to one 8 KiB cache page.
     lda scr0
     and #$01FF.w
     sta.w MSU_PREFIX
     lda scr0
     and #$FE00.w
     sta scr0                            ; sector-aligned seek address
-    sep #$20
-    .ACCU 8
-    ; The seek wait is the only variable part of this upload.  Hold it with
-    ; the display on; only the CPU polls MSU_STAT here (no VRAM/WRAM DMA).
-    ; The staging/VRAM DMAs below run under forced blank as validated 24/10.
-    lda #$0F.b
-    sta.l INIDISP
-    lda scr0
-    sta.l MSU_STAT                      ; seek byte 0
-    lda scr0+1
-    sta.l MSU_DATA                      ; seek byte 1
-    lda scr4
-    sta.l $2002                         ; seek byte 2
-    lda scr4+1
-    sta.l $2003                         ; seek byte 3 (starts the seek)
-.IFDEF MSU_DIAG
-    jsl MsuDiagSpriteWait
-    bcc SD_diag_ready
-    jmp SD_ret
-SD_diag_ready:
-.ELSE
-    ldx #MSU_POLL_LIMIT.w               ; bounded wait: retry next frame
--   lda.l MSU_STAT
-    bpl SD_msu_ready
-    dex
-    bne -
-    rep #$20
-    .ACCU 16
-    inc.w RT_MSUFAIL
-    jmp SD_ret                          ; never commit an incomplete page
-SD_msu_ready:
-    ; The wait ran with the display on.  If it was short and we are still in
-    ; vblank, the two DMAs fit right now.  Otherwise keep the sector we just
-    ; fetched and wait for the next vblank start with the display on; the
-    ; DMAs then run at the top of a fresh window.  Never discard and re-seek.
-    cpx #800.w                          ; <=224 poll iterations (~0.78 ms)
-    bcc SD_msu_wait_vb
-    lda.l $4212
-    bmi SD_msu_dma                      ; still in vblank: do it now
-SD_msu_wait_vb:
-    ; Wait for the current vblank to end (if it has not), then for the next
-    ; one to start.  Screen stays on; only HVBJOY is read here.
-SD_msu_wait_end:
-    lda.l $4212
-    bmi SD_msu_wait_end
-SD_msu_wait_start:
-    lda.l $4212
-    bpl SD_msu_wait_start
-SD_msu_dma:
-.ENDIF
-.IFDEF MSU_DIAG2
-    jsl MsuDiagStagedUpload
-    jmp SD_advance
-.ELSE
-    ; Stage the aligned MSU window in WRAM, then DMA the payload to VRAM.
-    ; Kept out of this 32 KiB bank (Fight section) to leave ROM room here.
-    ; The far routine blanks the display around both DMAs (WMDATA/VRAM do
-    ; not tolerate active display on the SD2SNES) and restores it after.
-    jsl MsuStageUploadFar
-.IFDEF MSU_DIAG
-    jsl MsuDiagTransferred
-    rep #$20
-    .ACCU 16
-    ; retain the stream probe used by the MSU diagnostics
-    lda scr0
-    sta.l $7E0910
-    lda scr4
-    sta.l $7E0912
-.ENDIF
-    rep #$20
-    .ACCU 16
-    jmp SD_advance
-.ENDIF
-SD_commit:
+    ; P1 -> MsuStageBuf, P2 -> MsuStageBuf2
+    lda #(MsuStageBuf & $FFFF).w
     ldx fofs
+    beq +
+    lda #(MsuStageBuf2 & $FFFF).w
++   sta scr1
+    jsl MsuStagePrepareFar              ; fetch the chunk into WRAM now
+    bcc SP_msu_retry
+    ldy.w SP_SIDE
+    lda.w MSU_PREFIX                    ; vblank starts at the payload, after
+    sta.w SP_PREFIX,y                   ;   the aligned sector prefix
+    lda scr3                            ; payload bytes after the page clamp
+    sta.w SP_COUNT,y
     sep #$20
     .ACCU 8
-    lda FP+F_TILEPG,x
-    eor #$60.b
-    sta FP+F_TILEPG,x                   ; newly-uploaded page becomes visible
-    stz FP+F_DMAREQ,x
-    ; The tiles just became visible: publish their frame geometry in the
-    ; same step so the OAM cells and their offsets always belong together.
-    lda FP+F_PXOFF,x
-    sta FP+F_XOFF,x
-    lda FP+F_PYOFF,x
-    sta FP+F_YOFF,x
-    lda FP+F_PFLAGS,x
-    sta FP+F_FLAGS,x
-    rep #$20
+    lda #2.b
+    sta.w SP_KIND,y
+SP_msu_retry:
+    rep #$30
     .ACCU 16
-    lda scr6
-    sta FP+F_META,x                     ; OAM now points at the new metasprite
-    lda FP+F_PATKBOX,x
-    sta FP+F_ATKBOX,x
-    lda FP+F_PHURTBOX,x
-    sta FP+F_HURTBOX,x
-SD_ret:
-    sep #$20
-    .ACCU 8
+    .INDEX 16
     rts
 
 ; opening intro + title + mode menu (same bank so the near jsr calls
