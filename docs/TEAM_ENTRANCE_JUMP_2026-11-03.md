@@ -4,9 +4,9 @@
 
 Depois que um membro é derrotado, o próximo integrante do time:
 
-1. fica **fora da tela** (acima da borda, no lado mais próximo do ponto de
-   entrada);
-2. dá um pulo em diagonal até a **distância da intro** — o mesmo vão de
+1. começa **fora do quadro visível**, oculto na borda mais próxima do ponto
+   de entrada;
+2. entra num **pulo lateral** até a **distância da intro** — o mesmo vão de
    96 px usado no começo do round, preservando a posição do sobrevivente;
 3. aterrissa, faz a **intro** normal do personagem (`S_INTRO`, anim 191) e
    só então o FIGHT/round começa.
@@ -22,8 +22,9 @@ Versus, SURVIVOR e PRACTICE continuam com a intro normal, sem pulo.
 - `TeamSwap` guarda o alvo de cada lado em `T_ENTERX`/`T_ENTERX2`, enquadra a
   câmera com os alvos e chama `TeamJumpSetup`.
 - `TeamJumpSetup`/`TeamJumpOne` colocam o(s) novo(s) membro(s) na borda mais
-  próxima do alvo, 230 px acima do chão, com `vx = delta*6` (8.8/tick) e
-  `vy = -3 px/tick`.
+  próxima do alvo, no chão, com `vx = delta*9` (8.8/tick) e `vy = -6
+  px/tick`. Os 5 primeiros ticks ficam sem sprite (`F_META=0`) para o
+  membro surgir de fora do quadro já no ar.
 - O estado 43 (`S_TJUMP`, antes um slot de AnimTab não despachado) usa a
   animação de pulo para frente do personagem (sid 15) e integra a posição
   manualmente — sem `AddXClamped`, para a posição fora da tela sobreviver.
@@ -52,7 +53,7 @@ Versus, SURVIVOR e PRACTICE continuam com a intro normal, sem pulo.
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$6CE5`**
+- checksum **`$6F37`**
 - layout MSU **`0xC276`**
-- `.sfc` SHA-256 `00b89a7a…02c328`
+- `.sfc` SHA-256 `0e3c8ef7…c869ef`
 - `.msu` SHA-256 `01cc847d…9c3740` (novo; copie junto)

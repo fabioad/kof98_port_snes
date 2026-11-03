@@ -9545,6 +9545,18 @@ STJ_rise:
     sbc FP+F_VY,x
     sta FP+F_Y,x
     jsr AnimTick
+    ; The first frames start at the screen edge: keep them undrawn so the
+    ; member appears to enter from outside, then let the jump show.
+    sep #$20
+    .ACCU 8
+    ldx fofs
+    lda FP+F_STIME,x
+    cmp #6.b
+    bcs +
+    stz FP+F_META,x
+    stz FP+F_META+1,x
++   rep #$20
+    .ACCU 16
     rts
 STJ_land:
     lda #0
@@ -18202,10 +18214,10 @@ TeamJumpSetup:
     jsr TeamJumpOne
 +   rts
 
-; X = fofs.  Start x at the edge on the target's half of the screen, 240 px
-; above it, then arc to T_ENTERX/T_ENTERX2.  The horizontal step is
-; delta*6 (8.8/tick); with the -4 px/tick hop and GRAV it lands right on the
-; intro gap.  A16/X16.
+; X = fofs.  Start on the ground at the edge nearest the target, hidden for
+; the first few frames, then side-jump to T_ENTERX/T_ENTERX2.  The horizontal
+; step is delta*9 (8.8/tick); with the -6 px/tick hop and GRAV it lands on
+; the intro gap.  A16/X16.
 TeamJumpOne:
     stx fofs
     cpx #0.w
@@ -18228,18 +18240,18 @@ TeamJumpOne:
     sbc scr5
     sta scr3                            ; delta px (signed)
     asl a
-    sta scr2
     asl a
+    asl a
+    sta scr2
     clc
-    adc scr2                            ; delta*6 -> 8.8 per tick
+    adc scr3                            ; delta*9 -> 8.8 per tick
     sta scr2
     ldx fofs
     lda scr5
     xba
     sta FP+F_X,x
-    lda #$E600.w                        ; height = 230 px (off the top)
-    sta FP+F_Y,x
-    lda #$FD00.w                        ; vy = -3 px/tick
+    stz FP+F_Y,x                        ; start on the ground at the edge
+    lda #$FA00.w                        ; vy = -6 px/tick (side jump)
     sta FP+F_VY,x
     lda scr2
     sta FP+F_VX,x
