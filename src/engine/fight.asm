@@ -9682,6 +9682,14 @@ StGuard:                                ; stand guard hold (anim 130 loops)
     ldx fofs
     stz FP+F_VX,x
     jsr GCancelTry
+    ; Guard hold is not a committed state: outside guard-hit (S_GHIT) a
+    ; normal button must cut the block pose and come out, as in the arcade.
+    ldx fofs
+    lda FP+F_JOYPR,x
+    and #(JOY_B|JOY_Y|JOY_A|JOY_X).w
+    beq SG_nocancel
+    jmp StTryAttack
+SG_nocancel:
     jsr HoldsBack
     beq SG_out
     ldx fofs
@@ -9701,6 +9709,12 @@ StCGuard:                               ; crouch guard hold (anim 131)
     ldx fofs
     stz FP+F_VX,x
     jsr GCancelTry
+    ldx fofs
+    lda FP+F_JOYPR,x
+    and #(JOY_B|JOY_Y|JOY_A|JOY_X).w
+    beq CG_nocancel
+    jmp StTryCrouch
+CG_nocancel:
     jsr HoldsBack
     beq CG_out
     ldx fofs
