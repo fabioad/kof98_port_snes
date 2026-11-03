@@ -67,3 +67,31 @@ Mesen headless (`--testRunner`) segue sem validação: o binário local segfault
 ### Observação sobre o limite de tiles do HUD
 
 `tools/build_fight.py` já rejeita `hud.chr` > 384 tiles 2bpp (`$2000-$2BFF`, antes de `STGACHR=$2C00`). HUD atual: 365 tiles.
+
+## Alinhamento das faixas verde e laranja (03/11/2026)
+
+As faixas dinâmicas de vida e power foram alinhadas às molduras:
+
+- **Vida:** a moldura estática foi redesenhada como um contorno branco
+  de 1 px com cantos arredondados. O interior do contorno agora é
+  exatamente a área das células dinâmicas (x25..111 em P1 e x144..230 em
+  P2, linhas 15..22), então a faixa verde encosta na borda branca nos
+  quatro lados. A janela original de 11 px foi comprimida para os 8 px
+  da linha dinâmica do BG3; a barra fica 3 px mais baixa (10 px de altura
+  externa), mas sem a sobra escura no topo nem invadindo a borda esquerda.
+- **Power:** os tiles dinâmicos passaram a ser compostos a partir da
+  própria moldura (paleta 7, que já contém o bege da moldura e o laranja
+  da faixa). A caixa de nível (`POW`) de 5 px fica preservada, a faixa
+  laranja começa depois dela e termina antes da borda direita. A faixa
+  ficou com 7 px de altura e 1 px de margem superior, centralizada no
+  vão da moldura.
+- O tile vazio do meio do power é reutilizado como `BLANK_BAR`. O
+  desenho novo usa 381 tiles, mas o arquivo é preenchido com 3 tiles
+  transparentes até 384: o upload antigo do BG3 e os DMAs de retrato/stage
+  seguem o mesmo extent de 6144 bytes, e um `hud.chr` curto deixava o
+  hardware real suscetível ao travamento com HUD corrompido.
+- O build final usa 384 tiles 2bpp (limite: 384, região $2000-$2BFF).
+
+Build/verify final (HUD + super): checksum `$A872`, layout MSU `0x01EE`. Testes: 246
+unitários, command list, guard cancel, counter-grab, visibilidade CHR
+MSU e banner de round OK.

@@ -9148,19 +9148,27 @@ def _bar_strip(imgs, layers, w=96, h=8):
 
 
 def _bar_tiles(imgs, bg_key, mid_key, fill_key, top_key, w=96):
-    """27 tile cells for one bar: full/empty caps and pixel clip variants."""
+    """27 tile cells for one bar: full/empty caps and pixel clip variants.
+
+    Layers may be SFF keys or pre-composited RGBA strips.  The latter let a
+    caller keep the frame's inner margins (the power level box) inside the
+    dynamic tiles instead of letting the fill cover them.
+    """
     from PIL import Image
     h = 8
-    top = imgs[top_key].resize((w, h), Image.LANCZOS)
-    lay = [imgs[k].resize((w, h), Image.LANCZOS) for k in
-           (bg_key, mid_key) if k]
+
+    def layer(key):
+        im = imgs[key]
+        return im if im.size == (w, h) else im.resize((w, h), Image.LANCZOS)
+
+    top = layer(top_key)
+    lay = [layer(k) for k in (bg_key, mid_key) if k]
     # Empty gauge cells must be opaque: a transparent background lets the
     # stage show through as "missing tiles" once HP/power drains.
     empty = Image.new('RGBA', (w, h), (0, 0, 0, 255))
     for im in lay:
         empty = Image.alpha_composite(empty, im)
-    full = Image.alpha_composite(
-        empty, imgs[fill_key].resize((w, h), Image.LANCZOS))
+    full = Image.alpha_composite(empty, layer(fill_key))
     empty = Image.alpha_composite(empty, top)
     full = Image.alpha_composite(full, top)
     ep, fp = empty.load(), full.load()
@@ -9256,7 +9264,7 @@ def _lifebar_backdrop(imgs, tiles, top_keys, bottom_keys):
     upper 120 source rows and the power frames occupy rows 394..462.  Keep
     their transparent pixels so the stage remains visible around the HUD.
     """
-    from PIL import Image
+    from PIL import Image, ImageDraw
 
     def strip(groups, y0, y1, rows):
         canvas = Image.new('RGBA', (256, rows * 8), (0, 0, 0, 0))
@@ -9266,8 +9274,30 @@ def _lifebar_backdrop(imgs, tiles, top_keys, bottom_keys):
             canvas.alpha_composite(im, (side * 128, 0))
         return canvas
 
-    strips = (strip(top_keys, 10, 130, 7),
-              strip(bottom_keys, 399, 467, 4))
+    def draw_life_frame(canvas, clear, rect, panel_x):
+        """Redraw one lifebar frame around the 8 px dynamic row.
+
+        The source frame's 11 px window is too tall for the single BG3 bar
+        row, and its bevel swallowed the top of the fill.  Clear the old
+        frame and draw a crisp 1 px white outline around the dynamic cells
+        (x25..111 / x144..230, y15..22).  The first dynamic column repaints
+        the outline pixel it overlaps, keeping all four sides white.
+        """
+        x0, y0, x1, y1 = clear
+        for y in range(y0, y1 + 1):
+            colour = canvas.getpixel((panel_x, y))
+            for x in range(x0, x1 + 1):
+                canvas.putpixel((x, y), colour)
+        ImageDraw.Draw(canvas).rounded_rectangle(
+            rect, radius=2, outline=(255, 255, 255, 255), width=1)
+
+    top = strip(top_keys, 10, 130, 7)
+    # Dynamic life cells: x24..111 (P1) and x144..231 (P2), row 15..22.
+    # Draw the static outline one pixel outside those cells so the green
+    # band meets the white border on all four sides.
+    draw_life_frame(top, (23, 11, 114, 23), (24, 14, 112, 23), 20)
+    draw_life_frame(top, (141, 11, 231, 23), (143, 14, 231, 23), 236)
+    strips = (top, strip(bottom_keys, 399, 467, 4))
     pool = {bytes(tiles[i:i + 16]): i // 16
             for i in range(0, len(tiles), 16)}
     maps = []
@@ -9524,10 +9554,29 @@ def build_hud():
     # Each dynamic tile includes its empty frame.  It must replace the BG3
     # static-map cell at every health value, including zero.
     blank = Image.new('RGBA', (88, 8), (0, 0, 0, 0))
-    life_base = fspr[life_bg[0]].crop((68, 44, 286, 62)).resize((88, 8), Image.LANCZOS)
-    life = fspr[life_fill].crop((68, 44, 286, 62)).resize((88, 8), Image.LANCZOS)
-    power_base = fspr[power_bg[0]].crop((32, 433, 235, 451)).resize((88, 8), Image.LANCZOS)
-    power = fspr[power_fill].crop((32, 435, 235, 454)).resize((88, 8), Image.LANCZOS)
+    # Life gauge: the first dynamic column carries the outer white border;
+    # the remaining 87 px are the green window.  The static frame now leaves
+    # exactly that 8 px tall window, so the fill meets the white border on
+    # all four sides instead of covering the left edge or stopping short.
+    life_base = Image.new('RGBA', (88, 8), (0, 0, 0, 0))
+    for y in range(8):
+        life_base.putpixel((0, y), (255, 255, 255, 255))
+    life = Image.new('RGBA', (88, 8), (0, 0, 0, 0))
+    life.alpha_composite(
+        fspr[life_fill].crop((68, 38, 286, 62)).resize(
+            (87, 8), Image.LANCZOS), (1, 0))
+    # Power gauge: the source frame reserves a small level box before the
+    # fill starts.  Build the dynamic strip from the frame itself (palette 7
+    # carries both the beige frame and the orange fill) and paste the fill
+    # after that box, so a full bar never covers the level indicator.  The
+    # strip spans screen x8..95; the gauge fill starts 5 px in and ends just
+    # before the right frame border.
+    power_base = fspr[power_bg[0]].crop((20, 435, 240, 451)).resize(
+        (88, 8), Image.LANCZOS)
+    power = Image.new('RGBA', (88, 8), (0, 0, 0, 0))
+    power.alpha_composite(
+        fspr[power_fill].crop((32, 435, 236, 454)).resize(
+            (81, 7), Image.LANCZOS), (5, 1))
     bars = {(0, 0): life_base, (0, 1): life,
             (0, 2): power_base, (0, 3): power, (0, 4): blank}
     lb_base = len(tiles) // 16
@@ -9538,9 +9587,9 @@ def build_hud():
         tiles += tiles2bpp(cell, 8, 8)
 
     # Opaque fill for drained gauge middles: index 1 in the HUD palettes.
-    blank_bar = len(tiles) // 16
-    # 2bpp solid index 1: low plane all ones, high plane zero.
-    tiles += bytes((0xFF, 0x00)) * 8
+    # The power bar's empty middle cell is already this exact solid tile, so
+    # reuse it instead of spending another slot in the 384-tile HUD region.
+    blank_bar = pb_base + 4
 
     # Round-win icon, group 120 in the [WinIcon] section.
     pip = len(tiles) // 16
@@ -9580,6 +9629,12 @@ def build_hud():
     topmap, bottommap = _lifebar_backdrop(fspr, tiles, life_bg, power_bg)
     portrait_base = len(tiles) // 16
     tiles += bytes(16) * 18                 # reserve 3x3 tiles per side
+    # The old stable HUD occupied the full 384-tile BG3 window.  The redraw
+    # uses three fewer tiles, but the real-hardware upload/VRAM extent must
+    # stay at 6144 bytes (the portrait and stage-anim DMAs follow the same
+    # layout), so pad the tail with transparent tiles.
+    while len(tiles) < 384 * 16:
+        tiles += bytes(16)
     # BG3 tiles are DMA'd to VRAM word $2000 (BG3CHR); dynamic stage-anim
     # tiles begin at word $2C00 (STGACHR).  The $C00 words in between hold
     # 6144 bytes = 384 2bpp tiles, so hud.chr must not exceed that or it
@@ -9720,12 +9775,12 @@ def build_hud():
     pals = [
         # pal3 P1 frame and white text
         (0, 0, 0), (12, 16, 44), (32, 70, 245), (255, 255, 255),
-        # pal4 lifebar green
-        (0, 0, 0), (12, 16, 12), (40, 160, 48), (170, 255, 170),
+        # pal4 lifebar green (index 3 also paints the dynamic white edge)
+        (0, 0, 0), (12, 16, 12), (40, 160, 48), (255, 255, 255),
         # pal5 lifebar yellow + big-font gold
         (0, 0, 0), (20, 14, 4), (190, 140, 20), (255, 240, 150),
-        # pal6 P2 frame and critical life
-        (0, 0, 0), (28, 8, 8), (220, 32, 22), (255, 245, 245),
+        # pal6 P2 frame and critical life (index 3 = dynamic white edge)
+        (0, 0, 0), (28, 8, 8), (220, 32, 22), (255, 255, 255),
         # pal7 power bar and counters
         (0, 0, 0), (20, 16, 20), (246, 91, 8), (255, 246, 201),
     ]
