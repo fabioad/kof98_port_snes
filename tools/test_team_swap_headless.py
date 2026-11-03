@@ -30,6 +30,7 @@ FAC1, FAC2 = 0x400E, 0x404E
 CPU1, CPU2 = 0x1090, 0x1091
 STAGE_L, STAGE_R = 24, 232
 MIN_GAP = 96
+T_ENTERFLAG = 0x5234
 
 
 def x(core, addr):
@@ -70,9 +71,11 @@ def run_case(core, p2_wins, survivor_x):
     wait(core, lambda: core.word(GS) == 0 and core.ram[NEXTF] == 1,
          "team intermission", 3000)
     wait(core, lambda: core.word(GS) == 4, "member entrance", 3000)
+    assert core.ram[T_ENTERFLAG] != 0, "team entrance did not start"
+    wait(core, lambda: core.ram[T_ENTERFLAG] == 0, "jump landing", 3000)
 
     label = f"{'P2' if p2_wins else 'P1'} survivor at {survivor_x:.0f}"
-    check(core, label)                         # first entrance frame
+    check(core, label)                         # landed at the intro gap
     for _ in range(30):
         core.step()
         check(core, label)

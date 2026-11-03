@@ -6452,6 +6452,10 @@ def build_char(name, cfg, global_pal=None):
         projs[sid] = (vx, dmg, old[2], old[3])
 
     repair_invisible_move_anims(name, cfg, anims, air)
+    # Team member entrance: state 43 is not otherwise dispatched, so reuse
+    # it for the jump-in and point it at the character's forward-jump clip.
+    # The sprites are already present (sid 15), so this adds no new CHR.
+    anims[43] = anims.get(15, anims.get(4, 42))
 
     wanted = set()
     anim_tables = {}

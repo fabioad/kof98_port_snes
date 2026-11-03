@@ -200,6 +200,7 @@
                                         ;   Argentine lift/slam chain.
 .DEFINE S_DIZZY     11                  ; FUSION dizzy/stun (reuses S_WIN slot)
 .DEFINE S_AIRTHROW  44                  ; FUSION air-throw (reuses spare AnimTab slot)
+.DEFINE S_TJUMP     43                  ; team member jump-in (spare AnimTab slot)
 
 .DEFINE F_X         0
 .DEFINE F_Y         2
@@ -730,6 +731,12 @@
 .DEFINE SP_PREFIX   $5218               ; MSU in-sector prefix in the stage buffer
 .DEFINE SP_META     $521C               ; pending metasprite offset
 .DEFINE SP_SIDE     $5220               ; current SprPrepOne side (0/2)
+; Team member entrance: the incoming fighter starts above/at the screen edge
+; and jumps to the intro gap.  T_ENTERX keeps the target (8.8 fixed point);
+; T_ENTERFLAG freezes the camera while a side is still in the air.
+.DEFINE T_ENTERX    $5230               ; P1 target x (8.8)
+.DEFINE T_ENTERX2   $5232               ; P2 target x (8.8)
+.DEFINE T_ENTERFLAG $5234               ; bit0 = P1 jumping, bit1 = P2 jumping
 ; HUD dirty bands (huddirty is a bitmask during live play).  FlushHud sends
 ; at most one band per presentation: life first, then power/combo/timer.
 .DEFINE HUD_TOP1    $01                 ; row 1: names / team pips
@@ -848,6 +855,7 @@ FightMain:
     stz.w SP_LEN+2
     stz.w SP_DST
     stz.w SP_DST+2
+    stz.w T_ENTERFLAG                     ; no jump-in camera freeze at boot
     stz.b msuok                           ;   MSU-1 presence, set by MsuDetect
 .IFDEF PVSNESLIB
     sep #$20
@@ -4088,6 +4096,8 @@ TT_out:
 StartFight:
     jsr VoiceQueueDrop                   ; no queued quote may follow us;
     stz.b winvoice                       ; and no deferred winner voice either
+    lda #0
+    sta.w T_ENTERFLAG                    ; fresh fight: no entrance freeze
     sep #$20                             ;   StageMusic finishes an active one
     .ACCU 8                              ;   before rewriting SPC RAM
     lda #0
@@ -7512,6 +7522,8 @@ IT_entrance:
     .ACCU 16
     rts
 IT_start:
+    lda #0
+    sta.w T_ENTERFLAG                    ; entrance finished: camera free
     lda #1.b                              ; GO over -> round is live
     sta gamestate
     rep #$20
@@ -7839,9 +7851,10 @@ StateTab:
     .dw StCrouchAtk, StCrouchAtk, StCrouchAtk, StCrouchAtk
     .dw StAirAtk, StAirAtk, StAirAtk, StAirAtk
     .dw StGuard, StCGuard, StAGuard, StGHit  ; 29 = air guard/air guard-hit
-    ; 31-44 are AnimTab slots, not states -- never dispatched
+    ; 31-42 are AnimTab slots, 43 is the team member jump-in and 44 the
+    ; FUSION air throw.
     .dw StateRet, StateRet, StateRet, StateRet, StateRet, StateRet, StateRet
-    .dw StateRet, StateRet, StateRet, StateRet, StateRet, StateRet, StAirThrow
+    .dw StateRet, StateRet, StateRet, StateRet, StateRet, StTeamJump, StAirThrow
     .dw StRun, StBackD, StSpecial          ; 45 run, 46 backdash, 47 taunt
     .dw StSpecial, StSpecial, StAirSpec, StAirSpec   ; 48-49 palm, 50-51 DP
     .dw StSpecial, StSpecial, StSpecial, StSpecial   ; 52-55 blow/zankou
@@ -9504,6 +9517,62 @@ StSpecial:                              ; taunt + scripted specials (47-55):
     jsr AirBlitzDive                     ; Ralf sid 54: source dive velocity
     jmp StateRet                        ;   own their F_VX too: Physics
 +   jmp StateRet                        ;   integrates it (FlagsTab bit12).
+
+; Team member jump-in (state 43).  The newcomer starts above the top of the
+; screen at the edge nearest its intro target and arcs down while moving to
+; the target.  Movement is manual (no AddXClamped) so the off-screen start
+; survives; the presenter freezes the camera while T_ENTERFLAG is set.
+StTeamJump:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    ldx fofs
+    lda FP+F_X,x
+    clc
+    adc FP+F_VX,x
+    sta FP+F_X,x
+    lda FP+F_VY,x
+    clc
+    adc #GRAV.w
+    sta FP+F_VY,x
+    bmi STJ_rise                        ; still rising (negative velocity)
+    lda FP+F_Y,x                        ; falling: land when height < vy
+    cmp FP+F_VY,x
+    bcc STJ_land
+STJ_rise:
+    lda FP+F_Y,x
+    sec
+    sbc FP+F_VY,x
+    sta FP+F_Y,x
+    jsr AnimTick
+    rts
+STJ_land:
+    lda #0
+    sta FP+F_Y,x
+    sta FP+F_VX,x
+    sta FP+F_VY,x
+    cpx #0
+    bne +
+    lda.w T_ENTERX
+    bra ++
++   lda.w T_ENTERX2
+++  sta FP+F_X,x
+    sep #$20
+    .ACCU 8
+    cpx #0
+    bne +
+    lda.w T_ENTERFLAG
+    and #$FE.b
+    sta.w T_ENTERFLAG
+    bra ++
++   lda.w T_ENTERFLAG
+    and #$FD.b
+    sta.w T_ENTERFLAG
+++  rep #$20
+    .ACCU 16
+    lda #S_INTRO.w
+    jsr EnterState
+    jmp StateRet
 
 StHit:
     rep #$20
@@ -15394,7 +15463,7 @@ FightPresent:
     beq FP_present_vis_done
     jsr FlushHud
 FP_present_vis_done:
-    jsr StageAnimTick                     ; crowd pose commits (map only)
+    jsl StageAnimTickFar                  ; crowd pose commits (map only)
     jsr ShakeScroll                       ; EnvShake on BG1 (stage)
     lda gamestate                         ; intro/ending screens take over
     cmp #7.b                              ;   mode/M7 regs + palette fades;
@@ -15507,7 +15576,7 @@ FP_dma_done:
     lda huddirty
     beq +
     jsr FlushHud
-+   jsr StageAnimTick                     ; crowd pose commits (map only)
++   jsl StageAnimTickFar                  ; crowd pose commits (map only)
     jsl SuperFxApplyNmi                   ; super flash/dim color math
     lda #$0F.b
     sta.l INIDISP
@@ -15541,174 +15610,6 @@ FightVblank_skip:
     rti
 .ENDIF
 
-; ---------------------------------------------------------------------------
-; Per-stage BG1 anims (tools/build_stages.py:build_anims).  StgAnimTab maps
-; stageidx -> clip list (.DB nclips / .DW clip ptrs).  Clip format:
-;   .DB ncells, nposes, phase / .DW ticks[nposes] /
-;   cells {mapidx, tileP0..tilePn} x ncells
-; Every pose of every clip is resident in dynamic tiles 704+, so a pose
-; commit is a tilemap write only and runs inside the forced-blank window
-; after the HUD flush.  animT: 8 word timers ($94..), animP: 8 pose bytes
-; ($A4..), both indexed by slot*2 so one X serves both arrays.
-StageAnimTick:
-    sep #$20
-    .ACCU 8
-    lda gamestate                         ; stage animations only while the
-    cmp #1.b                              ;   stage BG is actually visible:
-    beq SAI_ok                            ;   fights/KO/intro and the
-    cmp #2.b                              ;   intermission.  Select/menu/
-    beq SAI_ok                            ;   endings reuse BG1 VRAM for
-    cmp #4.b                              ;   their own art.
-    beq SAI_ok
-    cmp #0.b
-    bne SAI_skip
-    lda nextflag
-    beq SAI_skip
-SAI_ok:
-    rep #$10
-    .INDEX 16
-    lda stageidx
-    rep #$20
-    .ACCU 16
-    and #$00FF.w
-    asl
-    tax
-    lda.l StgAnimTab,x                  ; -> clip list (0 = no anims)
-    beq SA_exit
-    sta lptr
-    sep #$20
-    .ACCU 8
-    lda #:StgAnimTab
-    sta lptr+2
-    ldy #0
-    rep #$20
-    .ACCU 16
-    lda [lptr],y                        ; nclips
-    and #$00FF.w
-    beq SA_exit
-    sta sacnt
-    lda #1
-    sta saofs                           ; offset of clip-ptr list
-    ldx #0                              ; clip slot (animT/animP, slot*2)
-SA_clip:
-    rep #$20
-    .ACCU 16
-    ldy saofs
-    lda [lptr],y
-    sta boxp
-    sep #$20
-    .ACCU 8
-    lda #:StgAnimTab
-    sta boxp+2
-    jsr StageAnimOne                    ; NOTE: clobbers scr4/scr5
-    rep #$20
-    .ACCU 16
-    inc saofs
-    inc saofs
-    inx
-    inx
-    dec sacnt
-    bne SA_clip
-SA_exit:
-SAI_skip:
-    rep #$10
-    .INDEX 16
-    rep #$20
-    .ACCU 16
-    rts
-
-; boxp = clip long ptr, X = slot*2.  Advances the clip clock; on a pose
-; boundary commits every cell's new tile index to the BG1 map.
-StageAnimOne:
-    rep #$20
-    .ACCU 16
-    lda animT,x
-    clc
-    adc #1
-    sta animT,x
-    sep #$20
-    .ACCU 8
-    lda animP,x
-    rep #$20
-    .ACCU 16
-    and #$00FF.w
-    asl
-    sta scr6                            ; pose*2
-    clc
-    adc #3
-    tay                                 ; ticks[pose] at clip+3+pose*2
-    lda animT,x
-    cmp [boxp],y
-    bcc SAO_out                         ; still inside this pose's window
-    sec
-    sbc [boxp],y                        ; keep the remainder (no drift)
-    sta animT,x
-    ldy #1
-    lda [boxp],y                        ; clip+1 = nposes (clip+0 = ncells)
-    and #$00FF.w
-    sta scr5
-    sep #$20
-    .ACCU 8
-    lda animP,x
-    clc
-    adc #1
-    cmp scr5
-    bcc +
-    lda #0.b
-+   sta animP,x
-    rep #$20
-    .ACCU 16
-    and #$00FF.w
-    asl
-    sta scr6                            ; new pose*2
-    txa                                 ; debug: commits per clip slot
-    clc
-    adc #DBGREG+112
-    sta scr3
-    sep #$20
-    .ACCU 8
-    lda #$7E.b
-    sta scr3+2
-    lda [scr3]
-    clc
-    adc #1
-    sta [scr3]
-    lda #$80.b
-    sta.l VMAIN
-    rep #$20
-    .ACCU 16
-    lda [boxp]                          ; ncells (clip+0)
-    and #$00FF.w
-    sta scr4
-    lda scr5                            ; nposes
-    asl
-    clc
-    adc #2
-    sta scr5                            ; cell stride = 2 + nposes*2 bytes
-    clc
-    adc #1                              ; first cell at 3+nposes*2 = stride+1
-    sta scr2                            ; running cell offset
-SAO_cell:
-    ldy scr2
-    lda [boxp],y                        ; mapidx
-    clc
-    adc #BG1MAP
-    sta.l VMADDL
-    lda scr2
-    clc
-    adc #2
-    adc scr6                            ; tile word at cell+2+pose*2
-    tay
-    lda [boxp],y
-    sta.l VMDATAL
-    lda scr2
-    clc
-    adc scr5
-    sta scr2
-    dec scr4
-    bne SAO_cell
-SAO_out:
-    rts
 
 ; Reset the anim clocks for the stage just picked: every clip starts at
 ; pose 0 with its timer preloaded by the clip's phase byte.
@@ -16353,88 +16254,6 @@ MusPlaySong:
     jsl MusPlaySongFar
     rts
 
-; Camera: fighting-game scroll on the 512px stage.  Fighters live in
-; screen coordinates (x in [STAGE_L,STAGE_R]) -- the screen edge is the
-; wall, so nobody leaves the view.  The BG pans under them: camx maps the
-; fighters' midpoint range [24..232] onto the full 256px scroll span of
-; the 512px art: camx = clamp((mid-24)*79/64, 0, 256).  A fighter's stage
-; position is effectively camx + screen_x, so the whole stage is
-; reachable.  EnvShake adds +/- shakeamp on top.  acc8 in/out.
-ShakeScroll:
-    rep #$20
-    .ACCU 16
-    lda FP+F_X                          ; 8.8 px -> integer midpoint
-    xba
-    and #$00FF.w
-    sta scr5
-    lda FP+F_X+FP2OFS
-    xba
-    and #$00FF.w
-    clc
-    adc scr5                            ; x1+x2 (px)
-    lsr                                 ; mid
-    sec
-    sbc #STAGE_L.w
-    bpl +
-    lda #0
-+   sta scr3                            ; v = mid-24 (0..208)
-    lsr
-    lsr
-    adc scr3                            ; v + v/4
-    sta scr5
-    lda scr3
-    lsr
-    lsr
-    lsr
-    lsr
-    lsr
-    lsr                                 ; v/64
-    sta scr3
-    lda scr5
-    sec
-    sbc scr3                            ; v*79/64 ~= v*256/208
-    cmp #256.w
-    bcc +
-    lda #256.w
-+   sta camx
-    sta scr5                            ; bg scroll = camx + shake
-    sep #$20
-    .ACCU 8
-    stz scr3
-    stz scr3+1                            ; signed hi byte of the offset
-    lda shaketmr
-    beq SS_wr                             ; inactive: keep shake at 0
-    lda framecnt
-    and #$01.b
-    beq +
-    lda shakeamp
-    sta scr3
-    bra SS_wr
-+   lda #0
-    sec
-    sbc shakeamp                          ; -amp (8-bit wrap = negative)
-    sta scr3
-    lda #$FF.b
-    sta scr3+1
-SS_wr:
-    rep #$20
-    .ACCU 16
-    lda scr3                            ; shake (signed word)
-    sta scr4
-    clc
-    adc scr5                            ; hofs = scaled camx + shake
-    sta scr3
-    sep #$20
-    .ACCU 8
-    lda scr3
-    sta.l BG1HOFS
-    lda scr3+1
-    sta.l BG1HOFS
-    lda scr4
-    sta.l BG1VOFS
-    lda scr4+1
-    sta.l BG1VOFS
-    rts
 
 ; ---------------------------------------------------------------------------
 ; Sprite CHR uploads are prepared during the logic phase so a slow MSU seek
@@ -18364,11 +18183,90 @@ TeamRecover:
     .ACCU 8
     rts
 
+; Launch the entering team member(s) from above the screen edge nearest
+; the intro target.  The camera has already been framed on the target
+; positions; T_ENTERFLAG freezes it until each jumper lands.  A16 entry.
+TeamJumpSetup:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    lda.w T_SWAP
+    and #$0001.w
+    beq +
+    ldx #0
+    jsr TeamJumpOne
++   lda.w T_SWAP
+    and #$0002.w
+    beq +
+    ldx #FP2OFS.w
+    jsr TeamJumpOne
++   rts
+
+; X = fofs.  Start x at the edge on the target's half of the screen, 240 px
+; above it, then arc to T_ENTERX/T_ENTERX2.  The horizontal step is
+; delta*6 (8.8/tick); with the -4 px/tick hop and GRAV it lands right on the
+; intro gap.  A16/X16.
+TeamJumpOne:
+    stx fofs
+    cpx #0.w
+    bne +
+    lda.w T_ENTERX
+    bra ++
++   lda.w T_ENTERX2
+++  sta scr6                            ; target (8.8)
+    xba
+    and #$00FF.w
+    sta scr4                            ; target px
+    stz scr5                            ; start px = 0 (left edge)
+    lda scr4
+    cmp #128.w
+    bcc +
+    lda #255.w
+    sta scr5                            ; right half: enter from the right
++   lda scr4
+    sec
+    sbc scr5
+    sta scr3                            ; delta px (signed)
+    asl a
+    sta scr2
+    asl a
+    clc
+    adc scr2                            ; delta*6 -> 8.8 per tick
+    sta scr2
+    ldx fofs
+    lda scr5
+    xba
+    sta FP+F_X,x
+    lda #$E600.w                        ; height = 230 px (off the top)
+    sta FP+F_Y,x
+    lda #$FD00.w                        ; vy = -3 px/tick
+    sta FP+F_VY,x
+    lda scr2
+    sta FP+F_VX,x
+    sep #$20
+    .ACCU 8
+    cpx #0
+    bne +
+    lda.w T_ENTERFLAG
+    ora #$01.b
+    sta.w T_ENTERFLAG
+    bra ++
++   lda.w T_ENTERFLAG
+    ora #$02.b
+    sta.w T_ENTERFLAG
+++  rep #$20
+    .ACCU 16
+    lda #S_TJUMP.w
+    jsr EnterState
+    rts
+
 ; Member-change fight entry (T_SWAP bit0/bit1).  Resets only the dead
 ; side(s); the survivor keeps HP, meter and position.  -> gs 4 intro.
 TeamSwap:
     sep #$20
     .ACCU 8
+    lda #0
+    sta.w T_ENTERFLAG                   ; no stale jump-in camera freeze
     lda #0                              ; vblank ISR clobbers DP scratch
     sta.l NMITIMEN                      ;   (lptr/cptr/boxp) -> hold it off
     jsr TeamPpuSetup                    ; full PPU/stage context for the swap
@@ -18400,7 +18298,7 @@ TeamSwap:
     lda.w T_SWAP
     and #$0003.w
     cmp #$0003.w
-    beq TS_face                         ; draw: 80/176 already 96 px apart
+    beq TS_draw_targets                 ; draw: 80/176 already 96 px apart
     and #$0001.w
     beq TS_place_p2
     lda FP+F_X+FP2OFS.w                 ; survivor P2
@@ -18414,6 +18312,7 @@ TS_place_p1_left:
     sbc #(TEAM_SPAWN_SEP<<8).w
 TS_place_p1_store:
     sta FP+F_X.w
+    sta.w T_ENTERX
     bra TS_face
 TS_place_p2:
     lda FP+F_X.w                        ; survivor P1
@@ -18429,6 +18328,13 @@ TS_place_p2_left:
     sbc #(TEAM_SPAWN_SEP<<8).w
 TS_place_p2_store:
     sta FP+F_X+FP2OFS.w
+    sta.w T_ENTERX2
+    bra TS_face
+TS_draw_targets:
+    lda FP+F_X.w
+    sta.w T_ENTERX
+    lda FP+F_X+FP2OFS.w
+    sta.w T_ENTERX2
 TS_face:
     lda FP+F_X.w
     cmp FP+F_X+FP2OFS.w
@@ -18442,7 +18348,9 @@ TS_face:
     sta FP+F_FACING.w
     lda #1
     sta FP+F_FACING+FP2OFS.w
-++  sep #$20
+++  jsr ShakeScroll                       ; frame the intro gap first
+    jsr TeamJumpSetup                     ; then launch the new member(s)
+    sep #$20
     .ACCU 8
     lda.b roundwin                        ; survivor back to stand state
     cmp #1                                ;   (draw: both just entered)
@@ -22622,3 +22530,277 @@ GCHoldsBack:
 
 .ENDS
 .ENDIF
+
+; Camera: fighting-game scroll on the 512px stage.  Fighters live in
+; screen coordinates (x in [STAGE_L,STAGE_R]) -- the screen edge is the
+; wall, so nobody leaves the view.  The BG pans under them: camx maps the
+; fighters' midpoint range [24..232] onto the full 256px scroll span of the
+; 512px art: camx = clamp((mid-24)*79/64, 0, 256).  A fighter's stage
+; position is effectively camx + screen_x, so the whole stage is
+; reachable.  EnvShake adds +/- shakeamp on top.  acc8 in/out.
+;
+; Kept in the free bank-50 window at $7024 (same 64K ROM bank) so the Fight
+; section has room for the team jump-in state.  While a team member is
+; entering, T_ENTERFLAG freezes camx at the framing already stored by
+; TeamSwap; the jumping sprite starts outside the screen.
+.BANK 50 SLOT 0
+.ORGA $7024
+.SECTION "ShakeScrollLow" FORCE
+ShakeScroll:
+    rep #$20
+    .ACCU 16
+    lda.w T_ENTERFLAG
+    beq SS_calc
+    lda camx
+    sta scr5
+    bra SS_shake
+SS_calc:
+    lda FP+F_X                          ; 8.8 px -> integer midpoint
+    xba
+    and #$00FF.w
+    sta scr5
+    lda FP+F_X+FP2OFS
+    xba
+    and #$00FF.w
+    clc
+    adc scr5                            ; x1+x2 (px)
+    lsr                                 ; mid
+    sec
+    sbc #STAGE_L.w
+    bpl +
+    lda #0
++   sta scr3                            ; v = mid-24 (0..208)
+    lsr
+    lsr
+    adc scr3                            ; v + v/4
+    sta scr5
+    lda scr3
+    lsr
+    lsr
+    lsr
+    lsr
+    lsr
+    lsr                                 ; v/64
+    sta scr3
+    lda scr5
+    sec
+    sbc scr3                            ; v*79/64 ~= v*256/208
+    cmp #256.w
+    bcc +
+    lda #256.w
++   sta camx
+    sta scr5                            ; bg scroll = camx + shake
+SS_shake:
+    sep #$20
+    .ACCU 8
+    stz scr3
+    stz scr3+1                            ; signed hi byte of the offset
+    lda shaketmr
+    beq SS_wr                             ; inactive: keep shake at 0
+    lda framecnt
+    and #$01.b
+    beq +
+    lda shakeamp
+    sta scr3
+    bra SS_wr
++   lda #0
+    sec
+    sbc shakeamp                          ; -amp (8-bit wrap = negative)
+    sta scr3
+    lda #$FF.b
+    sta scr3+1
+SS_wr:
+    rep #$20
+    .ACCU 16
+    lda scr3                            ; shake (signed word)
+    sta scr4
+    clc
+    adc scr5                            ; hofs = scaled camx + shake
+    sta scr3
+    sep #$20
+    .ACCU 8
+    lda scr3
+    sta.l BG1HOFS
+    lda scr3+1
+    sta.l BG1HOFS
+    lda scr4
+    sta.l BG1VOFS
+    lda scr4+1
+    sta.l BG1VOFS
+    rts
+.ENDS
+
+; Per-stage BG1 animations, moved out of the full Fight bank into the free
+; bank-$3E window.  The entry is reached with jsl; StageAnimOne stays local.
+.BANK 126 SLOT 0
+.ORGA $E700
+.SECTION "StageAnimFar" FORCE
+; ---------------------------------------------------------------------------
+; Per-stage BG1 anims (tools/build_stages.py:build_anims).  StgAnimTab maps
+; stageidx -> clip list (.DB nclips / .DW clip ptrs).  Clip format:
+;   .DB ncells, nposes, phase / .DW ticks[nposes] /
+;   cells {mapidx, tileP0..tilePn} x ncells
+; Every pose of every clip is resident in dynamic tiles 704+, so a pose
+; commit is a tilemap write only and runs inside the forced-blank window
+; after the HUD flush.  animT: 8 word timers ($94..), animP: 8 pose bytes
+; ($A4..), both indexed by slot*2 so one X serves both arrays.
+StageAnimTickFar:
+    sep #$20
+    .ACCU 8
+    lda gamestate                         ; stage animations only while the
+    cmp #1.b                              ;   stage BG is actually visible:
+    beq SAI_ok                            ;   fights/KO/intro and the
+    cmp #2.b                              ;   intermission.  Select/menu/
+    beq SAI_ok                            ;   endings reuse BG1 VRAM for
+    cmp #4.b                              ;   their own art.
+    beq SAI_ok
+    cmp #0.b
+    bne SAI_skip
+    lda nextflag
+    beq SAI_skip
+SAI_ok:
+    rep #$10
+    .INDEX 16
+    lda stageidx
+    rep #$20
+    .ACCU 16
+    and #$00FF.w
+    asl
+    tax
+    lda.l StgAnimTab,x                  ; -> clip list (0 = no anims)
+    beq SA_exit
+    sta lptr
+    sep #$20
+    .ACCU 8
+    lda #:StgAnimTab
+    sta lptr+2
+    ldy #0
+    rep #$20
+    .ACCU 16
+    lda [lptr],y                        ; nclips
+    and #$00FF.w
+    beq SA_exit
+    sta sacnt
+    lda #1
+    sta saofs                           ; offset of clip-ptr list
+    ldx #0                              ; clip slot (animT/animP, slot*2)
+SA_clip:
+    rep #$20
+    .ACCU 16
+    ldy saofs
+    lda [lptr],y
+    sta boxp
+    sep #$20
+    .ACCU 8
+    lda #:StgAnimTab
+    sta boxp+2
+    jsr StageAnimOne                    ; NOTE: clobbers scr4/scr5
+    rep #$20
+    .ACCU 16
+    inc saofs
+    inc saofs
+    inx
+    inx
+    dec sacnt
+    bne SA_clip
+SA_exit:
+SAI_skip:
+    rep #$10
+    .INDEX 16
+    rep #$20
+    .ACCU 16
+    rtl
+
+; boxp = clip long ptr, X = slot*2.  Advances the clip clock; on a pose
+; boundary commits every cell's new tile index to the BG1 map.
+StageAnimOne:
+    rep #$20
+    .ACCU 16
+    lda animT,x
+    clc
+    adc #1
+    sta animT,x
+    sep #$20
+    .ACCU 8
+    lda animP,x
+    rep #$20
+    .ACCU 16
+    and #$00FF.w
+    asl
+    sta scr6                            ; pose*2
+    clc
+    adc #3
+    tay                                 ; ticks[pose] at clip+3+pose*2
+    lda animT,x
+    cmp [boxp],y
+    bcc SAO_out                         ; still inside this pose's window
+    sec
+    sbc [boxp],y                        ; keep the remainder (no drift)
+    sta animT,x
+    ldy #1
+    lda [boxp],y                        ; clip+1 = nposes (clip+0 = ncells)
+    and #$00FF.w
+    sta scr5
+    sep #$20
+    .ACCU 8
+    lda animP,x
+    clc
+    adc #1
+    cmp scr5
+    bcc +
+    lda #0.b
++   sta animP,x
+    rep #$20
+    .ACCU 16
+    and #$00FF.w
+    asl
+    sta scr6                            ; new pose*2
+    txa                                 ; debug: commits per clip slot
+    clc
+    adc #DBGREG+112
+    sta scr3
+    sep #$20
+    .ACCU 8
+    lda #$7E.b
+    sta scr3+2
+    lda [scr3]
+    clc
+    adc #1
+    sta [scr3]
+    lda #$80.b
+    sta.l VMAIN
+    rep #$20
+    .ACCU 16
+    lda [boxp]                          ; ncells (clip+0)
+    and #$00FF.w
+    sta scr4
+    lda scr5                            ; nposes
+    asl
+    clc
+    adc #2
+    sta scr5                            ; cell stride = 2 + nposes*2 bytes
+    clc
+    adc #1                              ; first cell at 3+nposes*2 = stride+1
+    sta scr2                            ; running cell offset
+SAO_cell:
+    ldy scr2
+    lda [boxp],y                        ; mapidx
+    clc
+    adc #BG1MAP
+    sta.l VMADDL
+    lda scr2
+    clc
+    adc #2
+    adc scr6                            ; tile word at cell+2+pose*2
+    tay
+    lda [boxp],y
+    sta.l VMDATAL
+    lda scr2
+    clc
+    adc scr5
+    sta scr2
+    dec scr4
+    bne SAO_cell
+SAO_out:
+    rts
+.ENDS
