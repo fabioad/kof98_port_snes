@@ -1161,7 +1161,13 @@ CHARS = {
         # Mugen relies on 515's TargetState 516.  The native hit path needs
         # the victim bound from the start, so force the held slot.
         "hitdef_override": {
-            103: {"p2state": 76},
+            # Running Super mount: the initial grab is a throw.  Marking it
+            # as such keeps the victim's own sprite data (F_GRAB bit1 clear);
+            # otherwise the generic held animation is read from Ralf's
+            # character data and the victim is drawn as a second Ralf.
+            87: {"throw": 1},
+            88: {"throw": 1},
+            103: {"p2state": 76, "throw": 1},
             # 550 is a ranbu: keep the victim in place so the later attack
             # boxes connect instead of launching them out of range after
             # the first three contacts.  Uniform 2-point contacts.

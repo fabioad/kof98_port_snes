@@ -53,7 +53,10 @@ Versus, SURVIVOR e PRACTICE continuam com a intro normal, sem pulo.
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$6F37`**
+- checksum **`$7363`**
 - layout MSU **`0xC276`**
-- `.sfc` SHA-256 `0e3c8ef7…c869ef`
-- `.msu` SHA-256 `01cc847d…9c3740` (novo; copie junto)
+- `.sfc` SHA-256 `d6a2db34…c659a5`
+- `.msu` SHA-256 `01cc847d…9c3740` (copie os dois juntos)
+
+> O ROM mudou depois desta correção (mount do Ralf e AI_ScanMove). Este é o
+> par atual; veja `docs/RALF_MOUNT_AI_FREEZE_2026-11-03.md`.

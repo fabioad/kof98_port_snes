@@ -47,14 +47,17 @@ def tap(core, button, port=0):
 
 
 def reach_title(core):
-    for _ in range(5000):
-        if core.word(GS) == 7:       # opening intro
+    # The boot sequence now plays the MSU opening video (gs 14; the ROM-only
+    # fallback uses gs 7) before settling on the title.  Wait for that
+    # opening and then for the title instead of assuming a short intro.
+    for _ in range(6000):
+        if core.word(GS) in (7, 14):
             break
         core.step()
     else:
-        raise AssertionError(f'opening intro never appeared: gs={core.word(GS)}')
-    tap(core, START)
-    for _ in range(900):
+        raise AssertionError(
+            f'opening intro never appeared: gs={core.word(GS)}')
+    for _ in range(12000):
         if core.word(GS) == 0:
             break
         core.step()
@@ -160,16 +163,16 @@ def run_case(core_path, rom, expect_msu):
         assert core.ram[ROUNDWIN] == 2, \
             f'P2 must win the forced KO, roundwin={core.ram[ROUNDWIN]}'
         for _ in range(360):
-            if core.word(GS) == 7:
+            if core.word(GS) in (7, 14):
                 break
             core.step()
-        assert core.word(GS) == 7, 'demo did not cut to the intro after a win'
+        assert core.word(GS) in (7, 14), 'demo did not cut to the intro after a win'
         assert core.ram[DM_ON] == 0, 'demo flag not cleared after a win'
 
         # The original deadline still cuts to the opening intro.  Leave the
         # intro for the title and force the clock down on a fresh demo.
         tap(core, START)
-        for _ in range(900):
+        for _ in range(6000):
             if core.word(GS) == 0:
                 break
             core.step()
@@ -178,10 +181,10 @@ def run_case(core_path, rom, expect_msu):
         start_demo(core)
         core.put(DM_TICK, 1)
         for _ in range(300):
-            if core.word(GS) == 7:
+            if core.word(GS) in (7, 14):
                 break
             core.step()
-        assert core.word(GS) == 7, 'demo did not cut to the opening intro'
+        assert core.word(GS) in (7, 14), 'demo did not cut to the opening intro'
         assert core.ram[DM_ON] == 0, 'demo flag not cleared at the cut'
         return first_pair
     finally:

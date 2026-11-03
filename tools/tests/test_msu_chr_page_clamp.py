@@ -164,14 +164,20 @@ class MsuChrPageClampTests(unittest.TestCase):
             base = re.search(r"MSU_RALF_SLICE = (\d+)", source.read())
         cls.base_slice = int(base.group(1))
 
-    def test_known_idle_chunk_crossed_an_8k_page(self):
-        # Idle sprite 6 (AnimTab entry 6) is queued right after the guard
-        # pose in ralfAnim0; its first tile chunk sits at the end of an
-        # 8 KiB MSU cache page.  This is the frame from the hardware report.
-        n, first, dmalen = metas(self.data, self.offsets)[6]
-        raw = list(chunks(first, dmalen, self.base_slice, clamp=False))
-        self.assertTrue(any((aligned & (PAGE - 1)) + length > PAGE
-                            for aligned, _prefix, length in raw))
+    def test_a_real_chunk_crossed_an_8k_page(self):
+        # The clamp exists for a real hardware failure class: some Ralf
+        # sprite chunks end past an 8 KiB MSU cache page.  The exact sprite
+        # index moves whenever the CHR layout is regenerated, so scan for a
+        # crossing instead of pinning one index.
+        crossing = []
+        for index, (_n, first, dmalen) in enumerate(
+                metas(self.data, self.offsets)):
+            for aligned, _prefix, length in chunks(
+                    first, dmalen, self.base_slice, clamp=False):
+                if (aligned & (PAGE - 1)) + length > PAGE:
+                    crossing.append(index)
+                    break
+        self.assertTrue(crossing, 'no sprite chunk crosses an 8 KiB page')
 
     def test_clamped_uploads_stay_inside_one_page(self):
         for _n, first, dmalen in metas(self.data, self.offsets):

@@ -5199,6 +5199,13 @@ MetaBankX:
 EnterState:
     rep #$20
     .ACCU 16
+    cmp #(S_EXT_LAST+1).w
+    bcc ES_valid
+    ; A state id above the dispatch table would read past StateTab and jump
+    ; into unrelated ROM.  Never let a bad entry reach the handler: fall
+    ; back to standing instead of crashing on the out-of-range pointer.
+    lda #S_STAND.w
+ES_valid:
     ldx fofs
     sta FP+F_STATE,x
     jsr VoiceDropHuman                   ; pad side: stop previous move voice
@@ -12682,6 +12689,12 @@ AI_scan_mod:
 +   sta scr0                            ; current table index
     stz scr0+1
 AI_scan_loop:
+    ; Compute the row offset in 16-bit mode.  With an 8-bit accumulator the
+    ; high byte (B) is left stale by LDA/ADC, and TAY (16-bit index registers)
+    ; would copy that garbage into Y -- the scan then read outside the table
+    ; and could return an invalid sid, sending EnterState past StateTab.
+    rep #$20
+    .ACCU 16
     lda scr0
     asl a
     sta scr2
@@ -12691,6 +12704,8 @@ AI_scan_loop:
     clc
     adc #12                             ; rows follow the 12-byte header
     tay
+    sep #$20
+    .ACCU 8
     lda [sptr],y
     sta scr3                            ; sid
     iny
