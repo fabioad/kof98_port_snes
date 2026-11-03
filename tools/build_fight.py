@@ -1129,6 +1129,7 @@ CHARS = {
             50: 420, 51: 421,    # Gatling Attack weak/strong
             52: 440, 53: 441,    # Ralf Kick weak/strong
             54: 455,             # air dive
+            56: 456, 57: 457,    # air dive landing / jump land (backflip)
             58: 521, 59: 550, 60: 570,  # extra supers / MAXes
             67: 210, 69: 250,
             70: 5020, 71: 5030, 72: 5050, 73: 5050,
@@ -1145,6 +1146,7 @@ CHARS = {
                   45: 100, 46: 105, 47: 195,
                   48: 400, 49: 401, 50: 420, 51: 421,
                   52: 440, 53: 441, 54: 455,
+                  56: 456, 57: 457,
                   58: 521, 59: 550, 60: 570,
                   67: 210, 69: 19969, 94: 251, 95: 250, 96: 700,
                   74: 300, 75: 301, 76: 302, 77: 313,
@@ -1203,7 +1205,13 @@ CHARS = {
         # Whiffed running super: stop after the first dash frames; a
         # successful grab leaves the state through the kind-4 gate.
         "frame_cap": {87: 10, 88: 10, 103: 4},
-        "extra_trans": [(54, 17, 1, 0), (54, 0, 0, 0),
+        "extra_trans": [
+                        # Air Blitz: land into the source 456 backflip
+                        # sequence (456 -> 457 -> stand), not the generic
+                        # jump-land state 17.  See state 455's ChangeState
+                        # to 456 and 456's back hop / ChangeState to 457.
+                        (54, 56, 1, 0), (56, 57, 1, 0),
+                        (57, 0, 0, 0), (54, 0, 0, 0),
                         # 510/511 -> 512: frame 7, centre distance 70 px
                         # (source p2bodydist X = [-10,40] + body halves).
                         (87, 103, 4, (7 << 8) | 70),

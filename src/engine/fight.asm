@@ -5138,8 +5138,8 @@ EnterState:
     sep #$20
     .ACCU 8
     lda FP+F_TFLAGS,x                       ; mark "just entered": AnimTick
-    and #$F3.b                            ;   drop ghost/xfreeze latches;
-    ora #$02.b                            ;   skips the entry tick so elem0
+    and #$E3.b                            ;   drop ghost/xfreeze/air-blowback
+    ora #$02.b                            ;   latches; skips the entry tick so elem0
     sta FP+F_TFLAGS,x                     ;   is collision-visible for dur ticks
     stz FP+F_INVUL,x                      ; fresh state: no carried-over
     stz FP+F_PFX,x                        ;   invuln or palette flash
@@ -5680,9 +5680,6 @@ ActOp:
 +   cmp #11
     bne +
     jmp AO_invul
-+   cmp #6
-    bne +
-    jmp AO_jelem
 +   cmp #13
     bne +
     jmp AO_xfrz
@@ -9246,6 +9243,11 @@ StJump:                                 ; S_JUMP / S_JUMPF / S_JUMPB
     lda #S_LAND
     jmp SetState16
 SJ_air:
+    ; R in the air: reuse the character's strong air normal (sid 24) as the
+    ; air blowback with a latch that forces the knockdown.  The helper sits
+    ; in the low-bank gap; no new AIR/CHR set and no MSU layout change.
+    jmp AirBlowTry
+SJ_air_notblow:
     ldx fofs
     lda FP+F_JOYPR,x
     and #(JOY_B|JOY_Y).w                  ; FUSION air throw before air normals
@@ -9438,6 +9440,7 @@ StSpecial:                              ; taunt + scripted specials (47-55):
     cmp #95.w                           ; Preserve it until its time=23 stop.
     beq +
     jsr PinVXUnlessVelSet                ; VelSet-driven specials (ActTab op5)
+    jsr AirBlitzDive                     ; Ralf sid 54: source dive velocity
     jmp StateRet                        ;   own their F_VX too: Physics
 +   jmp StateRet                        ;   integrates it (FlagsTab bit12).
 
@@ -11110,6 +11113,7 @@ HO_aset:
     jmp HO_ko                             ; finishing blow: dramatic knockdown
 +
     jsl MoveHitFinisher                   ; multi-hit finishers / Kuuha Dan
+    jsr AirBlowForce                      ; R-air latch -> knockdown flags
     lda scr5
     and #$0001.w
     beq +
@@ -19507,6 +19511,74 @@ AO_hitreset:                            ; re-arm the current state's HitDef
 StAirSpecTail:
     jsr ThrowBind
     jmp ClampX
+.ENDS
+
+; Ralf's Air Blitz (sid 54): the source does VelSet x=10, y=15 on the dive
+; element (AnimElem 4, frame index 3).  The generic ActTab element row did
+; not survive into the runtime table, so the dive fell under gravity alone
+; (~0.44 px/tick) and looked far too slow.  Apply the source velocity once
+; the dive frame is on screen.  Lives in the free low-bank gap.
+.BANK 50 SLOT 0
+.ORGA $0FD0
+.SECTION "AirBlitzDive" FORCE
+AirBlitzDive:
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    lda FP+F_STATE,x
+    and #$00FF.w
+    cmp #54.w
+    bne +
+    lda FP+F_FRAME,x
+    and #$00FF.w
+    cmp #3.w
+    bcc +
+    lda #$0A00.w                        ; x = 10 px/tick
+    sta FP+F_VX,x
+    lda #$0F00.w                        ; y = 15 px/tick
+    sta FP+F_VY,x
++   rts
+.ENDS
+
+; R in the air (air blowback).  Reuses sid 24's imported strong-air
+; animation and sets a one-shot F_TFLAGS bit4 latch; AirBlowForce turns that
+; latch into the knockdown flag in the hit path.  Ground CD/R keeps using
+; the per-character blowback state.  Living here avoids growing the full
+; 32 KiB Fight window.
+.BANK 50 SLOT 0
+.ORGA $0EA0
+.SECTION "AirBlowLow" FORCE
+AirBlowTry:
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    lda FP+F_JOYPR,x
+    and #JOY_R.w
+    beq ABT_no
+    lda #24.w
+    jsr EnterState
+    ldx fofs
+    sep #$20
+    .ACCU 8
+    lda FP+F_TFLAGS,x
+    ora #$10.b                          ; air-blowback latch
+    sta FP+F_TFLAGS,x
+    rep #$20
+    .ACCU 16
+    jmp StateRet
+ABT_no:
+    jmp SJ_air_notblow
+AirBlowForce:
+    rep #$20
+    .ACCU 16
+    ldx aofs
+    lda FP+F_TFLAGS,x
+    and #$0010.w
+    beq +
+    lda scr5
+    ora #$0001.w
+    sta scr5
++   rts
 .ENDS
 
 ; The Fight bank is full, so the projectile-clash helper lives in the free
