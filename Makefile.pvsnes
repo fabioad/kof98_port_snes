@@ -22,19 +22,35 @@ ifeq ($(PVSNESLIB_VERSION_OK),)
 $(error PVSnesLib 4.6+ is required (found '$(PVSNESLIB_VERSION)' at $(PVSNESLIB_VERSION_FILE)); 4.5's libc can freeze at the fight intro)
 endif
 
-# Default build: tuned HI art (0.90 base + per-character caps).
-# OLD=1 builds the stable 0.81 layout as kof98-snes-old.sfc/.msu.
-#   make -f Makefile.pvsnes            # kof98-snes.sfc/.msu (HI)
+# Profiles:
+#   default        tuned HI art at 0.90 -> kof98-snes.sfc/.msu
+#   HI10=1         1.0 test build        -> kof98-snes-hi.sfc/.msu
+#   OLD=1          stable 0.81 layout    -> kof98-snes-old.sfc/.msu
+#   make -f Makefile.pvsnes            # kof98-snes.sfc/.msu (HI 0.90)
+#   make -f Makefile.pvsnes HI10=1     # kof98-snes-hi.sfc/.msu (1.0 test)
 #   make -f Makefile.pvsnes OLD=1      # kof98-snes-old.sfc/.msu (0.81)
+HI10 ?= 0
 OLD ?= 0
 HI_BASE_SCALE ?= 0.90
-ifeq ($(OLD),1)
+ifeq ($(HI10),1)
+export ROMNAME := kof98-snes-hi
+export ROMTITLE := KOF98 SNESFEST HI
+GEN_DIR := build/hi10/gen_fight
+MSU_NAME := kof98-snes-hi
+BUILD_INC := build/hi10
+PROFILE_DEFINE :=
+CUSTOM_OBJECT := 1
+FIGHT_ENV := KOF_OUT_DIR=$(GEN_DIR) KOF_MSU_NAME=$(MSU_NAME) \
+	KOF_CHAR_SCALE=1.0 KOF_SCALE_CAPS=minimal KOF_SKIP_MANIFEST=1 \
+	KOF_OAM_TRUNCATE=1 KOF_SPRITE_BBOX_TRUNCATE=1
+else ifeq ($(OLD),1)
 export ROMNAME := kof98-snes-old
 export ROMTITLE := KOF98 SNESFEST OLD
 GEN_DIR := build/old/gen_fight
 MSU_NAME := kof98-snes-old
 BUILD_INC := build/old
 PROFILE_DEFINE := -D KOF_OLD
+CUSTOM_OBJECT := 1
 FIGHT_ENV := KOF_OUT_DIR=$(GEN_DIR) KOF_MSU_NAME=$(MSU_NAME) \
 	KOF_SKIP_MANIFEST=1
 else
@@ -44,6 +60,7 @@ GEN_DIR := build/gen_fight
 MSU_NAME := kof98-snes
 BUILD_INC := build
 PROFILE_DEFINE :=
+CUSTOM_OBJECT := 0
 FIGHT_ENV := KOF_OUT_DIR=$(GEN_DIR) KOF_MSU_NAME=$(MSU_NAME) \
 	KOF_CHAR_SCALE=$(HI_BASE_SCALE) KOF_OAM_TRUNCATE=1 \
 	KOF_SPRITE_BBOX_TRUNCATE=1
@@ -119,7 +136,8 @@ assets/audio/menu/crystal.it: assets/survival_ending/kof00_crystal.mid \
 include $(PVSNESLIB_HOME)/devkitsnes/snes_rules
 
 .PHONY: all assets audio validate-snesmod verify clean cleanSpcAudio \
-	hi hi-verify hi-clean old old-verify old-clean
+	hi hi-verify hi-clean hi10 hi10-verify hi10-clean \
+	old old-verify old-clean
 
 all: assets audio $(ROMNAME).sfc $(ROMNAME).msu
 
@@ -180,11 +198,11 @@ $(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json asse
 $(GEN_DIR):
 	@mkdir -p $@
 
-ifeq ($(OLD),1)
-OLD_FIGHT_OBJ := $(BUILD_INC)/fight_bridge.obj
-OLD_OFILES := $(filter-out src/snes/fight_bridge.obj,$(OFILES)) $(OLD_FIGHT_OBJ)
+ifeq ($(CUSTOM_OBJECT),1)
+PROFILE_FIGHT_OBJ := $(BUILD_INC)/fight_bridge.obj
+PROFILE_OFILES := $(filter-out src/snes/fight_bridge.obj,$(OFILES)) $(PROFILE_FIGHT_OBJ)
 
-$(OLD_FIGHT_OBJ): src/snes/fight_bridge.asm src/engine/fight.asm \
+$(PROFILE_FIGHT_OBJ): src/snes/fight_bridge.asm src/engine/fight.asm \
 	src/engine/voice_queue.asm src/engine/menucore.asm src/engine/menus.asm \
 	src/engine/options.asm src/engine/msu_intro.asm src/engine/cancel_gate.asm \
 	$(wildcard src/gen_menu/*) $(wildcard src/gen_menu/intro/*) \
@@ -195,12 +213,12 @@ $(OLD_FIGHT_OBJ): src/snes/fight_bridge.asm src/engine/fight.asm \
 		$(if $(filter 1,$(BASE4)),-D BASE4) \
 		-I src -I $(BUILD_INC) -I build -o $@ $<
 
-# Link the OLD ROM from its own object, leaving src/snes/fight_bridge.obj and
-# kof98-snes.sfc untouched.  Mirrors the SDK's %.sfc recipe (ExHiROM).
-$(ROMNAME).sfc: $(OLD_OFILES)
-	@echo Creating OLD linkfile ...
+# Link the profile ROM from its own object, leaving src/snes/fight_bridge.obj
+# and the default kof98-snes.sfc untouched.  Mirrors the SDK's %.sfc recipe.
+$(ROMNAME).sfc: $(PROFILE_OFILES)
+	@echo Creating profile linkfile ...
 	@echo [objects] > $(BUILD_INC)/linkfile
-	@for i in $(OLD_OFILES); do echo $$i >> $(BUILD_INC)/linkfile; done
+	@for i in $(PROFILE_OFILES); do echo $$i >> $(BUILD_INC)/linkfile; done
 	@for i in $(shell ls $(LIBDIRSOBJS)); do \
 		echo $(LIBDIRSOBJS)/$$i >> $(BUILD_INC)/linkfile; done
 	@echo Linking ... $(notdir $@)
@@ -270,16 +288,16 @@ cleanSpcAudio:
 
 clean: cleanBuildRes cleanRom cleanGfx cleanAudio cleanSpcAudio
 
-# Default build is the tuned HI profile.  `hi` remains a compatibility alias;
+# `hi`/`hi10` build the 1.0 test profile; the default `make` stays at 0.90.
 # `old` builds the stable 0.81 layout under kof98-snes-old.*.
-hi:
-	@$(MAKE) -f Makefile.pvsnes
+hi hi10:
+	@$(MAKE) -f Makefile.pvsnes HI10=1
 
-hi-verify:
-	@$(MAKE) -f Makefile.pvsnes verify
+hi-verify hi10-verify:
+	@$(MAKE) -f Makefile.pvsnes HI10=1 verify
 
-hi-clean:
-	rm -rf build/hi build/gen_fight-hi
+hi-clean hi10-clean:
+	rm -rf build/hi10 build/hi build/gen_fight-hi
 	rm -f kof98-snes-hi.sfc kof98-snes-hi.msu \
 		kof98-snes-hi.sym kof98-snes-hi.symfull kof98-snes-hi.log
 

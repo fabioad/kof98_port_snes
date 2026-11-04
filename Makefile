@@ -55,6 +55,7 @@ endif
 
 .PHONY: all colors clean verify pvsnes pvsnes-verify pvsnes-clean \
 	pvsnes-hi pvsnes-hi-verify pvsnes-hi-clean \
+	pvsnes-hi10 pvsnes-hi10-verify pvsnes-hi10-clean \
 	pvsnes-old pvsnes-old-verify pvsnes-old-clean
 
 all: $(ROM)
@@ -112,15 +113,24 @@ pvsnes-verify:
 pvsnes-clean:
 	$(MAKE) -f Makefile.pvsnes clean
 
-# The tuned HI build is the default `pvsnes` target.  Keep `pvsnes-hi` as a
-# compatibility alias and expose the stable 0.81 build as `pvsnes-old`.
+# The tuned 0.90 HI build is the default `pvsnes` target.  `pvsnes-hi`/`-hi10`
+# build the full 1.0 test profile; `pvsnes-old` builds the stable 0.81 layout.
 pvsnes-hi:
-	$(MAKE) -f Makefile.pvsnes
+	$(MAKE) -f Makefile.pvsnes HI10=1
 
 pvsnes-hi-verify:
-	$(MAKE) -f Makefile.pvsnes verify
+	$(MAKE) -f Makefile.pvsnes HI10=1 verify
 
 pvsnes-hi-clean:
+	$(MAKE) -f Makefile.pvsnes hi-clean
+
+pvsnes-hi10:
+	$(MAKE) -f Makefile.pvsnes HI10=1
+
+pvsnes-hi10-verify:
+	$(MAKE) -f Makefile.pvsnes HI10=1 verify
+
+pvsnes-hi10-clean:
 	$(MAKE) -f Makefile.pvsnes hi-clean
 
 pvsnes-old:

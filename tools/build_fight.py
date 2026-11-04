@@ -78,7 +78,7 @@ MSU_CHR_OVERRIDE = set()
 # A few metasprite blobs still exceed the engine's single 64 KiB CH_MBANK
 # window or the 96-tile per-pose page even at the HI base scale.  These are
 # absolute per-character scales; the stable build never reads this map.
-HI_SCALE_OVERRIDES = {
+_FULL_SCALE_OVERRIDES = {
     "billy": 0.88,
     "chang": 0.82,
     "omegarugal": 0.92,
@@ -92,6 +92,12 @@ HI_SCALE_OVERRIDES = {
     "krauser": 0.93,
     "geese": 0.93,
 }
+# The 1.0 test profile only keeps the structural Billy cap (his 1.0 meta is
+# larger than one 64 KiB CH_MBANK).  It intentionally keeps every other pose
+# at 1.0 so the real-hardware test shows the full-scale art and its limits.
+HI_SCALE_OVERRIDES = ({"billy": 0.90}
+                      if os.environ.get("KOF_SCALE_CAPS") == "minimal"
+                      else dict(_FULL_SCALE_OVERRIDES))
 
 
 def char_scale_for(name, cfg):

@@ -12,39 +12,42 @@ loss on the largest poses.
 ## Commands
 
 ```sh
-make -f Makefile.pvsnes            # default: kof98-snes.sfc/.msu (HI)
+make -f Makefile.pvsnes            # default: kof98-snes.sfc/.msu (HI 0.90)
 make -f Makefile.pvsnes verify     # checksum + verification
+
+make -f Makefile.pvsnes HI10=1     # kof98-snes-hi.sfc/.msu (1.0 test)
+make -f Makefile.hi                # same as HI10=1
+make -f Makefile.pvsnes hi         # same as HI10=1
+make -f Makefile.pvsnes hi-clean   # remove only the 1.0 test outputs
 
 make -f Makefile.pvsnes OLD=1      # kof98-snes-old.sfc/.msu (0.81)
 make -f Makefile.pvsnes OLD=1 verify
 make -f Makefile.old               # same as OLD=1
-make -f Makefile.hi                # compatibility alias for the default
 
-make -f Makefile.pvsnes hi         # compatibility alias for the default
 make -f Makefile.pvsnes old        # build the 0.81 variant
 make -f Makefile.pvsnes old-clean  # remove only the OLD outputs
 ```
 
-From the repository root: `make pvsnes` (default HI), `make pvsnes-old`,
-`make pvsnes-verify`, `make pvsnes-old-verify`.
+From the repository root: `make pvsnes` (default 0.90), `make pvsnes-hi`
+(1.0 test), `make pvsnes-old` (0.81), plus their `-verify` variants.
 
 The default HI build supports `HI_BASE_SCALE`:
 
 ```sh
 make -f Makefile.pvsnes HI_BASE_SCALE=0.95
-make -f Makefile.pvsnes HI_BASE_SCALE=1.0
 ```
+The dedicated 1.0 test profile is `HI10=1` / `make -f Makefile.hi`.
 
 ## Profiles and isolated artifacts
 
-| | default (HI) | OLD=1 (0.81) |
-|---|---|---|
-| ROM | `kof98-snes.sfc` | `kof98-snes-old.sfc` |
-| MSU-1 | `kof98-snes.msu` | `kof98-snes-old.msu` |
-| generated data | `build/gen_fight/` | `build/old/gen_fight/` |
-| fight object | `src/snes/fight_bridge.obj` | `build/old/fight_bridge.obj` |
-| linker input | `linkfile` | `build/old/linkfile` |
-| include root | `build/` | `build/old/` |
+| | default (HI 0.90) | HI10=1 (1.0 test) | OLD=1 (0.81) |
+|---|---|---|---|
+| ROM | `kof98-snes.sfc` | `kof98-snes-hi.sfc` | `kof98-snes-old.sfc` |
+| MSU-1 | `kof98-snes.msu` | `kof98-snes-hi.msu` | `kof98-snes-old.msu` |
+| generated data | `build/gen_fight/` | `build/hi10/gen_fight/` | `build/old/gen_fight/` |
+| fight object | `src/snes/fight_bridge.obj` | `build/hi10/fight_bridge.obj` | `build/old/fight_bridge.obj` |
+| linker input | `linkfile` | `build/hi10/linkfile` | `build/old/linkfile` |
+| include root | `build/` | `build/hi10/` | `build/old/` |
 
 The OLD build never overwrites the default ROM/MSU or `build/gen_fight`.
 The video manifest (`assets/video/Wmva3m93t34/manifest.json`) is updated by
@@ -69,6 +72,21 @@ image viable, HI streams Iori, Kyo, Shingo, Omega Rugal and Benimaru from the
 .msu file as well (Terry stays in ROM because his poses stream slowly, and
 moves to the banks Omega vacated).  The cast is unchanged; only the CHR
 storage split differs from the OLD profile.
+
+## 1.0 test profile (HI10)
+
+`HI10=1` (or `make -f Makefile.hi`) builds the full 1.0 art for hardware
+comparison.  It is deliberately **not** the default: it keeps every fighter
+at 1.0 except Billy (0.90 structural cap, because his 1.0 metasprite blob
+exceeds the engine's 64 KiB `CH_MBANK`).  The OAM/DMA truncation fallbacks stay
+enabled, so the build completes even on the oversized poses; expect more
+visible packing loss and slowdown than the 0.90 default.
+
+The 1.0 profile includes the hardware MSU-CHR upload/HUD fixes from
+`ec0690e` (vblank staging, one MSU seek per frame, `DMACHUNK=1536`).
+
+Artifacts: `kof98-snes-hi.sfc` + `kof98-snes-hi.msu`, in
+`build/hi10/gen_fight/`.  The default 0.90 tree and manifest are not touched.
 
 ## Per-character caps
 

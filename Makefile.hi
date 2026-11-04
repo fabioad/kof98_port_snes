@@ -1,7 +1,8 @@
-# Compatibility entry point.  The tuned HI build is now the default, so this
-# is the same as `make -f Makefile.pvsnes`:
+# Full 1.0 test build.  The default `make` stays at 0.90; this profile writes
+# kof98-snes-hi.sfc / .msu for comparison on real hardware:
 #
 #   make -f Makefile.hi
 #   make -f Makefile.hi verify
-HI := 1
+#   make -f Makefile.hi hi-clean
+HI10 := 1
 include Makefile.pvsnes

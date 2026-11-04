@@ -209,6 +209,15 @@ make pvsnes-old-verify PVSNESLIB_HOME=/caminho/para/pvsneslib
 A saída é `kof98-snes-old.sfc` + `kof98-snes-old.msu`. Veja
 `docs/HI_BUILD.md` para escala, isolamento e riscos.
 
+Para testar a arte HI em escala 1.0 no hardware:
+
+```sh
+make pvsnes-hi PVSNESLIB_HOME=/caminho/para/pvsneslib
+```
+
+A saída é `kof98-snes-hi.sfc` + `kof98-snes-hi.msu`; o build padrão 0.90
+não é alterado.
+
 ### Por dentro
 
 - `src/engine/fight.asm` — núcleo do motor de luta em 65816.
@@ -443,6 +452,15 @@ make pvsnes-old-verify PVSNESLIB_HOME=/path/to/pvsneslib
 
 Output is `kof98-snes-old.sfc` + `kof98-snes-old.msu`. See
 `docs/HI_BUILD.md` for scale, isolation and known risks.
+
+To test the HI art at 1.0 on hardware:
+
+```sh
+make pvsnes-hi PVSNESLIB_HOME=/path/to/pvsneslib
+```
+
+Output is `kof98-snes-hi.sfc` + `kof98-snes-hi.msu`; the default 0.90 build
+is not modified.
 
 ### Under the hood
 
