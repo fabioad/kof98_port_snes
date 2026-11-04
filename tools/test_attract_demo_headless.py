@@ -79,7 +79,9 @@ def start_demo(core):
 
 
 def wait_live(core):
-    for _ in range(900):
+    # The tuned-HI default has larger CHR/metas; staging can take ~1000
+    # emulated frames before the demo round goes live.
+    for _ in range(1800):
         if core.word(GS) == 1:
             return
         core.step()

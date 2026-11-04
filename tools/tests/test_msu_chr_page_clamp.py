@@ -7,6 +7,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(
 META = os.path.join(ROOT, "build", "gen_fight", "ralf_meta.inc")
 SPR = os.path.join(ROOT, "build", "gen_fight", "ralf_spr.inc")
 DAIMON_SPR = os.path.join(ROOT, "build", "gen_fight", "daimon_spr.inc")
+DAIMON_META = os.path.join(ROOT, "build", "gen_fight", "daimon_meta.inc")
 VOICES = os.path.join(ROOT, "build", "gen_fight", "voices.inc")
 BASES = os.path.join(ROOT, "build", "gen_fight", "msu1_bases.inc")
 BRIDGE = os.path.join(ROOT, "src", "snes", "fight_bridge.asm")
@@ -67,9 +68,10 @@ def chunks(first, dmalen, base_slice, clamp):
         pos += count
 
 
-def db_bytes(text, start_label, end_label):
+def db_bytes(text, start_label, end_label=None):
     body = text[text.index(start_label):]
-    body = body[:body.index(end_label)]
+    if end_label is not None:
+        body = body[:body.index(end_label)]
     data = []
     for line in body.splitlines():
         line = line.strip()
@@ -212,7 +214,6 @@ class DaimonWinPoseTests(unittest.TestCase):
             text = source.read()
         cls.offsets = [int(m.group(1)) for m in
                        re.finditer(r"\.dw daimonSprData\+(\d+)", text)]
-        cls.data = db_bytes(text, "daimonSprData:", "daimonBoxTab:")
         with open(BASES) as source:
             base = re.search(r"MSU_DAIMON_SLICE = (\d+)",
                              source.read())
@@ -221,6 +222,10 @@ class DaimonWinPoseTests(unittest.TestCase):
         anim = anim[:anim.index("daimonAnim91:")]
         cls.win_sprites = [int(m.group(1)) for m in
                            re.finditer(r"\.dw\s+(\d+)", anim)]
+        with open(DAIMON_META if os.path.exists(DAIMON_META)
+                  else DAIMON_SPR) as source:
+            meta_text = source.read()
+        cls.data = db_bytes(meta_text, "daimonSprData:")
 
     def test_win_pose_is_anim_181_sprites_49_to_54(self):
         # S_WPOSE = 90 -> AnimTab[90] = real win pose anim 181.

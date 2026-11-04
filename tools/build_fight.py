@@ -43,7 +43,66 @@ from calibration.projectiles import (PROJECTILE_ACTIONS,
                                      PROJECTILE_BODY_ANIMATIONS)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, "build", "gen_fight")
+
+
+def _out_dir(default):
+    """Output tree override used by the experimental HI build.
+
+    A relative value is anchored at the project root so the generator behaves
+    the same whether make invokes it from the repository or from a subdir.
+    """
+    path = os.environ.get("KOF_OUT_DIR", default)
+    return path if os.path.isabs(path) else os.path.join(ROOT, path)
+
+
+OUT = _out_dir("build/gen_fight")
+# Base name of the MSU-1 data file.  It must match the ROM stem so the
+# flashcart/emulator pairs kof98-snes.sfc with kof98-snes.msu.
+MSU_NAME = os.environ.get("KOF_MSU_NAME", "kof98-snes")
+
+# Experimental 1:1 build (make HI=1).  The override is deliberately NOT
+# written into each character cfg: calibration.native.config_hash() hashes the
+# cfg, and changing char_scale there would invalidate all verified profiles.
+# The builder reads this global only when scaling fighter art.
+_scale = os.environ.get("KOF_CHAR_SCALE")
+try:
+    CHAR_SCALE_OVERRIDE = float(_scale) if _scale else None
+except ValueError:
+    raise SystemExit(f"KOF_CHAR_SCALE must be a number, got {_scale!r}")
+
+# HI streams a few more fighters from MSU-1 than the 0.81 build.  Keep the
+# override out of the character cfg: calibration.native.config_hash() hashes
+# the whole cfg, and flipping cfg["msu"] would invalidate its verified profile.
+MSU_CHR_OVERRIDE = set()
+
+# A few metasprite blobs still exceed the engine's single 64 KiB CH_MBANK
+# window or the 96-tile per-pose page even at the HI base scale.  These are
+# absolute per-character scales; the stable build never reads this map.
+HI_SCALE_OVERRIDES = {
+    "billy": 0.88,
+    "chang": 0.82,
+    "omegarugal": 0.92,
+    "rugal": 0.93,
+    "mrbig": 0.92,
+    "brian": 0.92,
+    "terry": 0.92,
+    "daimon": 0.93,
+    "yashiro": 0.93,
+    "yamazaki": 0.93,
+    "krauser": 0.93,
+    "geese": 0.93,
+}
+
+
+def char_scale_for(name, cfg):
+    """Effective fighter-art scale for this build profile."""
+    if CHAR_SCALE_OVERRIDE is not None:
+        return HI_SCALE_OVERRIDES.get(name, CHAR_SCALE_OVERRIDE)
+    return cfg.get("char_scale", 1.0)
+
+
+def char_is_msu(name, cfg):
+    return bool(cfg.get("msu")) or name in MSU_CHR_OVERRIDE
 
 
 def asset_path(rel):
@@ -5931,7 +5990,7 @@ def wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers):
             # render it with three key poses; a 12-25 frame bind does not fit
             # the per-character metasprite bank on top of the victim pose.
             frames, loop = air[bind_anim]
-            if not cfg.get("msu") and attempt_anim in air:
+            if not char_is_msu(name, cfg) and attempt_anim in air:
                 # Fixed ROM CHR banks (Daimon/Kyo/Terry...) have no room for
                 # new bind cels.  Reuse the grab-stance sprite for every bind
                 # frame so the controller/damage timeline still runs.
@@ -6144,9 +6203,31 @@ def _shift_palette(pal, degrees=140):
     return out
 
 
+def _oam_cap_cells(name, key, cells, tiles):
+    """Keep at most 64 OAM cells.
+
+    1.0 art can make a pose need more than the hardware's 64 sprite entries.
+    The HI demo build opts into dropping the lowest-coverage cells so the
+    rest of the roster still builds; the loss is recorded in art_loss.json.
+    Stable 0.81 builds keep the hard failure.
+    """
+    if len(cells) <= 64:
+        return cells, tiles
+    if os.environ.get("KOF_OAM_TRUNCATE") != "1":
+        raise SystemExit(f"{name} {key}: {len(cells)} OBJ cells exceed 64")
+    coverage = [sum(1 for b in t if b) for t in tiles]
+    keep = sorted(sorted(range(len(cells)),
+                         key=lambda i: (-coverage[i], i))[:64])
+    ART_LOSS.append({'character': name, 'sprite': list(key),
+                     'kind': 'oam_cell_truncate',
+                     'dropped_cells': len(cells) - 64})
+    print(f"{name} {key}: {len(cells)} OBJ cells, truncating to 64")
+    return [cells[i] for i in keep], [tiles[i] for i in keep]
+
+
 def build_char(name, cfg, global_pal=None):
     coord_scale = cfg.get("coord_scale", 1)
-    char_scale = cfg.get("char_scale", 1.0)
+    char_scale = char_scale_for(name, cfg)
     sff = Sff(asset_path(cfg["sff"]))
     # Some SFFv1 imports point the body cels at a shadow/alternate palette
     # bank (e.g. Athena ships palette 1 as a dark-red dim copy while palette
@@ -6863,7 +6944,7 @@ def build_char(name, cfg, global_pal=None):
     # ROM-resident fighters use their CHR space for restored source frames;
     # synthetic dissolves would compete with them for the same bank.  Omega
     # Rugal has no .orig to restore from, so it keeps a small tween budget.
-    if not cfg.get("msu"):
+    if not char_is_msu(name, cfg):
         tween_bytes_budget = 32768 if name == "omegarugal" else 0
     else:
         tween_bytes_budget = None
@@ -7098,8 +7179,7 @@ def build_char(name, cfg, global_pal=None):
             if sx or sy:
                 cells = [(dx + sx, dy + sy, 0) for dx, dy, _ in cells]
             spr_shift[key] = (sx, sy)
-        if len(cells) > 64:
-            raise SystemExit(f"{name} {key}: {len(cells)} OBJ cells exceed 64")
+        cells, cell_tiles = _oam_cap_cells(name, key, cells, cell_tiles)
         # Dedup identical 16x16 cells. A ping-pong OBJ page is 96 tiles:
         # each unique 16x16 cell costs a fixed 4-tile quad slot (24 slots),
         # while 8x8 sub-cells cost a single tile in any free slot. Sprites
@@ -7123,7 +7203,7 @@ def build_char(name, cfg, global_pal=None):
                 len(quad_parts(i)) for i, b in enumerate(big) if not b)
             return len(ub) * 4 + len(us), len(ub), nc
 
-        if not all(big) and not cfg.get("msu"):
+        if not all(big) and not char_is_msu(name, cfg):
             # ROM-resident tile banks are fixed at two banks per fighter, so
             # keep the original, more conservative packing there.  Only the
             # streamed MSU characters can afford the extra unique tiles that
@@ -7145,7 +7225,7 @@ def build_char(name, cfg, global_pal=None):
                 dropq[i].add(q)
                 ART_LOSS.append({'character': name, 'sprite': list(key),
                                  'kind': 'quadrant', 'opaque_pixels': lost})
-        if not all(big) and cfg.get("msu"):
+        if not all(big) and char_is_msu(name, cfg):
             # Phase 1: fit the 96-tile page.  Split cells are cheaper in
             # tiles, so drop the least-covered quadrants until the unique
             # tile budget fits.
@@ -7232,6 +7312,11 @@ def build_char(name, cfg, global_pal=None):
         # cap get their highest-coverage art in the low slots, so the cap
         # below removes the least visible cells first.
         dma_cap = cfg.get("max_dma")
+        # HI: Rugal/Omega's 2560-byte source cap drops whole cells on their
+        # largest poses.  The 96-tile page can hold the full 3072 bytes; keep
+        # the art intact in the HI build (the stable layout keeps 2560).
+        if CHAR_SCALE_OVERRIDE is not None and name in ("rugal", "omegarugal"):
+            dma_cap = 3072
         big_idx = {}
         if dma_cap:
             big_cov = {}
@@ -7320,7 +7405,24 @@ def build_char(name, cfg, global_pal=None):
         spr_upload_bytes[key] = len(packed)
         cells = packed_cells
         if len(cells) > 64:
-            raise SystemExit(f"{name} {key}: {len(cells)} OBJ cells exceed 64")
+            if os.environ.get("KOF_OAM_TRUNCATE") != "1":
+                raise SystemExit(
+                    f"{name} {key}: {len(cells)} OBJ cells exceed 64")
+            def _span(ti):
+                base = ti & 0x7fff
+                return ((base,) if ti & 0x8000 else
+                        (base, base + 1, base + 16, base + 17))
+            coverage = [sum(1 for ti in _span(c[2])
+                            for b in packed[ti * 32:(ti + 1) * 32] if b)
+                        for c in cells]
+            keep = sorted(sorted(range(len(cells)),
+                                 key=lambda i: (-coverage[i], i))[:64])
+            ART_LOSS.append({'character': name, 'sprite': list(key),
+                             'kind': 'oam_cell_truncate',
+                             'dropped_cells': len(cells) - 64})
+            print(f"{name} {key}: {len(cells)} packed OBJ cells, "
+                  "truncating to 64")
+            cells = [cells[i] for i in keep]
         max_cells = max(max_cells, len(cells))
         max_dma = max(max_dma, len(packed))
         headers.append((s.ax, s.ay))
@@ -7331,6 +7433,32 @@ def build_char(name, cfg, global_pal=None):
             maxy = max(c[1] + (8 if c[2] & 0x8000 else CELL) for c in cells)
         else:
             minx = miny = maxx = maxy = 0
+        if cells and (minx < -128 or miny < -128
+                      or maxx - minx > 255 or maxy - miny > 255):
+            if os.environ.get("KOF_SPRITE_BBOX_TRUNCATE") != "1":
+                raise SystemExit(
+                    f"{name} {key}: sprite bbox {maxx - minx}x{maxy - miny} "
+                    f"at ({minx},{miny}) does not fit the 8-bit meta")
+            # 1.0 art can put a staff tip or a long limb outside the 8-bit
+            # meta range.  Keep the 240-pixel window around the fighter axis
+            # and drop the far edge cells; the loss is recorded in
+            # art_loss.json.  Stable builds keep the hard failure.
+            win = 120
+            kept = [c for c in cells
+                    if -win <= c[0] <= win - 1 and -win <= c[1] <= win - 1]
+            if not kept:
+                kept = [cells[0]]
+            ART_LOSS.append({'character': name, 'sprite': list(key),
+                             'kind': 'sprite_bbox_crop',
+                             'dropped_cells': len(cells) - len(kept),
+                             'bbox': [maxx - minx, maxy - miny]})
+            print(f"{name} {key}: bbox {maxx - minx}x{maxy - miny}, "
+                  f"cropping {len(cells) - len(kept)} cells")
+            cells = kept
+            minx = min(c[0] for c in cells)
+            miny = min(c[1] for c in cells)
+            maxx = max(c[0] + (8 if c[2] & 0x8000 else CELL) for c in cells)
+            maxy = max(c[1] + (8 if c[2] & 0x8000 else CELL) for c in cells)
         meta = bytearray([len(cells)])
         meta += struct.pack("<HH", first_tile, len(packed))
         meta += struct.pack("<bbBB", minx, miny,
@@ -8216,10 +8344,10 @@ def build_char(name, cfg, global_pal=None):
     # Chars flagged "msu" leave the ROM entirely: their chr blob is
     # appended to kof98-snes.msu (32 KiB-aligned) and the descriptor's
     # CH_CHRBANK field carries a slice index instead of a CPU bank byte.
-    if cfg.get("msu"):
+    if char_is_msu(name, cfg):
         MSU_BLOBS[name] = bytes(tiles)
         open(os.path.join(OUT, f"{name}_chr.inc"), "w").write(
-            f"; {name}: chr lives in kof98-snes.msu (MSU-1 data file)\n")
+            f"; {name}: chr lives in {MSU_NAME}.msu (MSU-1 data file)\n")
     else:
         cname, bank0, bank0x, orga = CNAME_BANKS[name]
         out_lines = []
@@ -8256,8 +8384,10 @@ def build_char(name, cfg, global_pal=None):
     # the bulky metasprite cells can sit in a second bank (CH_MBANK) while
     # the index/state tables stay in F_TBANK.  SprOfs must remain here: the
     # engine fetches it via CharPtr(CH_SPROFS) at the table bank.
-    if name in NEW_CHARS or name in ("omegarugal", "rugal") \
-            or name in SPLIT_OLD:
+    # HI: the 1.0 cell grids no longer fit the legacy fixed table windows, so
+    # every fighter is split and the metasprite blobs go to packed banks.
+    if CHAR_SCALE_OVERRIDE is not None or name in NEW_CHARS \
+            or name in ("omegarugal", "rugal") or name in SPLIT_OLD:
         spr_part, meta_part, in_meta = [], [], False
         for line in inc:
             if line.startswith(f"{name}SprData:"):
@@ -10246,7 +10376,12 @@ def emit_newchars_inc(new_keys, msu_slices):
         else:
             # ExHiROM's $01:0000 mirror is CPU RAM/I/O.  The same lower
             # half of file bank 65 is readable as ROM at $41:0000.
-            chr_fields = ["    .dw 0\n", f"    .db (:{C}Chr+$40), 0\n"]
+            # CH_CHR is the low word of the first tile; high-half CHR runs
+            # ($8000) must carry that offset or the engine reads the other
+            # half of the bank.
+            orga = CNAME_BANKS.get(k, ("", 0, 0, "$0000"))[3]
+            chr_fields = [f"    .dw {orga}\n",
+                          f"    .db (:{C}Chr+$40), 0\n"]
         d += [f"Char{C}:\n",
               f"    .dw {k}SprOfs, {k}BoxTab, {k}AnimTab\n",
               f"    .dw {k}ActiveTab, {k}DamageTab, {k}HitTimeTab\n",
@@ -10430,6 +10565,28 @@ def emit_newchars_inc(new_keys, msu_slices):
     _mp_end = 0x8000 + ((_mp_sz + 0xFF) & ~0xFF) + 0x100
     PVS_SLOTS += [(125, _mp_end, 0x10000 - _mp_end)]
 
+    if CHAR_SCALE_OVERRIDE is not None:
+        # HI: iori/kyo/shingo/benimaru/omegarugal CHR now streams from MSU-1.
+        # Merge the freed half-banks that are adjacent and free on both sides
+        # into full 64 KiB windows: the 1.0 metas are 35-75 KiB and the
+        # allocator needs large contiguous holes, not just 32 KiB halves.
+        _merged = (set(range(2, 17))
+                   | set(range(27, 43))
+                   | set(range(70, 82))
+                   | {84, 85, 86, 87}
+                   | set(range(114, 118)))
+        PVS_SLOTS[:] = [s for s in PVS_SLOTS
+                        if not (s[0] in _merged and s[1] == 0
+                                and s[2] == 0x8000)]
+        PVS_SLOTS += [(bank, 0, 0x10000) for bank in _merged]
+        # Omega Rugal's meta moved to a packed bank; bank 119's low half is
+        # not needed and its old tail calculation is invalid at 1.0.
+        PVS_SLOTS[:] = [s for s in PVS_SLOTS if s[0] != 119]
+        # ShakeScrollLow starts at $7024 in the Fight bank; the old $7100
+        # limit let a packed meta run into it at 0.95.
+        PVS_SLOTS[:] = [s for s in PVS_SLOTS if s[0] != 50]
+        PVS_SLOTS += [(50, 0, 0x7000)]
+
     def pvs_bank(bank):
         if bank in (126, 127):
             raise ValueError(f"bank {bank} maps to WRAM on ExHiROM")
@@ -10467,6 +10624,14 @@ def emit_newchars_inc(new_keys, msu_slices):
     # enough total bytes but fragment the short contiguous windows.
     meta_sz = {k: _inc_size(k + "_meta.inc") for k in new_keys}
     old_split = [k for k in SPLIT_OLD if k in CHARS]
+    if CHAR_SCALE_OVERRIDE is not None:
+        # HI: every fixed-bank fighter's metasprite blob moves to a packed
+        # CH_MBANK window; only the compact index/state tables stay in the
+        # legacy banks.  Rugal's 39 KiB meta still fits bank 17, so only
+        # Omega Rugal joins the packed pool (bank 119's low half is too small
+        # at 1.0 and would collide with EndData5).
+        old_split = [k for k in CHARS
+                     if k not in new_keys and k != "rugal"]
     meta_sz.update({k: _inc_size(k + "_meta.inc") for k in old_split})
     tab_sz = {k: _inc_size(k + "_spr.inc") for k in new_keys}
     free = [[s[0], s[1], s[2]] for s in PVS_SLOTS]
@@ -10691,30 +10856,64 @@ def emit_newchars_inc(new_keys, msu_slices):
     # PT and Heidern's bank 59 carries ES.  The assertions keep the constants
     # honest if a character's generated tables grow later.
     qstr_sz = {tag: _inc_size(rel) for tag, rel in qstr_files}
-    assert _inc_size("kyo_spr.inc") <= 0x9000      # ViceData starts there
-    assert _inc_size("vice_spr.inc") <= 0x7000     # remainder of bank 60
-    # MatureData uses the free tail of sound bank 55 ($794C-$FFFF).
-    assert _inc_size("mature_spr.inc") <= 0x10000 - 0x794C
-    # TakumaData shares bank 83's low half with ShingoChrN.
-    assert _inc_size("takuma_spr.inc") <= 0x8000
-    assert _inc_size("rugal_spr.inc") <= 0x3000
-    assert 0x3000 + qstr_sz["en"] <= 0x5000
-    assert 0x5000 + qstr_sz["fr"] <= 0x8000
-    assert _inc_size("iori_spr.inc") <= 0x9000
-    assert 0x9000 + qstr_sz["pt"] <= 0x10000
-    # Heidern's reactivated supers push its table past $A000.  Keep the ES
-    # quote strings in the same bank, immediately after the table instead of
-    # at a hard-coded offset.
-    es_off = (_inc_size("heidern_spr.inc") + 0xFF) & ~0xFF
-    assert es_off + qstr_sz["es"] <= 0x10000
     qtab_sz = (_inc_size("quote_tables.inc") +
                _inc_size("char_names.inc") +
                _inc_size("survival_msu.inc"))
+    if CHAR_SCALE_OVERRIDE is not None:
+        # HI: every fighter's metasprite blob moved to a packed CH_MBANK
+        # window, so the legacy banks hold only the compact index/state
+        # tables.  Place the quote strings after those tables instead of at
+        # the 0.81 hard-coded offsets.
+        fixed = {
+            "iori_spr.inc": 0x9000,
+            "kyo_spr.inc": 0x9000,
+            "shingo_spr.inc": 0x10000,
+            "vice_spr.inc": 0x7000,
+            "mature_spr.inc": 0x10000 - 0x794C,
+            "takuma_spr.inc": 0x8000,
+            "saisyu_spr.inc": 0x8000,
+            "clark_spr.inc": 0x8000,
+            "ralf_spr.inc": 0x8000,
+            "leona_spr.inc": 0x8000,
+            "benimaru_spr.inc": 0x10000,
+            "daimon_spr.inc": 0x10000,
+            "omegarugal_spr.inc": 0x10000 - 0x1000,
+        }
+        for fname, limit in fixed.items():
+            size = _inc_size(fname)
+            assert size <= limit, (fname, size, limit)
+        en_off = (_inc_size("rugal_spr.inc") + 0xFF) & ~0xFF
+        fr_off = (en_off + qstr_sz["en"] + 0xFF) & ~0xFF
+        assert fr_off + qstr_sz["fr"] <= 0x8000
+        pt_off = max(0x9000,
+                     (_inc_size("iori_spr.inc") + 0xFF) & ~0xFF)
+        assert pt_off + qstr_sz["pt"] <= 0xC000
+        es_off = (_inc_size("heidern_spr.inc") + 0xFF) & ~0xFF
+        assert es_off + qstr_sz["es"] <= 0x10000
+        pvs_qstr = {"en": (44, en_off), "fr": (44, fr_off),
+                    "pt": (58, pt_off), "es": (59, es_off)}
+    else:
+        assert _inc_size("kyo_spr.inc") <= 0x9000   # ViceData starts there
+        assert _inc_size("vice_spr.inc") <= 0x7000  # remainder of bank 60
+        # MatureData uses the free tail of sound bank 55 ($794C-$FFFF).
+        assert _inc_size("mature_spr.inc") <= 0x10000 - 0x794C
+        # TakumaData shares bank 83's low half with ShingoChrN.
+        assert _inc_size("takuma_spr.inc") <= 0x8000
+        assert _inc_size("rugal_spr.inc") <= 0x3000
+        assert 0x3000 + qstr_sz["en"] <= 0x5000
+        assert 0x5000 + qstr_sz["fr"] <= 0x8000
+        assert _inc_size("iori_spr.inc") <= 0x9000
+        assert 0x9000 + qstr_sz["pt"] <= 0x10000
+        # Heidern's reactivated supers push its table past $A000.  Keep the
+        # ES quote strings in the same bank, immediately after the table
+        # instead of at a hard-coded offset.
+        es_off = (_inc_size("heidern_spr.inc") + 0xFF) & ~0xFF
+        assert es_off + qstr_sz["es"] <= 0x10000
+        pvs_qstr = {"en": (44, 0x3000), "fr": (44, 0x5000),
+                    "pt": (58, 0x9000), "es": (59, es_off)}
     assert 0xC000 + qtab_sz <= 0x10000            # PVS bank 58
     assert sum(qstr_sz.values()) <= 0x8000        # standalone bank 52
     assert 0x8000 + qtab_sz <= 0x10000
-    pvs_qstr = {"en": (44, 0x3000), "fr": (44, 0x5000),
-                "pt": (58, 0x9000), "es": (59, es_off)}
     gfx_inc = ["; per-frame 2x projectile atlases\n.IFDEF PVSNESLIB\n"]
     for k in proj_order:
         bk, org = pvs_projgfx[k]
@@ -10982,9 +11181,31 @@ def emit_survival_ending(msu):
 
 
 if __name__ == "__main__":
+    if CHAR_SCALE_OVERRIDE is not None:
+        # HI: 1.0 metas need ~1 MiB more ROM than the 0.81 layout.  Stream the
+        # five largest ROM CHR sets from MSU-1 to free their banks for packed
+        # tables/metas.  Terry stays in ROM (his poses stream slowly) but
+        # moves to the banks Omega Rugal vacated, away from Takuma's table.
+        for _c in ("iori", "kyo", "shingo", "omegarugal", "benimaru"):
+            if _c in CHARS:
+                MSU_CHR_OVERRIDE.add(_c)
+        if "terry" in CHARS:
+            CNAME_BANKS["terry"] = ("Terry", 95, 95, "$8000")
     os.makedirs(OUT, exist_ok=True)
-    emit_runtime_abi(ROOT)
+    with open(os.path.join(OUT, "build_profile.json"), "w") as _f:
+        json.dump({
+            "base_scale": CHAR_SCALE_OVERRIDE,
+            "overrides": HI_SCALE_OVERRIDES,
+            "msu_override": sorted(MSU_CHR_OVERRIDE),
+            "char_scales": {n: char_scale_for(n, c)
+                            for n, c in CHARS.items()},
+        }, _f, indent=2, sort_keys=True)
+        _f.write("\n")
+    emit_runtime_abi(ROOT, OUT)
     import build_stages
+    # build_stages owns a module-level OUT; point it at the active tree so a
+    # HI build never writes stage tables over the 0.81 data.
+    build_stages.OUT = OUT
     build_stages.build()
     build_hud()
     build_portraits()
@@ -11013,7 +11234,7 @@ if __name__ == "__main__":
             continue
         blob = open(chr_path, "rb").read()
         cfg = CHARS.get(name, {})
-        if not cfg.get("msu") and name in CNAME_BANKS:
+        if not char_is_msu(name, cfg) and name in CNAME_BANKS:
             cname, bank0, bank0x, orga = CNAME_BANKS[name]
             nbanks = (len(blob) + 32767) // 32768
             out_lines = []
@@ -11034,7 +11255,7 @@ if __name__ == "__main__":
         else:
             MSU_BLOBS[name] = blob
             open(os.path.join(OUT, f"{name}_chr.inc"), "w").write(
-                f"; {name}: chr lives in kof98-snes.msu (MSU-1 data file)\n")
+                f"; {name}: chr lives in {MSU_NAME}.msu (MSU-1 data file)\n")
             print(f"{name}: reusing previous CHR via MSU ({len(blob)} bytes)")
     with open(os.path.join(OUT, "art_loss.json"), "w") as f:
         json.dump({'events': ART_LOSS}, f, indent=2)
@@ -11043,7 +11264,7 @@ if __name__ == "__main__":
     # the right data file), then chr blobs at 32 KiB alignment addressed
     # by slice index (file offset >> 15) in CH_CHRBANK.
     msu = bytearray(b"KOF98MSU\0")
-    defs = ["; MSU-1 chr slice indices into kof98-snes.msu\n",
+    defs = [f"; MSU-1 chr slice indices into {MSU_NAME}.msu\n",
             "; (each unit = 32 KiB; seek = (slice + tilebase>>10) * 32768\n",
             ";  + (tilebase&1023)*32 + pos)\n"]
     msu_slices = {}
@@ -11122,7 +11343,7 @@ if __name__ == "__main__":
                 manifest = json.load(mf)
             digest = hashlib.sha256(video_blob).hexdigest()
             manifest["msu"] = {
-                "file": "kof98-snes.msu",
+                "file": f"{MSU_NAME}.msu",
                 "embedded": True,
                 "offset": video_off,
                 "offset_hex": f"0x{video_off:06X}",
@@ -11133,7 +11354,14 @@ if __name__ == "__main__":
                         "no second runtime file",
             }
             manifest.setdefault("m1vid", {})["sha256"] = digest
-            with open(manifest_path, "w") as mf:
+            # The HI build is disposable and must not rewrite the manifest
+            # that documents the stable 0.81 data file.  Keep its own copy
+            # next to the generated HI tree instead.
+            if os.environ.get("KOF_SKIP_MANIFEST") == "1":
+                target = os.path.join(OUT, "video_manifest.json")
+            else:
+                target = manifest_path
+            with open(target, "w") as mf:
                 json.dump(manifest, mf, indent=2, ensure_ascii=False)
                 mf.write("\n")
     if MSU_BLOBS or sv_count or video_blob:
@@ -11147,7 +11375,7 @@ if __name__ == "__main__":
         # rebuild keeps this file open, and truncating it in place makes
         # sprite CHR reads past the new EOF return $FF (solid palette-15
         # "hitbox" blocks).  The rename swaps the inode instead.
-        msu_path = os.path.join(OUT, "kof98-snes.msu")
+        msu_path = os.path.join(OUT, f"{MSU_NAME}.msu")
         tmp_path = msu_path + ".tmp"
         with open(tmp_path, "wb") as f:
             f.write(msu)

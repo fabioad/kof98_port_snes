@@ -1,0 +1,8 @@
+# Stable 0.81 build.  Produces kof98-snes-old.sfc / .msu without touching the
+# default tuned-HI build:
+#
+#   make -f Makefile.old
+#   make -f Makefile.old verify
+#   make -f Makefile.old old-clean
+OLD := 1
+include Makefile.pvsnes

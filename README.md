@@ -189,15 +189,25 @@ make pvsnes PVSNESLIB_HOME=/caminho/para/pvsneslib
 make pvsnes-verify PVSNESLIB_HOME=/caminho/para/pvsneslib
 ```
 
-A saída é:
+A saída é a build principal com arte HI ajustada (base 0.90):
 
 ```text
 kof98-snes.sfc   # ROM de 8 MiB
-kof98-snes.msu   # dados opcionais (~28 MB)
+kof98-snes.msu   # dados MSU-1 (~48 MB)
 ```
 
 Para jogar com o roster completo, mantenha os dois arquivos juntos. Para jogar
 sem MSU-1, use apenas o `.sfc`.
+
+A build estável 0.81 continua disponível como variante:
+
+```sh
+make pvsnes-old PVSNESLIB_HOME=/caminho/para/pvsneslib
+make pvsnes-old-verify PVSNESLIB_HOME=/caminho/para/pvsneslib
+```
+
+A saída é `kof98-snes-old.sfc` + `kof98-snes-old.msu`. Veja
+`docs/HI_BUILD.md` para escala, isolamento e riscos.
 
 ### Por dentro
 
@@ -414,15 +424,25 @@ make pvsnes PVSNESLIB_HOME=/path/to/pvsneslib
 make pvsnes-verify PVSNESLIB_HOME=/path/to/pvsneslib
 ```
 
-Output:
+Output is the default tuned-HI build (0.90 base):
 
 ```text
 kof98-snes.sfc   # 8 MiB ROM
-kof98-snes.msu   # optional data file (~28 MB)
+kof98-snes.msu   # MSU-1 data (~48 MB)
 ```
 
 To play with the full roster, keep both files together. To play without
 MSU-1, use only the `.sfc`.
+
+The stable 0.81 build is still available as a variant:
+
+```sh
+make pvsnes-old PVSNESLIB_HOME=/path/to/pvsneslib
+make pvsnes-old-verify PVSNESLIB_HOME=/path/to/pvsneslib
+```
+
+Output is `kof98-snes-old.sfc` + `kof98-snes-old.msu`. See
+`docs/HI_BUILD.md` for scale, isolation and known risks.
 
 ### Under the hood
 

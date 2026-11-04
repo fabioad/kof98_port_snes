@@ -28,11 +28,16 @@ ROOT = Path(__file__).resolve().parents[2]
 GEN = ROOT / "build" / "gen_fight"
 CMD = ROOT / "assets" / "characters" / "Clark-KOF98" / "Clark_SNES.cmd"
 
+import json
 import sys
 sys.path.insert(0, str(ROOT / "tools"))
 import build_fight  # noqa: E402
 
-CLARK_SCALE = build_fight.CHARS["clark"].get("char_scale", 1.0)
+_PROFILE = GEN / "build_profile.json"
+if _PROFILE.exists():
+    CLARK_SCALE = json.loads(_PROFILE.read_text())["char_scales"]["clark"]
+else:
+    CLARK_SCALE = build_fight.CHARS["clark"].get("char_scale", 1.0)
 
 
 def sc(value):

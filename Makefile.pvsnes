@@ -22,8 +22,33 @@ ifeq ($(PVSNESLIB_VERSION_OK),)
 $(error PVSnesLib 4.6+ is required (found '$(PVSNESLIB_VERSION)' at $(PVSNESLIB_VERSION_FILE)); 4.5's libc can freeze at the fight intro)
 endif
 
+# Default build: tuned HI art (0.90 base + per-character caps).
+# OLD=1 builds the stable 0.81 layout as kof98-snes-old.sfc/.msu.
+#   make -f Makefile.pvsnes            # kof98-snes.sfc/.msu (HI)
+#   make -f Makefile.pvsnes OLD=1      # kof98-snes-old.sfc/.msu (0.81)
+OLD ?= 0
+HI_BASE_SCALE ?= 0.90
+ifeq ($(OLD),1)
+export ROMNAME := kof98-snes-old
+export ROMTITLE := KOF98 SNESFEST OLD
+GEN_DIR := build/old/gen_fight
+MSU_NAME := kof98-snes-old
+BUILD_INC := build/old
+PROFILE_DEFINE := -D KOF_OLD
+FIGHT_ENV := KOF_OUT_DIR=$(GEN_DIR) KOF_MSU_NAME=$(MSU_NAME) \
+	KOF_SKIP_MANIFEST=1
+else
 export ROMNAME := kof98-snes
 export ROMTITLE := KOF SNESFEST
+GEN_DIR := build/gen_fight
+MSU_NAME := kof98-snes
+BUILD_INC := build
+PROFILE_DEFINE :=
+FIGHT_ENV := KOF_OUT_DIR=$(GEN_DIR) KOF_MSU_NAME=$(MSU_NAME) \
+	KOF_CHAR_SCALE=$(HI_BASE_SCALE) KOF_OAM_TRUNCATE=1 \
+	KOF_SPRITE_BBOX_TRUNCATE=1
+endif
+
 export AUTOHDR := 0                       ; hand-written hdr.asm (ExHiROM)
 export HIROM := 1
 export FASTROM := 1
@@ -32,27 +57,27 @@ export ROMBANKS := 128
 
 SRC := src/snes
 
-FIGHT_GEN := build/gen_fight/iori.chr build/gen_fight/iori_pal.bin \
-	build/gen_fight/runtime_abi.inc \
-	build/gen_fight/iori_spr.inc build/gen_fight/iori_chr.inc \
-	build/gen_fight/kyo.chr \
-	build/gen_fight/kyo_pal.bin build/gen_fight/kyo_spr.inc \
-	build/gen_fight/kyo_chr.inc \
-	build/gen_fight/hud.inc \
-	build/gen_fight/portraits.chr build/gen_fight/portraits.inc \
-	build/gen_fight/portrait_pal.bin \
-	build/gen_fight/spark.chr build/gen_fight/spark_pal.bin \
-	build/gen_fight/spark.inc \
-	build/gen_fight/stage_anim.inc build/gen_fight/stage_anim.chr \
-	build/gen_fight/stages.inc build/gen_fight/stages_tab.inc \
-	build/gen_fight/stgmods.inc \
-	build/gen_fight/voices.inc \
-	build/gen_fight/survival_msu.inc build/gen_fight/survival_msu_defs.inc \
-	build/gen_fight/quote_strings_en.inc build/gen_fight/quote_strings_pt.inc \
-	build/gen_fight/quote_strings_es.inc build/gen_fight/quote_strings_fr.inc \
-	build/gen_fight/quote_tables.inc build/gen_fight/char_names.inc \
-	build/gen_fight/hud.chr build/gen_fight/hud_pal.bin \
-	build/gen_fight/$(ROMNAME).msu
+FIGHT_GEN := $(GEN_DIR)/iori.chr $(GEN_DIR)/iori_pal.bin \
+	$(GEN_DIR)/runtime_abi.inc \
+	$(GEN_DIR)/iori_spr.inc $(GEN_DIR)/iori_chr.inc \
+	$(GEN_DIR)/kyo.chr \
+	$(GEN_DIR)/kyo_pal.bin $(GEN_DIR)/kyo_spr.inc \
+	$(GEN_DIR)/kyo_chr.inc \
+	$(GEN_DIR)/hud.inc \
+	$(GEN_DIR)/portraits.chr $(GEN_DIR)/portraits.inc \
+	$(GEN_DIR)/portrait_pal.bin \
+	$(GEN_DIR)/spark.chr $(GEN_DIR)/spark_pal.bin \
+	$(GEN_DIR)/spark.inc \
+	$(GEN_DIR)/stage_anim.inc $(GEN_DIR)/stage_anim.chr \
+	$(GEN_DIR)/stages.inc $(GEN_DIR)/stages_tab.inc \
+	$(GEN_DIR)/stgmods.inc \
+	$(GEN_DIR)/voices.inc \
+	$(GEN_DIR)/survival_msu.inc $(GEN_DIR)/survival_msu_defs.inc \
+	$(GEN_DIR)/quote_strings_en.inc $(GEN_DIR)/quote_strings_pt.inc \
+	$(GEN_DIR)/quote_strings_es.inc $(GEN_DIR)/quote_strings_fr.inc \
+	$(GEN_DIR)/quote_tables.inc $(GEN_DIR)/char_names.inc \
+	$(GEN_DIR)/hud.chr $(GEN_DIR)/hud_pal.bin \
+	$(GEN_DIR)/$(MSU_NAME).msu
 
 AUDIO_SRC := assets/characters/_excluded/kfm/kfm.snd assets/data/common.snd \
 	assets/data/fight.snd assets/characters/Kyo-KOF98/Kyo.snd
@@ -93,7 +118,8 @@ assets/audio/menu/crystal.it: assets/survival_ending/kof00_crystal.mid \
 
 include $(PVSNESLIB_HOME)/devkitsnes/snes_rules
 
-.PHONY: all assets audio validate-snesmod verify clean cleanSpcAudio
+.PHONY: all assets audio validate-snesmod verify clean cleanSpcAudio \
+	hi hi-verify hi-clean old old-verify old-clean
 
 all: assets audio $(ROMNAME).sfc $(ROMNAME).msu
 
@@ -111,8 +137,8 @@ all: assets audio $(ROMNAME).sfc $(ROMNAME).msu
 # (Brian/Brian's beige, Geese's yellow, ...).  The rename swaps the inode:
 # a running emulator keeps reading the old complete file, and the next
 # launch opens the new one.
-$(ROMNAME).msu: $(ROMNAME).sfc build/gen_fight/$(ROMNAME).msu
-	cp -f build/gen_fight/$(ROMNAME).msu $@.tmp
+$(ROMNAME).msu: $(ROMNAME).sfc $(GEN_DIR)/$(MSU_NAME).msu
+	cp -f $(GEN_DIR)/$(MSU_NAME).msu $@.tmp
 	mv -f $@.tmp $@
 
 assets: $(FIGHT_GEN)
@@ -128,6 +154,7 @@ validate-snesmod: $(AUDIOFILES) tools/validate_snesmod.py
 
 $(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json assets/characters/*/*_SNES.cns assets/characters/*/*_SNES.cmd assets/characters/*/*.air assets/data/quotes/*.json) \
 	tools/build_fight.py tools/runtime_abi.py assets/runtime_abi.json tools/newroster.py tools/build_spc_neogeo.py \
+	Makefile.pvsnes $(wildcard Makefile.hi Makefile.old) \
 	tools/build_stages.py tools/sff.py tools/build_endings.py \
 	$(wildcard assets/survival_ending/*.png) \
 	$(wildcard assets/characters/*/*.snd) \
@@ -144,7 +171,48 @@ $(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json asse
 	assets/kof98data/Lifebar/Lifebar_Font/Life\ Names\ Simul.fnt \
 	$(wildcard assets/kof98data/Lifebar/Lifebar_Font/*.def \
 	           assets/kof98data/Lifebar/Lifebar_Font/*.sff)
-	python3 tools/build_fight.py
+	$(FIGHT_ENV) python3 tools/build_fight.py
+
+# The generated includes spell their .INCBIN paths as gen_fight/..., so the
+# OLD build generates straight into $(BUILD_INC)/gen_fight.  The checkout lives
+# on exFAT, which has no symlinks; a real include root keeps the two trees
+# isolated without one.
+$(GEN_DIR):
+	@mkdir -p $@
+
+ifeq ($(OLD),1)
+OLD_FIGHT_OBJ := $(BUILD_INC)/fight_bridge.obj
+OLD_OFILES := $(filter-out src/snes/fight_bridge.obj,$(OFILES)) $(OLD_FIGHT_OBJ)
+
+$(OLD_FIGHT_OBJ): src/snes/fight_bridge.asm src/engine/fight.asm \
+	src/engine/voice_queue.asm src/engine/menucore.asm src/engine/menus.asm \
+	src/engine/options.asm src/engine/msu_intro.asm src/engine/cancel_gate.asm \
+	$(wildcard src/gen_menu/*) $(wildcard src/gen_menu/intro/*) \
+	$(FIGHT_GEN) $(AUDIO_GEN) $(SOUNDBANK).asm | $(GEN_DIR)
+	@mkdir -p $(dir $@)
+	$(AS) -d -s -x $(PROFILE_DEFINE) \
+		$(if $(filter 1,$(BIGROM)),-D BIGROM -D FULL12) \
+		$(if $(filter 1,$(BASE4)),-D BASE4) \
+		-I src -I $(BUILD_INC) -I build -o $@ $<
+
+# Link the OLD ROM from its own object, leaving src/snes/fight_bridge.obj and
+# kof98-snes.sfc untouched.  Mirrors the SDK's %.sfc recipe (ExHiROM).
+$(ROMNAME).sfc: $(OLD_OFILES)
+	@echo Creating OLD linkfile ...
+	@echo [objects] > $(BUILD_INC)/linkfile
+	@for i in $(OLD_OFILES); do echo $$i >> $(BUILD_INC)/linkfile; done
+	@for i in $(shell ls $(LIBDIRSOBJS)); do \
+		echo $(LIBDIRSOBJS)/$$i >> $(BUILD_INC)/linkfile; done
+	@echo Linking ... $(notdir $@)
+	@rm -f $(ROMNAME).sym
+	$(LD) -d -s -v -A -c -L $(LIBDIRSOBJS) $(BUILD_INC)/linkfile $@
+	@sed 's/://' $(ROMNAME).sym > $(ROMNAME).sym.tmp && \
+		mv $(ROMNAME).sym.tmp $(ROMNAME).sym
+	@cp -f $(ROMNAME).sym $(ROMNAME).symfull
+	@sed '/ SECTIONSTART_/d;/ SECTIONEND_/d;/ RAM_USAGE_SLOT_/d;' \
+		$(ROMNAME).sym > $(ROMNAME).sym.tmp && \
+		mv $(ROMNAME).sym.tmp $(ROMNAME).sym
+endif
 
 $(AUDIO_GEN) &: tools/build_audio.py tools/build_sfx_it.py \
 	tools/build_spc_neogeo.py $(AUDIO_SRC) $(ANNOUNCER_WAVS) \
@@ -193,7 +261,7 @@ src/snes/fight_bridge.obj: src/snes/fight_bridge.asm src/engine/fight.asm \
 verify: $(ROMNAME).sfc
 	python3 tools/fix_checksum.py $<
 	python3 tools/verify_pvsnes_rom.py $<
-	cp -f build/gen_fight/$(ROMNAME).msu $(ROMNAME).msu.tmp
+	cp -f $(GEN_DIR)/$(MSU_NAME).msu $(ROMNAME).msu.tmp
 	mv -f $(ROMNAME).msu.tmp $(ROMNAME).msu
 
 cleanSpcAudio:
@@ -201,6 +269,30 @@ cleanSpcAudio:
 		build/gen_audio/spc_boot.bin build/gen_audio/spc_size.inc
 
 clean: cleanBuildRes cleanRom cleanGfx cleanAudio cleanSpcAudio
+
+# Default build is the tuned HI profile.  `hi` remains a compatibility alias;
+# `old` builds the stable 0.81 layout under kof98-snes-old.*.
+hi:
+	@$(MAKE) -f Makefile.pvsnes
+
+hi-verify:
+	@$(MAKE) -f Makefile.pvsnes verify
+
+hi-clean:
+	rm -rf build/hi build/gen_fight-hi
+	rm -f kof98-snes-hi.sfc kof98-snes-hi.msu \
+		kof98-snes-hi.sym kof98-snes-hi.symfull kof98-snes-hi.log
+
+old:
+	@$(MAKE) -f Makefile.pvsnes OLD=1
+
+old-verify:
+	@$(MAKE) -f Makefile.pvsnes OLD=1 verify
+
+old-clean:
+	rm -rf build/old
+	rm -f kof98-snes-old.sfc kof98-snes-old.msu \
+		kof98-snes-old.sym kof98-snes-old.symfull kof98-snes-old.log
 
 # hdr.asm include for the generated soundbank.asm / engine includes
 # ROM profiles:

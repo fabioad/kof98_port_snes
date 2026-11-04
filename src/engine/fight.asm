@@ -21641,8 +21641,13 @@ CharIori:
     .dw ioriActiveTab, ioriDamageTab, ioriHitTimeTab
     .dw ioriSlideTab, ioriHitVelTab, ioriButtonTab
     .db $30, 0                            ; OBJ priority 3, palette 0
+.IFDEF KOF_OLD
     .dw IoriChr
     .db :IoriChr, 0
+.ELSE
+    .dw (MSU_IORI_SLICE >> 8)
+    .db (MSU_IORI_SLICE & $FF), 1
+.ENDIF
     .dw IoriPal
     .db :IoriPal, 0
     .dw ioriName
@@ -21674,8 +21679,13 @@ CharKyo:
     .dw kyoActiveTab, kyoDamageTab, kyoHitTimeTab
     .dw kyoSlideTab, kyoHitVelTab, kyoButtonTab
     .db $32, 0                            ; OBJ priority 3, palette 1
+.IFDEF KOF_OLD
     .dw KyoChr
     .db :KyoChr, 0
+.ELSE
+    .dw (MSU_KYO_SLICE >> 8)
+    .db (MSU_KYO_SLICE & $FF), 1
+.ENDIF
     .dw KyoPal
     .db :KyoPal, 0
     .dw kyoName
@@ -21707,8 +21717,13 @@ CharShingo:
     .dw shingoActiveTab, shingoDamageTab, shingoHitTimeTab
     .dw shingoSlideTab, shingoHitVelTab, shingoButtonTab
     .db $30, 0                            ; attr set per side at pick time
+.IFDEF KOF_OLD
     .dw ShingoChr
     .db :ShingoChr, 0
+.ELSE
+    .dw (MSU_SHINGO_SLICE >> 8)
+    .db (MSU_SHINGO_SLICE & $FF), 1
+.ENDIF
     .dw ShingoPal
     .db :ShingoPal, 0
     .dw shingoName
@@ -21740,8 +21755,8 @@ CharRugal:
     .dw rugalActiveTab, rugalDamageTab, rugalHitTimeTab
     .dw rugalSlideTab, rugalHitVelTab, rugalButtonTab
     .db $30, 0
-    .dw 0
-    .db MSU_RUGAL_SLICE, 1
+    .dw (MSU_RUGAL_SLICE >> 8)
+    .db (MSU_RUGAL_SLICE & $FF), 1
     .dw RugalPal
     .db :RugalPal, 0
     .dw rugalName
@@ -21773,8 +21788,13 @@ CharOmegaRugal:
     .dw omegarugalActiveTab, omegarugalDamageTab, omegarugalHitTimeTab
     .dw omegarugalSlideTab, omegarugalHitVelTab, omegarugalButtonTab
     .db $30, 0
+.IFDEF KOF_OLD
     .dw ORugalChr
     .db :ORugalChr, 0
+.ELSE
+    .dw (MSU_OMEGARUGAL_SLICE >> 8)
+    .db (MSU_OMEGARUGAL_SLICE & $FF), 1
+.ENDIF
     .dw OmegaRugalPal
     .db :OmegaRugalPal, 0
     .dw omegarugalName
@@ -21808,8 +21828,8 @@ CharSaisyu:
     .dw saisyuActiveTab, saisyuDamageTab, saisyuHitTimeTab
     .dw saisyuSlideTab, saisyuHitVelTab, saisyuButtonTab
     .db $30, 0
-    .dw 0
-    .db MSU_SAISYU_SLICE, 1
+    .dw (MSU_SAISYU_SLICE >> 8)
+    .db (MSU_SAISYU_SLICE & $FF), 1
     .dw SaisyuPal
     .db :SaisyuPal, 0
     .dw saisyuName
@@ -21841,8 +21861,8 @@ CharHeidern:
     .dw heidernActiveTab, heidernDamageTab, heidernHitTimeTab
     .dw heidernSlideTab, heidernHitVelTab, heidernButtonTab
     .db $30, 0
-    .dw 0
-    .db MSU_HEIDERN_SLICE, 1
+    .dw (MSU_HEIDERN_SLICE >> 8)
+    .db (MSU_HEIDERN_SLICE & $FF), 1
     .dw HeidernPal
     .db :HeidernPal, 0
     .dw heidernName
@@ -21874,8 +21894,8 @@ CharTakuma:
     .dw takumaActiveTab, takumaDamageTab, takumaHitTimeTab
     .dw takumaSlideTab, takumaHitVelTab, takumaButtonTab
     .db $30, 0
-    .dw 0
-    .db MSU_TAKUMA_SLICE, 1
+    .dw (MSU_TAKUMA_SLICE >> 8)
+    .db (MSU_TAKUMA_SLICE & $FF), 1
     .dw TakumaPal
     .db :TakumaPal, 0
     .dw takumaName
@@ -21907,8 +21927,8 @@ CharClark:
     .dw clarkActiveTab, clarkDamageTab, clarkHitTimeTab
     .dw clarkSlideTab, clarkHitVelTab, clarkButtonTab
     .db $30, 0
-    .dw 0
-    .db MSU_CLARK_SLICE, 1
+    .dw (MSU_CLARK_SLICE >> 8)
+    .db (MSU_CLARK_SLICE & $FF), 1
     .dw ClarkPal
     .db :ClarkPal, 0
     .dw clarkName
@@ -21940,8 +21960,8 @@ CharRalf:
     .dw ralfActiveTab, ralfDamageTab, ralfHitTimeTab
     .dw ralfSlideTab, ralfHitVelTab, ralfButtonTab
     .db $30, 0
-    .dw 0
-    .db MSU_RALF_SLICE, 1
+    .dw (MSU_RALF_SLICE >> 8)
+    .db (MSU_RALF_SLICE & $FF), 1
     .dw RalfPal
     .db :RalfPal, 0
     .dw ralfName
@@ -21973,8 +21993,8 @@ CharLeona:
     .dw leonaActiveTab, leonaDamageTab, leonaHitTimeTab
     .dw leonaSlideTab, leonaHitVelTab, leonaButtonTab
     .db $30, 0
-    .dw 0
-    .db MSU_LEONA_SLICE, 1
+    .dw (MSU_LEONA_SLICE >> 8)
+    .db (MSU_LEONA_SLICE & $FF), 1
     .dw LeonaPal
     .db :LeonaPal, 0
     .dw leonaName
@@ -22072,8 +22092,13 @@ CharBenimaru:
     .dw benimaruActiveTab, benimaruDamageTab, benimaruHitTimeTab
     .dw benimaruSlideTab, benimaruHitVelTab, benimaruButtonTab
     .db $30, 0
+.IFDEF KOF_OLD
     .dw BenimaruChr
     .db :BenimaruChr, 0
+.ELSE
+    .dw (MSU_BENIMARU_SLICE >> 8)
+    .db (MSU_BENIMARU_SLICE & $FF), 1
+.ENDIF
     .dw BenimaruPal
     .db :BenimaruPal, 0
     .dw benimaruName
@@ -22105,8 +22130,8 @@ CharDaimon:
     .dw daimonActiveTab, daimonDamageTab, daimonHitTimeTab
     .dw daimonSlideTab, daimonHitVelTab, daimonButtonTab
     .db $30, 0
-    .dw 0
-    .db MSU_DAIMON_SLICE, 1
+    .dw (MSU_DAIMON_SLICE >> 8)
+    .db (MSU_DAIMON_SLICE & $FF), 1
     .dw DaimonPal
     .db :DaimonPal, 0
     .dw daimonName
@@ -22325,6 +22350,7 @@ PortraitPal_End:
 .INCLUDE "gen_fight/omegarugal_spr.inc"
 .ENDS
 
+.IFDEF KOF_OLD
 .IFDEF PVSNESLIB
 .BASE $00
 .BANK 119 SLOT 0
@@ -22336,6 +22362,7 @@ PortraitPal_End:
 .SECTION "OmegaRugalMeta" FORCE
 .INCLUDE "gen_fight/omegarugal_meta.inc"
 .ENDS
+.ENDIF
 .BASE $C0
 
 ; omega rugal chr takes over the 95-107 run rugal vacated when he moved

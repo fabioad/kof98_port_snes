@@ -1,0 +1,7 @@
+# Compatibility entry point.  The tuned HI build is now the default, so this
+# is the same as `make -f Makefile.pvsnes`:
+#
+#   make -f Makefile.hi
+#   make -f Makefile.hi verify
+HI := 1
+include Makefile.pvsnes

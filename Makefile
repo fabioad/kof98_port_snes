@@ -53,7 +53,9 @@ else
 	$(error COLOR must be black, blue, or red)
 endif
 
-.PHONY: all colors clean verify pvsnes pvsnes-verify pvsnes-clean
+.PHONY: all colors clean verify pvsnes pvsnes-verify pvsnes-clean \
+	pvsnes-hi pvsnes-hi-verify pvsnes-hi-clean \
+	pvsnes-old pvsnes-old-verify pvsnes-old-clean
 
 all: $(ROM)
 
@@ -109,3 +111,23 @@ pvsnes-verify:
 
 pvsnes-clean:
 	$(MAKE) -f Makefile.pvsnes clean
+
+# The tuned HI build is the default `pvsnes` target.  Keep `pvsnes-hi` as a
+# compatibility alias and expose the stable 0.81 build as `pvsnes-old`.
+pvsnes-hi:
+	$(MAKE) -f Makefile.pvsnes
+
+pvsnes-hi-verify:
+	$(MAKE) -f Makefile.pvsnes verify
+
+pvsnes-hi-clean:
+	$(MAKE) -f Makefile.pvsnes hi-clean
+
+pvsnes-old:
+	$(MAKE) -f Makefile.pvsnes OLD=1
+
+pvsnes-old-verify:
+	$(MAKE) -f Makefile.pvsnes OLD=1 verify
+
+pvsnes-old-clean:
+	$(MAKE) -f Makefile.pvsnes old-clean
