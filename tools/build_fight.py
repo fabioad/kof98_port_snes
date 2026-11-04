@@ -97,8 +97,9 @@ _FULL_SCALE_OVERRIDES = {
 # at 1.0 so the real-hardware test shows the full-scale art and its limits.
 HI_SCALE_OVERRIDES = ({"billy": 0.90, "shingo": 0.95,
                           "kyo": 0.95, "iori": 0.93, "benimaru": 0.94, "chang": 0.78,
-                          "omegarugal": 0.95, "robert": 0.90,
-                          "ralf": 0.92, "joe": 0.92}
+                          "omegarugal": 0.95, "robert": 0.92,
+                          "ralf": 0.92, "clark": 0.92, "ryo": 0.92,
+                          "joe": 0.92}
                       if os.environ.get("KOF_SCALE_CAPS") == "minimal"
                       else dict(_FULL_SCALE_OVERRIDES))
 
