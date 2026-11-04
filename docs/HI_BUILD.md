@@ -104,6 +104,9 @@ uses 2560), which removes the dropped-cell artifacts on their largest poses.
 - No `dma_cap_cell`, `oam_cell_truncate` or `sprite_bbox_crop` events remain.
 - ROM-resident CHR descriptors carry the high-half offset (`$8000`) for
   HI's bank layout; this fixes Terry's tiles (the table bank stays the same).
+- HI meta sections carry a 16-byte pad before `SprData`, so the first
+  sprite's `F_META` offset is never zero (zero is the engine's "no sprite"
+  sentinel).  This fixes Terry's missing first idle frame.
 
 ## Known runtime risks
 
