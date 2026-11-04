@@ -68,6 +68,7 @@
 .DEFINE A1B0        $004304
 .DEFINE DAS0L       $004305
 .DEFINE MDMAEN      $00420B
+.DEFINE HDMAEN      $00420C
 
 .DEFINE BG1MAP      $4000
 .DEFINE BG1CHR      $0000
@@ -1845,6 +1846,11 @@ HudBandTab:
 StagePick:
     sep #$20
     .ACCU 8
+    lda #0.b
+    sta.l MDMAEN                        ; a fighter/effect DMA may still be in
+    sta.l HDMAEN                        ;   flight from the previous screen
+    stz.w SP_KIND
+    stz.w SP_KIND+2
     lda #0.b                          ; uploads take several vblanks; an NMI
     sta.l NMITIMEN                        ;   landing mid-VrDma steals VMADD/CGADD
     lda.l $4210                         ;   landing mid-VrDma steals VMADD/CGADD
@@ -5005,17 +5011,8 @@ FXP_projectile:
     bne +
     jmp FXP_next                        ; empty/missing projectile frame
 +
-    ; The generator stores dmalen/32 at frame byte 5; upload only the
-    ; tiles this projectile frame references instead of a full 2 KiB page.
-    ldy #5
-    lda [sptr],y
-    and #$00FF.w
-    asl a
-    asl a
-    asl a
-    asl a
-    asl a
-    sta scr1                            ; bytes to upload
+    lda #2048.w
+    sta scr1                            ; full FX page
     ldy gk
     ldy #2
     lda [sptr],y                        ; per-frame atlas pointer
@@ -14915,7 +14912,7 @@ DS_palette_done:
     ldy #2                              ; ordinary frame: ticks, ncells
     lda scr6+1
     bpl +
-    ldy #6                              ; projectile header: ptr/bank/dmalen
+    ldy #5                              ; projectile header: ptr + bank
 +
     ldx oamtop
 DS_cell:

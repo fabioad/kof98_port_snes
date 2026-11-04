@@ -90,15 +90,19 @@ Artifacts: `kof98-snes-hi.sfc` + `kof98-snes-hi.msu`, in
 
 ### Streaming / HUD fixes in the 1.0 profile
 
-- Projectile frame headers now carry their real `dmalen`; `FxPrepareBoth`
-  uploads only the tiles the frame uses instead of a full 2 KiB page.  This
-  removes the brief fighter-tile dropout when a shot appears.
+- Projectile/FX pages upload the full 2 KiB page.  The earlier "used tiles
+  only" experiment left stale tiles behind and caused shuffled tiles/palettes,
+  so it was reverted.
 - On a frame where an FX/projectile page is uploaded, fighter CHR is deferred
   one frame so the two DMAs never overrun the forced-blank window.
 - While the 2 KiB HUD repaint is deferred by fighter streaming, the engine
   refreshes the small CHALLENGER/name band (row 1) separately, removing the
   lifebar-label flicker.
-- Shingo uses 0.95; Billy keeps the structural 0.90 cap.  Benimaru stays 1.0.
+- `StagePick` now aborts any in-flight DMA and clears the FX staging state
+  before reloading a stage; this removes the first-round stage corruption that
+  disappeared on the next round.
+- The 1.0 test profile caps Billy 0.90 (structural), Chang 0.82, Shingo/Kyo/
+  Omega Rugal 0.95, Benimaru 0.94 and Iori 0.93.  The other fighters stay 1.0.
 
 The default 0.90 artifact is not rebuilt by this profile.  The heaviest
 MSU-vs-MSU pairs are still the first candidates for real-hardware pacing
