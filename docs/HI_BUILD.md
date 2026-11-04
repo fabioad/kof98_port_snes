@@ -93,15 +93,17 @@ Artifacts: `kof98-snes-hi.sfc` + `kof98-snes-hi.msu`, in
 - Projectile/FX pages upload the full 2 KiB page.  The earlier "used tiles
   only" experiment left stale tiles behind and caused shuffled tiles/palettes,
   so it was reverted.
-- On a frame where an FX/projectile page is uploaded, fighter CHR is deferred
-  one frame so the two DMAs never overrun the forced-blank window.
+- Only one fighter CHR chunk is uploaded per vblank and, on a frame where an
+  FX/projectile page is uploaded, fighter CHR is deferred entirely.  Two
+  1536-byte chunks (or a chunk plus the 2 KiB FX page) overrun the
+  forced-blank window on real hardware and leave mixed/invisible tiles.
 - While the 2 KiB HUD repaint is deferred by fighter streaming, the engine
   refreshes the small CHALLENGER/name band (row 1) separately, removing the
   lifebar-label flicker.
 - `StagePick` now aborts any in-flight DMA and clears the FX staging state
   before reloading a stage; this removes the first-round stage corruption that
   disappeared on the next round.
-- The 1.0 test profile caps Billy 0.90 (structural), Chang 0.82, Shingo/Kyo/
+- The 1.0 test profile caps Billy 0.90 (structural), Chang 0.78, Shingo/Kyo/
   Omega Rugal 0.95, Benimaru 0.94 and Iori 0.93.  The other fighters stay 1.0.
 
 The default 0.90 artifact is not rebuilt by this profile.  The heaviest

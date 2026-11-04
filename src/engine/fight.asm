@@ -1849,8 +1849,6 @@ StagePick:
     lda #0.b
     sta.l MDMAEN                        ; a fighter/effect DMA may still be in
     sta.l HDMAEN                        ;   flight from the previous screen
-    stz.w SP_KIND
-    stz.w SP_KIND+2
     lda #0.b                          ; uploads take several vblanks; an NMI
     sta.l NMITIMEN                        ;   landing mid-VrDma steals VMADD/CGADD
     lda.l $4210                         ;   landing mid-VrDma steals VMADD/CGADD
@@ -15466,29 +15464,41 @@ FightPresent:
     ; doing it under forced blank makes this path valid even when the
     ; library skips a lag frame.
     jsr PushOamShadow
-    ; The next chunk of each fighter's sprite was already fetched from the
-    ; MSU into WRAM during the logic phase (SprPrepOne).  A projectile/FX
-    ; page upload already owns this forced-blank window: skip fighter CHR
-    ; for one frame instead of overflowing vblank and losing tiles.
+    ; One fighter CHR chunk per vblank.  Two 1536-byte chunks (or a chunk
+    ; plus a 2 KiB FX page) overrun the forced-blank window on real hardware
+    ; and leave mixed/invisible tiles.  Alternate sides; the other side's
+    ; staged chunk stays valid for the next frame.
     lda.w RT_FXUPLOAD
     bne FP_present_no_chr
-    ldx #0
-    lda #<P1CHR
-    sta scr5
-    lda #>P1CHR
-    sta scr5+1
-    jsl SprDmaFar
-    sep #$20
-    .ACCU 8
+    lda FP+F_DMAREQ
+    beq FP_present_p2_check
+    lda FP+F_DMAREQ+FP2OFS
+    beq FP_present_p1
+    lda framecnt
+    and #1.b
+    beq FP_present_p1
+    bra FP_present_p2
+FP_present_p2_check:
+    lda FP+F_DMAREQ+FP2OFS
+    beq FP_present_no_chr
+FP_present_p2:
     ldx #FP2OFS
     lda #<P2CHR
     sta scr5
     lda #>P2CHR
     sta scr5+1
     jsl SprDmaFar
+    bra FP_present_no_chr
+FP_present_p1:
+    ldx #0
+    lda #<P1CHR
+    sta scr5
+    lda #>P1CHR
+    sta scr5+1
+    jsl SprDmaFar
+FP_present_no_chr:
     sep #$20
     .ACCU 8
-FP_present_no_chr:
 .IFDEF MSU_DIAG
     jsl MsuDiagOverlay
 .ENDIF

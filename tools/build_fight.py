@@ -96,7 +96,7 @@ _FULL_SCALE_OVERRIDES = {
 # larger than one 64 KiB CH_MBANK).  It intentionally keeps every other pose
 # at 1.0 so the real-hardware test shows the full-scale art and its limits.
 HI_SCALE_OVERRIDES = ({"billy": 0.90, "shingo": 0.95,
-                          "kyo": 0.95, "iori": 0.93, "benimaru": 0.94, "chang": 0.82,
+                          "kyo": 0.95, "iori": 0.93, "benimaru": 0.94, "chang": 0.78,
                           "omegarugal": 0.95}
                       if os.environ.get("KOF_SCALE_CAPS") == "minimal"
                       else dict(_FULL_SCALE_OVERRIDES))
