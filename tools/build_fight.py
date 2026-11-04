@@ -1930,6 +1930,32 @@ for _cfg in CHARS.values():
         "x": 0x4000, "y": 0x0040, "a": 0x8000, "b": 0x0080,
         "c": 0x0020, "z": 0x0010})
 
+# --- Chizuru DP: native approximation of the clone helper ----------------
+# The source DP (state 1200) is only the summon root; the rise/attack lives
+# in helper state 1100 (anim 1100/1101, VelSet y=-9.5, HitDefs).  The SNES
+# engine has no helpers.  Keep the CMD's sid 52 -> state 1200 mapping (the
+# command table needs it) but replace the animation with a shortened native
+# clip (AIR 13000) and supply the rise velocity/HitDef explicitly.  Without
+# this the body stays grounded, plays the summon anim (106 ticks) and
+# recovers slowly.
+_chizuru = CHARS.get("chizuru")
+if _chizuru is not None:
+    # Keep moves[52] -> 1200: the CMD's special_52 targets 1200 and the
+    # build's wired map needs that pair to emit the DP command.  Replace
+    # only the animation/velocity/HitDef data with the clone's rising move.
+    _chizuru["anims"][52] = 13000
+    _chizuru.setdefault("hitdef_override", {})[52] = {
+        "active": 7, "gvx": 5 << 8, "gvy": -(10 << 8), "fall": 1,
+    }
+    # act_override is keyed by MUGEN state, not sid.
+    _chizuru.setdefault("act_override", {})[1200] = [
+        (7, 5, 3, 0),                  # forward step at the start of the rise
+        (7, 15, -38 & 0xFF, 0),        # vy = -9.5 px/tick (source helper)
+    ]
+    # Drop the source's early var(5)/animelem exit rows; the custom clip
+    # ends on its own and the engine falls back to stand.
+    _chizuru.setdefault("trans_drop", []).append((52, 0))
+
 # --- restored projectile moves --------------------------------------------
 # A few imported fighters keep their travelling shot in a helper state that
 # the generic one-level projectile walk cannot reach (or whose command entry

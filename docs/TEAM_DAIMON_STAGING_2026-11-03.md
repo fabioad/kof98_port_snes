@@ -89,7 +89,7 @@ continua sendo carregado por `FUS_CARRY`, como antes.
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$A581`**
-- layout MSU **`0xC276`**
-- `.sfc` SHA-256 `a25c3c20…6fffa9`
-- `.msu` SHA-256 `01cc847d…9c3740` (inalterado; copie os dois juntos)
+- checksum **`$342F`**
+- layout MSU **`0x39BF`**
+- `.sfc` SHA-256 `02abe6e3…ae788`
+- `.msu` SHA-256 `00a6a28b…f27fa` (novo; copie os dois juntos)

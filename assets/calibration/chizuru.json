@@ -1,6 +1,6 @@
 {
   "character": "chizuru",
-  "config_hash": "54dc043d5c07e76cd2643fb7c1fe65ebf679629a03a9927fb4de54db8b3470ed",
+  "config_hash": "c3b9fad0f315b982862e4187766a6042766dd12836f53ef5f3e10826603ab956",
   "corrections": [],
   "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/CHIZURU/CHIZURU.def",
   "inputs": {
@@ -19,7 +19,7 @@
     "assets/characters/CHIZURU/chizuru_maki-11.act": "00081feca0ac176ba38dd5e51167a53ce78a9402d8562b5807fc50d0d7e02bf5",
     "assets/characters/CHIZURU/chizuru_maki-12.act": "c55e475c06ccf7d4240cd4a912a6e4cd659180f67ebd7d9fe0c2700a981008f2",
     "assets/characters/CHIZURU/chizuru_maki.act": "663929e874b9177dec84a38347d3b434b1fb9d7d87a22b88979037cac2c06763",
-    "assets/characters/CHIZURU/chizuru_maki.air": "79122c7dba661f0680fdfe6b3db05a3a05cdb42f8550215065ef0897d5499616",
+    "assets/characters/CHIZURU/chizuru_maki.air": "a20f44fad13df434f2d3a49e6c1f6884cd602035063a10ff0a57caf132757d83",
     "assets/characters/CHIZURU/chizuru_maki.cmd": "c973083ed8c3b7fbec30e8d927ed91d4ae31213a6988c40348d4970d28037dc8",
     "assets/characters/CHIZURU/chizuru_maki.cns": "4bacf57e3cf6653ed30f02c32b84244f88b17309624e729c5bd2a567fea9eade",
     "assets/characters/CHIZURU/chizuru_maki.sff": "bdabc1ad685335ba8fb320185095b0c4462f32301af1d5895080b4dc69dcdbba",

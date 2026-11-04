@@ -41,15 +41,17 @@ que não existe e efeito ausente.
 
 ## B. Golpes que dependem de clone/Helper
 
-**Caso crítico: Chizuru.** Quase todas as especiais/supers são um clone/
-Helper:
+**Chizuru (DP corrigido em 04/11; demais golpes de clone pendentes).**
+Quase todas as especiais/supers são um clone/Helper:
 
-- 1000/1004 (QCF), 1100/1102 (QCB), **1200 (DP/antiáreo)**, 1300/1400
-  (HCB), 2000/2100/2200 (supers).
-- O DP é o mais visível: o state 1200 é só a **invocação**; quem sobe e
-  ataca é o Helper 1100 (anim 1100/1110, `VelSet y=-9.5`, HitDefs e
-  descida). Sem Helper, o corpo fica no chão, toca a animação 1200
-  (106 ticks) e recupera devagar.
+- 1000/1004 (QCF), 1100/1102 (QCB), 1300/1400 (HCB), 2000/2100/2200
+  (supers) continuam aproximados.
+- O **DP/antiáreo (1200)** já foi corrigido: o state 1200 era só a
+  invocação do clone; quem subia era o Helper 1100 (anim 1100/1110,
+  `VelSet y=-9.5`, HitDefs e descida). Agora o sid 52 usa um clipe nativo
+  curto (AIR 13000) com a velocidade de subida e o HitDef do Helper. O
+  teste `test_chizuru_dp_headless` confirma subida de ~98 px, dano 18,
+  knockdown e recuperação.
 
 Outros com **HitDef/ataque real dentro de Helper** (o build aproxima;
 alguns funcionam, outros ficam incompletos):
@@ -72,8 +74,9 @@ alguns funcionam, outros ficam incompletos):
   state principal, parte é aproximada.
 
 > “Helper aproximado” não significa necessariamente que o golpe não sai.
-> O caso da Chizuru é o único em que o **corpo do clone** é o próprio
-> golpe e não há substituto nativo.
+> O DP da Chizuru era o caso crítico (o **corpo do clone** era o próprio
+> golpe); agora tem uma aproximação nativa. Os outros golpes de clone dela
+> ainda dependem do mesmo tratamento.
 
 ## C. Cadeias desativadas / parciais
 
@@ -141,7 +144,9 @@ continuações/fases do golpe pai.
 - **Ralf** — 520/550/570 sem os explods/palFX e victim states de
   queimadura.
 - **Chizuru** — efeitos de clone/PalFX/AfterImage dos supers
-  (2000/2100/2200) e do DP.
+  (2000/2100/2200); o DP já foi convertido para uma aproximação nativa.
+- **Chang** — a **bola de metal não aparece em cima** durante o golpe
+  (visual do projétil/Explod ausente). Reportado em 04/11.
 - **Mature** — variantes e efeitos de PalFX/Explod dos supers
   3000/3500/3600.
 - **Athena/Kensou/Chin** — os efeitos de magia (orbes, MagicBurst,
@@ -166,35 +171,42 @@ continuações/fases do golpe pai.
 
 ## Prioridade recomendada
 
-1. **Chizuru** — o DP/antiáreo e os golpes de clone (ver nota abaixo).
+1. **Chizuru** — DP concluído; faltam os outros golpes de clone
+   (1000/1004, 1100/1102, 1300/1400, 2000/2100/2200).
 2. **Categoria A** — comandos sem state; são correções relativamente
    localizadas e de alto impacto percebido.
 3. **Clark** — religar as cadeias 3050/3100/3110/3150 e o Flashing Elbow.
 4. **Categoria D** — variantes MAX/SDM, começando pelos golpes normais
    que ainda faltam (Guillotine do Yamazaki, Orochinagi do Nests/Ash,
    Phoenix Fang da Athena).
-5. **Categoria E** — efeitos e victim states (Ralf, Mature, Chizuru).
+5. **Categoria E** — efeitos e victim states (Ralf, Mature, Chizuru,
+   bola de metal do Chang).
 
 ## Nota sobre a Chizuru
 
-O antiáreo (DP, `F, D, DF + X`) **não sobe** porque o state 1200 é apenas
-a invocação do clone; a subida/ataque está no Helper 1100 (anim 1100/
-1110, `VelSet y=-9.5`, HitDefs e descida). Como o motor não roda Helpers,
-o corpo principal fica no chão, executa a animação 1200 (106 ticks) e
-recupera devagar. O caminho recomendado é uma aproximação nativa: mapear
-o DP para o state 1100 (a subida do clone) com o HitDef/velocidade dele
-e um pouso/recuperação curtos. O mesmo padrão pode ser aplicado depois
-aos outros golpes de clone dela (1000/1004, 1100/1102, 1300/1400,
-2000/2100/2200).
+O antiáreo (DP, `F, D, DF + botão`) foi corrigido em 04/11. O state 1200
+era apenas a invocação do clone; a subida/ataque estava no Helper 1100
+(anim 1100/1110, `VelSet y=-9.5`, HitDefs e descida). Como o motor não
+roda Helpers, o corpo principal ficava no chão, executava a animação 1200
+(106 ticks) e recuperava devagar.
+
+A correção mantém o comando no state 1200 (para não quebrar o `CmdTab`),
+mas troca a animação por um clipe nativo curto (AIR 13000), aplica a
+velocidade de subida (`vy = -9.5 px/tick` no elemento 7) e o HitDef do
+Helper (18 de dano, knockdown). Teste: `tools/test_chizuru_dp_headless.py`
+— pico de ~98 px, P2 200→182, knockdown e retorno ao estado 0.
+
+Ainda faltam os outros golpes de clone dela (1000/1004, 1100/1102,
+1300/1400, 2000/2100/2200), que podem seguir o mesmo padrão.
 
 ## Build de referência
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$A581`**
-- layout MSU **`0xC276`**
-- `.sfc` SHA-256 `a25c3c20…6fffa9`
-- `.msu` SHA-256 `01cc847d…9c3740`
+- checksum **`$342F`**
+- layout MSU **`0x39BF`**
+- `.sfc` SHA-256 `02abe6e3…ae788`
+- `.msu` SHA-256 `00a6a28b…f27fa`
 
 ## Referências
 
