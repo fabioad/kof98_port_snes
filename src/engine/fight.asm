@@ -731,6 +731,7 @@
 .DEFINE SP_PREFIX   $5218               ; MSU in-sector prefix in the stage buffer
 .DEFINE SP_META     $521C               ; pending metasprite offset
 .DEFINE SP_SIDE     $5220               ; current SprPrepOne side (0/2)
+.DEFINE SP_MSUSTAGED $5222             ; one side already owns the MSU stream
 ; Team member entrance: the incoming fighter starts above/at the screen edge
 ; and jumps to the intro gap.  T_ENTERX keeps the target (8.8 fixed point);
 ; T_ENTERFLAG freezes the camera while a side is still in the air.
@@ -15482,8 +15483,12 @@ FightPresent:
     lda #$8F.b
     sta.l INIDISP
     lda FP+F_DMAREQ                     ; a fighter upload is still in flight:
-    ora FP+F_DMAREQ+FP2OFS              ;   don't start a second DMA engine
-    bne FP_present_vis_done             ;   transfer in this vblank
+    ora FP+F_DMAREQ+FP2OFS              ;   defer a full 2 KiB HUD repaint,
+    beq FP_hud_room                     ;   but still send one small dirty
+    lda huddirty                        ;   band (lifebar/timer) so the HUD
+    and #HUD_FULL                       ;   cannot starve while sprites stream.
+    bne FP_present_vis_done
+FP_hud_room:
     lda.w RT_FXUPLOAD                   ; a spark/projectile page already used
     bne FP_present_vis_done             ;   this vblank's DMA budget
     lda huddirty
@@ -16295,6 +16300,7 @@ SprPrepBoth:
     rep #$30
     .ACCU 16
     .INDEX 16
+    stz.w SP_MSUSTAGED
     ldx #0
     jsr SprPrepOne
     ldx #FP2OFS.w
@@ -16529,6 +16535,12 @@ SP_commit_only:
     .INDEX 16
     rts
 SP_msu:
+    ; Only one MSU stream can be positioned per frame.  The other MSU side
+    ; keeps its request pending for the next frame.
+    lda.w SP_MSUSTAGED
+    bne SP_msu_retry
+    lda #1
+    sta.w SP_MSUSTAGED
     ; chr stream lives in kof98-snes.msu: scr4 = slice index (32 KiB units),
     ; scr0 = offset inside the slice space, scr2 = pos, scr3 = count.
     lda scr0

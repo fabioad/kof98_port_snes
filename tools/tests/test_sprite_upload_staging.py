@@ -23,25 +23,29 @@ class SpriteUploadStagingTests(unittest.TestCase):
         defs = re.findall(r"^\.DEFINE (SP_\w+)\s+\$([0-9A-F]+)", FIGHT,
                           re.M)
         fields = [(name, int(value, 16)) for name, value in defs
-                  if name != "SP_SIDE"]
+                  if name not in ("SP_SIDE", "SP_MSUSTAGED")]
         for (_a, prev), (name, cur) in zip(fields, fields[1:]):
             self.assertEqual(cur - prev, 4,
                              f"{name}: P1/P2 word slots overlap")
         self.assertIn("SP_SIDE", dict(defs))
+        self.assertIn("SP_MSUSTAGED", dict(defs))
 
-    def test_vblank_path_never_touches_the_msu_port(self):
+    def test_vblank_path_does_the_msu_dma_under_blank(self):
         dma = block(BRIDGE, "SprDmaFar:", "\nSDF_ret:")
-        self.assertNotIn("MSU_STAT", dma)
-        self.assertNotIn("MSU_DATA", dma)
+        self.assertIn("jsl MsuStageDmaFar", dma)
         self.assertNotIn("MsuStagePrepareFar", dma)
         self.assertIn("sta.l $4360", dma)
         self.assertIn("lda #$40.b\n    sta.l MDMAEN", dma)
+        stage_dma = block(BRIDGE, "MsuStageDmaFar:\n", "\n.ENDS")
+        self.assertIn("sta.l $4355", stage_dma)
+        self.assertNotIn("INIDISP", stage_dma)
 
-    def test_staging_runs_with_the_display_on(self):
-        stage = block(BRIDGE, "MsuStagePrepareFar:", "\n; SprDmaFar:")
+    def test_seek_wait_runs_with_the_display_on(self):
+        stage = block(BRIDGE, "MsuStagePrepareFar:\n", "\n; SprDmaFar:")
         self.assertIn("jsl MsuChrPageClamp", stage)
         self.assertNotIn("INIDISP", stage)
-        self.assertIn("sta.l $4355", stage)
+        self.assertNotIn("MDMAEN", stage)
+        self.assertNotIn("$4355", stage)
 
     def test_prep_is_wired_and_records_the_prefix(self):
         self.assertIn("jsr SprPrepBoth", FIGHT)
@@ -50,6 +54,15 @@ class SpriteUploadStagingTests(unittest.TestCase):
         self.assertIn("beq SP_commit_only", prep)
         self.assertIn("jsl MsuStagePrepareFar", FIGHT)
         self.assertIn("sta.w SP_PREFIX,y", FIGHT)
+
+    def test_both_sides_prep_but_only_one_msu_stream(self):
+        prep = block(FIGHT, "SprPrepBoth:", "\n; X = fighter offset")
+        self.assertEqual(prep.count("jsr SprPrepOne"), 2)
+        self.assertIn("SP_MSUSTAGED", prep)
+        msu = block(FIGHT, "SP_msu:", "\n; opening intro")
+        self.assertIn("lda.w SP_MSUSTAGED", msu)
+        self.assertIn("sta.w SP_MSUSTAGED", msu)
+        self.assertIn("bne SP_msu_retry", msu)
 
     def test_vblank_refuses_a_zero_byte_dma(self):
         dma = block(BRIDGE, "SprDmaFar:", "\nSDF_ret:")

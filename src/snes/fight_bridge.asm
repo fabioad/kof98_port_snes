@@ -131,24 +131,17 @@ MsuUnavailable: .db 2,14,15
 .BANK 126 SLOT 0
 .ORGA $CF00
 .SECTION "MsuStageCode" FORCE
-MsuStageUploadFar:
-    rep #$20
+; MsuStageDmaFar: vblank half.  Copies the positioned MSU sector into the
+; side's WRAM staging buffer.  Must run under forced blank (FightPresent
+; sets INIDISP=$8F before SprDmaFar).  Preserves Y.
+MsuStageDmaFar:
+    rep #$30
     .ACCU 16
-    jsl MsuChrPageClamp                 ; keep prefix+payload in one 8 KiB page
-    ; Both DMAs below write through the PPU ports ($2181 WMDATA and
-    ; $2118/$2119 VRAM).  On the SD2SNES those transfers are not reliable
-    ; while the display is rendering, so blank around them.  The caller has
-    ; already waited for the SD sector with the screen on.
-    sep #$20
-    .ACCU 8
-    lda #$8F.b
-    sta.l INIDISP
-    rep #$20
-    .ACCU 16
-    ; 1) MSU -> WRAM: sector prefix + payload from the fixed data port.
-    lda #(MsuStageBuf & $FFFF).w
+    .INDEX 16
+    phy
+    lda scr1
     sta.l $2181
-    lda #$8008.w                        ; mode 0, fixed A source -> WMDATA
+    lda #$8008.w
     sta.l $4350
     lda #$2001.w
     sta.l $4352
@@ -164,31 +157,12 @@ MsuStageUploadFar:
     sta.l $4354
     lda #$20.b
     sta.l MDMAEN
-    ; 2) WRAM -> VRAM: skip the prefix, write only the requested payload.
-    lda #$80.b
-    sta.l VMAIN
-    rep #$20
+    rep #$30
     .ACCU 16
-    lda #$1801.w                        ; mode 1: alternate $2118/$2119
-    sta.l $4350
-    lda #(MsuStageBuf & $FFFF).w
-    clc
-    adc.w MSU_PREFIX
-    sta.l $4352
-    lda scr3
-    sta.l $4355
-    sep #$20
-    .ACCU 8
-    lda #$7F.b
-    sta.l $4354
-    lda #$20.b
-    sta.l MDMAEN
-    ; Restore the display after the VRAM write.
-    lda #$0F.b
-    sta.l INIDISP
-    rep #$20
-    .ACCU 16
+    .INDEX 16
+    ply
     rtl
+
 .ENDS
 
 ; ---------------------------------------------------------------------------
@@ -235,26 +209,6 @@ MSP_poll:
     clc
     rtl
 MSP_ready:
-    rep #$20
-    .ACCU 16
-    lda scr1
-    sta.l $2181                         ; WRAM destination
-    lda #$8008.w                        ; mode 0, fixed source -> WMDATA
-    sta.l $4350
-    lda #$2001.w
-    sta.l $4352
-    lda.w MSU_PREFIX
-    clc
-    adc scr3
-    sta.l $4355                         ; prefix + payload
-    sep #$20
-    .ACCU 8
-    lda #$7F.b
-    sta.l $2183
-    lda #$00.b
-    sta.l $4354
-    lda #$20.b
-    sta.l MDMAEN                        ; channel 5
     rep #$30
     .ACCU 16
     .INDEX 16
@@ -301,6 +255,22 @@ SDF_kind_ok:
     lda.w SP_COUNT,y
     bne +
     jmp SDF_commit                      ; 0 count = 64 KiB: never DMA it
++   ; MSU source: stage the positioned sector into WRAM under forced
++    ; blank.  The direct MSU->WRAM DMA is not reliable with the PPU on.
+    lda.w SP_KIND,y
+    and #$00FF.w
+    cmp #2.w
+    bne +
+    lda #(MsuStageBuf & $FFFF).w
+    cpy #0.w
+    beq ++
+    lda #(MsuStageBuf2 & $FFFF).w
+++  sta scr1
+    lda.w SP_COUNT,y
+    sta scr3
+    lda.w SP_PREFIX,y
+    sta.w MSU_PREFIX
+    jsl MsuStageDmaFar
 +   sep #$20
     .ACCU 8
     lda.w SP_KIND,y
