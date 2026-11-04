@@ -15464,39 +15464,25 @@ FightPresent:
     ; doing it under forced blank makes this path valid even when the
     ; library skips a lag frame.
     jsr PushOamShadow
-    ; One fighter CHR chunk per vblank.  Two 1536-byte chunks (or a chunk
-    ; plus a 2 KiB FX page) overrun the forced-blank window on real hardware
-    ; and leave mixed/invisible tiles.  Alternate sides; the other side's
-    ; staged chunk stays valid for the next frame.
-    lda.w RT_FXUPLOAD
-    bne FP_present_no_chr
-    lda FP+F_DMAREQ
-    beq FP_present_p2_check
-    lda FP+F_DMAREQ+FP2OFS
-    beq FP_present_p1
-    lda framecnt
-    and #1.b
-    beq FP_present_p1
-    bra FP_present_p2
-FP_present_p2_check:
-    lda FP+F_DMAREQ+FP2OFS
-    beq FP_present_no_chr
-FP_present_p2:
-    ldx #FP2OFS
-    lda #<P2CHR
-    sta scr5
-    lda #>P2CHR
-    sta scr5+1
-    jsl SprDmaFar
-    bra FP_present_no_chr
-FP_present_p1:
+    ; Both sides are uploaded every frame.  Alternating sides made a pose
+    ; stay in flight long enough for the next animation request to arrive;
+    ; the staging state then mixed with the new pose and produced more
+    ; mixed/invisible tiles on hardware.  Keep the original two-sided
+    ; uploader; the FX page still uses its own 2 KiB window.
     ldx #0
     lda #<P1CHR
     sta scr5
     lda #>P1CHR
     sta scr5+1
     jsl SprDmaFar
-FP_present_no_chr:
+    sep #$20
+    .ACCU 8
+    ldx #FP2OFS
+    lda #<P2CHR
+    sta scr5
+    lda #>P2CHR
+    sta scr5+1
+    jsl SprDmaFar
     sep #$20
     .ACCU 8
 .IFDEF MSU_DIAG

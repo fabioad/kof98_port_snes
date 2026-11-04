@@ -93,10 +93,11 @@ Artifacts: `kof98-snes-hi.sfc` + `kof98-snes-hi.msu`, in
 - Projectile/FX pages upload the full 2 KiB page.  The earlier "used tiles
   only" experiment left stale tiles behind and caused shuffled tiles/palettes,
   so it was reverted.
-- Only one fighter CHR chunk is uploaded per vblank and, on a frame where an
-  FX/projectile page is uploaded, fighter CHR is deferred entirely.  Two
-  1536-byte chunks (or a chunk plus the 2 KiB FX page) overrun the
-  forced-blank window on real hardware and leave mixed/invisible tiles.
+- Both fighter CHR chunks are uploaded every frame, as in the original
+  uploader.  Alternating sides or deferring a side on FX frames kept a pose
+  in flight long enough for the next animation request to arrive; the staging
+  state then mixed with the new pose and produced more mixed/invisible tiles.
+  The full 2 KiB FX page is still uploaded on its own.
 - While the 2 KiB HUD repaint is deferred by fighter streaming, the engine
   refreshes the small CHALLENGER/name band (row 1) separately, removing the
   lifebar-label flicker.
