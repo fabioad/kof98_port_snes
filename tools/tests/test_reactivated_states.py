@@ -42,6 +42,10 @@ class ReactivatedStatesTests(unittest.TestCase):
             cfg = bf.CHARS[name]
             wired = set(cfg["moves"].values())
             restored = {state for _sid, state, _anim in rows}
+            # The ROM diet saves the dropped super slots and restores them
+            # after apply_profile; those states are covered too.
+            restored |= {st for st, _anim
+                         in bf.POST_CAL_SUPERS.get(name, {}).values()}
             disabled = bf.POST_CAL_REACTIVATED_DISABLED.get(name, set())
             missing = [
                 (label, state)

@@ -1,0 +1,62 @@
+{
+  "character": "mai",
+  "config_hash": "6f5533251e1977271f39cf5090d3df04568061dd7ae0de8cd9993778cfeb4a8b",
+  "corrections": [
+    {
+      "after": 0,
+      "before": 1,
+      "confidence": "ALTA",
+      "key": "fall",
+      "kind": "combat",
+      "property": "fall",
+      "runtime_scope": "native_scalar",
+      "sid": 59,
+      "state": 1011,
+      "status": "correctable"
+    },
+    {
+      "after": 0,
+      "before": 1,
+      "confidence": "ALTA",
+      "key": "fall",
+      "kind": "combat",
+      "property": "fall",
+      "runtime_scope": "native_scalar",
+      "sid": 61,
+      "state": 1021,
+      "status": "correctable"
+    },
+    {
+      "after": 0,
+      "before": 1,
+      "confidence": "ALTA",
+      "key": "fall",
+      "kind": "combat",
+      "property": "fall",
+      "runtime_scope": "native_scalar",
+      "sid": 62,
+      "state": 1020,
+      "status": "correctable"
+    }
+  ],
+  "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Mai-KOF98/K_Mai.def",
+  "inputs": {
+    "assets/characters/Mai-KOF98/K_Mai.def": "a2733d91750cb2cc68903d14ad0cd610885772fc091a2a83d65f70f51b98c5ba",
+    "assets/characters/Mai-KOF98/Mai.air": "58a59409cb47b86b56af27076f1dc13d0b456e3b4ee616105f36afb44a94527d",
+    "assets/characters/Mai-KOF98/Mai.air.orig": "a9810300fcaddda1787ae4af426bd4c735fca8dc7cbb37b05f71cc3b658f06c5",
+    "assets/characters/Mai-KOF98/Mai.cmd": "480019c8fb63f10422fc4d21f4d6e6962927e62a08a562b7454aa1201484f911",
+    "assets/characters/Mai-KOF98/Mai.cns": "d376e610a1a0f941dc27fb6c7fe57c17fe4f13cbe976880788772d335c190442",
+    "assets/characters/Mai-KOF98/Mai.sff": "b97cbb4ecb9a6305c733459aaff3c68626fa215f361190a99c794e2562342303",
+    "assets/characters/Mai-KOF98/MaiPal.act": "0b0e2a7e4180f46b7905b0641a6c427a7ab3aec99ae0c464157e4c8cbbc334bf",
+    "assets/characters/Mai-KOF98/Mai_SNES.cmd": "b3422a73c8a007bf1871aab5d2fbf98cbe7ddc456ae18b7d00bee490cb7b4557",
+    "assets/characters/Mai-KOF98/Mai_SNES.cns": "832bb32608328143a63cdeb2484f9adc8969b973928f5bd7de62506bbf1f6fb6",
+    "assets/characters/Mai-KOF98/Maigreen.act": "793024759d97924a73f40b8ba6f0668e4ef605c86def0b06eccc7516b84576d8",
+    "assets/characters/Mai-KOF98/Maipink.act": "c40dbbb51743b118e030f15d693e50b830513d20dfbaa3e71c4671f3dbf1eae7",
+    "assets/characters/Mai-KOF98/Maipurple.act": "b3f3a3c1bef248ee751b2f9293d9dab658bd5edbf11d3785fdeac6224bf1851e",
+    "assets/characters/Mai-KOF98/config.txt": "7a584beb6c4532c4d155adde620af774340530d575d179a1f8cffa379ea517e7",
+    "assets/characters/Mai-KOF98/maiblack.act": "5696dbf71a3da5a485ebda98131ad96ab9e4814be842a6d1f090a3e6c45b0942",
+    "assets/characters/Mai-KOF98/maiblue.act": "640de7a9ed93e0b56d345d995475a3f3a78056ed9a1f31d8d4222df4fbbabd12",
+    "assets/characters/Mai-KOF98/sounds.snd": "a68e5308d8c6ebcd8abeb7a2b87ea377b9b7147542848747bbe8afdb05ed69f4"
+  },
+  "schema": 1
+}

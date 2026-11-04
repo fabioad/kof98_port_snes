@@ -2659,7 +2659,19 @@ for _key, _ov in _KYO_VARIANTS.items():
     # generated ProjFx tables/graphics instead of spending two more 4 KiB
     # ROM windows on identical atlases.
     _cfg["projfx_alias"] = "kyo"
+    # Nests/Ash have their own AIR without the base package's synthetic
+    # 3026 attack clip.  Clone the Oniyaki action into that slot so the
+    # Orochinagi follow-up (state 3005) has a drawable, hittable timeline.
+    _cfg["air_synth"] = {3026: 1110}
     CHARS[_key] = _cfg
+    # The source command table is shared with base Kyo, so the Orochinagi
+    # [State -1] rows point at 3000/3005 for all three variants.  Base Kyo
+    # reactivates them after apply_profile; mirror those rows for the
+    # variants (which are deep copies made before the base reactivation).
+    POST_CAL_REACTIVATED.setdefault(_key, []).extend([
+        (98, 3000, 1110), (60, 3005, 3026)])
+    POST_CAL_CATEGORIES.setdefault(_key, {}).update({98: 3})
+    POST_CAL_POW_OVERRIDE.setdefault(_key, {}).update({98: -1000})
 
 if "terry" in CHARS:
     # Terry's 2.8 KB poses take ~15 VBlanks via the MSU byte port, longer
@@ -2748,7 +2760,107 @@ VICTIM_STATE_IDS = {1025: 70, 1026: 71, 1027: 72, 1028: 73,
                     1410: 76, 1420: 77,
                     # Ralf Running Super mount chain: 516/517 stay in the
                     # held slot; 518 is the final throw.
-                    516: 76, 517: 76, 518: 77}
+                    516: 76, 517: 76, 518: 77,
+                    # Category A grab chains (Mai/Yamazaki/Mary/Geese/
+                    # Krauser).  Held poses stay in S_VHELD; the final
+                    # TargetState of each chain uses S_VTHROW so the victim
+                    # is released with a knockdown instead of standing up
+                    # inside the attacker.
+                    2171: 77,
+                    3170: 76, 3171: 77,
+                    3160: 76, 3161: 76, 3162: 76, 3163: 76,
+                    3164: 76, 3165: 77,
+                    3270: 76, 3271: 76, 3222: 77,
+                    3210: 76, 3211: 76, 3212: 77,
+                    4021: 77}
+
+# --- Category A: root supers whose damage is in a p1 follow-up ------------
+# The generated import wired the command target but not the state the root
+# HitDef redirects the attacker to (p1stateno).  Without it the super enters
+# the root, grabs/binds nothing and recovers with 0-1 damage.  Reactivate the
+# follow-ups on free sids; the TargetBind/TargetLifeAdd rows already extracted
+# from each state then own the throw animation and damage.
+_CATEGORY_A_FOLLOWUPS = {
+    # Keep every follow-up inside the engine's 103..111 grab-follow-up
+    # window (StVictimHeld checks S_EXT_GRAB..S_EXT_LAST).  A slot below 103
+    # releases the victim on the next tick; slots above 111 also expand the
+    # dense AnimTab range past the reserved 98..111 filler.
+    # Mai 2070 (air QCFx2+z): root grab -> 2071 attack/life-add.
+    "mai":      [(103, 2071, 2071)],
+    # Yamazaki MAX Drill: 3150 grab -> 3151 drill hits.
+    "yamazaki": [(104, 3151, 3151)],
+    # Mary: 3060 launcher -> 3065 multi-hit throw; 4000 air grab -> 4011
+    # slam (4010 is already wired at sid 111 by the reversal slots).
+    "mary":     [(104, 3065, 3061), (105, 4011, 4011)],
+    # Geese MAX Rashomon: 3250 grab -> 3260 -> 3261 finisher.
+    "geese":    [(103, 3260, 3260), (104, 3261, 3261)],
+    # Krauser MAX Gigantic Cyclone: 3220 grab -> 3221 -> 3222.
+    "krauser":  [(103, 3221, 3201), (104, 3222, 3202)],
+}
+for _c, _rows in _CATEGORY_A_FOLLOWUPS.items():
+    if _c in CHARS:
+        POST_CAL_REACTIVATED.setdefault(_c, []).extend(_rows)
+
+if "mai" in CHARS:
+    _mai = CHARS["mai"]
+    # The air grab's attr is A,HA; mark the HitDef as a throw so the victim
+    # enters the held slot and the p1 redirect runs.
+    _mai.setdefault("hitdef_override", {})[87] = {
+        "p2state": 76, "throw": 1, "damage": 0, "gdamage": 0}
+    # 2071's TargetLifeAdd uses an ifelse(enemynear,gethitvar(...)) expression
+    # the extractor skips; supply the single 30-point slam explicitly.
+    _mai.setdefault("act_override", {})[2071] = [(11, 3, -30, 0)]
+
+if "yamazaki" in CHARS:
+    _yamazaki = CHARS["yamazaki"]
+    # 3150's HitDef already has throw=1/p2state=76; add the damage the
+    # source expresses through fvar(7), which the extractor cannot evaluate.
+    _yamazaki.setdefault("act_override", {})[3151] = [
+        (5, 3, -20, 0), (9, 3, -20, 0), (11, 4, 3171, 0)]
+    # 3000/3010 (Guillotine) have three source HitDefs whose fvar damage
+    # extracts as 4; keep the flying-drill behaviour but restore a super-
+    # sized contact.
+    for _sid in (88, 89):
+        _yamazaki.setdefault("hitdef_override", {})[_sid] = {
+            "damage": 22, "gdamage": 2}
+
+if "mary" in CHARS:
+    _mary = CHARS["mary"]
+    # 3060 is a launcher, not a throw in the source (no p2stateno), but the
+    # follow-up 3065 is a TargetBind/TargetLifeAdd multi-hit throw.  Bind the
+    # victim from the root so those rows have a target.
+    _mary.setdefault("hitdef_override", {})[87] = {
+        "p2state": 76, "throw": 1, "damage": 0, "gdamage": 0}
+    _mary.setdefault("target_life_fix", {})[3065] = -8   # four -50 hits
+    _mary.setdefault("target_life_fix", {})[4011] = -30  # source -80/1500
+    # 3060's `animelemtime(6) > 0 && Vel Y + Pos Y >= 0` whiff exit is parsed
+    # as a landing row; the engine's screen Y is always >= 0, so it fired on
+    # entry and the launcher never reached its frame-8 attack box.  Let the
+    # clip play and recover through the default anim-end exit instead.
+    _mary.setdefault("trans_drop", []).append((87, 1))
+    # The source's 10 px/tick dash starts at element 6 but the first Clsn1
+    # box only appears at element 9; at 10 px/tick Mary is already past the
+    # opponent by then.  Slow it to 2 px/tick so the launcher meets the
+    # victim at both point-blank and mid range.
+    _mary.setdefault("act_override", {})[3060] = [(5, 5, 2, 0)]
+    # 4010 falls back to 4011 through a `Pos Y > 20` trigger the generic
+    # landing parser does not recognize; exit on the animation end instead.
+    _mary.setdefault("extra_trans", []).append((111, 105, 0, 0))
+
+if "geese" in CHARS:
+    _geese = CHARS["geese"]
+    # The source applies the finisher damage on element 22, one element after
+    # TargetState 3222 releases the victim (element 21).  Move the 25-point
+    # hit before the release so AO_tlife still sees the bound victim.
+    _geese.setdefault("act_override", {})[3261] = [(18, 3, -25, 0)]
+
+if "krauser" in CHARS:
+    _krauser = CHARS["krauser"]
+    # 3222's damage loop uses var(16)/Const(data.attack), which the extractor
+    # drops; add three 10-point contacts and release the victim at the end.
+    _krauser.setdefault("act_override", {})[3222] = [
+        (4, 3, -10, 0), (8, 3, -10, 0), (12, 3, -10, 0),
+        (13, 4, 3212, 0)]
 
 # Runtime SFX ids -- kept in sync with the SAMPLES order in
 # tools/build_audio.py (spc_ids.inc is generated from that list).
@@ -4268,10 +4380,18 @@ def parse_command_defs(path):
                 ok = False
                 break
             if rel:
-                if b or not d:
-                    ok = False                # ~button releases unsupported
+                if b and not d:
+                    # A trailing ~button (Mai's double-QCF+z) is a finisher
+                    # press in the source syntax.  The native matcher only
+                    # models press edges, so treat it as the press instead of
+                    # dropping the whole command (which left the move with no
+                    # CmdTab row at all).
+                    rel = False
+                elif d and not b:
+                    d |= 0x40                 # release flag on the dir byte
+                else:
+                    ok = False                # ambiguous ~dir+button release
                     break
-                d |= 0x40                     # release flag on the dir byte
             if charge_frames:
                 # The runtime charge matcher models a ~40<dir> prefix: any
                 # single held direction at least 40 ticks before the finisher
@@ -4406,7 +4526,12 @@ def motion_rank(rule, cmddefs):
     bits = 0
     for _dir, btn in rec[1]:
         bits |= btn or 0
-    return (len(rec[1]), bin(bits).count("1"))
+    # The pad routes R to y|b and only adds the z (0x20) token while R is
+    # held, so a command that ends in z arrives together with y/b.  The
+    # CmdTry scan is first-match-wins: give equal-length z finishers priority
+    # over their y/b halves or the shorter move consumes the press (Chin/Mai
+    # double-QCF+z landed on the y super instead of the z super).
+    return (len(rec[1]), bin(bits).count("1") + (1 if bits & 0x20 else 0))
 
 
 # KOF's documented motion shortcuts (KOF'98/99/2002):
@@ -6311,6 +6436,12 @@ def build_char(name, cfg, global_pal=None):
             continue
         air[anum] = ([(g, n, 0, 0, max(1, int(t)), "", [], [])
                       for g, n, t in entries], 0)
+    # Clone an existing AIR action into a free slot.  The Kyo variants use
+    # this for the synthetic Orochinagi attack clip: their packages ship a
+    # different AIR without base Kyo's 3026.
+    for anum, src in (cfg.get("air_synth") or {}).items():
+        if anum not in air and src in air:
+            air[anum] = air[src]
     anims = resolve_import_anims(cfg, air) if name in NEW_CHARS else cfg["anims"]
     anims = dict(anims)
     # Counter-grab runtime slots (RevTab p2stateno): every fighter can be the
@@ -6431,6 +6562,13 @@ def build_char(name, cfg, global_pal=None):
         cfg.setdefault("cmd_categories", {})[_sid] = _cat
     for _sid, _delta in POST_CAL_POW_OVERRIDE.get(name, {}).items():
         cfg.setdefault("pow_override", {})[_sid] = _delta
+    # Reactivated follow-ups can sit above the range the earlier dense fill
+    # covered (the reversal slots are only added later in build_char).
+    # AnimTab is indexed densely, so fill every gap up to the highest wired
+    # sid.
+    for _sid in range(98, max(cfg.get("moves", {0})) + 1):
+        anims.setdefault(_sid, 5000)
+        cfg.setdefault("anims", {}).setdefault(_sid, 5000)
 
     # Which super slots are MAX/SDM versions?  Stored in a descriptor byte
     # (CH_MAXMASK) so the matcher no longer guesses from the sid number.
