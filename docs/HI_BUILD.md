@@ -104,8 +104,9 @@ Artifacts: `kof98-snes-hi.sfc` + `kof98-snes-hi.msu`, in
 - `StagePick` now aborts any in-flight DMA and clears the FX staging state
   before reloading a stage; this removes the first-round stage corruption that
   disappeared on the next round.
-- The 1.0 test profile caps Billy 0.90 (structural), Chang 0.78, Shingo/Kyo/
-  Omega Rugal 0.95, Benimaru 0.94 and Iori 0.93.  The other fighters stay 1.0.
+- The 1.0 test profile caps Billy 0.90 (structural), Chang 0.78, Robert 0.90,
+  Ralf/Joe 0.92, Shingo/Kyo/Omega Rugal 0.95, Benimaru 0.94 and Iori 0.93.
+  The other fighters stay 1.0.
 
 The default 0.90 artifact is not rebuilt by this profile.  The heaviest
 MSU-vs-MSU pairs are still the first candidates for real-hardware pacing
