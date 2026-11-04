@@ -88,6 +88,22 @@ The 1.0 profile includes the hardware MSU-CHR upload/HUD fixes from
 Artifacts: `kof98-snes-hi.sfc` + `kof98-snes-hi.msu`, in
 `build/hi10/gen_fight/`.  The default 0.90 tree and manifest are not touched.
 
+### Streaming / HUD fixes in the 1.0 profile
+
+- Projectile frame headers now carry their real `dmalen`; `FxPrepareBoth`
+  uploads only the tiles the frame uses instead of a full 2 KiB page.  This
+  removes the brief fighter-tile dropout when a shot appears.
+- On a frame where an FX/projectile page is uploaded, fighter CHR is deferred
+  one frame so the two DMAs never overrun the forced-blank window.
+- While the 2 KiB HUD repaint is deferred by fighter streaming, the engine
+  refreshes the small CHALLENGER/name band (row 1) separately, removing the
+  lifebar-label flicker.
+- Shingo uses 0.95; Billy keeps the structural 0.90 cap.  Benimaru stays 1.0.
+
+The default 0.90 artifact is not rebuilt by this profile.  The heaviest
+MSU-vs-MSU pairs are still the first candidates for real-hardware pacing
+checks.
+
 ## Per-character caps
 
 Most fighters use the 0.90 base.  These absolute caps target poses that would

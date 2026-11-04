@@ -95,7 +95,7 @@ _FULL_SCALE_OVERRIDES = {
 # The 1.0 test profile only keeps the structural Billy cap (his 1.0 meta is
 # larger than one 64 KiB CH_MBANK).  It intentionally keeps every other pose
 # at 1.0 so the real-hardware test shows the full-scale art and its limits.
-HI_SCALE_OVERRIDES = ({"billy": 0.90}
+HI_SCALE_OVERRIDES = ({"billy": 0.90, "shingo": 0.95}
                       if os.environ.get("KOF_SCALE_CAPS") == "minimal"
                       else dict(_FULL_SCALE_OVERRIDES))
 
@@ -10771,7 +10771,11 @@ def emit_newchars_inc(new_keys, msu_slices):
             for fi in range(len(frames2)):
                 proj_meta.append(f"    .dw {k}ProjFx2F{fi}\n")
         for fi, (ticks, cells) in enumerate(frames):
-            proj_meta.append(f"{k}ProjFxF{fi}: .db {ticks},{len(cells)}\n")
+            max_tile = max((SPARK_SLOTS[slot] for _dx, _dy, slot in cells),
+                           default=192)
+            dmalen = min(2048, (max_tile + 17 - 192 + 1) * 32)
+            proj_meta.append(
+                f"{k}ProjFxF{fi}: .db {ticks},{len(cells)},{dmalen // 32}\n")
             proj_meta.append(f"    .dw {k}ProjFxChr+{fi * 2048}\n"
                              f"    .db :{k}ProjFxChr\n")
             for dx, dy, slot in cells:
@@ -10779,7 +10783,12 @@ def emit_newchars_inc(new_keys, msu_slices):
                 f"    .dw ${SPARK_SLOTS[slot]:04X}\n")
         if frames2 is not None:
             for fi, (ticks, cells) in enumerate(frames2):
-                proj_meta.append(f"{k}ProjFx2F{fi}: .db {ticks},{len(cells)}\n")
+                max_tile = max((SPARK_SLOTS[slot] for _dx, _dy, slot in cells),
+                               default=192)
+                dmalen = min(2048, (max_tile + 17 - 192 + 1) * 32)
+                proj_meta.append(
+                    f"{k}ProjFx2F{fi}: .db {ticks},{len(cells)},"
+                    f"{dmalen // 32}\n")
                 proj_meta.append(f"    .dw {k}ProjFx2Chr+{fi * 2048}\n"
                                  f"    .db :{k}ProjFx2Chr\n")
                 for dx, dy, slot in cells:

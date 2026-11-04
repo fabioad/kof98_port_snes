@@ -1827,6 +1827,7 @@ FlushHudRange:
     rts
 
 ; mask, HUDMAP row*64, BG3MAP row*32 words, byte count (little-endian)
+.IFNDEF PVSNESLIB
 HudBandTab:
     .db HUD_LIFE,                  $80, $00, $40, $00, $40, $00
     .db HUD_POWER,                 $40, $06, $20, $03, $40, $00
@@ -1834,6 +1835,7 @@ HudBandTab:
     .db HUD_TIMER,                 $80, $00, $40, $00, $80, $00
     .db HUD_COMBO,                 $C0, $02, $60, $01, $40, $00
     .db 0
+.ENDIF
 
 
 ; ---------------------------------------------------------------------------
@@ -4975,6 +4977,12 @@ FXP_slot:
     .ACCU 8
     lda #:SparkChr
     sta scr3
+    rep #$20
+    .ACCU 16
+    lda #2048.w
+    sta scr1                            ; full static spark page
+    sep #$20
+    .ACCU 8
     bra FXP_upload
 FXP_projectile:
     lda.w SPARKS+SPK_BANK,x
@@ -4996,7 +5004,19 @@ FXP_projectile:
     and #$00FF.w
     bne +
     jmp FXP_next                        ; empty/missing projectile frame
-+   ldy gk
++
+    ; The generator stores dmalen/32 at frame byte 5; upload only the
+    ; tiles this projectile frame references instead of a full 2 KiB page.
+    ldy #5
+    lda [sptr],y
+    and #$00FF.w
+    asl a
+    asl a
+    asl a
+    asl a
+    asl a
+    sta scr1                            ; bytes to upload
+    ldy gk
     ldy #2
     lda [sptr],y                        ; per-frame atlas pointer
     sta scr0
@@ -5056,7 +5076,7 @@ FXP_do_upload:
     sta.l $4364
     rep #$20
     .ACCU 16
-    lda #2048.w
+    lda scr1
     sta.l $4365
     sep #$20
     .ACCU 8
@@ -14895,7 +14915,7 @@ DS_palette_done:
     ldy #2                              ; ordinary frame: ticks, ncells
     lda scr6+1
     bpl +
-    ldy #5                              ; projectile also has a 24-bit atlas ptr
+    ldy #6                              ; projectile header: ptr/bank/dmalen
 +
     ldx oamtop
 DS_cell:
@@ -15450,10 +15470,11 @@ FightPresent:
     ; library skips a lag frame.
     jsr PushOamShadow
     ; The next chunk of each fighter's sprite was already fetched from the
-    ; MSU into WRAM during the logic phase (SprPrepOne), so both sides can
-    ; be copied here with one 1280-byte DMA each.  No MSU seek/staging runs
-    ; in vblank anymore; alternating the two sides used to leave a pose
-    ; pending for two extra frames and drop animations during fast movement.
+    ; MSU into WRAM during the logic phase (SprPrepOne).  A projectile/FX
+    ; page upload already owns this forced-blank window: skip fighter CHR
+    ; for one frame instead of overflowing vblank and losing tiles.
+    lda.w RT_FXUPLOAD
+    bne FP_present_no_chr
     ldx #0
     lda #<P1CHR
     sta scr5
@@ -15470,6 +15491,7 @@ FightPresent:
     jsl SprDmaFar
     sep #$20
     .ACCU 8
+FP_present_no_chr:
 .IFDEF MSU_DIAG
     jsl MsuDiagOverlay
 .ENDIF
@@ -15487,13 +15509,16 @@ FightPresent:
     beq FP_hud_room                     ;   but still send one small dirty
     lda huddirty                        ;   band (lifebar/timer) so the HUD
     and #HUD_FULL                       ;   cannot starve while sprites stream.
-    bne FP_present_vis_done
+    bne FP_present_top
 FP_hud_room:
     lda.w RT_FXUPLOAD                   ; a spark/projectile page already used
     bne FP_present_vis_done             ;   this vblank's DMA budget
     lda huddirty
     beq FP_present_vis_done
     jsr FlushHud
+    bra FP_present_vis_done
+FP_present_top:
+    jsr FlushHudTop
 FP_present_vis_done:
     jsl StageAnimTickFar                  ; crowd pose commits (map only)
     jsr ShakeScroll                       ; EnvShake on BG1 (stage)
@@ -19046,6 +19071,38 @@ TTS_p2_deny:
 ; snapshotted/replayed without touching a neighbour.
 ; ---------------------------------------------------------------------------
 .IFDEF PVSNESLIB
+; Small top-row refresh used while a fighter CHR upload owns the vblank
+; budget.  The CHALLENGER/name row lives in row 1; waiting for a deferred
+; 2 KiB full repaint made it flicker during 1.0 streaming.  Kept in the
+; free low window just below OamCache so the Fight bank stays under 32 KiB.
+.BASE $C0
+.BANK 50 SLOT 0
+.ORGA $09C0
+.SECTION "HudTopCode" FORCE
+FlushHudTop:
+    rep #$20
+    .ACCU 16
+    lda #(HUDMAP+64).w
+    sta scr0
+    lda #(BG3MAP+32).w
+    sta scr1
+    lda #64.w
+    sta scr2
+    jsr FlushHudRange
+    rts
+.ENDS
+.BASE $C0
+.BANK 50 SLOT 0
+.ORGA $0C15
+.SECTION "HudBandTable" FORCE
+HudBandTab:
+    .db HUD_LIFE,                  $80, $00, $40, $00, $40, $00
+    .db HUD_POWER,                 $40, $06, $20, $03, $40, $00
+    .db HUD_POWCNT,                $80, $05, $C0, $02, $80, $00
+    .db HUD_TIMER,                 $80, $00, $40, $00, $80, $00
+    .db HUD_COMBO,                 $C0, $02, $60, $01, $40, $00
+    .db 0
+.ENDS
 .BASE $C0
 .BANK 50 SLOT 0
 ; The Fight bank's low half carries CancelData ($0000-$044D) and VegaMeta
@@ -22108,8 +22165,13 @@ CharBenimaru:
     .dw BenimaruChr
     .db :BenimaruChr, 0
 .ELSE
+ .IFDEF KOF_BENIMARU_ROM
+    .dw BenimaruChr
+    .db :BenimaruChr, 0
+ .ELSE
     .dw (MSU_BENIMARU_SLICE >> 8)
     .db (MSU_BENIMARU_SLICE & $FF), 1
+ .ENDIF
 .ENDIF
     .dw BenimaruPal
     .db :BenimaruPal, 0
