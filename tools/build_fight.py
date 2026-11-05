@@ -1744,6 +1744,14 @@ POST_CAL_SUPERS = {}
 # Source packages whose state names are too generic/absent for the automatic
 # MAX/SDM detection.  Values are the sid slots (85-89) that need the MAX
 # window; every other super is an ordinary 1-stock move.
+# Additional MAX slots reactivated outside the automatic 85-89 scan.
+# These are merged with the automatic result instead of overriding it.
+MAX_SIDS_EXTRA = {
+    "iori": (103,),
+    "saisyu": (66,),
+    "heidern": (66,),
+    "clark": (66,),
+}
 MAX_SIDS_OVERRIDE = {
     # Omega Rugal's ude/gia inputs are the source's MAX-only experiments;
     # jibaku (87) stays a normal super.
@@ -4613,7 +4621,11 @@ VICTIM_STATE_IDS = {1025: 70, 1026: 71, 1027: 72, 1028: 73,
                     # throw, thrown on the finisher.
                     3120: 76, 3121: 77,
                     # Kyo's Chou Hissatsu Waza / MAX Mushiki grabs.
-                    3502: 76, 3503: 77}
+                    3502: 76, 3503: 77,
+                    # Ralf's burn victim states: keep the victim in the
+                    # throw-flight slot instead of standing up inside the
+                    # attacker.
+                    80010: 77, 80011: 77, 80002: 77, 80018: 77}
 
 # --- Category A: root supers whose damage is in a p1 follow-up ------------
 # The generated import wired the command target but not the state the root
@@ -8545,6 +8557,9 @@ def build_char(name, cfg, global_pal=None):
                             _state):
                 _max_sids.add(_sid)
     _max_sids = {x for x in _max_sids if x in cfg.get("moves", {})}
+    for _x in MAX_SIDS_EXTRA.get(name, ()):
+        if _x in cfg.get("moves", {}):
+            _max_sids.add(_x)
     cfg["_max_sids"] = _max_sids
     MAX_MASKS[name] = max_sid_mask(_max_sids)
 
@@ -10652,6 +10667,18 @@ EXPLOD_ANIM = {191: "WoodA", 192: "WoodA",
 # vertical effect without adding another atlas to the shared 32-cell pool.
 EXPLOD_ANIM_BY_CHAR = {
     "geese": {3001: "FlameRise", 3002: "FlameTop"},
+    # Category E: reuse the compiled magic/flame clips for the source
+    # effects that lived in Explod controllers.
+    "ralf": {11001: "FlameRise", 11003: "FlameTop",
+             10081: "MagicBurst", 10082: "MagicBurst",
+             10083: "MagicBurst"},
+    "mature": {910: "MagicBurst", 911: "MagicBurst",
+               11000: "MagicBurst", 11010: "MagicBurst",
+               11020: "MagicBurst"},
+    "chizuru": {4950: "MagicBurst", 4951: "MagicBurst",
+                15600: "MagicBurst", 15601: "MagicBurst",
+                15602: "MagicBurst"},
+    "chang": {17100: "Bottle", 17110: "Bottle"},
     # Athena's magic: Phoenix Fang Arrow / Shining Crystal Bit bursts plus
     # the Psycho Ball orbs and the teleport puff.
     "athena": {7000: "MagicBurst", 7010: "MagicBurst",

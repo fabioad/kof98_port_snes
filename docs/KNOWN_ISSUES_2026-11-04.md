@@ -114,9 +114,11 @@ alguns funcionam, outros ficam incompletos):
     reaproveitada). O Frankensteiner 1400/1410→1420 foi calibrado em
     05/11: o agarrão agora faz 30 de dano (`slice_damage` 56/57).
 - **Ralf**
-  - 520/550/570 estão ligados e dão dano/knockdown, mas de forma
-    **aproximada**: faltam os victim states de queimadura (80010/80011/
-    80002/80018) e os explods/palFX originais.
+  - 520/550/570 estão ligados e dão dano/knockdown; em 05/11 os victim
+    states 80010/80011/80002/80018 foram mapeados para o slot de
+    arremesso (77) e os Explods de fogo usam os clipes FlameRise/
+    FlameTop/MagicBurst. A animação de queimadura original continua
+    aproximada.
 - **Iori** — 1310 (Koto Tsuki In forte) e a família Tsumagushi 1501/1511
   são adaptações, não os states originais.
 - **Takuma** — o limite do banco 83 foi resolvido com a separação do
@@ -170,12 +172,15 @@ continuações/fases do golpe pai.
 
 - **Ralf** — 520/550/570 ganharam um flash de impacto (PalFX) em 05/11;
   os explods e os victim states de queimadura continuam aproximados.
-- **Chizuru** — os supers 2000/2100/2200 ganharam flash de impacto em
-  05/11; o sprite do clone e o AfterImage continuam ausentes.
-- **Chang** — flash de impacto adicionado em 05/11, mas a **bola de metal
-  ainda não aparece em cima** (precisa de um Explod dedicado).
-- **Mature** — os supers 3500/3600 ganharam flash de impacto em 05/11;
-  os Explods completos e as variantes 3000 ainda são aproximados.
+- **Chizuru** — os supers 2000/2100/2200 ganharam flash de impacto e os
+  Explods 4950/4951/15600–15602 usam o clipe MagicBurst em 05/11; o
+  sprite do clone e o AfterImage continuam ausentes.
+- **Chang** — a bola agora aparece em cima (Explod 17100/17110) usando o
+  clipe Bottle como aproximação; o sprite original do metal não coube no
+  pool de 16 células dos efeitos.
+- **Mature** — os supers 3500/3600 ganharam flash de impacto e os
+  Explods 910/911/11000/11010/11020 usam o clipe MagicBurst em 05/11; as
+  variantes 3000 ainda são aproximadas.
 - **Athena/Kensou/Chin** — os efeitos de magia (orbes, MagicBurst,
   garrafa do Chin) já foram implementados em boa parte; o que resta são
   Explods/continuações específicas.
@@ -184,11 +189,12 @@ continuações/fases do golpe pai.
 
 ## F. Outras categorias
 
-- **MAX em slot especial sem desconto**: Iori (103), Saisyu/Heidern/
-  Clark (66) usam o custo direto do PowTab, sem a janela MAX.
-- **Victim states de arremesso não portados**: Ralf (queimadura 80010/
-  80011/80002/80018); Clark reutiliza animações (1205/1305→1200,
-  1420→3011).
+- **MAX em slot especial**: Iori (103), Saisyu/Heidern/Clark (66)
+  receberam o bit de MAX no `MAX_SIDS_EXTRA` em 05/11; a janela MAX agora
+  aplica o custo correto.
+- **Victim states de arremesso**: os do Ralf (80010/80011/80002/80018)
+  foram mapeados para o slot de arremesso em 05/11; Clark reutiliza
+  animações (1205/1305→1200, 1420→3011).
 - **Comandos com variante por expressão**: golpes cujo
   `value = 3050 + var(...)` podem ter a variante MAX/SDM faltando mesmo
   com o comando base funcionando; a varredura de comando só pega o valor
@@ -255,22 +261,23 @@ PalFX/AfterImage (Categoria E).
   (seleção escondida L+R). O comando RE usa o clipe do Gravity Smash
   (30) como aproximação; o state 8000 original continua visual porque o
   victim state 8001 não veio no pacote.
-- **Categoria E (principal pendência)** — os flashes de impacto já
-  entraram, mas faltam:
-  - **Ralf** — Explods e victim states de queimadura (80010/80011/
-    80002/80018).
-  - **Chang** — a bola de metal em cima (precisa de Explod dedicado).
+- **Categoria E** — os flashes e Explods principais já entram; ainda
+  faltam:
+  - **Ralf** — animação de queimadura fiel (os victim states já vão para
+    o slot de arremesso).
+  - **Chang** — o sprite original da bola de metal (a bola aparece com o
+    clipe Bottle).
   - **Chizuru** — sprite do clone e AfterImage dos supers.
-  - **Mature** — Explods completos das variantes 3000/3500/3600.
+  - **Mature** — Explods completos das variantes 3000.
   - **Athena / Kensou / Chin** — Explods/continuações específicas.
 - **Categoria B** — golpes cujo ataque real vive em Helper continuam
   aproximados (lista da seção B); não há caso crítico conhecido.
 - **Categoria C** — Ralf 520/550/570 aproximados; Iori 1310 e Tsumagushi
   1501/1511 são adaptações.
-- **Categoria F** — MAX em slot especial sem desconto (Iori 103,
-  Saisyu/Heidern/Clark 66); victim states de arremesso não portados
-  (Ralf); comandos com variante por expressão; calibração fina de dano
-  (corpo do Shou'ou Ken forte da Sakura em 26, projétil soma à parte).
+- **Categoria F** — MAX em slot especial corrigido (Iori 103,
+  Saisyu/Heidern/Clark 66); victim states do Ralf mapeados; restam os
+  comandos com variante por expressão e a calibração fina de dano (corpo
+  do Shou'ou Ken forte da Sakura em 26, projétil soma à parte).
 - **Clark** — Frankensteiner corrigido em 05/11 (30 de dano).
 - **Categoria A** — concluída; manter a regressão de comandos.
 
@@ -278,9 +285,9 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$C1B1`**
+- checksum **`$7A23`**
 - layout MSU **`0x7E26`**
-- `.sfc` SHA-256 `aa749ea4…d11cbc`
+- `.sfc` SHA-256 `86eb319a…b01ebb`
 - `.msu` SHA-256 `bc4a419e…56acaf`
 
 ## Referências
