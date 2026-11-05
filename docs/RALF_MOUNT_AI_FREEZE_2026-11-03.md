@@ -64,7 +64,7 @@ Correções:
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$BB7B`**
+- checksum **`$9C60`**
 - layout MSU **`0x1135`**
-- `.sfc` SHA-256 `ccd8e340…38120`
+- `.sfc` SHA-256 `187bc733…cf776`
 - `.msu` SHA-256 `6d9ca6ba…f9528` (novo; copie os dois juntos)

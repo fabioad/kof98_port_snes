@@ -30,7 +30,7 @@ F_HP1, F_HP2 = B + 0x10, B + 0x50
 P1_X, P2_X = B + 0, B + 0x40
 
 UP, DOWN, LEFT, RIGHT = 4, 5, 6, 7
-WEAK, STRONG = 1, 9   # MUGEN x -> Y, MUGEN y -> X
+WEAK, STRONG, PHYS_B = 1, 9, 0  # x->Y, y->X, a->B
 
 D = frozenset({DOWN})
 DF = frozenset({DOWN, RIGHT})
@@ -67,6 +67,9 @@ CASES = (
     ("terry 3010", (BACK, F), {STRONG}, 2, (D, 20), 25, {86}),
     ("terry 3050", (BACK, F), {WEAK, STRONG}, 2, (D, 20), 15, {87}),
     ("athena 4000", (F, D, BACK, F, D, BACK), {STRONG}, 2, None, 50, {88}),
+    ("athena 3000", HCB2, {WEAK}, 3, None, 35, {85}),
+    ("athena 3050", QCF2, {WEAK}, 2, None, 35, {86}),
+    ("athena 3100", QCF2, {PHYS_B}, 2, None, 30, {87}),
 )
 
 

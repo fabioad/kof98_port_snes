@@ -91,6 +91,15 @@ PROJECTILE_ALT_EFFECTS = {
         "sids": (85, 86),
         "release": 6,
     },
+    # Athena's Phoenix Fang charge levels (3000/3050/3100).  The source
+    # helper 3050 plays the visible ball on AIR 7700; 7701 is only the
+    # blank Clsn1 hitbox.  Use 7700 as the alternate projectile clip.
+    "athena": {
+        "action": 7700,
+        "frames": ((0, 4), (3, 4), (6, 6)),
+        "sids": (85, 86, 87),
+        "release": 2,
+    },
 }
 
 # Characters that reuse another character's compiled projectile effect.  The

@@ -14446,7 +14446,10 @@ TS_no_gravity:
     .ACCU 8                             ;   check vs the victim's hurtbox
     lda.w SPARKS+SPK_ATTR,x
     bpl +
-    and #$0E.b                          ; bouncing ball: hitbox already spent
+    ; Bits 1-2 hold the bouncing-ball state; bit3 is the one-shot
+    ; alternate-ProjFx marker.  Testing bits 1-3 skipped every alt-clip
+    ; projectile (Terry's geyser, Athena's Phoenix Fang).
+    and #$06.b                          ; bouncing ball: hitbox already spent
     bne TS_nohit
     jsr ProjPinIfMulti                  ; super projectile follows its victim
     jsr ProjReflect                    ; opponent shield: bounce it back

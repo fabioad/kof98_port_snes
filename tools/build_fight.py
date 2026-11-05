@@ -2704,6 +2704,18 @@ for _key, _ov in _KYO_VARIANTS.items():
     POST_CAL_CATEGORIES.setdefault(_key, {}).update({98: 3})
     POST_CAL_POW_OVERRIDE.setdefault(_key, {}).update({98: -1000})
 
+if "athena" in CHARS:
+    # Phoenix Fang charge levels: the source helper spawns a stationary
+    # 7701 hitbox with a visible 7700 ball.  The native pool fires the
+    # alternate 7700 clip at the root's release frame; the three SUP
+    # commands get progressively stronger balls.
+    _athena = CHARS["athena"]
+    _athena.setdefault("projs", {}).update({
+        85: (0x0000, 12, 4, 0x02),
+        86: (0x0000, 14, 4, 0x02),
+        87: (0x0000, 20, 4, 0x02),
+    })
+
 if "terry" in CHARS:
     # Terry's 2.8 KB poses take ~15 VBlanks via the MSU byte port, longer
     # than a normal attack. Keep his CHR in ROM for the regular DMA path.
@@ -2715,33 +2727,19 @@ if "terry" in CHARS:
         # pillar, not a travelling shot.  vx=0 keeps it in front of Terry;
         # bits 2/3-7 of the generated present byte select the geyser clip and
         # delay it to AnimElem 7 (the ground punch).
-        85: (0x0000, 26, 4, 2),
-        86: (0x0000, 30, 4, 2),
+        85: (0x0000, 5, 4, 2),
+        86: (0x0000, 6, 4, 2),
     }
-    # The stationary pillar spawns in the ProjTab pool but its hit path does
-    # not connect (the spark sits at the floor while the super is still in
-    # its pause/attack window).  Give the ground punch a real body HitDef
-    # and an attack box on the root clip; the projectile stays as the visual.
-    _terry = CHARS["terry"]
-    _terry.setdefault("hitdef_override", {})
-    for _sid, _dmg in ((85, 26), (86, 30)):
-        _terry["hitdef_override"][_sid] = {
-            "active": 7, "fall": 1, "guard": 0x20,
-            "gvx": 0, "gvy": 0,
-        }
-    _terry.setdefault("slice_damage", {}).update({85: 26, 86: 30})
-    _terry.setdefault("air_box_patch_frames", {})
-    for _anim in (3000, 3010):
-        _terry["air_box_patch_frames"][_anim] = {
-            6: [(-20, -110, 70, 0)], 7: [(-20, -110, 70, 0)],
-            8: [(-20, -110, 70, 0)]}
     # Buster Wolf (3050): the rush is three helper 3060 spawns with no root
     # HitDef/Clsn1 in the port.  Add a body rush row and re-arm it for the
     # three source contacts.
+    _terry = CHARS["terry"]
+    _terry.setdefault("hitdef_override", {})
     _terry["hitdef_override"][87] = {
         "active": 7, "fall": 1, "guard": 0x20, "gvx": 0, "gvy": 0}
     _terry.setdefault("slice_damage", {})[87] = 20
     _terry.setdefault("hit_soft_resets", {})[3050] = [12, 18, 24]
+    _terry.setdefault("air_box_patch_frames", {})
     _terry["air_box_patch_frames"][3050] = {
         i: [(-20, -110, 70, 0)] for i in range(6, 22)}
 

@@ -140,7 +140,7 @@ continuações/fases do golpe pai.
 | **Ryo** | Ko'ou Ken EX 1050; Koho EX 1150/1160; Hien Shippuu 1250/1260; Renbu 1400; Ko'ou aéreo 2000/2010; Ko'ou Geki 2100; MAX Ryuuko 3150; MAX Tenchi 3250 |
 | **Robert** | Ryuugeki Ken EX 1050; Hien 1250/1260; Renbu 1400; Sen'en 1450; Haoh 3000/3010/3020; Muei Shippuu 3200/3210/3220; Muei Senpuu 3270 |
 | **Yuri** | MAX Haoh 550; MAX Ryuuko 560 |
-| **Athena** | Phoenix Fang Arrow 2000/2020/2050; 3100 parcial. O super 4000 está funcional (62); as fases de carga 3000/3050/3100 seguem sem ataque próprio |
+| **Athena** | Phoenix Fang Arrow 2000/2020/2050. 3000/3050/3100 implementados com a bola 7700 (48/42/40); 4000 confirmado (62) |
 | **Kensou** | Sen Shippo 1300/1330; Niku Man 2000; Sen Ki Hakkei 2100; Chouryuu Renken 2200 |
 | **Chin** | Fire Zake 1203/1300; upper forte 1400; Super Long Walk Hell 1750; Hyper 2200. Zake FireBall Double 1920 religado (04/11) |
 | **King** | Mirage Dance 1500; MAX Illusion 3200; Silent Flash 3300/3400; Surprise Rose 3600/3700; Dragooner 3800 |
@@ -198,9 +198,9 @@ continuações/fases do golpe pai.
 ## Prioridade recomendada
 
 1. **Categoria D (em andamento)** — primeiro bloco concluído em 04/11:
-   Kyo/Nests/Ash 3500/3550/3305, Terry 3000/3010/3050 e confirmação do
-   Athena 4000. Restam Athena 3000/3050/3100, Terry EX/MOW, Andy, Ryo,
-   Robert, Rugal/Omega, Takuma, Iori e os MAX/SDM da tabela.
+   Kyo/Nests/Ash 3500/3550/3305, Terry 3000/3010/3050 e Athena
+   3000/3050/3100/4000. Restam Terry EX/MOW, Andy, Ryo, Robert,
+   Rugal/Omega, Takuma, Iori e os MAX/SDM da tabela.
 2. **Categoria E** — efeitos e victim states (Ralf, Mature, Chizuru,
    bola de metal do Chang). Na Chizuru faltam os PalFX/AfterImage e o
    clone visual dos supers.
@@ -232,9 +232,9 @@ Ainda faltam os outros golpes de clone dela (1000/1004, 1100/1102,
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$BB7B`**
+- checksum **`$9C60`**
 - layout MSU **`0x1135`**
-- `.sfc` SHA-256 `ccd8e340…38120`
+- `.sfc` SHA-256 `187bc733…cf776`
 - `.msu` SHA-256 `6d9ca6ba…f9528`
 
 ## Referências
