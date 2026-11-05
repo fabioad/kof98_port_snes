@@ -4444,6 +4444,41 @@ if "billy" in CHARS:
          "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 4)]},
     ])
 
+if "benimaru" in CHARS:
+    # Benimaru's Handou Sandan intro states (1500/1510) only jump; the
+    # actual kick and HitDef live in 1501/1511.  The super Raikouken
+    # states (3000/3010/3050) spawn a helper with the real hit, which the
+    # native engine does not have: give them a compiled projectile row.
+    POST_CAL_REACTIVATED.setdefault("benimaru", []).extend([
+        # The Handou Sandan commands still enter the 1500/1510 jump-intro;
+        # the kick and its HitDef live in 1501/1511.  The automatic
+        # ChangeState(AnimTime=0) row now has a runtime target.
+        (58, 1501, 1501),
+        (59, 1511, 1501),
+    ])
+    _ben = POST_CAL_TWEAKS.setdefault("benimaru", {})
+    # Enter 1501/1511 directly: the 1500/1510 intro is a forward hop that
+    # crosses over a point-blank opponent, leaving the kick behind them.
+    _ben["cmd_remap"] = {1500: 1501, 1510: 1511}
+    _ben.setdefault("air_box_patch_frames", {})[1501] = {
+        2: [(-8, -76, 103, -45)],
+        8: [(-8, -68, 75, -45)],
+        9: [(-8, -68, 75, -45)],
+    }
+    _ben.setdefault("slice_damage", {}).update({
+        58: 22, 59: 28,
+        62: 30,                # Benimaru Collider command grab
+        88: 40,                # Electro Trigger MAX command grab
+        89: 30,                # Electro Trigger command grab
+    })
+    POST_CAL_PROJS.setdefault("benimaru", {}).update({
+        # 85-89 are five-contact super projectiles, so the ProjTab byte is
+        # the damage per contact.  6/8/10 -> 30/40/50 total.
+        85: (0x0400, 6, 0x0A),
+        86: (0x0400, 8, 0x0A),
+        87: (0x0400, 10, 0x0A),
+    })
+
 if "lucky" in CHARS:
     POST_CAL_REACTIVATED.setdefault("lucky", []).extend([
         (107, 2200, 3203),     # Shoot 2/3/4

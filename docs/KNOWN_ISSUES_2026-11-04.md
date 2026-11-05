@@ -287,6 +287,13 @@ PalFX/AfterImage (Categoria E).
   de dano (corpo do Shou'ou Ken forte da Sakura em 26, projétil soma à
   parte).
 - **Clark** — Frankensteiner corrigido em 05/11 (30 de dano).
+- **Benimaru (05/11)** — Handou Sandan agora entra direto em 1501/1511,
+  sem o pulo que cruzava um oponente colado, e ganhou caixa de contato
+  para ponto-cego. O Raikouken forte passou a nascer na altura do torso
+  (antes subia acima do hurtbox). Os supers 3000/3010/3050 usam ProjTab
+  de 5 contatos (30/40/50 totais); Benimaru Collider (30), Electro
+  Trigger (30) e Electro Trigger MAX (40) receberam dano. Regressão:
+  `tools/test_benimaru_close_headless.py`.
 - **Choque de projéteis (05/11)** — quando dois projéteis de lados
   opostos se encontram, ambos são liberados e um spark de impacto +
   `SFX_GUARD` marcam o choque. Sem arte nova; cobre o caso de dois tiros
@@ -308,10 +315,10 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$20EB`**
+- checksum **`$3000`**
 - layout MSU **`0xDA0E`**
-- `.sfc` SHA-256 `4718dd6a…31fad2`
-- `.msu` SHA-256 `e705d231…e0a6d9`
+- `.sfc` SHA-256 `538a1c7d…e426c4`
+- `.msu` SHA-256 `03cb0bf1…a3bc6c`
 
 ## Referências
 

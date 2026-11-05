@@ -19672,9 +19672,11 @@ ProjVyFix:
     and #$00FF.w
     cmp #49.w                            ; strong ground Raikouken
     bne +
-    lda #$FF00.w                         ; -1 px/tick upward
-    sta.w SPARKS+SPK_VY,x
-    lda #(GROUND_Y-96).w                 ; spawn at the raised hand
+    ; Keep the strong ball at upper-torso height.  The source raised-hand
+    ; spawn (GROUND_Y-96) flew over a standing opponent at point-blank and
+    ; missed even at mid range; 60 px above the floor still reads as the
+    ; high hand while staying inside the victim's torso hurtbox.
+    lda #(GROUND_Y-60).w
     sta.w SPARKS+2,x
 +   rts
 .ENDS
