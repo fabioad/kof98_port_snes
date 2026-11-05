@@ -4042,6 +4042,12 @@ if "chris" in CHARS:
     PROJECTILE_RELEASE.setdefault("chris", {}).update({111: 13})
     POST_CAL_PROJS.setdefault("chris", {}).update({
         111: (0x0400, 15, 0x0A),
+        # 1600/2100 are compiled as travelling shots (the source HitDef
+        # lives in the 1610/2110 follow-up states), so their HP loss comes
+        # from the ProjTab damage byte, not DamageTab.  The slice_damage
+        # entries above only touch the (unused) melee row.
+        109: (0x0700, 25, 0x0A),
+        110: (0x01CD, 35, 0x0A),
     })
     _chr = POST_CAL_TWEAKS.setdefault("chris", {})
     _chr.setdefault("slice_damage", {}).update({
@@ -4414,6 +4420,11 @@ if "billy" in CHARS:
         (109, 2600, 2600),     # Chou HongRenSalgon S
         (110, 6000, 6000),     # MAX2
     ])
+    # MAX2 is also compiled as a travelling shot; raise the ProjTab damage
+    # byte (slice_damage only reaches the unused melee row).
+    POST_CAL_PROJS.setdefault("billy", {}).update({
+        110: (0x0700, 45, 0x0A),
+    })
     _bil = POST_CAL_TWEAKS.setdefault("billy", {})
     _bil.setdefault("slice_damage", {}).update({
         107: 25, 108: 30, 109: 35, 110: 45})

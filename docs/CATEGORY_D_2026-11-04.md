@@ -289,7 +289,7 @@ PASS**.
 |---|---|---|
 | **Yashiro** | Odoru Daichi 2200/2210 (107), Kujiku Daichi 2300/2310 (108), MAX Million Bash 3020 (109), Final Impact 3100/3120 (110), Araburu Daichi 3600/3620 (111), Ankoku Jigoku 3700/3720 (112) | 20/22/44/49/30/40 |
 | **Shermie** | Axle Spin/Shoot 1000/1050/1100/1150 (107), Whip 1200/1250 (108), Spiral 1300 (109), Carnival 2100 (110), Shajitsu 7100/7150 (111), Mugetsu/Yatanagi 7225/7250/7275/7350 (112), Shukumei 8000 (113), Ankoku Raikouken 8100/8150 (114) | 15/20/25/30/25/30/40/25 |
-| **Chris** | Slide Touch 1300/1350 (107), Direction Change 1500/1550 (108), Shooting Dancer 1600/1650 (109), Twister/Chain Slide 2100/2200 (110), Taiyou 7000/7010 (111), Tsuki 7200/7250 (112), Shishi 7300/7350 (113), Gouka/Ankoku Orochinagi 8000/8050/8100/8105 (114) | 20/20/10/8/15/30/35/45 |
+| **Chris** | Slide Touch 1300/1350 (107), Direction Change 1500/1550 (108), Shooting Dancer 1600/1650 (109), Twister/Chain Slide 2100/2200 (110), Taiyou 7000/7010 (111), Tsuki 7200/7250 (112), Shishi 7300/7350 (113), Gouka/Ankoku Orochinagi 8000/8050/8100/8105 (114) | 20/20/25/35/15/30/35/45 |
 
 Observações:
 
@@ -300,7 +300,8 @@ Observações:
 - Chris 1500 reusa o follow-up 1510; 1600 reusa o 1610; 2100 reusa o
   2110; 7200 reusa o 7250; 8000/8050/8100/8105 reusam o 8110.
 - O Chris 7000 é projétil (ProjTab, projanim 7050) e o 8000 é o golpe
-  físico do 8110.
+  físico do 8110. Os 1600/2100 também são projéteis no port; o dano
+  (25/35) vem do byte do `ProjTab`, não do `DamageTab`.
 
 Verificação: `tools/test_category_d_batch4_headless.py` — **27 golpes
 PASS**.
@@ -333,6 +334,8 @@ Observações:
   Mary 3301; Krauser 3600/3700; Ken 1250; Heavy D 2000; Brian 3600;
   Billy 2500; Lucky 2100/2900.
 - Projéteis: Chun-Li 1050/3000 e Lucky 3100 usam `POST_CAL_PROJS`.
+  Billy 6000 (MAX2) também é projétil e foi ajustado para 45 no
+  `ProjTab` em 05/11.
 
 Verificação: `tools/test_category_d_batch5_headless.py` — **49 golpes
 PASS**.

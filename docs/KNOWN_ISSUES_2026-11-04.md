@@ -21,7 +21,7 @@ que não existe e efeito ausente.
 - **Categoria E** — efeitos (Explod/PalFX/AfterImage) ausentes ou
   aproximados.
 - **Categoria F** — particularidades de custo, victim states e comandos
-  com variante por expressão.
+  com variante por expressão (auditados em 05/11).
 
 ## A. Comandos — corrigidos em 04/11
 
@@ -153,7 +153,7 @@ continuações/fases do golpe pai.
 | **Choi** | Tatsumaki 1000/1010 (25/30), Senpuu 1100 (20), Hishou 1200 (20), Shissou 1600 (15), Ultimate Storm 2400 (30), Zan! En Getsu Rin 3100 (35) e Houou Kyaku 3200 (30) implementados em 05/11 |
 | **Yashiro** | Odoru Daichi 2200/2210 (20), Kujiku Daichi 2300/2310 (22), MAX Million Bash 3020 (44), Final Impact 3100/3120 (49), Araburu Daichi 3600/3620 (30) e Ankoku Jigoku 3700/3720 (40) implementados em 05/11 |
 | **Shermie** | Axle Spin/Shoot 1000/1050/1100/1150 (15), Whip 1200/1250 (20), Spiral 1300 (25), Carnival 2100 (30), Shajitsu 7100/7150 (25), Mugetsu/Yatanagi 7225/7250/7275/7350 (30), Shukumei 8000 (40) e Ankoku Raikouken 8100/8150 (25) implementados em 05/11 |
-| **Chris** | Slide Touch 1300/1350 (20), Direction Change 1500/1550 (20), Shooting Dancer 1600/1650 (10), Twister/Chain Slide 2100/2200 (8), Taiyou 7000/7010 (15), Tsuki 7200/7250 (30), Shishi 7300/7350 (35) e Gouka/Ankoku Orochinagi 8000/8050/8100/8105 (45) implementados em 05/11 |
+| **Chris** | Slide Touch 1300/1350 (20), Direction Change 1500/1550 (20), Shooting Dancer 1600/1650 (25), Twister/Chain Slide 2100/2200 (35), Taiyou 7000/7010 (15), Tsuki 7200/7250 (30), Shishi 7300/7350 (35) e Gouka/Ankoku Orochinagi 8000/8050/8100/8105 (45) implementados em 05/11. 1600/2100 são projéteis no port; o dano vem do byte do `ProjTab` |
 | **Yamazaki** | Bakudan Pachiki 1400 (20), Todome 1600/1601 (20/15) e MAX Guillotine 3020 (30) implementados em 05/11 |
 | **Blue Mary** | Straight Slicer 1600/1610 (20/22), Super Dunk 3000/30000 (30/40), Dynamite 3100 (25), Splash Rose 3300/3400 (25/30) e Typhoon/Infinity Rose 3800 (30) implementados em 05/11 |
 | **Geese** | Raimei Gouha Nage 1500 (25) e Shinkuu Nage 1600 (30) implementados em 05/11 |
@@ -163,7 +163,7 @@ continuações/fases do golpe pai.
 | **Sakura** | Ouka Kyaku 1400 (20), Haru Ichiban 3150 (35), Midare Zakura 3200/3250 (30/40) e Shinkuu Hadouken 3300 (30) implementados em 05/11 |
 | **Heavy D** | D. Shadow 2200 (35) implementado em 05/11 |
 | **Brian** | American Supernova 3300 (35), Galaxy Cyclone 3400 (40), Big Bang Tackle 3500 (30) e American Final Tackle 3600 (40) implementados em 05/11 |
-| **Billy** | Flaming Stick Spin 1860 (25), Super Stick Swing S 2510 (30), Chou HongRenSalgon S 2600 (35) e MAX2 6000 (45) implementados em 05/11 |
+| **Billy** | Flaming Stick Spin 1860 (25), Super Stick Swing S 2510 (30), Chou HongRenSalgon S 2600 (35) e MAX2 6000 (45, `ProjTab`) implementados em 05/11 |
 | **Lucky** | Shoot 2/3/4 2200/2300/2400 (20), Finger Roll 2500 (25), Slam 2700/2800 (25), Air Slam 4700 (30), Finger Roll SDM 3100 (30) e Shoot Out 3400/3500 (35) implementados em 05/11 |
 | **Mr. Big** | Crazy Drum 1100/1101 (12), Drum Shot 1500 (20), MAX Blaster Wave 3050 (30, projétil) e Rising Spear 3100 (30) implementados em 05/11 |
 | **Eiji** | Kikouhou 1000 (14, projétil), Mukuro Nui 1600 (14), Zantetsu Tourouken 3100/3120 (20/30) e Yamikari 3200 (35) implementados em 05/11 |
@@ -195,13 +195,16 @@ continuações/fases do golpe pai.
 - **Victim states de arremesso**: os do Ralf (80010/80011/80002/80018)
   foram mapeados para o slot de arremesso em 05/11; Clark reutiliza
   animações (1205/1305→1200, 1420→3011).
-- **Comandos com variante por expressão**: golpes cujo
-  `value = 3050 + var(...)` podem ter a variante MAX/SDM faltando mesmo
-  com o comando base funcionando; a varredura de comando só pega o valor
-  literal.
+- **Comandos com variante por expressão**: auditados em 05/11. Os
+  arquivos `*_SNES.cmd` usados pelo build têm `value` literal; as
+  expressões `value = 3050 + var(...)` existem apenas nos `.cmd`
+  originais, que não entram na ROM. Não há variante MAX/SDM faltando por
+  esse motivo.
 - **Calibração de dano**: o corpo do Shou'ou Ken forte da Sakura foi
-  ajustado para 26 em 05/11 (o projétil ainda soma à parte); restam
-  ajustes pontuais de outros supers.
+  ajustado para 26 em 05/11 (o projétil ainda soma à parte). Chris
+  1600/2100 (25/35) e Billy 6000 (45) foram corrigidos pelo byte de dano
+  do `ProjTab` em 05/11; esses golpes são projéteis no port, então
+  `slice_damage`/`DamageTab` não os alcançavam.
 - **Adaptações de dano (05/11)**: Krauser 1700 Kaiser Claw (30),
   Chun-Li 3100 Houyoku Sen (30), Sakura 1400 Ouka Kyaku (agora entra no
   state 1200, 30) e os golpes do Lucky 2200/2300/2400/2500/2700/2800/
@@ -279,19 +282,29 @@ PalFX/AfterImage (Categoria E).
 - **Categoria C** — Ralf 520/550/570 aproximados; Iori 1310 e Tsumagushi
   1501/1511 são adaptações.
 - **Categoria F** — MAX em slot especial corrigido (Iori 103,
-  Saisyu/Heidern/Clark 66); victim states do Ralf mapeados; restam os
-  comandos com variante por expressão e a calibração fina de dano (corpo
-  do Shou'ou Ken forte da Sakura em 26, projétil soma à parte).
+  Saisyu/Heidern/Clark 66); victim states do Ralf mapeados; comandos
+  com variante por expressão auditados; resta apenas a calibração fina
+  de dano (corpo do Shou'ou Ken forte da Sakura em 26, projétil soma à
+  parte).
 - **Clark** — Frankensteiner corrigido em 05/11 (30 de dano).
 - **Categoria A** — concluída; manter a regressão de comandos.
+
+## Áudio
+
+- Pacote aprovado Final Fight Guy: 17 módulos em `assets/audio/ffg/`,
+  integrado e commitado em `c11317a`.
+- `tools/test_ffg_music_headless.py`: **17/17** módulos confirmados na
+  ROM (upload real, ARAM, áudio e UI).
+- `tools/tests/test_approved_music.py`: **3 passed / 17 subtests**.
+- O `.msu` da build de referência contém o pacote FFG atual.
 
 ## Build de referência
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$16DA`**
+- checksum **`$1723`**
 - layout MSU **`0xDA0E`**
-- `.sfc` SHA-256 `c72ddf31…bec113`
+- `.sfc` SHA-256 `2ddfce44…57bfb`
 - `.msu` SHA-256 `e705d231…e0a6d9`
 
 ## Referências
