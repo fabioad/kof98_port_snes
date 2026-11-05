@@ -150,9 +150,9 @@ continuações/fases do golpe pai.
 | **Choi** | Tatsumaki 1000/1010 (25/30), Senpuu 1100 (20), Hishou 1200 (20), Shissou 1600 (15), Ultimate Storm 2400 (30), Zan! En Getsu Rin 3100 (35) e Houou Kyaku 3200 (30) implementados em 05/11 |
 | **Chang** | Haki Kyaku 1400; Tekkyuu Dai Assatsu 3400 |
 | **Choi** | Tatsumaki 1000/1010; Senpuu 1100; Hishou 1200/1210; Shissou 1600/1610; Ultimate Storm 2400; Zan! En Getsu Rin 3100/3110; Houou Kyaku 3200/3250 |
-| **Yashiro** | Orochi 2200/2210, 2300/2310; MAX Million Bash 3020; Final Impact 3100/3120; Orochi supers 3510/3520/3600/3620/3700/3720 |
-| **Shermie** | normais 1000/1050, 1100/1150, 1200/1250, 1300; Orochi 7100/7150, 7225/7250/7275, 7350; 2100; 8100/8150; 8000 |
-| **Chris** | normais 1300/1350, 1500/1550, 1600/1650; Orochi 7000/7010, 7200/7250, 7300/7350; 2100/2200; 8000/8050; 8100/8105 |
+| **Yashiro** | Odoru Daichi 2200/2210 (20), Kujiku Daichi 2300/2310 (22), MAX Million Bash 3020 (44), Final Impact 3100/3120 (49), Araburu Daichi 3600/3620 (30) e Ankoku Jigoku 3700/3720 (40) implementados em 05/11 |
+| **Shermie** | Axle Spin/Shoot 1000/1050/1100/1150 (15), Whip 1200/1250 (20), Spiral 1300 (25), Carnival 2100 (30), Shajitsu 7100/7150 (25), Mugetsu/Yatanagi 7225/7250/7275/7350 (30), Shukumei 8000 (40) e Ankoku Raikouken 8100/8150 (25) implementados em 05/11 |
+| **Chris** | Slide Touch 1300/1350 (20), Direction Change 1500/1550 (20), Shooting Dancer 1600/1650 (10), Twister/Chain Slide 2100/2200 (8), Taiyou 7000/7010 (15), Tsuki 7200/7250 (30), Shishi 7300/7350 (35) e Gouka/Ankoku Orochinagi 8000/8050/8100/8105 (45) implementados em 05/11 |
 | **Yamazaki** | Bakudan Pachiki 1400; Todome 1600; MAX Guillotine 3020. 3000/3010/3150 religados (04/11) |
 | **Blue Mary** | Straight Slicer 1600/1610; Super Dunk 3000/30000; Dynamite 3100; Splash Rose 3300/3400; Typhoon 3800; Infinity Rose 50000. 3060/4000 religados (04/11) |
 | **Geese** | Raimei Gouha Nage 1500; Shinkuu Nage 1600. 3250 religado (04/11) |
@@ -211,8 +211,9 @@ continuações/fases do golpe pai.
    MAX 3050, Rugal 1800 + Eye Beam 1702, Omega Rugal 7100/8000 e Iori
    3100/3110/3150. Terceiro bloco concluído em 05/11: Takuma, Joe, Mai,
    Kim, King, Yuri, Mr. Big e Eiji (40 golpes). Quarto bloco concluído em
-   05/11: Kensou, Chin, Chang e Choi (20 golpes; ver
-   `tools/test_category_d_batch3_headless.py`). Restam Kyo Orochinagi
+   05/11: Kensou, Chin, Chang e Choi (20 golpes). Quinto bloco concluído
+   em 05/11: Yashiro, Shermie e Chris (27 golpes; ver
+   `tools/test_category_d_batch4_headless.py`). Restam Kyo Orochinagi
    3010 e os demais personagens da tabela D.
 2. **Categoria E** — efeitos e victim states (Ralf, Mature, Chizuru,
    bola de metal do Chang). Na Chizuru faltam os PalFX/AfterImage e o
@@ -247,11 +248,11 @@ PalFX/AfterImage (Categoria E).
 
 - **Categoria D (restante)** — Robert, Andy, Ryo, Kyo/Nests/Ash, Rugal,
   Omega Rugal (7100/8000), Takuma, Joe, Mai, Kim, King, Yuri, Mr. Big,
-  Eiji, Kensou, Chin, Chang e Choi concluídos em 05/11; restam o Kyo
-  Orochinagi forte 3010, o runtime do Omega (célula 37 compartilhada no
-  harness) e as pendências dos demais personagens listadas na tabela da
-  seção D (Yashiro, Shermie, Chris, Yamazaki, Mary, Geese, Krauser, Ken,
-  Chun-Li, Sakura, Heavy D, Brian, Billy, Lucky).
+  Eiji, Kensou, Chin, Chang, Choi, Yashiro, Shermie e Chris concluídos
+  em 05/11; restam o Kyo Orochinagi forte 3010, o runtime do Omega
+  (célula 37 compartilhada no harness) e as pendências dos demais
+  personagens listadas na tabela da seção D (Yamazaki, Mary, Geese,
+  Krauser, Ken, Chun-Li, Sakura, Heavy D, Brian, Billy, Lucky).
 - **Categoria E** — efeitos/victim states: Ralf (queimadura), Mature
   (PalFX/Explod), Chizuru (clone/PalFX) e a bola de metal do Chang.
 - **Clark** — Frankensteiner 1400/1410→1420 ainda faz só 1 de dano.
@@ -264,10 +265,10 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$F475`**
-- layout MSU **`0xF8A5`**
-- `.sfc` SHA-256 `16879e6e…544c6a`
-- `.msu` SHA-256 `9dbbbc0b…0f0cc1`
+- checksum **`$B0D3`**
+- layout MSU **`0x943B`**
+- `.sfc` SHA-256 `2dd74131…19bf04`
+- `.msu` SHA-256 `c7e9d780…445ed2`
 
 ## Referências
 

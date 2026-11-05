@@ -88,6 +88,9 @@ A correção do bit3 também foi o que destravou esses projéteis.
 `tools/test_category_d_batch3_headless.py` — **20 golpes PASS**
 (quarto bloco, 05/11: Kensou, Chin, Chang e Choi).
 
+`tools/test_category_d_batch4_headless.py` — **27 golpes PASS**
+(quinto bloco, 05/11: Yashiro, Shermie e Chris).
+
 - Terry: 1050 14, 1450 12, 1550 30, 1560 34, 1600 16, 1700 20,
   3100 32, 3200 34 (3 contatos), 3250 48 (3 contatos), 3050 50;
 - Andy: 1400 12, 1450 8, 1500 14, 1160 14, 3000 37, 3010 52, 3050 57,
@@ -272,6 +275,28 @@ Observações:
 Verificação: `tools/test_category_d_batch3_headless.py` — **20 golpes
 PASS**.
 
+### Yashiro, Shermie e Chris (quinto bloco)
+
+| Personagem | Golpes ligados (sid) | Dano medido |
+|---|---|---|
+| **Yashiro** | Odoru Daichi 2200/2210 (107), Kujiku Daichi 2300/2310 (108), MAX Million Bash 3020 (109), Final Impact 3100/3120 (110), Araburu Daichi 3600/3620 (111), Ankoku Jigoku 3700/3720 (112) | 20/22/44/49/30/40 |
+| **Shermie** | Axle Spin/Shoot 1000/1050/1100/1150 (107), Whip 1200/1250 (108), Spiral 1300 (109), Carnival 2100 (110), Shajitsu 7100/7150 (111), Mugetsu/Yatanagi 7225/7250/7275/7350 (112), Shukumei 8000 (113), Ankoku Raikouken 8100/8150 (114) | 15/20/25/30/25/30/40/25 |
+| **Chris** | Slide Touch 1300/1350 (107), Direction Change 1500/1550 (108), Shooting Dancer 1600/1650 (109), Twister/Chain Slide 2100/2200 (110), Taiyou 7000/7010 (111), Tsuki 7200/7250 (112), Shishi 7300/7350 (113), Gouka/Ankoku Orochinagi 8000/8050/8100/8105 (114) | 20/20/10/8/15/30/35/45 |
+
+Observações:
+
+- Yashiro 2200/2300 reusam o follow-up 2201; 3100 reusa o clipe do
+  3020; 3600/3620 reusam o clipe do 3700.
+- Shermie 1000/1100 reusam o clipe 7350; 7225/7350 compartilham o mesmo
+  clipe; 8000 reusa o 8010 (o golpe real) e 8100 usa ProjTab (8120/8170).
+- Chris 1500 reusa o follow-up 1510; 1600 reusa o 1610; 2100 reusa o
+  2110; 7200 reusa o 7250; 8000/8050/8100/8105 reusam o 8110.
+- O Chris 7000 é projétil (ProjTab, projanim 7050) e o 8000 é o golpe
+  físico do 8110.
+
+Verificação: `tools/test_category_d_batch4_headless.py` — **27 golpes
+PASS**.
+
 ### Ainda bloqueado
 
 - **Kyo 3010** (Orochinagi forte) — o comando QCF+a não estabilizou no
@@ -285,10 +310,10 @@ PASS**.
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$F475`**
-- layout MSU **`0xF8A5`**
-- `.sfc` SHA-256 `16879e6e…544c6a`
-- `.msu` SHA-256 `9dbbbc0b…0f0cc1`
+- checksum **`$B0D3`**
+- layout MSU **`0x943B`**
+- `.sfc` SHA-256 `2dd74131…19bf04`
+- `.msu` SHA-256 `c7e9d780…445ed2`
 
 Copie `.sfc` e `.msu` juntos.
 

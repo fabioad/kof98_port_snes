@@ -3842,6 +3842,201 @@ if "choi" in CHARS:
          "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 12)]},
     ])
 
+if "yashiro" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("yashiro", []).extend([
+        (107, 2200, 2201),     # Odoru Daichi (reuse the follow-up)
+        (108, 2300, 2201),     # Kujiku Daichi
+        (109, 3020, 3020),     # MAX Million Bash
+        (110, 3100, 3020),     # Final Impact (reuse the MAX clip)
+        (111, 3600, 3700),     # Araburu Daichi (reuse the grab)
+        (112, 3700, 3700),     # Ankoku Jigoku Gokuraku Otoshi
+    ])
+    _yas = POST_CAL_TWEAKS.setdefault("yashiro", {})
+    _yas.setdefault("slice_damage", {}).update({
+        107: 20, 108: 22, 109: 30, 110: 35, 111: 30, 112: 40})
+    _yas.setdefault("hitdef_override", {}).update({
+        107: {"active": 3, "damage": 20, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+        108: {"active": 3, "damage": 22, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+        109: {"active": 9, "damage": 30, "gdamage": 2, "fall": 1},
+        110: {"active": 9, "damage": 35, "gdamage": 2, "fall": 1},
+        111: {"active": 1, "damage": 30, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+        112: {"active": 1, "damage": 40, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+    })
+    _yas.setdefault("cmd_priority", []).extend(
+        ["ANKOKU_W", "ANKOKU_S", "ARABURU_W", "ARABURU_S",
+         "HCB_X", "HCB_Y"])
+    _yas.setdefault("cmd_extra", []).extend([
+        {"name": "ODORU_W", "label": "ODORU DAICHI",
+         "state": 2200, "posture": 3, "time": 22,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 4)]},
+        {"name": "ODORU_S", "label": "ODORU DAICHI S",
+         "state": 2200, "posture": 3, "time": 22,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 8)]},
+        {"name": "KUJIKU_W", "label": "KUJIKU DAICHI",
+         "state": 2300, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "KUJIKU_S", "label": "KUJIKU DAICHI S",
+         "state": 2300, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 8)]},
+        {"name": "MILLION_MAX", "label": "MAX MILLION BASH",
+         "state": 3020, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 3)]},
+        {"name": "FINAL_IMPACT", "label": "FINAL IMPACT",
+         "state": 3100, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 8)]},
+        {"name": "ARABURU_W", "label": "ARABURU DAICHI",
+         "state": 3600, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "ARABURU_S", "label": "ARABURU DAICHI S",
+         "state": 3600, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 8)]},
+        {"name": "ANKOKU_W", "label": "ANKOKU JIGOKU",
+         "state": 3700, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0),
+                   (4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "ANKOKU_S", "label": "ANKOKU JIGOKU S",
+         "state": 3700, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0),
+                   (4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 8)]},
+    ])
+
+if "shermie" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("shermie", []).extend([
+        (107, 1000, 7350),     # Axle Spin / Shoot (reuse the kick)
+        (108, 1200, 1200),     # Shermie Whip
+        (109, 1300, 1300),     # Shermie Spiral
+        (110, 2100, 2100),     # Shermie Carnival
+        (111, 7100, 7350),     # Shajitsu no Odori (reuse the kick)
+        (112, 7225, 7350),     # Mugetsu no Raiun (reuse Yatanagi)
+        (113, 8000, 8010),     # Shukumei
+        (114, 8100, 8100),     # Ankoku Raikouken (projectile)
+    ])
+    PROJECTILE_RELEASE.setdefault("shermie", {}).update({114: 5})
+    POST_CAL_PROJS.setdefault("shermie", {}).update({
+        114: (0x0500, 25, 0x0A),
+    })
+    _sher = POST_CAL_TWEAKS.setdefault("shermie", {})
+    _sher.setdefault("slice_damage", {}).update({
+        107: 15, 108: 20, 109: 25, 110: 30,
+        111: 25, 112: 30, 113: 40, 114: 0})
+    _sher.setdefault("hitdef_override", {}).update({
+        107: {"active": 8, "damage": 15, "gdamage": 2, "fall": 1},
+        111: {"active": 8, "damage": 25, "gdamage": 2, "fall": 1},
+        108: {"active": 4, "damage": 20, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+        109: {"active": 1, "damage": 25, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+        110: {"active": 8, "damage": 30, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+        112: {"active": 8, "damage": 30, "gdamage": 2, "fall": 1},
+        113: {"active": 4, "damage": 40, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "gvx": 0, "gvy": 0},
+    })
+    _sher.setdefault("cmd_priority", []).extend(["MUGETSU", "SHAJITSU"])
+    _sher.setdefault("cmd_extra", []).extend([
+        {"name": "AXLE_W", "label": "AXLE SPIN KICK",
+         "state": 1000, "posture": 3, "time": 22,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 1)]},
+        {"name": "AXLE_S", "label": "AXLE SPIN KICK S",
+         "state": 1000, "posture": 3, "time": 22,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 2)]},
+        {"name": "SHOOT_W", "label": "SHERMIE SHOOT",
+         "state": 1000, "posture": 3, "time": 26,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "SHOOT_S", "label": "SHERMIE SHOOT S",
+         "state": 1000, "posture": 3, "time": 26,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 8)]},
+        {"name": "WHIP", "label": "SHERMIE WHIP",
+         "state": 1200, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 1)]},
+        {"name": "SPIRAL", "label": "SHERMIE SPIRAL",
+         "state": 1300, "posture": 3, "time": 22,
+         "elems": [(4, 0), (2, 0), (6, 0), (0, 1)]},
+        {"name": "CARNIVAL", "label": "SHERMIE CARNIVAL",
+         "state": 2100, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 1)]},
+        {"name": "SHAJITSU", "label": "SHAJITSU NO ODORI",
+         "state": 7100, "posture": 3, "time": 22,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 1)]},
+        {"name": "MUGETSU", "label": "MUGETSU NO RAIUN",
+         "state": 7225, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0),
+                   (4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 1)]},
+        {"name": "SHUKUMEI", "label": "SHUKUMEI",
+         "state": 8000, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 3)]},
+        {"name": "RAIKOUKEN", "label": "ANKOKU RAIKOUKEN",
+         "state": 8100, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 3)]},
+    ])
+
+if "chris" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("chris", []).extend([
+        (107, 1300, 1300),     # Slide Touch
+        (108, 1500, 1510),     # Direction Change (reuse the follow-up)
+        (109, 1600, 1610),     # Shooting Dancer Step
+        (110, 2100, 2110),     # Twister Drive / Chain Slide
+        (111, 7000, 7000),     # Taiyou o Iru Honoo (projectile)
+        (112, 7200, 7250),     # Tsuki o Tsumu Honoo
+        (113, 7300, 7300),     # Shishi o Kamu Honoo
+        (114, 8000, 8110),     # Gouka / Ankoku Orochinagi
+    ])
+    PROJECTILE_RELEASE.setdefault("chris", {}).update({111: 13})
+    POST_CAL_PROJS.setdefault("chris", {}).update({
+        111: (0x0400, 15, 0x0A),
+    })
+    _chr = POST_CAL_TWEAKS.setdefault("chris", {})
+    _chr.setdefault("slice_damage", {}).update({
+        107: 20, 108: 20, 109: 25, 110: 35,
+        111: 0, 112: 30, 113: 35, 114: 45})
+    _chr.setdefault("hitdef_override", {}).update({
+        108: {"active": 4, "damage": 20, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+        114: {"active": 8, "damage": 45, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "gvx": 0, "gvy": 0},
+    })
+    _chr.setdefault("cmd_priority", []).append("SHISHI")
+    _chr.setdefault("cmd_extra", []).extend([
+        {"name": "SLIDE_W", "label": "SLIDE TOUCH",
+         "state": 1300, "posture": 3, "time": 22,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 1)]},
+        {"name": "SLIDE_S", "label": "SLIDE TOUCH S",
+         "state": 1300, "posture": 3, "time": 22,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 2)]},
+        {"name": "DIRECTION_W", "label": "DIRECTION CHANGE",
+         "state": 1500, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "DIRECTION_S", "label": "DIRECTION CHANGE S",
+         "state": 1500, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 8)]},
+        {"name": "DANCER_W", "label": "SHOOTING DANCER STEP",
+         "state": 1600, "posture": 3, "time": 22,
+         "elems": [(4, 0), (2, 0), (6, 0), (0, 1)]},
+        {"name": "DANCER_S", "label": "SHOOTING DANCER STEP S",
+         "state": 1600, "posture": 3, "time": 22,
+         "elems": [(4, 0), (2, 0), (6, 0), (0, 2)]},
+        {"name": "TWISTER", "label": "TWISTER DRIVE",
+         "state": 2100, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 12)]},
+        {"name": "TAIYOU", "label": "TAIYOU O IRU HONOO",
+         "state": 7000, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 3)]},
+        {"name": "TSUKI", "label": "TSUKI O TSUMU HONOO",
+         "state": 7200, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "SHISHI", "label": "SHISHI O KAMU HONOO",
+         "state": 7300, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0),
+                   (4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "GOUKA", "label": "DAICHI O HARAU GOUKA",
+         "state": 8000, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 3)]},
+    ])
+
 if "iori" in CHARS:
     # Ya Sakazuki: the source roots 3100/3110/3150 only play a short
     # invocation; the flame lives in helper 3120 (projectile 3104).  Use
