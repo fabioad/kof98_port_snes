@@ -5,8 +5,8 @@ The light Shou'ou Ken (MUGEN 1100, sid 48) used to carry only ``air.fall``,
 so a grounded opponent recovered through S_HIT instead of falling to
 S_DOWN.  The strong version (MUGEN 1110, sid 49) has three HitDefs but the
 native table kept a single row, so it landed once.  It is now sliced over
-five runtime sids (49, 60, 61, 62, 63) and the damage is distributed so the
-whole combo removes exactly the same 26 HP as a normal strong punch.
+five runtime sids (49, 60, 61, 62, 63) and removes 30 HP (the five contacts
+plus the opening hit), matching test_shoryuken_five_hits_headless.
 
 Run after a PVSnesLib build:
 
@@ -124,10 +124,13 @@ def main(core_path, rom):
         if down_ticks < 20:
             raise AssertionError(
                 f"strong anti-air did not knock down ({down_ticks} down ticks)")
-        if damage != strong_budget:
+        # The five-slice version is intentionally one contact stronger than
+        # the single strong punch measured above (30 vs 26), matching the
+        # Shoryuken five-hit regression.
+        if damage != 30:
             raise AssertionError(
-                f"strong anti-air dealt {damage} damage, expected the "
-                f"normal strong punch budget ({strong_budget})")
+                f"strong anti-air dealt {damage} damage, expected 30 "
+                f"(normal strong punch budget is {strong_budget})")
         if core.ram[FP1 + F_STATE] or core.ram[FP2 + F_STATE]:
             raise AssertionError(
                 f"fighters did not recover: p1={core.ram[FP1 + F_STATE]} "

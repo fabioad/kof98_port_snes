@@ -540,6 +540,10 @@ OVERRIDES = {
         "cfg": {"cmd_frames": {"MDFDF": 30, "MDBDB": 30}},
     },
     "sakura": {
+        # Source throw is forward/back + strong punch (y), not CD.  The
+        # reduced _SNES.cmd only carried the x+y throw and the command fell
+        # through to the normal strong punch.
+        "throws": [(800, "y", 20)],
         # The DP (Shou'ou Ken) lands into state 1105, a recovery crouch that
         # then returns to stand on AnimTime=0.  The auto-wiring only knows
         # the attack states 1100/1110, so the landing ChangeState was dropped

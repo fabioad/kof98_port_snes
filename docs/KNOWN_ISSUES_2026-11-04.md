@@ -160,7 +160,7 @@ continuações/fases do golpe pai.
 | **Krauser** | Phoenix Throw 1600 (25), Kaiser Claw 1700 (30), Kaiser Inferno 3100/3150 (30/40) e Unlimited Desire 3300/3310/3320 (30/35/40) implementados em 05/11 |
 | **Ken** | Tatsumaki aéreo 1250 (20), Oosoto Mawashi 1320 (25), Shippuu Jinrai 3100/3150 (30/40) e Shinryuuken 3200/3201 (30) implementados em 05/11 |
 | **Chun-Li** | Kikouken novo 1050 (20), Spinning Bird aéreo 1250 (25), Kikou Shou 3000 (25), Houyoku Sen 3100 (30) e Hazan Tenshou 3200 (35) implementados em 05/11 |
-| **Sakura** | Ouka Kyaku 1400 (20), Haru Ichiban 3150 (35), Midare Zakura 3200/3250 (30/40) e Shinkuu Hadouken 3300 (30) implementados em 05/11 |
+| **Sakura** | Ouka Kyaku 1400 (20), Haru Ichiban 3150 (35), Midare Zakura 3200/3250 (30/40) e Shun Goku Satsu 3300 (51) implementados em 05/11; arremesso frente+soco forte e complemento do Otoshi corrigidos em 05/11 |
 | **Heavy D** | D. Shadow 2200 (35) implementado em 05/11 |
 | **Brian** | American Supernova 3300 (35), Galaxy Cyclone 3400 (40), Big Bang Tackle 3500 (30) e American Final Tackle 3600 (40) implementados em 05/11 |
 | **Billy** | Flaming Stick Spin 1860 (25), Super Stick Swing S 2510 (30), Chou HongRenSalgon S 2600 (35) e MAX2 6000 (45, `ProjTab`) implementados em 05/11 |
@@ -444,15 +444,47 @@ Negative Gain A/B). Cada caso confere o follow-up do atacante, a pose de
 segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
 46 e 46.
 
+## Sakura — arremesso, Otoshi e Shun Goku Satsu (05/11)
+
+- **Arremesso (frente + soco forte):** a regra `y` + `holdfwd`/`holdback`
+  não existia no `Sakura_SNES.cmd`; só o `x+y` estava ligado. A regra foi
+  adicionada (estado 800 -> 810) e o teste com a direção mantida no frame
+  do botão confirma o bind (sid 75) e a vítima em `S_VHELD`.
+- **Sakura Otoshi (DP + a/b -> 1300/1310):** o complemento aéreo existia
+  na origem (`x`/`y` durante a subida -> 1320), mas 1320/1321/1325 não
+  estavam ligados. Foram para os sids 65/68/66. O TransTab kind-2 agora
+  dispara de fato (antes caía no `TA_hit` e exigia MoveHit). A descida
+  continua em 1305 (freio) quando o botão não é pressionado.
+- **Shun Goku Satsu (QCF + chute forte):** 3300 -> 3305 -> 3306 -> 47.
+  O golpe estava no sid 111 (StAirSpec, aplicava gravidade) e o comando
+  não existia para o chute forte; foi para o sid 114 (StSpecial) e ganhou
+  `SGS_B` (QCF+b). O `SGS_A` (QCF+a) continua. O QCFx2+b continua sendo
+  o Haru Ichiban 3100.
+  - Os 15 contatos usam op19 (TargetLifeAdd + ComboBump) em tempos exatos
+    de estado; o ActTab agora varre até 64 linhas de tempo (256 bytes).
+  - A tela preta usa `CineApply` (TM = OBJ, CGRAM 0 preto) e
+    `CineAdvance`; os lutadores são omitidos do OAM e só os sparks são
+    desenhados. O fundo é restaurado ao fim.
+  - O combo mostra 15; o 3306 aplica o golpe final com op3 (sem contar
+    como 16º hit) e solta a vítima em S_VTHROW. Depois Sakura entra no
+    taunt (sid 47) — a win pose 181 tem hold de 255 ticks e poderia
+    deixá-la presa, então o taunt é o fallback seguro.
+  - Os helpers novos e a telemetria saíram do banco Fight (que estava
+    exatamente em 32 KiB) para a seção `SakuraCinema` no banco 126.
+- Regressão: `tools/test_sakura_fixes_headless.py` (arremesso, Otoshi,
+  SGS no chute forte, 15 hits, tela preta 50/0/47 e pose). O
+  `test_sakura_antiair_headless.py` foi alinhado ao orçamento atual de
+  30 HP do Shou'ou Ken forte (o mesmo do teste de 5 hits).
+
 ## Build de referência
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$BA77`**
-- layout MSU **`0x8E43`**
-- `.sfc` SHA-256 `6b8ac291…c3fa6a83`
-- `.msu` SHA-256 `6cc4291f…1ddb1444`
-- `.msu` 51.363.328 bytes
+- checksum **`$3856`**
+- layout MSU **`0x514F`**
+- `.sfc` SHA-256 `2420a29d…ebe4f795`
+- `.msu` SHA-256 `3be2fcd0…c0f4e154`
+- `.msu` 51.396.096 bytes
 
 ## Referências
 

@@ -352,6 +352,17 @@ triggerall = command = "x+y"
 triggerall = statetype = S
 trigger1 = ctrl
 
+[State -1, Throw y]
+type = ChangeState
+value = 800
+triggerall = command = "y"
+triggerall = statetype = S
+triggerall = ctrl
+trigger1 = command = "holdfwd"
+trigger1 = p2bodydist x < 20
+trigger2 = command = "holdback"
+trigger2 = p2bodydist x < 20
+
 [State -1, Taunt]
 type = ChangeState
 value = 160

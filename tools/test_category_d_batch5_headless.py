@@ -70,7 +70,7 @@ CASES = (
     ("sakura", "3150 Haru Ichiban", HCB, {A}, {108}),
     ("sakura", "3200 Midare Zakura", QCB2, {A}, {109}),
     ("sakura", "3250 MAX Midare Zakura", QCB2, {B_BTN}, {110}),
-    ("sakura", "3300 Shinkuu Hadouken", QCF, {A}, {111}),
+    ("sakura", "3300 Shun Goku Satsu", QCF, {A}, {114}),
     ("heavyd", "2200 D. Shadow", HCB, {A}, {107}),
     ("brian", "3300 American Supernova", QCB, {A}, {107}),
     ("brian", "3400 Galaxy Cyclone", HCB, {A}, {108}),

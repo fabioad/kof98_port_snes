@@ -549,6 +549,9 @@
                                         ;   FightTick stalls while nonzero
 .DEFINE SUPERFX     $7E51F0             ; super flash/dim frames remaining
 .DEFINE SUPERFX_MODE $7E51F1             ; 0 off, 1 white flash, 2 darken
+.DEFINE CINE_TIMER  $7E51F2             ; cinematic black-screen ticks
+.DEFINE CINE_ACTIVE $7E51F3             ; 1 while the saved backdrop is black
+.DEFINE CINE_BGCOL  $7E51F4             ; saved CGRAM colour 0 (word)
 .DEFINE SUPERFX_TICKS 32                ; 4 flash + 28 dim (Kyo helper 7000)
 .DEFINE SUPERFX_FLASH 4
 .DEFINE shaketmr    $74                 ; EnvShake ticks remaining
@@ -5701,7 +5704,7 @@ ApplyTimeActions:
     ldx fofs
     ldy #0
 ATA_row:
-    cpy #64.w
+    cpy #256.w                         ; up to 64 time rows (4 bytes each)
     bcs ATA_done8
     lda [sptr],y
     cmp #$FF.b
@@ -5807,6 +5810,13 @@ ActOp:
 +   cmp #18
     bne +
     jsr AO_hitreset                      ; low-bank MoveHitReset helper
+    rts
++   cmp #19
+    bne +
+    jmp AO_tlifex
++   cmp #20
+    bne +
+    jmp AO_cine
 +   rts
 AO_pfx:                                 ; PalFX: arg = bright-flash ticks
     ldx fofs
@@ -5992,6 +6002,30 @@ AO_tstat:                               ; TargetState: victim EnterState
 AO_out16:
     sep #$20
     .ACCU 8
+    rts
+AO_tlifex:                              ; TargetLifeAdd + combo counter
+    jsr AO_victim
+    cmp #$FFFF.w
+    beq AO_out16
+    lda scr5
+    sta vofs
+    lda fofs
+    sta aofs
+    jsr AO_tlife
+    rep #$20
+    .ACCU 16
+    jsr ComboBump
+    sep #$20
+    .ACCU 8
+    rts
+AO_cine:                                ; op20: cinematic blackout + combo 0
+    lda scr6+1
+    sta.l CINE_TIMER
+    sep #$20
+    .ACCU 8
+    ldx fofs
+    stz combohit,x
+    stz combotmr,x
     rts
 AO_velset:                              ; VelSet x = arg px/frame, signed,
     rep #$20                            ;   facing-relative, 8.8 fixed
@@ -8718,6 +8752,7 @@ TA_press:
     and FP+F_JOYPR,x                      ; fresh presses only
     cmp [sptr],y
     bne TA_next
+    bra TA_fire                          ; pressed: fire the follow-up state
 TA_hit:
     lda FP+F_HITDONE,x                    ; MoveHit: the attack connected
     and #$00FF.w                          ;   (hit, guard or parry); one tick
@@ -15086,6 +15121,12 @@ BuildOam:
     bne -
     ldx #0
     stx fofs
+    ; Cinematic blackout (Sakura Shun Goku Satsu): draw only the hit-spark
+    ; pool.  Skipping the bodies also keeps the fighters out of OAM so the
+    ; screen really reads as black with sparks.
+    lda.l CINE_TIMER
+    and #$00FF.w
+    bne BO_cine
 .IFDEF PVSNESLIB
     jsr DrawFighterCache
 .ELSE
@@ -15109,6 +15150,10 @@ BuildOam:
     ldx #FP2OFS
     stx fofs
     jsr DrawGhost
+    bra BO_fill
+BO_cine:
+    jsr DrawSparks
+BO_fill:
     rep #$20
     .ACCU 16
     ldx oamtop
@@ -15412,68 +15457,6 @@ TelReset:
     bne -
     rts
 
-; Called once per presentation before any DMA starts.  Counts pending
-; requests and request age (in frames) for both fighters.  A request is
-; timestamped in ASF_q_new; a new pose rejected while DMA is busy increments
-; TEL_DROP, which is the direct measure of animation poses that never made it
-; to the screen.
-TelPresent:
-    rep #$20
-    .ACCU 16
-    lda.w TEL_CTRL
-    beq +
-    jsr TelReset
-+   inc.w TEL_FRAMES
-    sep #$20
-    .ACCU 8
-    lda FP+F_DMAREQ
-    beq TP_no_p1
-    rep #$20
-    .ACCU 16
-    inc.w TEL_DMA_P1
-    ldx #0
-    jsr TelAge
-    sep #$20
-    .ACCU 8
-TP_no_p1:
-    lda FP+F_DMAREQ+FP2OFS
-    beq TP_no_p2
-    rep #$20
-    .ACCU 16
-    inc.w TEL_DMA_P2
-    ldx #2
-    jsr TelAge
-    sep #$20
-    .ACCU 8
-TP_no_p2:
-    rts
-
-; age = (framecnt - request_time) mod 256, accumulated and maxed.
-; X = 0 for P1, 2 for P2 (the telemetry fields are interleaved).
-TelAge:
-    rep #$10
-    sep #$20
-    .ACCU 8
-    lda framecnt
-    sta scr0
-    stz scr0+1
-    rep #$20
-    .ACCU 16
-    lda scr0
-    sec
-    sbc.w TEL_REQ_P1,x
-    bcs +
-    adc #$0100.w
-+   sta scr0
-    clc
-    adc.w TEL_AGE_SUM_P1,x
-    sta.w TEL_AGE_SUM_P1,x
-    lda scr0
-    cmp.w TEL_AGE_MAX_P1,x
-    bcc +
-    sta.w TEL_AGE_MAX_P1,x
-+   rts
-
 ; ---------------------------------------------------------------------------
 ; PVSnesLib owns the NMI.  Immediately after WaitForVBlank returns, present
 ; the engine's shadow buffers while forced blank is active.
@@ -15484,7 +15467,7 @@ TelAge:
 FightPresent:
     sep #$20
     .ACCU 8
-    jsr TelPresent
+    jsl TelPresent
     lda #$8F.b
     sta.l INIDISP
     jsr FxPrepareBoth
@@ -15553,6 +15536,10 @@ FP_present_vis_done:
 FP_present_opn:
     jsr OpnApply                          ;   (IN_FX==6 -> OpnFade flush)
 FP_present_on:
+    lda #$8F.b                          ; CGRAM/TM writes need forced blank
+    sta.l INIDISP
+    jsl CineAdvance
+    jsl CineApply
     jsl SuperFxPresent                   ; super flash/dim, INIDISP, framecnt
     rts
 .ELSE
@@ -23154,4 +23141,133 @@ CounterClear:
     rep #$20
     .ACCU 16
     rts
+.ENDS
+
+; ---------------------------------------------------------------------------
+; Presentation telemetry (moved out of the full Fight bank) and the
+; cinematic blackout helpers.  They live in the free tail of bank 126;
+; far calls from FightPresent keep the Fight section inside its 32 KiB
+; bank.
+; ---------------------------------------------------------------------------
+.BANK 126 SLOT 0
+.ORGA $E900
+.SECTION "SakuraCinema" FORCE
+TelPresent:
+    rep #$20
+    .ACCU 16
+    lda.w TEL_CTRL
+    beq +
+    ; TelReset lives in the Fight bank; inline its small clear loop here so
+    ; this far-called copy never crosses banks with jsr.
+    ldx #0
+    lda #0
+-   sta.w TEL_FRAMES,x
+    inx
+    inx
+    cpx #(TEL_MAX2+1-TEL_FRAMES)
+    bne -
++   inc.w TEL_FRAMES
+    sep #$20
+    .ACCU 8
+    lda FP+F_DMAREQ
+    beq TP_no_p1
+    rep #$20
+    .ACCU 16
+    inc.w TEL_DMA_P1
+    ldx #0
+    jsr TelAge
+    sep #$20
+    .ACCU 8
+TP_no_p1:
+    lda FP+F_DMAREQ+FP2OFS
+    beq TP_no_p2
+    rep #$20
+    .ACCU 16
+    inc.w TEL_DMA_P2
+    ldx #2
+    jsr TelAge
+    sep #$20
+    .ACCU 8
+TP_no_p2:
+    rtl
+
+; age = (framecnt - request_time) mod 256, accumulated and maxed.
+; X = 0 for P1, 2 for P2 (the telemetry fields are interleaved).
+TelAge:
+    rep #$10
+    sep #$20
+    .ACCU 8
+    lda framecnt
+    sta scr0
+    stz scr0+1
+    rep #$20
+    .ACCU 16
+    lda scr0
+    sec
+    sbc.w TEL_REQ_P1,x
+    bcs +
+    adc #$0100.w
++   sta scr0
+    clc
+    adc.w TEL_AGE_SUM_P1,x
+    sta.w TEL_AGE_SUM_P1,x
+    lda scr0
+    cmp.w TEL_AGE_MAX_P1,x
+    bcc +
+    sta.w TEL_AGE_MAX_P1,x
++   rts
+
+
+CineAdvance:
+    sep #$20
+    .ACCU 8
+    lda.l CINE_TIMER
+    beq +
+    dec a
+    sta.l CINE_TIMER
++   rtl
+
+CineApply:
+    php
+    sep #$20
+    .ACCU 8
+    lda.l CINE_TIMER
+    bne CA_on
+    lda.l CINE_ACTIVE
+    beq CA_done
+    lda #0
+    sta.l CINE_ACTIVE
+    lda #$15.b                          ; BG1 stage + BG3 HUD + OBJ
+    sta.l TM
+    lda #0
+    sta.l $2121                        ; CGRAM colour 0
+    lda.l CINE_BGCOL
+    sta.l CGDATA
+    lda.l CINE_BGCOL+1
+    sta.l CGDATA
+CA_done:
+    plp
+    rtl
+CA_on:
+    lda.l CINE_ACTIVE
+    bne CA_black
+    lda #0
+    sta.l $2121
+    lda.l $213B                         ; save backdrop low/high
+    sta.l CINE_BGCOL
+    lda.l $213B
+    sta.l CINE_BGCOL+1
+    lda #1
+    sta.l CINE_ACTIVE
+CA_black:
+    lda #$10.b                         ; only OBJ (hit sparks)
+    sta.l TM
+    lda #0
+    sta.l $2121
+    lda #0
+    sta.l CGDATA
+    sta.l CGDATA
+    plp
+    rtl
+
 .ENDS

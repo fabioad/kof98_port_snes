@@ -4371,22 +4371,84 @@ if "sakura" in CHARS:
         (108, 3150, 3150),     # Haru Ichiban
         (109, 3200, 3200),     # Midare Zakura
         (110, 3250, 3250),     # MAX Midare Zakura
-        (111, 3300, 3300),     # Shinkuu Hadouken
+        (112, 3305, 3305),     # Shun Goku Satsu 15-hit follow-up
+        (113, 3306, 3306),     # ... final knockdown
+        # Shun Goku Satsu root (3300) on a ground-dispatch slot; 111 is
+        # StAirSpec and would apply gravity to the stationary super.
+        (114, 3300, 3300),
+        # Sakura Otoshi air follow-up and landing.  65/68 are the free
+        # StAirSpec slots; 66 is StSpecial for the grounded recovery.
+        (65, 1320, 1320),
+        (68, 1321, 1321),
+        (66, 1325, 1325),
     ])
     _sak = POST_CAL_TWEAKS.setdefault("sakura", {})
+    _sak_cfg = CHARS["sakura"]
     _sak.setdefault("slice_damage", {}).update({
-        86: 26, 107: 20, 108: 35, 109: 30, 110: 40, 111: 30})
-    _sak.setdefault("act_override", {})[1400] = [
+        65: 6, 86: 26, 107: 20, 108: 35, 109: 30, 110: 40})
+    # act_override / explod_override / air boxes are consumed before
+    # POST_CAL_TWEAKS is merged; keep them on the character config itself.
+    _sak_cfg.setdefault("act_override", {})[1400] = [
         (0, 5, 0, 0), (0, 15, 0, 0)]
     # Ouka Kyaku is an air dive; pull the reused clip's box down so it
     # meets a standing opponent.
-    _sak.setdefault("air_box_patch_frames", {})[3200] = {
+    _sak_cfg.setdefault("air_box_patch_frames", {})[3200] = {
         3: [(0, -40, 60, 20)], 4: [(0, -40, 60, 20)]}
     _sak.setdefault("hitdef_override", {}).update({
         107: {"active": 4, "damage": 20, "gdamage": 2, "fall": 1},
-        111: {"active": 2, "damage": 30, "gdamage": 2, "p2state": 0xFF,
-              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+        # Shun Goku Satsu root: source p1stateno 3305 is a throw.  The old
+        # port entry made it an ordinary 30-damage strike and never bound
+        # the victim, so the cinematic follow-up could not run.
+        114: {"active": 2, "damage": 0, "gdamage": 0,
+              "p2state": 76, "throw": 1, "fall": 0, "gvx": 0, "gvy": 0},
     })
+    # 3305: source element 3 fires 15 TargetLifeAdd/HitAdd hits at sub-
+    # element times.  The ActTab dedupes by element, so schedule exact
+    # state-time rows instead (element 3 starts at tick 18).  Each op19
+    # applies 2 HP, bumps the combo counter and spawns a hit spark.
+    _sak_cfg.setdefault("act_override", {})[3305] = (
+        # The timer row also clears the combo so the 15 cinematic contacts
+        # count 1..15 (the opening grab HitDef already bumped the counter).
+        [(0, 20, 82, 0)] +
+        [(0x80 | t, 19, -2, 0)
+         for t in (20, 24, 28, 32, 36, 40, 44, 48, 52, 56,
+                   62, 66, 70, 74, 78)] +
+        # Drop the extracted source rows: one collapsed TargetLifeAdd
+        # (op3), one TargetState (op4) and one Explod (op14).  The 0xFE
+        # time never fires before the 80-tick state ends.
+        [(0xFE, 3, 0, 0), (0xFE, 4, 0xFF, 0), (0xFE, 14, 0, 0)])
+    # One compiled SparkHit per contact, at the same exact times.  The
+    # source randomizes the position; a fixed chest offset is enough and
+    # avoids another per-frame random in the fight bank.
+    _sak_cfg["explod_override"] = {
+        3305: [(0x80 | t, "SparkHit", 24, -50, 0, 0x34)
+               for t in (20, 24, 28, 32, 36, 40, 44, 48, 52, 56,
+                         62, 66, 70, 74, 78)],
+        # Final knockdown spark; op3 below does the damage without
+        # touching the 15-hit combo count.
+        3306: [(0x80, "SparkHit", 24, -50, 0, 0x34)]}
+    # 3306: final hit/knockdown.  Release the victim into the generic
+    # throw-flight victim slot (816 -> S_VTHROW).  op3 (not op19) keeps the
+    # displayed combo at 15; the release runs one tick later because rows at
+    # the same trigger are sorted by op and TargetState would run first.
+    _sak_cfg["act_override"][3306] = [
+        (0x80, 3, -20, 0),
+        (0x81, 4, 816, 0),
+        (0xFE, 3, 0, 0)]
+    _sak.setdefault("extra_trans", []).extend([
+        # Sakura Otoshi: x/y during the rising jump continues into 1320;
+        # 1321 bounces back into 1320 (up to three hits) and both land
+        # through 1325.
+        (50, 65, 2, 0x4000), (50, 65, 2, 0x0040),
+        (51, 65, 2, 0x4000), (51, 65, 2, 0x0040),
+        (68, 65, 2, 0x4000), (68, 65, 2, 0x0040),
+        (65, 66, 1, 0), (68, 66, 1, 0),
+        # After the opponent is knocked down, finish on the taunt pose.
+        (113, 47, 0, 0),
+    ])
+    # Do not prioritise the single-QCF SGS rules: the longer QCFx2+b
+    # Haru Ichiban rule must win that input, while a single QCF+b still
+    # falls through to SGS_B.
     _sak.setdefault("cmd_priority", []).append("HARU")
     _sak.setdefault("cmd_extra", []).extend([
         {"name": "OUKA", "label": "OUKA KYAKU",
@@ -4404,9 +4466,12 @@ if "sakura" in CHARS:
         {"name": "MIDARE_MAX", "label": "MAX MIDARE ZAKURA",
          "state": 3250, "posture": 3, "time": 30,
          "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 8)]},
-        {"name": "SHINKUU", "label": "SHINKUU HADOUKEN",
+        {"name": "SGS_A", "label": "SHUN GOKU SATSU",
          "state": 3300, "posture": 3, "time": 30,
          "elems": [(2, 0), (6, 0), (4, 0), (0, 4)]},
+        {"name": "SGS_B", "label": "SHUN GOKU SATSU",
+         "state": 3300, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 8)]},
     ])
 
 if "heavyd" in CHARS:
@@ -8599,6 +8664,17 @@ def build_char(name, cfg, global_pal=None):
                             if r[1] not in _drop_ops]
         cns_acts[_state] += [(int(f), int(op), int(a), int(c))
                              for f, op, a, c in _rows]
+    # Per-state Explod timeline overrides for effects the source fires at
+    # sub-element times (Sakura's 15 Shun Goku Satsu sparks).  Appending a
+    # row here reuses the existing ActTab op14/ExplodSpawn path, so the
+    # fight bank pays no extra code.
+    for _state, _rows in (cfg.get("explod_override") or {}).items():
+        for _frame, _label, _x, _y, _ttl, _attr in _rows:
+            _row = len(cns_exprows)
+            cns_exprows.append((EXPLODS_IDX[_label], int(_x), int(_y),
+                                0, 0, 0, int(_ttl) & 0xFF, int(_attr)))
+            cns_acts.setdefault(_state, []).append(
+                (int(_frame), 14, _row, 0))
     # Explicitly remove source ActTab ops the port cannot represent safely
     # (an unconditional MUGEN Turn would flip an already-facing fighter).
     for _state, _ops in (cfg.get("act_drop") or {}).items():
