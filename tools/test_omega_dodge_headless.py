@@ -8,7 +8,7 @@ in-place 720 pose:
   * L + forward -> sid 95 / state 1010, forward clip
   * L + back    -> sid 94 / state 1011, back clip
   * Y + B       -> sid 69 / state 720 (the standard DODGE input)
-  * L alone     -> neutral dodge (Omega-specific; other characters taunt).
+  * L alone     -> neutral dodge (all characters now use this slot).
 
 The CMD targets are also checked against the generated animation table:
 state 1010 must use the forward clip, 1011 the back clip, and the neutral
@@ -105,9 +105,9 @@ def main():
     assert anim != taunt_anim, "L alone fell back to the taunt animation"
     print("PASS Omega L alone -> neutral dodge (sid 69, not taunt)")
 
-    seen, _ = run((), (L,), 47, "kyo")
-    assert 47 in seen, f"other characters lost the L-alone taunt ({seen})"
-    print("PASS other characters keep L alone -> taunt")
+    seen, _ = run((), (L,), 69, "kyo")
+    assert 69 in seen, f"other characters lost the L-alone dodge ({seen})"
+    print("PASS other characters use L alone -> neutral dodge (sid 69)")
 
 
 if __name__ == "__main__":

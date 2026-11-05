@@ -8065,7 +8065,21 @@ def legacy_quote_lines(name, cfg):
     return out
 
 
-def wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers, sff=None):
+def dodge_anim_pair(anim_map):
+    """Return the (sid94 back, sid95 forward) animation pair.
+
+    The shared source clips are visually opposite to their state labels.
+    The build swaps only the animation sources; the state/velocity mapping
+    stays intact.  Omega is corrected separately and does not use this.
+    """
+    fwd = anim_map.get(95)
+    back = anim_map.get(94)
+    if fwd is None or back is None or fwd == back:
+        return back, fwd
+    return fwd, back
+
+
+def wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers):
     """Wire the source throw bind + victim poses for every fighter.
 
     The roster tables predate the throw audit: most rows point sid 74/75 at
@@ -8201,17 +8215,6 @@ def wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers, sff=None):
     if cfg["anims"].get(77) in (None, 47, 250, 300, 5000, 5050):
         cfg["anims"][77] = 5050 if 5050 in air else 47
         anims[77] = cfg["anims"][77]
-    # Every source SFF carries the torso-anchored hold sprite (group 5011)
-    # used by the original throw victim poses.  The old fallback used the
-    # standing hit action 5000, whose axis is at the feet: binding that at
-    # the attacker's hand looked like holding the opponent by the feet.
-    # Use the victim's own hold sprite so the bind point is the torso.
-    held = next((s for s in (sff.sprites if sff else ())
-                 if s.group == 5011), None)
-    if held is not None:
-        air[65003] = ([(held.group, held.number, 0, 0, 255, "", [], [])], 0)
-        cfg.setdefault("anims", {})[76] = 65003
-        anims[76] = 65003
 
 
 def _clean_def_path(value):
@@ -8547,7 +8550,7 @@ def build_char(name, cfg, global_pal=None):
     # Stale source hashes or changed manual values fail closed at build time.
     from calibration.native import apply_profile
     apply_profile(ROOT, name, cfg, cns_moves, air)
-    wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers, sff)
+    wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers)
     if name in COUNTER_GRAB_POST_CAL:
         _rows = COUNTER_GRAB_POST_CAL[name]
         wire_counter_grabs(cfg, _rows)
@@ -8571,6 +8574,18 @@ def build_char(name, cfg, global_pal=None):
         cfg["moves"][_sid] = _state
         cfg["anims"][_sid] = _anim
         anims[_sid] = _anim
+    # The shared FUSION dodge clips are visually opposite to their state
+    # labels: the forward-roll state uses the backward-looking clip and
+    # vice versa.  Swap only the animation sources for sids 95 (forward)
+    # and 94 (back); the state/velocity mapping stays intact.  Omega was
+    # already corrected explicitly in its POST_CAL_REACTIVATED rows.
+    if name != "omegarugal":
+        _back, _fwd = dodge_anim_pair(anims)
+        if _back is not None and _fwd is not None and (
+                anims.get(94) != _back or anims.get(95) != _fwd):
+            anims[94], anims[95] = _back, _fwd
+            cfg.setdefault("anims", {})[94] = _back
+            cfg["anims"][95] = _fwd
     for _sid, _cat in POST_CAL_CATEGORIES.get(name, {}).items():
         cfg.setdefault("cmd_categories", {})[_sid] = _cat
     for _sid, _delta in POST_CAL_POW_OVERRIDE.get(name, {}).items():

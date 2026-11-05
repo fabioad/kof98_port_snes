@@ -208,6 +208,12 @@ def test_p1_p2_usage_markers():
     core = boot()
     try:
         start_practice(core, p2=1, cpu2=0)
+        # Keep the two pads out of poke range: the usage markers are set by
+        # CmdTrack on input, and a connected P1 kick would put P2 in hitstun
+        # before its own B press could be recorded.
+        core.put(0x4000, 60 << 8)
+        core.put(0x4040, 200 << 8)
+        core.step(10)
         # P1: SNES B maps to MUGEN a -> sid 7 (Stand Light Kick).
         tap(core, B, 0)
         core.step(15)

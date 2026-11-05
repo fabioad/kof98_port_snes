@@ -6235,13 +6235,13 @@ PushHist:                               ; X=fofs, acc mode free
     lsr a
     tsb ct_tmp
     pla                                 ; L=$20 R=$10 -- release routing:
-    and #$30                            ;   L alone -> s (taunt),
+    and #$30                            ;   L alone -> c (neutral dodge),
     beq PHS_after                       ;   F/B+L -> c (dodge/roll),
     cmp #$20                            ;   R alone -> y|b (Blowback)
     bne PHS_blow
     lda ct_dir
     and #$0C                            ; holding F/B with L keeps the roll
-    beq PHS_taunt
+    beq PHS_lneutral
     lda #$10                            ; L + direction -> c token
     tsb ct_tmp
     bra PHS_after
@@ -6249,8 +6249,8 @@ PHS_blow:
     lda #$0A
     tsb ct_tmp
     bra PHS_after
-PHS_taunt:
-    lda #$40
+PHS_lneutral:
+    lda #$10                            ; L alone -> c token (ESQ_L)
     tsb ct_tmp
 PHS_after:
     lda FP+F_JOY,x                      ; R *held* ($10) arms the z token on

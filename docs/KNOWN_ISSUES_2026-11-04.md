@@ -315,6 +315,13 @@ PalFX/AfterImage (Categoria E).
   iniciou. No Team Play o CPU P1 escolhe o trio primeiro e depois o
   cursor do P2 fica ativo. Regressão:
   `tools/test_menu_p2_start_headless.py`.
+- **Esquivas padrão (05/11)** — L+trás e L+frente usam os clipes
+  trocados para casar com o estado/velocidade (os clipes da fonte são
+  autorais ao contrário do rótulo); L sozinho agora emite o token `c` e
+  entra na regra `ESQ_L`/esquiva parada (sid 69), não mais no
+  `start`/taunt. Vale para todos os personagens; Omega mantém o
+  mapeamento explícito. Regressão:
+  `tools/test_dodge_standard_headless.py`.
 - **Robert (05/11)** — Ryuga agora sobe (follow-ups 1101/1111 ligados);
   o Hien Ryujin aéreo ganhou caixa de contato desde o primeiro frame;
   o Hien Shippuu '95 passou para chute e o HCB+K real tem prioridade.
@@ -337,9 +344,9 @@ PalFX/AfterImage (Categoria E).
   1010/1011 para corrigir a inversão visual: frente usa 1010 e trás usa
   1009. A esquiva parada ganhou afterimage e a regressão confere o
   ponteiro de animação, garantindo que L sozinho não caia no taunt
-  (195). Nos demais personagens L sozinho continua taunt; só Omega usa o
-  token s para a esquiva. Regressão:
-  `tools/test_omega_dodge_headless.py`.
+  (195). Todos os personagens usam L sozinho para a esquiva parada via
+  token c/ESQ_L; o mapeamento explícito do Omega continua igual.
+  Regressão: `tools/test_omega_dodge_headless.py`.
 - **Blowback aéreo (05/11)** — o R no ar reutiliza o clipe do normal
   aéreo forte (sid 24), cujo Clsn1 cobria só o braço. Enquanto o latch
   de air-blowback está ativo, o `MinReachBox` une uma caixa de corpo
@@ -353,12 +360,10 @@ PalFX/AfterImage (Categoria E).
   quatro botões usam as animações far 250/260/270/280. A Yuri foi
   conferida e já estava correta (200/202/204/206). Regressão:
   `tools/test_king_yuri_normals_headless.py`.
-- **Arremessos — pose do alvo (05/11)** — o alvo usava a animação de hit
-  em pé (5000), cujo eixo fica nos pés; preso no ponto da mão, parecia
-  ser segurado pelos pés. O slot 76 agora usa o sprite de hold ancorado
-  no torso (grupo 5011) do próprio SFF do alvo. Custa um sprite por
-  personagem, então o layout MSU foi repaginado. Regressão:
-  `tools/test_throw_hold_headless.py`.
+- **Arremessos — pose do alvo (revertido em 05/11)** — a tentativa
+  genérica de usar o sprite de hold ancorado no torso (grupo 5011)
+  deixou os oponentes baixos demais na tela. Revertida para o fallback
+  anterior; o alinhamento fino será feito personagem por personagem.
 - **Categoria A** — concluída; manter a regressão de comandos.
 
 ## Áudio
@@ -385,11 +390,11 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$1BFB`**
-- layout MSU **`0x77D7`**
-- `.sfc` SHA-256 `7e384238…825143e`
-- `.msu` SHA-256 `cefef5ff…0f1c486`
-- `.msu` 51.428.864 bytes
+- checksum **`$2576`**
+- layout MSU **`0x17CD`**
+- `.sfc` SHA-256 `fd0687cb…fdd4955`
+- `.msu` SHA-256 `8bc55c82…21c73cf`
+- `.msu` 51.232.256 bytes
 
 ## Referências
 
