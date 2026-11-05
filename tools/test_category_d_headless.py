@@ -60,16 +60,16 @@ def feed(core, steps, buttons, hold=2, charge=None):
 CASES = (
     ("kyo 3500", HCB2, {WEAK}, 3, None, 30, {89, 65}),
     ("kyo 3550", HCB2, {WEAK, STRONG}, 3, None, 30, {87, 103}),
-    ("kyo 3305", QCF2, {WEAK, STRONG}, 2, None, 15, {88}),
+    ("kyo 3305", QCF2, {WEAK, STRONG}, 3, None, 15, {88}),
     ("kyonests 3500", HCB2, {WEAK}, 3, None, 30, {89, 65}),
     ("kyoash 3550", HCB2, {WEAK, STRONG}, 3, None, 30, {87, 103}),
     ("terry 3000", (BACK, F), {WEAK}, 2, (D, 20), 20, {85}),
     ("terry 3010", (BACK, F), {STRONG}, 2, (D, 20), 25, {86}),
     ("terry 3050", (BACK, F), {WEAK, STRONG}, 2, (D, 20), 15, {87}),
-    ("athena 4000", (F, D, BACK, F, D, BACK), {STRONG}, 2, None, 50, {88}),
+    ("athena 4000", (F, D, BACK, F, D, BACK), {STRONG}, 3, None, 50, {88}),
     ("athena 3000", HCB2, {WEAK}, 3, None, 35, {85}),
-    ("athena 3050", QCF2, {WEAK}, 2, None, 35, {86}),
-    ("athena 3100", QCF2, {PHYS_B}, 2, None, 30, {87}),
+    ("athena 3050", QCF2, {WEAK}, 3, None, 35, {86}),
+    ("athena 3100", QCF2, {PHYS_B}, 3, None, 30, {87}),
 )
 
 

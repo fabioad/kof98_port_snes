@@ -100,6 +100,16 @@ PROJECTILE_ALT_EFFECTS = {
         "sids": (85, 86, 87),
         "release": 2,
     },
+    # Rugal's Eye Beam (1702 -> helper 1705).  The AIR 1704 was stripped
+    # from the package; the beam cell is SFF group 1705 and is synthesized
+    # by the `projectile_air` config.  Only the Eye Beam slot selects it.
+    "rugal": {
+        "action": 1704,
+        "frames": ((0, 6),),
+        "pre_scale": 2,
+        "sids": (82,),
+        "release": 3,
+    },
 }
 
 # Characters that reuse another character's compiled projectile effect.  The

@@ -96,6 +96,7 @@ CASES = (
     ("robert", "3020 Haoh Shikou Ken MAX", QCB2, {A, B_BTN}, {111}, 8, None),
     # Rugal
     ("rugal", "1800 Beads Destruction", HCB, {X, Y}, {66}, 8, None),
+    ("rugal", "1702 Eye Beam", QCF, {Z}, {82}, 8, None),
     # Iori
     ("iori", "3100 Ya Sakazuki", QCB, {Z}, {106}, 4, None),
     ("iori", "3110 Ya Sakazuki S", QCB, {X, Y}, {107}, 5, None),
@@ -104,12 +105,24 @@ CASES = (
     ("kyo", "3100 Mushiki 96", QCB2, {A}, {107}, 30, None),
     ("kyo", "3150 Mushiki 96 MAX", QCB2, {A, B_BTN}, {109}, 40, None),
     ("kyo", "3250 MAX Mushiki", QCB2, {B_BTN}, {111}, 18, None),
+    ("kyo", "1400 Koto Tsuki You", QCB2, {X}, {113, 114}, 5, None),
+    ("kyo", "1410 Koto Tsuki You S", QCB2, {X, Y}, {99, 114}, 5, None),
+    ("kyo", "182 Shiki 99", QCF2, {Z}, {88}, 8, None),
+    ("kyo", "3050 Orochinagi MAX", QCF2, {B_BTN}, {101, 60}, 20, None),
     ("kyonests", "3100 Mushiki 96", QCB2, {A}, {107}, 30, None),
     ("kyonests", "3150 Mushiki 96 MAX", QCB2, {A, B_BTN}, {109}, 40, None),
     ("kyonests", "3250 MAX Mushiki", QCB2, {B_BTN}, {111}, 18, None),
+    ("kyonests", "1400 Koto Tsuki You", QCB2, {X}, {113, 114}, 5, None),
+    ("kyonests", "1410 Koto Tsuki You S", QCB2, {X, Y}, {99, 114}, 5, None),
+    ("kyonests", "182 Shiki 99", QCF2, {Z}, {88}, 8, None),
+    ("kyonests", "3050 Orochinagi MAX", QCF2, {B_BTN}, {101, 60}, 20, None),
     ("kyoash", "3100 Mushiki 96", QCB2, {A}, {107}, 30, None),
     ("kyoash", "3150 Mushiki 96 MAX", QCB2, {A, B_BTN}, {109}, 40, None),
     ("kyoash", "3250 MAX Mushiki", QCB2, {B_BTN}, {111}, 18, None),
+    ("kyoash", "1400 Koto Tsuki You", QCB2, {X}, {113, 114}, 5, None),
+    ("kyoash", "1410 Koto Tsuki You S", QCB2, {X, Y}, {99, 114}, 5, None),
+    ("kyoash", "182 Shiki 99", QCF2, {Z}, {88}, 8, None),
+    ("kyoash", "3050 Orochinagi MAX", QCF2, {B_BTN}, {101, 60}, 20, None),
 )
 
 
@@ -119,9 +132,9 @@ def feed(core, steps, buttons, charge=None):
         core.step(charge[1])
     for token in steps:
         core.buttons[0] = set(token)
-        core.step(2)
+        core.step(3)
     core.buttons[0] = set(buttons)
-    core.step(2)
+    core.step(3)
     core.buttons[0] = set()
 
 

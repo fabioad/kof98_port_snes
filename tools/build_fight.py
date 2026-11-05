@@ -2725,6 +2725,11 @@ for _k in ("kyo", "kyonests", "kyoash"):
         (110, 3151, 3151),     # MAX follow-up flurry
         (111, 3250, 3250),     # original MAX Mushiki
         (112, 3251, 3251),     # landing
+        # Koto Tsuki You (1400/1410 -> 1405) and the remaining supers.
+        (99, 1410, 1400),      # Koto Tsuki You strong dash
+        (101, 3050, 3050),     # MAX Orochinagi charge -> 3005
+        (113, 1400, 1400),     # Koto Tsuki You weak dash
+        (114, 1405, 1405),     # Koto Tsuki You strike
     ])
     _ktw = POST_CAL_TWEAKS.setdefault(_k, {})
     _ktw.setdefault("slice_damage", {}).update(
@@ -2755,6 +2760,32 @@ for _k in ("kyo", "kyonests", "kyoash"):
         "state": 3250, "posture": 3, "time": 30,
         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
                   (0, 8)],
+    }])
+    _ktw.setdefault("slice_damage", {}).update({114: 10})
+    _ktw.setdefault("extra_trans", []).extend([
+        (101, 60, 0, 0)])
+    _ktw.setdefault("cmd_priority", []).extend([
+        "SHIKI_99", "OROCHI_MAX"])
+    _ktw.setdefault("cmd_extra", []).extend([{
+        "name": "KOTO_W", "label": "KOTO TSUKI YOU",
+        "state": 1400, "posture": 3, "time": 26,
+        "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
+                  (0, 1)],
+    }, {
+        "name": "KOTO_S", "label": "KOTO TSUKI YOU S",
+        "state": 1410, "posture": 3, "time": 26,
+        "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
+                  (0, 3)],
+    }, {
+        "name": "OROCHI_MAX", "label": "OROCHINAGI MAX",
+        "state": 3050, "posture": 3, "time": 26,
+        "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0),
+                  (0, 8)],
+    }, {
+        "name": "SHIKI_99", "label": "182 SHIKI 99",
+        "state": 3305, "posture": 3, "time": 26,
+        "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0),
+                  (0, 32)],
     }])
 
 if "athena" in CHARS:
@@ -3064,17 +3095,62 @@ if "robert" in CHARS:
 # Category D: Rugal / Omega Rugal / Takuma / Iori.
 # ---------------------------------------------------------------------------
 if "rugal" in CHARS:
-    POST_CAL_REACTIVATED.setdefault("rugal", []).append(
-        (66, 1800, 300))       # Beads Destruction (AIR 1800 was stripped)
-    POST_CAL_TWEAKS.setdefault("rugal", {}).update({
-        "slice_damage": {66: 14},
-        "cmd_extra": [{
-            "name": "BEADS_DESTRUCTION", "label": "BEADS DESTRUCTION",
-            "state": 1800, "posture": 3, "time": 26,
-            "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 3)],
-        }],
-        "cmd_priority": ["BEADS_DESTRUCTION"],
+    POST_CAL_REACTIVATED.setdefault("rugal", []).extend([
+        (66, 1800, 300),       # Beads Destruction (AIR 1800 was stripped)
+        (82, 1702, 1702),      # Eye Beam (AIR 1702 synthesized from 1400)
+    ])
+    POST_CAL_PROJS.setdefault("rugal", {}).update({
+        # Eye Beam: horizontal shot, source helper 1705.
+        82: (0x0500, 14, 0x0A),
     })
+    _rug = POST_CAL_TWEAKS.setdefault("rugal", {})
+    _rug.setdefault("slice_damage", {}).update({66: 14})
+    _rug.setdefault("cmd_priority", []).extend([
+        "EYE_BEAM", "BEADS_DESTRUCTION"])
+    _rug.setdefault("cmd_extra", []).extend([{
+        "name": "BEADS_DESTRUCTION", "label": "BEADS DESTRUCTION",
+        "state": 1800, "posture": 3, "time": 26,
+        "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 3)],
+    }, {
+        "name": "EYE_BEAM", "label": "EYE BEAM",
+        "state": 1702, "posture": 3, "time": 26,
+        "elems": [(2, 0), (6, 0), (4, 0), (0, 32)],
+    }])
+    # Synthesize the stripped source actions from the SFF groups: the
+    # caster pose from the Reppuken clip and the beam cell (group 1705)
+    # for the alternate ProjFx atlas.
+    _rug.setdefault("air_synth", {}).update({1702: 1400})
+    _rug.setdefault("projectile_air", {}).update({1704: [(1700, 0, 6)]})
+
+# Omega Rugal: Gravity shot (7100) and RE (8000).  Both source states exist
+# in the pack; 8000's victim state 8001 does not, so it is approximated as a
+# normal knockdown.  The character shares Rugal's select cell in the headless
+# roster (cell 37), so these rows are build-verified only.
+if "omegarugal" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("omegarugal", []).extend([
+        (82, 7100, 1358),      # Gravity shot
+        (83, 8000, 8000),      # RE rush
+    ])
+    POST_CAL_PROJS.setdefault("omegarugal", {}).update({
+        82: (0x0100, 14, 0x20),
+    })
+    _orug = POST_CAL_TWEAKS.setdefault("omegarugal", {})
+    _orug.setdefault("slice_damage", {}).update({83: 40})
+    _orug.setdefault("hitdef_override", {}).update({
+        83: {"damage": 40, "p2state": 0xFF, "gvx": 0, "gvy": 0,
+             "fall": 1},
+    })
+    _orug.setdefault("cmd_priority", []).extend(
+        ["RE_RUSH", "GRAVITY_SHOT"])
+    _orug.setdefault("cmd_extra", []).extend([{
+        "name": "GRAVITY_SHOT", "label": "GRAVITY SHOT",
+        "state": 7100, "posture": 3, "time": 22,
+        "elems": [(2, 0), (6, 0), (4, 0), (0, 32)],
+    }, {
+        "name": "RE_RUSH", "label": "RE",
+        "state": 8000, "posture": 3, "time": 22,
+        "elems": [(2, 0), (10, 0), (8, 0), (0, 32)],
+    }])
 
 # ---------------------------------------------------------------------------
 # Andy: Dan Da Dan (3200/3210/3250 -> rush 3201/3211/3251 -> finisher).
@@ -7253,6 +7329,18 @@ def build_char(name, cfg, global_pal=None):
         for _e in _elems:
             _rows.append((max(0, min(0x7F, int(_e) - 1)), 18, 1, 0))
         cns_acts[_state] = sorted(set(_rows))
+
+    # Post-calibration air synthesis: POST_CAL_TWEAKS runs after the first
+    # synthesis pass, so apply the late actions (Rugal's stripped Eye Beam
+    # 1702/1704) here, before AnimTab is built.
+    for anum, entries in (cfg.get("projectile_air") or {}).items():
+        if anum in air:
+            continue
+        air[anum] = ([(g, n, 0, 0, max(1, int(t)), "", [], [])
+                      for g, n, t in entries], 0)
+    for anum, src in (cfg.get("air_synth") or {}).items():
+        if anum not in air and src in air:
+            air[anum] = air[src]
 
     # Which super slots are MAX/SDM versions?  Stored in a descriptor byte
     # (CH_MAXMASK) so the matcher no longer guesses from the sid number.

@@ -79,7 +79,7 @@ A correção do bit3 também foi o que destravou esses projéteis.
 - Terry 3000: 25; 3010: 30; 3050: 50;
 - Athena 4000: 62; 3000: 48; 3050: 42; 3100: 40.
 
-`tools/test_category_d_remaining_headless.py` — **57 golpes PASS**
+`tools/test_category_d_remaining_headless.py` — **70 golpes PASS**
 (segundo bloco, 05/11):
 
 - Terry: 1050 14, 1450 12, 1550 30, 1560 34, 1600 16, 1700 20,
@@ -90,15 +90,17 @@ A correção do bit3 também foi o que destravou esses projéteis.
 - Ryo: 1150 26, 1160 32, 1250 14, 1260 28, 2100 13, 3250 30,
   1050 14, 1400 12 (3 contatos), 2000/2010 14/14 (aéreo),
   3150 MAX Ryuuko 98;
-- Kyo / Nests / Ash: Mushiki '96 3100 47, MAX 3150 58 e MAX Mushiki
-  3250 24 (as três variantes);
+- Kyo / Nests / Ash: Mushiki '96 3100 47, MAX 3150 58, MAX Mushiki
+  3250 24, Koto Tsuki You 1400/1410 10, 182 Shiki '99 18 e Orochinagi
+  MAX 3050 55 (as três variantes);
 - Robert: 1050 14, 3200 24, 3210 37, 3220 47, 3270 44, 1250 28,
   1260 42, 1400 16 (4 contatos), 1450 16 (4 contatos), Haoh 3000/3010/3020
   14/14/14;
-- Rugal: 1800 14;
+- Rugal: 1800 14 e Eye Beam 1702 14;
 - Iori: 3100 6, 3110 8, 3150 12.
 
-Regressões: `pytest -q tools/tests` **272 passed**, além de
+Regressões: `pytest -q tools/tests` **274 passed** (inclui o novo
+`tools/tests/test_category_d_tables.py`), além de
 `test_category_a_headless`, `test_clark_chains_headless`,
 `test_chizuru_clones_headless`, `test_chizuru_dp_headless`,
 `test_ai_headless`, `test_msu_chr_visibility_headless` (960 páginas/56
@@ -164,11 +166,13 @@ flurry 3160 (10 rearmes de HitDef) e finaliza em 3161.
 
 ### Kyo / Nests / Ash
 
-**3100/3101** (Mushiki '96, 47), **3150/3151** (MAX, 58) e
-**3250/3251** (MAX Mushiki, 24). Os três compartilham o CNS e o CMD;
-as mesmas linhas pós-calibração são aplicadas a `kyo`, `kyonests` e
-`kyoash`. Os flurries usam `hit_soft_resets` nos elementos de ataque e
-`slice_no_fall` para manter a vítima em hitstun.
+**3100/3101** (Mushiki '96, 47), **3150/3151** (MAX, 58),
+**3250/3251** (MAX Mushiki, 24), **1400/1410 → 1405** (Koto Tsuki You,
+10), **3305/182 Shiki '99** (18) e **3050** (Orochinagi MAX, 55). Os três
+compartilham o CNS e o CMD; as mesmas linhas pós-calibração são aplicadas
+a `kyo`, `kyonests` e `kyoash`. Os flurries usam `hit_soft_resets` nos
+elementos de ataque e `slice_no_fall` para manter a vítima em hitstun.
+O Orochinagi **3010** (forte) segue pendente; o MAX 3050 está ligado.
 
 ### Robert
 
@@ -181,8 +185,19 @@ Haoh saem como projéteis (helper 3005/3025).
 ### Rugal
 
 1800 (Beads Destruction). A AIR 1800 não veio no pacote importado; o
-golpe reusa um clipe de soco e mantém o HitDef/alcance. O Eye Beam 1700
-continua bloqueado: a AIR 1704 também não existe no pacote.
+golpe reusa um clipe de soco e mantém o HitDef/alcance. O **Eye Beam**
+(1700→1702, 14) foi implementado: a AIR 1702 reusa o clipe do Reppuken e
+a AIR 1704 (feixe) é sintetizada do grupo SFF 1700; o ProjFx alternativo
+usa o grupo 1705 com `pre_scale=2`. O comando é `QCF+Z` (R).
+
+### Omega Rugal
+
+**7100 Gravity shot** (14) e **8000 RE** (40) foram ligados. O 7100 usa o
+projétil 1357 e o orbe 1035; o 8000 usa o HitDef de corpo no elemento 18,
+com o victim state 8001 substituído por um knockdown normal
+(`p2state=$FF`). O harness headless seleciona o Rugal para a célula 37,
+então esses dois golpes são **verificados por tabela/build** (teste
+estático `tools/tests/test_category_d_tables.py`), não em runtime.
 
 ### Iori
 
@@ -192,22 +207,24 @@ root com dano por ProjTab 6/8/12 e release no segundo frame.
 
 ### Ainda bloqueado
 
-- **Omega Rugal** — Gravity shot 7100 e RE 8000: a AIR 8000 e o victim
-  state 8001 não foram portados; o personagem também compartilha a célula
-  37 com o Rugal no seletor, então o harness headless não o seleciona.
 - **Takuma** — 1400/1410, 1600/1610 e 1050/1060: a tabela gerada do
   personagem está no limite de 32 KiB do banco; seis sids novos estouram
   o assert de build. Os quatro comandos existentes seguem intactos.
-- **Rugal** — Eye Beam 1700 (AIR 1704 ausente).
+- **Kyo 3010** (Orochinagi forte) — o comando QCF+a não estabilizou no
+  harness (o slot colide com o MAX 3050); o MAX 3050 está entregue.
+- **Omega Rugal em runtime** — o seletor do harness usa a célula 37
+  (compartilhada com Rugal), então 7100/8000 só são conferidos por tabela
+  estática (`tools/tests/test_category_d_tables.py`); o build compila as
+  linhas e o ProjTab.
 
 ## Build
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$A9AD`**
-- layout MSU **`0x3310`**
-- `.sfc` SHA-256 `8ef11dee…f4dbdf`
-- `.msu` SHA-256 `3841c9af…b2809b`
+- checksum **`$6EEA`**
+- layout MSU **`0xADFA`**
+- `.sfc` SHA-256 `cfea46f4…408d6b`
+- `.msu` SHA-256 `e6aea1dd…a182d6`
 
 Copie `.sfc` e `.msu` juntos.
 
