@@ -8403,6 +8403,14 @@ def build_char(name, cfg, global_pal=None):
         for sprite in sff.sprites:
             sprite.palidx = palette_bank
     air = parse_air(asset_path(cfg["air"]))
+    # Knockdown fall (action 5050) carries two source poses.  The second
+    # pose starts a separate CHR/meta upload in the middle of the fall; on
+    # streamed characters that page is blank for a few frames and the victim
+    # appears to pop up from below the screen.  Hold the first falling pose
+    # until the landing state switches to the lie sprite.
+    if 5050 in air and len(air[5050][0]) > 1:
+        _frames, _loop = air[5050]
+        air[5050] = ([_frames[0]], 0)
     # Per-frame Clsn1 patches for ports that need the last contact of a
     # multi-hit move to land on every victim build.  The source's final
     # Vulcan Punch box misses shorter/lower hit animations, so the fifth

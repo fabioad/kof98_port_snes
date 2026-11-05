@@ -316,6 +316,11 @@ PalFX/AfterImage (Categoria E).
   em um clipe alternativo comprimido (4 células por frame), não mais a
   orbe do Gravity Smash; isso elimina o estouro de OAM/VRAM. Regressão:
   `test_omega_gravity_headless.py` (14 de dano, 4 células).
+- **Queda/knockdown (05/11)** — a ação 5050 tinha duas poses; a segunda
+  iniciava um upload de CHR no meio da queda e deixava o corpo em branco
+  por alguns frames (o efeito de "surgir de baixo da tela"). O port agora
+  mantém a primeira pose de queda até o estado deitado (5110), sem troca
+  de página no meio do tombo.
 - **Categoria A** — concluída; manter a regressão de comandos.
 
 ## Áudio
@@ -331,10 +336,11 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$2817`**
-- layout MSU **`0xDA0E`**
-- `.sfc` SHA-256 `eeeaf2c7…d9d680d`
-- `.msu` SHA-256 `03cb0bf1…a3bc6c`
+- checksum **`$BE7E`**
+- layout MSU **`0xA7E9`**
+- `.sfc` SHA-256 `673c883c…14be7e7`
+- `.msu` SHA-256 `81685d8b…50d115`
+- `.msu` 51.265.024 bytes
 
 ## Referências
 
