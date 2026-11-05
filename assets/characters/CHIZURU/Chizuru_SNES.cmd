@@ -56,32 +56,32 @@ time = 18
 [Command]
 name = "SUP1"
 command = ~D, DF, F, D, DF, F, x
-time = 18
+time = 30
 
 [Command]
 name = "SUP2"
 command = ~D, DF, F, D, DF, F, y
-time = 18
+time = 30
 
 [Command]
 name = "SUP3"
 command = ~D, B, D, B, x
-time = 18
+time = 30
 
 [Command]
 name = "MDFDF_a+df"
 command = ~D, DF, F, D, DF, F, a
-time = 18
+time = 30
 
 [Command]
 name = "MDFDF_b+df"
 command = ~D, DF, F, D, DF, F, b
-time = 18
+time = 30
 
 [Command]
 name = "SUP3_Y"
 command = ~D, B, D, B, y
-time = 18
+time = 30
 
 [Command]
 name = "FF"

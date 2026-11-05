@@ -582,13 +582,40 @@ segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
   x/y/a/b), além dos testes `test_chizuru_dp_headless` e
   `test_chizuru_clones_headless`.
 
+## Chizuru — HCB e input da dança (05/11)
+
+- **HCB fraco (estado 1300):** o `VelSet x` condicional da origem era
+  extraído como zero. O ActTab agora aplica `vx = 4` a partir do elemento
+  10 (depois da extensão da mão) até o 20: ~54 px de avanço, mantendo os
+  18 HP.
+- **HCB forte (estado 1400):** o `VelSet` condicional virava zero e o
+  clipe 1400 tinha um hold de **992 ticks** no ápice (255 no compilado),
+  então ela ficava plantada. O hold foi cortado para 6 ticks, o Turn
+  incondicional (op0) foi descartado e a subida (`vy = -6`) começa no
+  frame ativo (11): o golpe acerta no chão (18 HP) e em seguida ela pula
+  ~38 px.
+- **Input da dança:** as janelas dos comandos `SUP1/SUP2/SUP3` e dos
+  `MDFDF_*` passaram de 18 para **30 frames**, e os supers são testados
+  antes do QCF simples (`cmd_priority`). Assim o QCFx2 + x/a vence o
+  `1000/1004` e a dança sai com cadências de 2 a 4 frames por direção; um
+  QCF simples + x continua sendo o especial normal.
+- **Sugestões para facilitar ainda mais** (não aplicadas):
+  1. atalho de **um QCF + a** (SNES B) direto para 2000;
+  2. **QCF + x+y** para a dança (o source já usa x+y/c nos supers);
+  3. aumentar o teto do matcher (`CmdScanCap`, hoje 30) ou usar
+     `buffer.time` para aceitar motions de ~40 frames;
+  4. manter o medidor em 1000+ (o super consome 1000).
+- Regressão: `tools/test_chizuru_fixes_headless.py` agora mede o avanço
+  do HCB fraco, o pulo do forte, a cadência lenta do QCFx2 e o fallback
+  do QCF simples.
+
 ## Build de referência
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$DFEC`**
+- checksum **`$EC5B`**
 - layout MSU **`0x514F`**
-- `.sfc` SHA-256 `39e216c0…a37eb7b8`
+- `.sfc` SHA-256 `de41180b…5f194286`
 - `.msu` SHA-256 `3be2fcd0…c0f4e154`
 - `.msu` 51.396.096 bytes
 

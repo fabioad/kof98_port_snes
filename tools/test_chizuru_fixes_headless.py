@@ -42,16 +42,16 @@ QCF = (D, DF, F)
 QCB = (D, DB, B)
 
 
-def feed(core, steps, button):
+def feed(core, steps, button, hold=3):
     for direction in steps:
         core.buttons[0] = set(direction)
-        core.step(3)
+        core.step(hold)
     core.buttons[0] = {button}
     core.step(3)
     core.buttons[0] = set()
 
 
-def measure(rom, steps, button, ticks=650):
+def measure(rom, steps, button, ticks=650, hold=3):
     core = Core(CORE, rom)
     saw = []
     peak = 0
@@ -62,13 +62,13 @@ def measure(rom, steps, button, ticks=650):
         enter_fight(core, select, "chizuru", "kyo")
         core.ram[0x1090] = 0
         core.ram[0x1091] = 0
-        core.put(FP1, 72 << 8)
-        core.put(FP2, 110 << 8)
+        core.put(FP1, 82 << 8)
+        core.put(FP2, 100 << 8)
         core.put(F_HP2, 200)
         core.put(F_POWER1, 3000)
         core.step(30)
         x0 = core.word(F_X1)
-        feed(core, steps, button)
+        feed(core, steps, button, hold)
         end = None
         for i in range(ticks):
             core.step()
@@ -142,6 +142,29 @@ def main():
     assert crouch["damage"] >= 40, f"crouched damage {crouch['damage']}"
     print(f"PASS Chizuru crouched super: {crouch['dx']:.0f}px, "
           f"{crouch['damage']} damage")
+
+    hcb = (F, DF, D, DB, B)
+    hcb_weak = measure(rom, hcb, Y_BTN)
+    hcb_strong = measure(rom, hcb, X_BTN)
+    assert 54 in hcb_weak["states"], f"HCB weak missing: {hcb_weak['states']}"
+    assert 55 in hcb_strong["states"], (
+        f"HCB strong missing: {hcb_strong['states']}")
+    assert hcb_weak["dx"] >= 20.0, (
+        f"HCB weak did not advance: {hcb_weak['dx']:.1f}px")
+    assert hcb_strong["peak"] > 15.0, (
+        f"HCB strong did not jump: {hcb_strong['peak']:.1f}px")
+    assert hcb_weak["damage"] >= 12 and hcb_strong["damage"] >= 12, (
+        f"HCB damage {hcb_weak['damage']}/{hcb_strong['damage']}")
+    print(f"PASS Chizuru HCB: weak {hcb_weak['dx']:.0f}px forward, "
+          f"strong jumps {hcb_strong['peak']:.0f}px")
+
+    slow = measure(rom, QCF + QCF, Y_BTN, hold=4)
+    assert 85 in slow["states"], (
+        f"slow QCFx2 did not reach the dance: {slow['states']}")
+    single = measure(rom, QCF, Y_BTN)
+    assert 48 in single["states"] and 85 not in single["states"], (
+        f"single QCF should stay the normal special: {single['states']}")
+    print("PASS Chizuru dance input: 4-frame cadence and single-QCF fallback")
 
     light = measure(rom, QCF + QCF, B_BTN)      # MUGEN a
     heavy = measure(rom, QCF + QCF, A_BTN)      # MUGEN b

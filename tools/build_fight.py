@@ -1991,6 +1991,24 @@ if _chizuru is not None:
     # buttons.
     _chizuru.setdefault("act_drop", {})[1100] = [13]
     _chizuru.setdefault("act_drop", {})[1102] = [13]
+    # HCB weak (1300): after the hand extension at element 10, step forward.
+    _chizuru.setdefault("act_override", {})[1300] = [
+        (9, 5, 4, 0),
+        (20, 5, 0, 0),
+    ]
+    # HCB strong (1400): the source leaves the ground at element 9.  The
+    # extracted VelSet expressions normalised to zero, so the body stayed
+    # planted; apply the jump/forward velocity explicitly.  The source Turn
+    # at element 14 only applies to the air variant (1412), so drop op0.
+    _chizuru.setdefault("act_override", {})[1400] = [
+        (8, 5, 4, 0),
+        # Jump on the active frame, not before it: the HitDef still lands on
+        # the grounded pose, then the body leaves the floor for the leap.
+        (11, 15, -24 & 0xFF, 0),
+        (14, 5, 0, 0),
+        (14, 15, 0, 0),
+    ]
+    _chizuru.setdefault("act_drop", {})[1400] = [0]
     _chizuru.setdefault("hitdef_override", {})[52] = {
         "active": 7, "gvx": 5 << 8, "gvy": -(10 << 8), "fall": 1,
     }
@@ -2032,7 +2050,11 @@ if _chizuru is not None:
     # four elements, so file order let QCB consume the HCB tail.  Give the
     # half-circle-back commands priority; they only match when the leading
     # F is present, so QCB still works.
-    _chizuru["cmd_priority"] = ("HCB_X", "HCB_Y")
+    _chizuru["cmd_priority"] = (
+        # Double-QCF supers must be tested before the single-QCF special,
+        # otherwise the tail of the second motion selects 1000/1004.
+        "SUP1", "SUP2", "SUP3", "MDFDF_a+df", "MDFDF_b+df",
+        "HCB_X", "HCB_Y")
     # Super 2000's source clip holds the summon pose for 130 ticks before
     # the clone rush; the engine does not run SuperPause, so that is dead
     # time.  13001 is a copy with the hold shortened to 6.  The duplicate
