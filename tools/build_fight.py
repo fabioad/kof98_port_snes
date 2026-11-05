@@ -3190,6 +3190,11 @@ if "omegarugal" in CHARS:
         (109, 2310, 1100),     # RE2
         (110, 1010, 1009),     # air dash forward
         (111, 1011, 1010),     # air dash back
+        # Fusion evades on the system slots used by every character:
+        # L+forward, L+back and L alone (port-added state 720).
+        (94, 1011, 1010),
+        (95, 1010, 1009),
+        (69, 720, 1009),
     ])
     POST_CAL_PROJS.setdefault("omegarugal", {}).update({
         82: (0x0100, 14, 0x20),
@@ -3218,7 +3223,7 @@ if "omegarugal" in CHARS:
     # The source rush crosses the whole screen before its frame-18 hitbox;
     # the port reuses a close punch clip (AIB 1074) instead.
     _orug.setdefault("cmd_priority", []).extend(
-        ["RE_RUSH", "GRAVITY_SHOT"])
+        ["ESQ_F", "ESQ_B", "ESQ_L", "RE_RUSH", "GRAVITY_SHOT"])
     _orug.setdefault("cmd_extra", []).extend([{
         "name": "GRAVITY_SHOT", "label": "GRAVITY SHOT",
         "state": 7100, "posture": 3, "time": 22,

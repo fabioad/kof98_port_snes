@@ -556,3 +556,35 @@ triggerall = command = "b"
 trigger1 = statetype = A
 trigger1 = ctrl
 
+
+;---------------------------------------------------------------------------
+; Fusion evades: Omega had the [Command] definitions but no State -1 rules.
+[State -1, Fusion Roll Fwd]
+type = ChangeState
+value = 1010
+triggerall = command = "ESQ_F"
+triggerall = statetype = S
+trigger1 = ctrl
+
+[State -1, Fusion Roll Back]
+type = ChangeState
+value = 1011
+triggerall = command = "ESQ_B"
+triggerall = statetype = S
+trigger1 = ctrl
+
+[State -1, Fusion Extra Dodge]
+type = ChangeState
+value = 720
+triggerall = command = "ESQ_L"
+triggerall = command != "holdfwd"
+triggerall = command != "holdback"
+triggerall = statetype = S
+trigger1 = ctrl
+
+[State -1, Attack Dodge]
+type = ChangeState
+value = 720
+triggerall = command = "DODGE"
+triggerall = statetype = S
+trigger1 = ctrl

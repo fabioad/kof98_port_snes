@@ -321,6 +321,13 @@ PalFX/AfterImage (Categoria E).
   por alguns frames (o efeito de "surgir de baixo da tela"). O port agora
   mantém a primeira pose de queda até o estado deitado (5110), sem troca
   de página no meio do tombo.
+- **Omega Rugal / evasivas (05/11)** — os comandos `ESQ_L/ESQ_F/ESQ_B`
+  existiam no CMD mas não tinham regra `State -1` nem slots. Agora:
+  L+frente = rolagem para frente (1010/sid 95), L+trás = rolagem para
+  trás (1011/sid 94), DODGE (Y+B) = esquiva parada 720 (sid 69) e L
+  sozinho = taunt, igual aos demais personagens. As evasivas reutilizam
+  os clipes 1009/1010 já existentes. Regressão:
+  `tools/test_omega_dodge_headless.py`.
 - **Categoria A** — concluída; manter a regressão de comandos.
 
 ## Áudio
@@ -336,9 +343,9 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$BE7E`**
+- checksum **`$D7EF`**
 - layout MSU **`0xA7E9`**
-- `.sfc` SHA-256 `673c883c…14be7e7`
+- `.sfc` SHA-256 `50414546…d9a90eab`
 - `.msu` SHA-256 `81685d8b…50d115`
 - `.msu` 51.265.024 bytes
 

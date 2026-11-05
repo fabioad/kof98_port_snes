@@ -16681,3 +16681,43 @@ type = ChangeState
 trigger1 = 1
 value = 0
 
+
+;---------------------------------------------------------------------------
+; Port-added Fusion extra dodge (L).  Omega's source pack has the forward
+; and back emergency evasions (1010/1011) but no neutral dodge; reuse the
+; existing 1009 evade clip and give it the same short invulnerability.
+[Statedef 720]
+type = S
+movetype = I
+physics = S
+anim = 1009
+velset = 0,0
+ctrl = 0
+sprpriority = 1
+
+[State 720, PlayerPush]
+type = PlayerPush
+trigger1 = Time >= 0
+value = 0
+
+[State 720, NotHitBy]
+type = NotHitBy
+trigger1 = Time = 0
+value = SCA, AA, AP
+time = 20
+
+[State 720, SprPriority]
+type = SprPriority
+trigger1 = Time = 0
+value = -1
+
+[State 720, PlaySnd]
+type = PlaySnd
+trigger1 = Time = 2
+value = S0,52
+
+[State 720, End]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
