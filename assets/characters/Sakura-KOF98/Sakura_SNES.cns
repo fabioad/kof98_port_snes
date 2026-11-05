@@ -4567,6 +4567,16 @@ type = TargetState
 Trigger1 = time = 0
 value = 815
 
+; Port: the source uses BindToTarget to put Sakura at the victim's neck,
+; and the native engine still does not execute attacker binds.  Binding the
+; victim instead keeps the choke pose centred: the opponent sits 10 px in
+; front of Sakura (inside her reaching arm) for the whole hold, instead of
+; staying at whatever distance the grab connected from.
+[State 810, PortChokeBind]
+type = TargetBind
+trigger1 = 1
+pos = 10,0
+
 [State 170, 無敵]
 type = NotHitBy
 trigger1 = 1

@@ -23,12 +23,13 @@ class SpriteUploadStagingTests(unittest.TestCase):
         defs = re.findall(r"^\.DEFINE (SP_\w+)\s+\$([0-9A-F]+)", FIGHT,
                           re.M)
         fields = [(name, int(value, 16)) for name, value in defs
-                  if name not in ("SP_SIDE", "SP_MSUSTAGED")]
+                  if name not in ("SP_SIDE", "SP_MSUSTAGED", "SP_MSUOWN")]
         for (_a, prev), (name, cur) in zip(fields, fields[1:]):
             self.assertEqual(cur - prev, 4,
                              f"{name}: P1/P2 word slots overlap")
         self.assertIn("SP_SIDE", dict(defs))
         self.assertIn("SP_MSUSTAGED", dict(defs))
+        self.assertIn("SP_MSUOWN", dict(defs))
 
     def test_vblank_path_does_the_msu_dma_under_blank(self):
         dma = block(BRIDGE, "SprDmaFar:", "\nSDF_ret:")
@@ -57,12 +58,21 @@ class SpriteUploadStagingTests(unittest.TestCase):
 
     def test_both_sides_prep_but_only_one_msu_stream(self):
         prep = block(FIGHT, "SprPrepBoth:", "\n; X = fighter offset")
-        self.assertEqual(prep.count("jsr SprPrepOne"), 2)
+        # The staging order rotates with framecnt so a multi-chunk sprite on
+        # one side cannot starve the other.
+        self.assertEqual(prep.count("jsr SprPrepOne"), 4)
         self.assertIn("SP_MSUSTAGED", prep)
+        self.assertIn("SP_MSUOWN", prep)
         msu = block(FIGHT, "SP_msu:", "\n; opening intro")
         self.assertIn("lda.w SP_MSUSTAGED", msu)
         self.assertIn("sta.w SP_MSUSTAGED", msu)
         self.assertIn("bne SP_msu_retry", msu)
+        self.assertIn("sta.w SP_MSUOWN", msu)
+
+    def test_msu_dma_only_consumes_the_owner_seek(self):
+        dma = block(BRIDGE, "SprDmaFar:", "\nSDF_ret:")
+        self.assertIn("cpy.w SP_MSUOWN", dma)
+        self.assertIn("jmp SDF_ret", dma)
 
     def test_vblank_refuses_a_zero_byte_dma(self):
         dma = block(BRIDGE, "SprDmaFar:", "\nSDF_ret:")

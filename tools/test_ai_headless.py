@@ -92,6 +92,13 @@ def start_bout(core, level, p2=1):
         tap(core, 3)                    # skip the character intro
     wait(core, lambda: core.ram[GS] == 1, "fight")
     core.step(180)                      # let the round start settle
+    # Pin the CPU's free-running entropy and frame counter after the round
+    # has settled.  AI_Rand XORs both, so a one-cycle change anywhere in the
+    # boot path used to shuffle the whole bout and hide the rarer branches
+    # (falling jump-in anti-air, hit-confirm combo).  The stage was already
+    # picked and the round clock is a separate timer.
+    core.ram[0x1088] = 0x11             # rng
+    core.ram[0x1024] = 0                # framecnt
 
 
 def run_level(level, p2=1, frames=3600, close=False):

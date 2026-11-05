@@ -4372,7 +4372,10 @@ if "sakura" in CHARS:
         (109, 3200, 3200),     # Midare Zakura
         (110, 3250, 3250),     # MAX Midare Zakura
         (112, 3305, 3305),     # Shun Goku Satsu 15-hit follow-up
-        (113, 3306, 3306),     # ... final knockdown
+        # ... final pause.  The port swaps the source finisher clip for
+        # action 3307 (a hold on 3306's back-turned first cel) so the super
+        # ends with Sakura facing away, without the dizzy taunt.
+        (113, 3306, 3307),
         # Shun Goku Satsu root (3300) on a ground-dispatch slot; 111 is
         # StAirSpec and would apply gravity to the stationary super.
         (114, 3300, 3300),
@@ -4384,6 +4387,15 @@ if "sakura" in CHARS:
     ])
     _sak = POST_CAL_TWEAKS.setdefault("sakura", {})
     _sak_cfg = CHARS["sakura"]
+    # Shinkuu Hadouken: the source super fires its shot from helpers 3005
+    # (3000/3010) and 3055 (3050).  Those helpers are not runtime states in
+    # the port, so the super had no projectile.  ProjTrySpawn reads the
+    # active sid's ProjTab row; use the compact 1020 fireball (the same art
+    # as the normal Hadouken helper) and launch it from the thrust cel.
+    _sak.setdefault("projs", {}).update({
+        85: (0x0C00, 26, 4),          # 3000: Shinkuu Hadouken (x)
+        86: (0x0E00, 34, 4),          # 3010: Shinkuu Hadouken (y)
+    })
     _sak.setdefault("slice_damage", {}).update({
         65: 6, 86: 26, 107: 20, 108: 35, 109: 30, 110: 40})
     # act_override / explod_override / air boxes are consumed before
@@ -4443,8 +4455,6 @@ if "sakura" in CHARS:
         (51, 65, 2, 0x4000), (51, 65, 2, 0x0040),
         (68, 65, 2, 0x4000), (68, 65, 2, 0x0040),
         (65, 66, 1, 0), (68, 66, 1, 0),
-        # After the opponent is knocked down, finish on the taunt pose.
-        (113, 47, 0, 0),
     ])
     # Do not prioritise the single-QCF SGS rules: the longer QCFx2+b
     # Haru Ichiban rule must win that input, while a single QCF+b still

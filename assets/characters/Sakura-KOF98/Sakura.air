@@ -2821,6 +2821,13 @@ Clsn2Default:1
 210,7,0,0,12,,
 0,6,0,0,5,,
 
+; Port finale: the first cel of 3306 is Sakura with her back to the camera.
+; Hold it after the SGS instead of dropping into the dizzy taunt (state 47).
+[Begin Action 3307]
+Clsn2Default:1
+  Clsn2[0] = -16,-80,15,-1
+3310,0,16,0,40,,
+
 [Begin Action 3310]
 5010,0,0,0,16,,
 -1,0,0,0,-1,,

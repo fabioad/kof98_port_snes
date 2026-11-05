@@ -452,18 +452,35 @@ Negative Gain A/B). Cada caso confere o follow-up do atacante, a pose de
 segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
 46 e 46.
 
-## Sakura — arremesso, Otoshi e Shun Goku Satsu (05/11)
+## Sakura — arremesso, Otoshi, Shinkuu e Shun Goku Satsu (05/11)
 
 - **Arremesso (frente + soco forte):** a regra `y` + `holdfwd`/`holdback`
   não existia no `Sakura_SNES.cmd`; só o `x+y` estava ligado. A regra foi
-  adicionada (estado 800 -> 810) e o teste com a direção mantida no frame
-  do botão confirma o bind (sid 75) e a vítima em `S_VHELD`.
+  adicionada (estado 800 -> 810) e o teste confirma o bind (sid 75) e a
+  vítima em `S_VHELD`.
+  - O CNS usa `BindToTarget`, que o motor nativo ainda não executa; a
+    Sakura ficava ao lado do adversário em vez de esganá-lo. O estado 810
+    ganhou um `TargetBind` de porta (`pos = 10,0`), então a vítima é
+    re-semeada a 9 px do eixo da Sakura durante todo o choke. O teste mede
+    o espaçamento (6..14 px) e falha se o bind sumir.
 - **Sakura Otoshi (DP + a/b -> 1300/1310):** o complemento aéreo existia
   na origem (`x`/`y` durante a subida -> 1320), mas 1320/1321/1325 não
   estavam ligados. Foram para os sids 65/68/66. O TransTab kind-2 agora
-  dispara de fato (antes caía no `TA_hit` e exigia MoveHit). A descida
-  continua em 1305 (freio) quando o botão não é pressionado.
-- **Shun Goku Satsu (QCF + chute forte):** 3300 -> 3305 -> 3306 -> 47.
+  dispara de fato (antes caía no `TA_hit` e exigia MoveHit).
+- **Shinkuu Hadouken (QCFx2 + soco):** os estados 3000/3010 (sids 85/86)
+  não tinham projétil: o tiro real morava nos helpers 3005/3055, que não
+  são estados de runtime no port.
+  - `ProjTab[85] = (12 px/tick, 26 HP, guarda M)` e
+    `ProjTab[86] = (14 px/tick, 34 HP, guarda M)`. A arte é o clipe 1020
+    (a mesma bola do Hadouken normal). O disparo usa o 3º frame da
+    animação, o mesmo ponto do Hadouken normal.
+  - **Correção do pino:** qualquer projétil de super era "pinado" na
+    vítima por `ProjPinIfMulti` e acertava no frame do spawn, em qualquer
+    distância. O pino agora só vale para o sequencial de vários contatos;
+    um tiro de um contato (Sakura 85/86, Raging Storm do Geese) voa o
+    clipe inteiro e é consumido no primeiro acerto. O teste confere
+    dano 26/34 e um único contato.
+- **Shun Goku Satsu (QCF + chute forte):** 3300 -> 3305 -> 3306 -> fim.
   O golpe estava no sid 111 (StAirSpec, aplicava gravidade) e o comando
   não existia para o chute forte; foi para o sid 114 (StSpecial) e ganhou
   `SGS_B` (QCF+b). O `SGS_A` (QCF+a) continua. O QCFx2+b continua sendo
@@ -474,23 +491,41 @@ segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
     `CineAdvance`; os lutadores são omitidos do OAM e só os sparks são
     desenhados. O fundo é restaurado ao fim.
   - O combo mostra 15; o 3306 aplica o golpe final com op3 (sem contar
-    como 16º hit) e solta a vítima em S_VTHROW. Depois Sakura entra no
-    taunt (sid 47) — a win pose 181 tem hold de 255 ticks e poderia
-    deixá-la presa, então o taunt é o fallback seguro.
-  - Os helpers novos e a telemetria saíram do banco Fight (que estava
-    exatamente em 32 KiB) para a seção `SakuraCinema` no banco 126.
-- Regressão: `tools/test_sakura_fixes_headless.py` (arremesso, Otoshi,
-  SGS no chute forte, 15 hits, tela preta 50/0/47 e pose). O
-  `test_sakura_antiair_headless.py` foi alinhado ao orçamento atual de
-  30 HP do Shou'ou Ken forte (o mesmo do teste de 5 hits).
+    como 16º hit) e solta a vítima em S_VTHROW.
+  - **Final de costas:** o taunt (sid 47) saiu. O sid 113 usa a ação
+    sintética **3307**, que segura o primeiro cel do 3306 (sprite 3310,0)
+    por 40 ticks. É a pose da Sakura de costas para a câmera, com o
+    adversário caindo ao fundo. O teste exige estado 113, ausência do 47
+    e `F_NFR = 1` (clip de um único cel).
+- **Travamento após a tela preta (MSU):** o staging de CHR guardava o seek
+  de um lado e o vblank podia consumi-lo com o DMA do outro. O SD2SNES
+  lê a posição errada (tiles trocados) e, se o chunk cruzar a página de
+  8 KiB, segura o barramento com a CPU parada — o sintoma de "luta
+  travada, áudio continua". Correções:
+  1. `SP_MSUOWN` registra qual lado posicionou o seek; o `SprDmaFar` só
+     inicia o DMA desse lado e descarta o chunk perdido.
+  2. `SprPrepBoth` limpa os chunks não consumidos e alterna a ordem dos
+     lados (`framecnt & 1`), para um sprite grande de P1 não sequestrar
+     o stream todas as frames.
+  3. O vblank prefere o dono do seek em vez de alternar às cegas.
+  - O emulador não reproduz o stall do SD2SNES; a validação é o teste de
+    visibilidade de 960 páginas de CHR + as invariantes em
+    `tools/tests/test_sprite_upload_staging.py`.
+  - Para caber o código, `VrDma`, `PushOamShadow` e `ShakeScroll` saíram
+    do banco Fight para a seção `SakuraCinema` (chamadas `jsl`).
+- Regressão: `tools/test_sakura_fixes_headless.py` (arremesso, choke,
+  Shinkuu 26/34 com projétil real, Otoshi, SGS 15 hits, tela preta
+  50/0/47 e final de costas). O `test_ai_headless` agora fixa `rng` e
+  `framecnt` depois do início da luta; a cobertura de anti-aéreo em queda
+  e combo dependia do fluxo de RNG, que mudava com um frame de boot.
 
 ## Build de referência
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$FF7F`**
+- checksum **`$72B9`**
 - layout MSU **`0x514F`**
-- `.sfc` SHA-256 `e4d24bd8…1364ad82`
+- `.sfc` SHA-256 `7704b4b0…bd3588ba`
 - `.msu` SHA-256 `3be2fcd0…c0f4e154`
 - `.msu` 51.396.096 bytes
 

@@ -247,6 +247,12 @@ SDF_go:
     sta.w SP_KIND,y
     jmp SDF_ret
 SDF_kind_ok:
+    cmp #2.b                            ; staged MSU chunk: only the side
+    bne +                               ;   that positioned the seek may
+    cpy.w SP_MSUOWN                     ;   consume it
+    beq +
+    jmp SDF_ret
++
     cmp #3.b
     bne +
     jmp SDF_commit

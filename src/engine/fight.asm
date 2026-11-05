@@ -741,6 +741,7 @@
 .DEFINE SP_META     $521C               ; pending metasprite offset
 .DEFINE SP_SIDE     $5220               ; current SprPrepOne side (0/2)
 .DEFINE SP_MSUSTAGED $5222             ; one side already owns the MSU stream
+.DEFINE SP_MSUOWN   $5224               ; side whose seek is staged ($FF = none)
 ; Team member entrance: the incoming fighter starts above/at the screen edge
 ; and jumps to the intro gap.  T_ENTERX keeps the target (8.8 fixed point);
 ; T_ENTERFLAG freezes the camera while a side is still in the air.
@@ -865,6 +866,8 @@ FightMain:
     stz.w SP_LEN+2
     stz.w SP_DST
     stz.w SP_DST+2
+    lda #$00FF.w
+    sta.w SP_MSUOWN                       ; no staged MSU seek at boot
     stz.w T_ENTERFLAG                     ; no jump-in camera freeze at boot
     stz.b msuok                           ;   MSU-1 presence, set by MsuDetect
 .IFDEF PVSNESLIB
@@ -1467,31 +1470,6 @@ SfxDone:
     plp
     rts
 
-VrDma:
-    sta scr3
-    lda scr3
-    sta lptr+2
-    lda scr0
-    sta lptr
-    lda scr0+1
-    sta lptr+1
-    lda #$80.b
-    sta.l VMAIN
-    rep #$20
-    .ACCU 16
-    lda scr2
-    sta.l VMADDL
-    ldy #0
--   lda [lptr],y
-    sta.l VMDATAL
-    iny
-    iny
-    cpy scr1
-    bne -
-    sep #$20
-    .ACCU 8
-    rts
-
 ; Copy the selected 3x3 portrait tiles into the two reserved BG3 slots.
 LoadPortraits:
     rep #$20
@@ -1513,7 +1491,7 @@ LoadPortraits:
     sep #$20
     .ACCU 8
     lda #:Portraits
-    jsr VrDma
+    jsl VrDmaFar
     rep #$20
     .ACCU 16
     lda sel2
@@ -1533,7 +1511,7 @@ LoadPortraits:
     sep #$20
     .ACCU 8
     lda #:Portraits
-    jsr VrDma
+    jsl VrDmaFar
     rep #$20
     .ACCU 16
     ; P1 portrait palette -> CGRAM 0..3
@@ -1654,7 +1632,7 @@ LoadStaticGfx:
     sep #$20
     .ACCU 8
     lda #:HudChr
-    jsr VrDma
+    jsl VrDmaFar
     rep #$20
     .ACCU 16
     ; crowd-anim pose tiles -> dynamic BG1 slots ($2C00, above the font)
@@ -1667,7 +1645,7 @@ LoadStaticGfx:
     sep #$20
     .ACCU 8
     lda #:StgAnimChr
-    jsr VrDma
+    jsl VrDmaFar
     ; anim state is reinitialised per stage in StagePick (animT/animP)
     rep #$20
     .ACCU 16
@@ -1920,7 +1898,7 @@ SP_set:
     sep #$20
     .ACCU 8
     lda [lptr],y                        ; chr bank
-    jsr VrDma
+    jsl VrDmaFar
     rep #$20
     .ACCU 16
     lda #StageTab
@@ -1944,7 +1922,7 @@ SP_set:
     sep #$20
     .ACCU 8
     lda [lptr],y                        ; map bank
-    jsr VrDma
+    jsl VrDmaFar
     jsl UploadIntroGirls                ; round-1 Mr. Big girlfriend cels
     lda #32                             ; BG palettes 2-4; HUD owns 12-31
     sta.l CGADD
@@ -1972,7 +1950,7 @@ SP_set:
     sta scr3
     jsr CgDma
     jsr StageAnimInit                     ; reset clip clocks for this stage
-    jsr PushOamShadow                     ; hardware OAM <- cleared shadow
+    jsl PushOamShadowFar                  ; hardware OAM <- cleared shadow
     lda.b stagehold                       ; StartFight rebuilt the HUD map, so
     beq SP_show                           ;   upload it now while the display is
     lda #1                                ;   still blank: the first frame the
@@ -1990,33 +1968,6 @@ SP_show:
 ; and StagePick: the previous screen leaves its sprites in hardware OAM and
 ; StagePick turns the display on again before the main loop can present, so
 ; the cleared shadow must be pushed there too.
-PushOamShadow:
-    sep #$20
-    .ACCU 8
-    lda #0
-    sta.l OAMADDL
-    sta.l OAMADDL+1
-    sta.l $4360                           ; mode 0: bytes to a single reg
-    lda #$04.b
-    sta.l $4361                           ; -> $2104 OAMDATA
-    rep #$20
-    .ACCU 16
-    lda #OAMBUF.w
-    sta.l $4362
-    sep #$20
-    .ACCU 8
-    lda #ENGINE_DB.b
-    sta.l $4364                           ; OAMBUF bank
-    rep #$20
-    .ACCU 16
-    lda #544.w
-    sta.l $4365
-    sep #$20
-    .ACCU 8
-    lda #$40.b
-    sta.l MDMAEN                          ; fire ch6
-    rts
-
 ; scr0 = HUDMAP byte ofs, scr2 = 24-bit string pointer
 WriteStrData:
     sep #$20
@@ -14194,6 +14145,23 @@ PTS_idx0:
     lda #5
     ldy scr3
     sta.w RT_PROJHITS,y
+    ; Sakura's Shinkuu Hadouken (3000/3010) is one large fireball in KOF98,
+    ; not the generic five-contact super sequence.  Keep the five contacts
+    ; for the MAX 3050 row and for every other super projectile.
+    rep #$20
+    .ACCU 16
+    ldy fofs
+    lda FP+F_CHAR,y
+    cmp #CharSakura
+    bne PTS_not_sakura
+    sep #$20
+    .ACCU 8
+    lda FP+F_STATE,y
+    cmp #85
+    beq PTS_one_hit
+    cmp #86
+    beq PTS_one_hit
+PTS_not_sakura:
     ; Geese's Raging Storm is a single-hit tall anti-air pillar in KOF98,
     ; not the generic five-contact super projectile.  SPK_GRD bit0 marks
     ; the tall hitbox (the guard bits themselves live in 4-7).
@@ -14221,6 +14189,11 @@ PTS_storm:
     lda.w SPARKS+SPK_GRD,x
     ora #$01.b
     sta.w SPARKS+SPK_GRD,x
+    bra PTS_notmulti
+PTS_one_hit:                         ; zero remaining contacts = ordinary
+    lda #0                           ;   one-hit shot: it flies its clip and
+    ldy scr3                         ;   is consumed on the first contact
+    sta.w RT_PROJHITS,y
 PTS_notmulti:
 +   rep #$20
     .ACCU 16
@@ -15467,7 +15440,7 @@ FightPresent:
     ; The library ISR may have already sent this same shadow buffer, but
     ; doing it under forced blank makes this path valid even when the
     ; library skips a lag frame.
-    jsr PushOamShadow
+    jsl PushOamShadowFar
     ; Both sides are uploaded every frame.  Alternating sides made a pose
     ; stay in flight long enough for the next animation request to arrive;
     ; the staging state then mixed with the new pose and produced more
@@ -15518,7 +15491,7 @@ FP_present_top:
     jsr FlushHudTop
 FP_present_vis_done:
     jsl StageAnimTickFar                  ; crowd pose commits (map only)
-    jsr ShakeScroll                       ; EnvShake on BG1 (stage)
+    jsl ShakeScrollFar                    ; EnvShake on BG1 (stage)
     lda gamestate                         ; intro/ending screens take over
     cmp #7.b                              ;   mode/M7 regs + palette fades;
     beq FP_present_opn                    ;   run them last so they win
@@ -15586,7 +15559,7 @@ FightVblank:
     jsr FxPrepareBoth
 
     ; OAM shadow -> hardware OAM via GPDMA ch6
-    jsr PushOamShadow
+    jsl PushOamShadowFar
     ; sprite tile uploads (chunked, hidden ping-pong page).  Two 1280-byte
     ; sprite DMAs in one vblank overrun it and leave forced blank on during
     ; the first visible lines (dark flicker at the top), so when both sides
@@ -15596,9 +15569,24 @@ FightVblank:
     beq FP_dma_pick
     lda FP+F_DMAREQ+FP2OFS
     beq FP_dma_pick
+    ; Both sides want a chunk.  Give the vblank to the side whose MSU seek
+    ; is staged right now; otherwise the deferred side's stale seek would be
+    ; consumed by the other fighter's DMA.
+    lda.w SP_MSUOWN
+    cmp #0.b
+    beq FP_dma_owner_p1
+    cmp #2.b
+    beq FP_dma_owner_p2
     lda framecnt
     and #1.b
     inc a                               ; 1 = P1 now, 2 = P2 now
+    bra FP_dma_pick_set
+FP_dma_owner_p1:
+    lda #1.b
+    bra FP_dma_pick_set
+FP_dma_owner_p2:
+    lda #2.b
+FP_dma_pick_set:
     sta sdmaside
 FP_dma_pick:
     ldx #0
@@ -15639,7 +15627,7 @@ FP_dma_done:
     lda #$0F.b
     sta.l INIDISP
     sta nmiflag
-    jsr ShakeScroll
+    jsl ShakeScrollFar
     inc framecnt
     stz vbusy
 FightVblank_skip:
@@ -16327,10 +16315,31 @@ SprPrepBoth:
     .ACCU 16
     .INDEX 16
     stz.w SP_MSUSTAGED
+    lda #$00FF.w
+    sta.w SP_MSUOWN                     ; no side owns the MSU seek yet
+    ; A staged chunk is only valid between SprPrepOne and the vblank DMA of
+    ; the same frame.  Drop anything the previous vblank did not consume
+    ; instead of letting the other side's seek stand in for it.
+    stz.w SP_KIND
+    stz.w SP_KIND+2
+    ; Only one MSU stream can be positioned per frame.  Rotate which side
+    ; stages first so a multi-chunk sprite on P1 cannot starve P2 (and vice
+    ; versa); the vblank below then consumes the side that actually owns the
+    ; fresh seek.  ROM-resident CHR is unaffected by the rotation.
+    lda framecnt
+    and #$0001.w
+    beq SP_p1_first
+    ldx #FP2OFS.w
+    jsr SprPrepOne
+    ldx #0
+    jsr SprPrepOne
+    bra SP_prep_done
+SP_p1_first:
     ldx #0
     jsr SprPrepOne
     ldx #FP2OFS.w
     jsr SprPrepOne
+SP_prep_done:
     rep #$30
     .ACCU 16
     .INDEX 16
@@ -16607,6 +16616,8 @@ SP_msu:
 +   sta scr1
     jsl MsuStagePrepareFar              ; fetch the chunk into WRAM now
     bcc SP_msu_retry
+    lda.w SP_SIDE
+    sta.w SP_MSUOWN                     ; only this side may start the DMA
     ldy.w SP_SIDE
     lda.w MSU_PREFIX                    ; vblank starts at the payload, after
     sta.w SP_PREFIX,y                   ;   the aligned sector prefix
@@ -18418,7 +18429,7 @@ TS_face:
     sta FP+F_FACING.w
     lda #1
     sta FP+F_FACING+FP2OFS.w
-++  jsr ShakeScroll                       ; frame the intro gap first
+++  jsl ShakeScrollFar                    ; frame the intro gap first
     jsr TeamJumpSetup                     ; then launch the new member(s)
     sep #$20
     .ACCU 8
@@ -22782,88 +22793,7 @@ GCHoldsBack:
 .BANK 50 SLOT 0
 .ORGA $7024
 .SECTION "ShakeScrollLow" FORCE
-ShakeScroll:
-    rep #$20
-    .ACCU 16
-    lda.w T_ENTERFLAG
-    beq SS_calc
-    lda camx
-    sta scr5
-    bra SS_shake
-SS_calc:
-    lda FP+F_X                          ; 8.8 px -> integer midpoint
-    xba
-    and #$00FF.w
-    sta scr5
-    lda FP+F_X+FP2OFS
-    xba
-    and #$00FF.w
-    clc
-    adc scr5                            ; x1+x2 (px)
-    lsr                                 ; mid
-    sec
-    sbc #STAGE_L.w
-    bpl +
-    lda #0
-+   sta scr3                            ; v = mid-24 (0..208)
-    lsr
-    lsr
-    adc scr3                            ; v + v/4
-    sta scr5
-    lda scr3
-    lsr
-    lsr
-    lsr
-    lsr
-    lsr
-    lsr                                 ; v/64
-    sta scr3
-    lda scr5
-    sec
-    sbc scr3                            ; v*79/64 ~= v*256/208
-    cmp #256.w
-    bcc +
-    lda #256.w
-+   sta camx
-    sta scr5                            ; bg scroll = camx + shake
-SS_shake:
-    sep #$20
-    .ACCU 8
-    stz scr3
-    stz scr3+1                            ; signed hi byte of the offset
-    lda shaketmr
-    beq SS_wr                             ; inactive: keep shake at 0
-    lda framecnt
-    and #$01.b
-    beq +
-    lda shakeamp
-    sta scr3
-    bra SS_wr
-+   lda #0
-    sec
-    sbc shakeamp                          ; -amp (8-bit wrap = negative)
-    sta scr3
-    lda #$FF.b
-    sta scr3+1
-SS_wr:
-    rep #$20
-    .ACCU 16
-    lda scr3                            ; shake (signed word)
-    sta scr4
-    clc
-    adc scr5                            ; hofs = scaled camx + shake
-    sta scr3
-    sep #$20
-    .ACCU 8
-    lda scr3
-    sta.l BG1HOFS
-    lda scr3+1
-    sta.l BG1HOFS
-    lda scr4
-    sta.l BG1VOFS
-    lda scr4+1
-    sta.l BG1VOFS
-    rts
+
 .ENDS
 
 ; Per-stage BG1 animations, moved out of the full Fight bank into the free
@@ -23145,6 +23075,147 @@ CounterClear:
 .BANK 126 SLOT 0
 .ORGA $E900
 .SECTION "SakuraCinema" FORCE
+; Stage camera + shake scroll.  Moved out of the full Fight bank; all call
+; sites use the long form.
+ShakeScrollFar:
+    rep #$20
+    .ACCU 16
+    lda.w T_ENTERFLAG
+    beq SS_calc
+    lda camx
+    sta scr5
+    bra SS_shake
+SS_calc:
+    lda FP+F_X                          ; 8.8 px -> integer midpoint
+    xba
+    and #$00FF.w
+    sta scr5
+    lda FP+F_X+FP2OFS
+    xba
+    and #$00FF.w
+    clc
+    adc scr5                            ; x1+x2 (px)
+    lsr                                 ; mid
+    sec
+    sbc #STAGE_L.w
+    bpl +
+    lda #0
++   sta scr3                            ; v = mid-24 (0..208)
+    lsr
+    lsr
+    adc scr3                            ; v + v/4
+    sta scr5
+    lda scr3
+    lsr
+    lsr
+    lsr
+    lsr
+    lsr
+    lsr                                 ; v/64
+    sta scr3
+    lda scr5
+    sec
+    sbc scr3                            ; v*79/64 ~= v*256/208
+    cmp #256.w
+    bcc +
+    lda #256.w
++   sta camx
+    sta scr5                            ; bg scroll = camx + shake
+SS_shake:
+    sep #$20
+    .ACCU 8
+    stz scr3
+    stz scr3+1                            ; signed hi byte of the offset
+    lda shaketmr
+    beq SS_wr                             ; inactive: keep shake at 0
+    lda framecnt
+    and #$01.b
+    beq +
+    lda shakeamp
+    sta scr3
+    bra SS_wr
++   lda #0
+    sec
+    sbc shakeamp                          ; -amp (8-bit wrap = negative)
+    sta scr3
+    lda #$FF.b
+    sta scr3+1
+SS_wr:
+    rep #$20
+    .ACCU 16
+    lda scr3                            ; shake (signed word)
+    sta scr4
+    clc
+    adc scr5                            ; hofs = scaled camx + shake
+    sta scr3
+    sep #$20
+    .ACCU 8
+    lda scr3
+    sta.l BG1HOFS
+    lda scr3+1
+    sta.l BG1HOFS
+    lda scr4
+    sta.l BG1VOFS
+    lda scr4+1
+    sta.l BG1VOFS
+    rtl
+
+; VRAM copy helper.  Moved out of the 32 KiB Fight section together with
+; the OAM push; all call sites use the long form.
+VrDmaFar:
+    sta scr3
+    lda scr3
+    sta lptr+2
+    lda scr0
+    sta lptr
+    lda scr0+1
+    sta lptr+1
+    lda #$80.b
+    sta.l VMAIN
+    rep #$20
+    .ACCU 16
+    lda scr2
+    sta.l VMADDL
+    ldy #0
+-   lda [lptr],y
+    sta.l VMDATAL
+    iny
+    iny
+    cpy scr1
+    bne -
+    sep #$20
+    .ACCU 8
+    rtl
+
+; Hardware OAM DMA.  Moved out of the 32 KiB Fight section; all call
+; sites use the long form because the fight bank sits at its size limit.
+PushOamShadowFar:
+    sep #$20
+    .ACCU 8
+    lda #0
+    sta.l OAMADDL
+    sta.l OAMADDL+1
+    sta.l $4360                           ; mode 0: bytes to a single reg
+    lda #$04.b
+    sta.l $4361                           ; -> $2104 OAMDATA
+    rep #$20
+    .ACCU 16
+    lda #OAMBUF.w
+    sta.l $4362
+    sep #$20
+    .ACCU 8
+    lda #ENGINE_DB.b
+    sta.l $4364                           ; OAMBUF bank
+    rep #$20
+    .ACCU 16
+    lda #544.w
+    sta.l $4365
+    sep #$20
+    .ACCU 8
+    lda #$40.b
+    sta.l MDMAEN                          ; fire ch6
+    rtl
+
 ; Far entry: the fight init calls this once.  The per-present TelPresent
 ; below inlines the same clear loop, so this copy is only used by the
 ; far call from the Fight bank.

@@ -40,7 +40,7 @@ def press(core, buttons, ticks=1):
 def qcf_p(core, button):
     for d in ({DOWN}, {DOWN, RIGHT}, {RIGHT}):
         core.buttons[0] = set(d)
-        core.step(1)
+        core.step(2)
     press(core, {button}, 2)
 
 
