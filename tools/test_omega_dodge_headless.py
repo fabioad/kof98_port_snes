@@ -18,6 +18,7 @@ Run after a PVSnesLib build:
 
     python3 tools/test_omega_dodge_headless.py
 """
+import re
 import sys
 from pathlib import Path
 
@@ -42,6 +43,12 @@ def symbol_offset(label):
         if len(fields) >= 2 and fields[1] == label:
             return int(fields[0], 16) & 0xFFFF
     raise AssertionError(f"{label} missing from {SYM.name}")
+
+
+def anim_label(character, sid):
+    text = (ROOT / "build/gen_fight" / f"{character}_spr.inc").read_text()
+    match = re.search(rf"{character}AnimTab:\n(.*?)(?=\n\w)", text, re.S)
+    return re.findall(r"\.dw (\w+)", match.group(1))[sid]
 
 
 def run(directions, buttons, wanted, character="omegarugal"):
@@ -75,9 +82,9 @@ def run(directions, buttons, wanted, character="omegarugal"):
 
 
 def main():
-    fwd_anim = symbol_offset("omegarugalAnim95")
-    back_anim = symbol_offset("omegarugalAnim69")
-    taunt_anim = symbol_offset("omegarugalAnim47")
+    fwd_anim = symbol_offset(anim_label("omegarugal", 95))
+    back_anim = symbol_offset(anim_label("omegarugal", 94))
+    neutral_anim = symbol_offset(anim_label("omegarugal", 69))
     assert fwd_anim != back_anim, "forward and back clips must differ"
 
     seen, anim = run((frozenset({FWD}),), (L,), 95)
@@ -94,15 +101,14 @@ def main():
 
     seen, anim = run((), (Y, B), 69)
     assert 69 in seen, f"DODGE did not start ({seen})"
-    assert anim == back_anim, (
-        f"DODGE used animation ${anim:04X}, expected neutral ${back_anim:04X}")
+    assert anim == neutral_anim, (
+        f"DODGE used animation ${anim:04X}, expected neutral ${neutral_anim:04X}")
     print("PASS Omega DODGE (Y+B) -> neutral dodge (sid 69)")
 
     seen, anim = run((), (L,), 69)
     assert 69 in seen, f"L alone did not dodge ({seen})"
-    assert anim == back_anim, (
-        f"L alone used animation ${anim:04X}, expected neutral ${back_anim:04X}")
-    assert anim != taunt_anim, "L alone fell back to the taunt animation"
+    assert anim == neutral_anim, (
+        f"L alone used animation ${anim:04X}, expected neutral ${neutral_anim:04X}")
     print("PASS Omega L alone -> neutral dodge (sid 69, not taunt)")
 
     seen, _ = run((), (L,), 69, "kyo")

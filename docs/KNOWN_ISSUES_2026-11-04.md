@@ -315,10 +315,10 @@ PalFX/AfterImage (Categoria E).
   iniciou. No Team Play o CPU P1 escolhe o trio primeiro e depois o
   cursor do P2 fica ativo. Regressão:
   `tools/test_menu_p2_start_headless.py`.
-- **Esquivas padrão (05/11)** — L+trás e L+frente usam os clipes
-  trocados para casar com o estado/velocidade (os clipes da fonte são
-  autorais ao contrário do rótulo). O ActTab executava o `Turn` dos
-  estados de rolagem sem a condição `P2Dist X < 0`, virando o lutador e
+- **Esquivas padrão (05/11)** — os comandos e estados continuam os
+  mesmos; L+frente usa a animação 700 e L+trás a 710 (mapeamento original
+  da fonte), sem troca adicional. O ActTab executava o `Turn` dos estados
+  de rolagem sem a condição `P2Dist X < 0`, virando o lutador e
   invertendo a direção; essa linha foi removida só para os sids 94/95.
   L sozinho agora emite o token `c` e entra na regra `ESQ_L`/esquiva
   parada (sid 69), não mais no `start`/taunt. Vale para todos os
@@ -392,9 +392,9 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$798A`**
+- checksum **`$79CD`**
 - layout MSU **`0x17CD`**
-- `.sfc` SHA-256 `d44abba9…1cd7475`
+- `.sfc` SHA-256 `68b41e2b…e02f3e6`
 - `.msu` SHA-256 `8bc55c82…21c73cf`
 - `.msu` 51.232.256 bytes
 

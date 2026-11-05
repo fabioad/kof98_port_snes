@@ -5,12 +5,11 @@ L+back  -> back roll (sid 94)
 L+fwd   -> forward roll (sid 95)
 L alone -> standing dodge (sid 69), never the taunt
 
-The source clips for the forward/back states are authored opposite to
-their labels, so the build swaps only the animation sources for sids 94/95.
-The state/velocity mapping is untouched.  The source Turn controller on
-those states was being executed unconditionally by the ActTab, flipping
-the fighter and inverting the input; the build drops that Turn row.  L
-alone now emits the c token, so the ESQ_L rule (not start/taunt) owns it.
+The commands, states and velocities stay as they are; only the animation
+sources are mapped.  The source Turn controller on the forward/back states
+was being executed unconditionally by the ActTab, flipping the fighter and
+inverting the input; the build drops that Turn row.  L alone now emits the
+c token, so the ESQ_L rule (not start/taunt) owns it.
 
 Run after a PVSnesLib build:
 
@@ -32,10 +31,10 @@ SYM = ROOT / "kof98-snes.sym"
 FP1, FP2 = 0x4000, 0x4040
 F_STATE, F_ANIM, F_FACING = FP1 + 8, FP1 + 0x12, FP1 + 14
 L, FWD, BACK = 10, 7, 6
-EXPECTED_SWAP = {
-    "kyo": (700, 710), "terry": (700, 710), "iori": (700, 710),
-    "rugal": (700, 710), "king": (4000, 4100), "yuri": (250, 251),
-    "mai": (710, 711),
+EXPECTED = {
+    "kyo": (710, 700), "terry": (710, 700), "iori": (710, 700),
+    "rugal": (710, 700), "king": (4100, 4000), "yuri": (251, 250),
+    "mai": (711, 710),
 }
 CASES = ((FWD, 95, "L+forward"), (BACK, 94, "L+back"), (None, 69, "L alone"))
 
@@ -88,12 +87,12 @@ def run(core, select, character, direction, wanted):
 
 
 def main():
-    for character, (back_anim, fwd_anim) in EXPECTED_SWAP.items():
+    for character, (back_anim, fwd_anim) in EXPECTED.items():
         cfg = bf.CHARS[character]
-        got_back, got_fwd = bf.dodge_anim_pair(cfg["anims"])
-        assert (got_back, got_fwd) == (back_anim, fwd_anim), (
-            f"{character}: dodge pair {(got_back, got_fwd)} != "
-            f"{(back_anim, fwd_anim)}")
+        assert cfg["anims"][94] == back_anim, (
+            f"{character}: back anim {cfg['anims'][94]} != {back_anim}")
+        assert cfg["anims"][95] == fwd_anim, (
+            f"{character}: fwd anim {cfg['anims'][95]} != {fwd_anim}")
 
         core = Core(CORE, ROOT / "kof98-snes.sfc")
         try:

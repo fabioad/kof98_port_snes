@@ -3191,12 +3191,9 @@ if "omegarugal" in CHARS:
         (110, 1010, 1009),     # air dash forward
         (111, 1011, 1010),     # air dash back
         # Fusion evades on the system slots used by every character:
-        # L+forward, L+back and L alone (port-added state 720).  The source
-        # clips for 1010/1011 are swapped relative to the port's visual
-        # forward/back convention, so 1010 uses the forward clip (1010) and
-        # 1011 uses the back clip (1009).
-        (94, 1011, 1009),
-        (95, 1010, 1010),
+        # L+forward, L+back and L alone (port-added state 720).
+        (94, 1011, 1010),
+        (95, 1010, 1009),
         (69, 720, 1009),
     ])
     POST_CAL_PROJS.setdefault("omegarugal", {}).update({
@@ -8065,20 +8062,6 @@ def legacy_quote_lines(name, cfg):
     return out
 
 
-def dodge_anim_pair(anim_map):
-    """Return the (sid94 back, sid95 forward) animation pair.
-
-    The shared source clips are visually opposite to their state labels.
-    The build swaps only the animation sources; the state/velocity mapping
-    stays intact.  Omega is corrected separately and does not use this.
-    """
-    fwd = anim_map.get(95)
-    back = anim_map.get(94)
-    if fwd is None or back is None or fwd == back:
-        return back, fwd
-    return fwd, back
-
-
 def wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers):
     """Wire the source throw bind + victim poses for every fighter.
 
@@ -8574,18 +8557,6 @@ def build_char(name, cfg, global_pal=None):
         cfg["moves"][_sid] = _state
         cfg["anims"][_sid] = _anim
         anims[_sid] = _anim
-    # The shared FUSION dodge clips are visually opposite to their state
-    # labels: the forward-roll state uses the backward-looking clip and
-    # vice versa.  Swap only the animation sources for sids 95 (forward)
-    # and 94 (back); the state/velocity mapping stays intact.  Omega was
-    # already corrected explicitly in its POST_CAL_REACTIVATED rows.
-    if name != "omegarugal":
-        _back, _fwd = dodge_anim_pair(anims)
-        if _back is not None and _fwd is not None and (
-                anims.get(94) != _back or anims.get(95) != _fwd):
-            anims[94], anims[95] = _back, _fwd
-            cfg.setdefault("anims", {})[94] = _back
-            cfg["anims"][95] = _fwd
     # The source dodge states carry a Turn controller gated by
     # `P2Dist X < 0`.  The native ActTab only carries animelem/random
     # conditions and was executing that Turn unconditionally, flipping the
