@@ -8586,6 +8586,17 @@ def build_char(name, cfg, global_pal=None):
             anims[94], anims[95] = _back, _fwd
             cfg.setdefault("anims", {})[94] = _back
             cfg["anims"][95] = _fwd
+    # The source dodge states carry a Turn controller gated by
+    # `P2Dist X < 0`.  The native ActTab only carries animelem/random
+    # conditions and was executing that Turn unconditionally, flipping the
+    # fighter on every dodge.  Drop the Turn rows for the forward/back dodge
+    # states so the input direction and the facing-relative velocity/clip
+    # stay aligned; the cross-up turn is not worth the inversion.
+    for _state in {cfg.get("moves", {}).get(94), cfg.get("moves", {}).get(95)}:
+        if _state is None:
+            continue
+        cns_acts[_state] = [row for row in cns_acts.get(_state, ())
+                            if row[1] != 0]          # op0 = Turn
     for _sid, _cat in POST_CAL_CATEGORIES.get(name, {}).items():
         cfg.setdefault("cmd_categories", {})[_sid] = _cat
     for _sid, _delta in POST_CAL_POW_OVERRIDE.get(name, {}).items():

@@ -7,8 +7,10 @@ L alone -> standing dodge (sid 69), never the taunt
 
 The source clips for the forward/back states are authored opposite to
 their labels, so the build swaps only the animation sources for sids 94/95.
-The state/velocity mapping is untouched.  L alone now emits the c token, so
-the ESQ_L rule (not the start/taunt rule) owns it.
+The state/velocity mapping is untouched.  The source Turn controller on
+those states was being executed unconditionally by the ActTab, flipping
+the fighter and inverting the input; the build drops that Turn row.  L
+alone now emits the c token, so the ESQ_L rule (not start/taunt) owns it.
 
 Run after a PVSnesLib build:
 
@@ -28,7 +30,7 @@ from test_counter_grab_headless import boot_select, enter_fight  # noqa: E402
 CORE = "/usr/lib/x86_64-linux-gnu/libretro/snes9x_libretro.so"
 SYM = ROOT / "kof98-snes.sym"
 FP1, FP2 = 0x4000, 0x4040
-F_STATE, F_ANIM = FP1 + 8, FP1 + 0x12
+F_STATE, F_ANIM, F_FACING = FP1 + 8, FP1 + 0x12, FP1 + 14
 L, FWD, BACK = 10, 7, 6
 EXPECTED_SWAP = {
     "kyo": (700, 710), "terry": (700, 710), "iori": (700, 710),
@@ -58,23 +60,31 @@ def run(core, select, character, direction, wanted):
     enter_fight(core, select, character, "kyo")
     core.ram[0x1090] = core.ram[0x1091] = 0
     core.put(FP1, 80 << 8)
-    core.put(FP2, 150 << 8)
+    core.put(FP2, 200 << 8)
     core.step(20)
+    core.ram[F_FACING] = 1
+    core.step(2)
+    core.ram[F_FACING] = 1
     if direction is None:
+        x0 = core.word(FP1)
         core.buttons[0] = {L}
         core.step(2)
     else:
         core.buttons[0] = {direction}
         core.step(2)
+        x0 = core.word(FP1)
         core.buttons[0] = {direction, L}
         core.step(2)
     core.buttons[0] = set()
+    anim = None
     for _ in range(20):
         core.step()
-        if core.ram[F_STATE] == wanted:
-            return core.word(F_ANIM)
-    raise AssertionError(
-        f"{character}: {wanted} not reached (state={core.ram[F_STATE]})")
+        if core.ram[F_STATE] == wanted and anim is None:
+            anim = core.word(F_ANIM)
+    # Let the short dodge finish and keep measuring displacement/facing.
+    for _ in range(20):
+        core.step()
+    return anim, x0, core.word(FP1), core.ram[F_FACING]
 
 
 def main():
@@ -89,10 +99,22 @@ def main():
         try:
             select = boot_select(core)
             for direction, sid, label in CASES:
-                anim = run(core, select, character, direction, sid)
+                anim, x0, x1, facing = run(core, select, character,
+                                           direction, sid)
                 expected = symbol_offset(anim_label(character, sid))
                 assert anim == expected, (
                     f"{character} {label}: anim ${anim:04X} != ${expected:04X}")
+                assert facing == 1, (
+                    f"{character} {label}: dodge flipped the facing ({facing})")
+                if sid == 95:
+                    assert x1 >= x0, (
+                        f"{character} L+forward moved backward ({x0} -> {x1})")
+                elif sid == 94:
+                    assert x1 <= x0, (
+                        f"{character} L+back moved forward ({x0} -> {x1})")
+                else:
+                    assert abs(x1 - x0) <= 512, (
+                        f"{character} neutral dodge drifted ({x0} -> {x1})")
             print(f"PASS {character}: L+forward/back/neutral use the "
                   f"standard dodge slots")
         finally:

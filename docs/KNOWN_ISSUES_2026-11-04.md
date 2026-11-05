@@ -317,10 +317,12 @@ PalFX/AfterImage (Categoria E).
   `tools/test_menu_p2_start_headless.py`.
 - **Esquivas padrão (05/11)** — L+trás e L+frente usam os clipes
   trocados para casar com o estado/velocidade (os clipes da fonte são
-  autorais ao contrário do rótulo); L sozinho agora emite o token `c` e
-  entra na regra `ESQ_L`/esquiva parada (sid 69), não mais no
-  `start`/taunt. Vale para todos os personagens; Omega mantém o
-  mapeamento explícito. Regressão:
+  autorais ao contrário do rótulo). O ActTab executava o `Turn` dos
+  estados de rolagem sem a condição `P2Dist X < 0`, virando o lutador e
+  invertendo a direção; essa linha foi removida só para os sids 94/95.
+  L sozinho agora emite o token `c` e entra na regra `ESQ_L`/esquiva
+  parada (sid 69), não mais no `start`/taunt. Vale para todos os
+  personagens; Omega mantém o mapeamento explícito. Regressão:
   `tools/test_dodge_standard_headless.py`.
 - **Robert (05/11)** — Ryuga agora sobe (follow-ups 1101/1111 ligados);
   o Hien Ryujin aéreo ganhou caixa de contato desde o primeiro frame;
@@ -390,9 +392,9 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$2576`**
+- checksum **`$798A`**
 - layout MSU **`0x17CD`**
-- `.sfc` SHA-256 `fd0687cb…fdd4955`
+- `.sfc` SHA-256 `d44abba9…1cd7475`
 - `.msu` SHA-256 `8bc55c82…21c73cf`
 - `.msu` 51.232.256 bytes
 
