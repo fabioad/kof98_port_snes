@@ -141,11 +141,13 @@ continuações/fases do golpe pai.
 | **Robert** | 1050/3200/3210/3220/3270 implementados em 05/11 (14/24/37/47/44); 1250/1260 Hien (28/42), 1400 Renbu (16, 4 contatos), 1450 Sen'en (16, 4 contatos) e Haoh 3000/3010/3020 (14/14/14) em 05/11 |
 | **Yuri** | MAX Haoh 550 (20, projétil) e MAX Ryuuko 560/561 (10) implementados em 05/11 |
 | **Athena** | Phoenix Fang Arrow 2000/2020/2050. 3000/3050/3100 implementados com a bola 7700 (48/42/40); 4000 confirmado (62) |
-| **Kensou** | Sen Shippo 1300/1330; Niku Man 2000; Sen Ki Hakkei 2100; Chouryuu Renken 2200 |
-| **Chin** | Fire Zake 1203/1300; upper forte 1400; Super Long Walk Hell 1750; Hyper 2200. Zake FireBall Double 1920 religado (04/11) |
+| **Kensou** | Sen Shippo 1300/1330 (23/28), Niku Man 2000 (power-up), Sen Ki Hakkei 2100 (30) e Chouryuu Renken 2200 (25) implementados em 05/11 |
+| **Chin** | Fire Zake 1203/1300 (20/20, projéteis), upper forte 1400 (17), Super Long Walk Hell 1750 (32) e Hyper Long Walk Hell 2200 (40) implementados em 05/11. Zake FireBall Double 1920 religado (04/11) |
 | **King** | Mirage Dance 1500 (24), MAX Illusion 3200 (46), Silent Flash 3300/3400 (30/40), Surprise Rose 3600/3700 (39/49) e Dragooner 3800 (61) implementados em 05/11 |
 | **Mai** | Bachi 1038/1040 (16), Toki Tsubute 1050 (20), Hishou Ryuu'en Jin 1080/1082 (30/35) e MAX2 2030/2031 (5) implementados em 05/11 |
 | **Kim** | Houou Kyaku 3000/3020 (15/25) e Houou Hiten 3200/3201/3210/3220/3221 (16/16/61) implementados em 05/11 |
+| **Chang** | Haki Kyaku 1400 (20) e Tekkyuu Dai Assatsu nível 2 3400 (80) implementados em 05/11 |
+| **Choi** | Tatsumaki 1000/1010 (25/30), Senpuu 1100 (20), Hishou 1200 (20), Shissou 1600 (15), Ultimate Storm 2400 (30), Zan! En Getsu Rin 3100 (35) e Houou Kyaku 3200 (30) implementados em 05/11 |
 | **Chang** | Haki Kyaku 1400; Tekkyuu Dai Assatsu 3400 |
 | **Choi** | Tatsumaki 1000/1010; Senpuu 1100; Hishou 1200/1210; Shissou 1600/1610; Ultimate Storm 2400; Zan! En Getsu Rin 3100/3110; Houou Kyaku 3200/3250 |
 | **Yashiro** | Orochi 2200/2210, 2300/2310; MAX Million Bash 3020; Final Impact 3100/3120; Orochi supers 3510/3520/3600/3620/3700/3720 |
@@ -208,8 +210,9 @@ continuações/fases do golpe pai.
    Mushiki 3250, Koto Tsuki You 1400/1410, 182 Shiki '99 e Orochinagi
    MAX 3050, Rugal 1800 + Eye Beam 1702, Omega Rugal 7100/8000 e Iori
    3100/3110/3150. Terceiro bloco concluído em 05/11: Takuma, Joe, Mai,
-   Kim, King, Yuri, Mr. Big e Eiji (40 golpes; ver
-   `tools/test_category_d_batch2_headless.py`). Restam Kyo Orochinagi
+   Kim, King, Yuri, Mr. Big e Eiji (40 golpes). Quarto bloco concluído em
+   05/11: Kensou, Chin, Chang e Choi (20 golpes; ver
+   `tools/test_category_d_batch3_headless.py`). Restam Kyo Orochinagi
    3010 e os demais personagens da tabela D.
 2. **Categoria E** — efeitos e victim states (Ralf, Mature, Chizuru,
    bola de metal do Chang). Na Chizuru faltam os PalFX/AfterImage e o
@@ -243,13 +246,12 @@ PalFX/AfterImage (Categoria E).
 ## Resumo do que falta
 
 - **Categoria D (restante)** — Robert, Andy, Ryo, Kyo/Nests/Ash, Rugal,
-  Omega Rugal (7100/8000), Takuma, Joe, Mai, Kim, King, Yuri, Mr. Big e
-  Eiji concluídos em 05/11 (este último grupo com 40 golpes no
-  `tools/test_category_d_batch2_headless.py`); restam o Kyo Orochinagi
-  forte 3010, o runtime do Omega (célula 37 compartilhada no harness) e
-  as pendências dos demais personagens listadas na tabela da seção D
-  (Kensou, Chin, Chang, Choi, Yashiro, Shermie, Chris, Yamazaki, Mary,
-  Geese, Krauser, Ken, Chun-Li, Sakura, Heavy D, Brian, Billy, Lucky).
+  Omega Rugal (7100/8000), Takuma, Joe, Mai, Kim, King, Yuri, Mr. Big,
+  Eiji, Kensou, Chin, Chang e Choi concluídos em 05/11; restam o Kyo
+  Orochinagi forte 3010, o runtime do Omega (célula 37 compartilhada no
+  harness) e as pendências dos demais personagens listadas na tabela da
+  seção D (Yashiro, Shermie, Chris, Yamazaki, Mary, Geese, Krauser, Ken,
+  Chun-Li, Sakura, Heavy D, Brian, Billy, Lucky).
 - **Categoria E** — efeitos/victim states: Ralf (queimadura), Mature
   (PalFX/Explod), Chizuru (clone/PalFX) e a bola de metal do Chang.
 - **Clark** — Frankensteiner 1400/1410→1420 ainda faz só 1 de dano.
@@ -262,10 +264,10 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$5487`**
-- layout MSU **`0x487E`**
-- `.sfc` SHA-256 `4a284ad5…379bf5`
-- `.msu` SHA-256 `3b27f6f3…2658c5`
+- checksum **`$F475`**
+- layout MSU **`0xF8A5`**
+- `.sfc` SHA-256 `16879e6e…544c6a`
+- `.msu` SHA-256 `9dbbbc0b…0f0cc1`
 
 ## Referências
 

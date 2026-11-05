@@ -3699,6 +3699,149 @@ if "eiji" in CHARS:
          "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 8)]},
     ])
 
+if "kensou" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("kensou", []).extend([
+        (107, 1300, 1300),     # Sen Shippo weak
+        (108, 1330, 1330),     # Sen Shippo strong
+        (109, 2000, 2000),     # Niku Man o Kuu (power-up)
+        (110, 2100, 2100),     # Sen Ki Hakkei
+        (111, 2200, 2200),     # Chouryuu Renken
+    ])
+    _ken = POST_CAL_TWEAKS.setdefault("kensou", {})
+    _ken.setdefault("slice_damage", {}).update({
+        107: 15, 108: 18, 109: 0, 110: 30, 111: 25})
+    _ken.setdefault("cmd_priority", []).append("CHOURYUU")
+    _ken.setdefault("cmd_extra", []).extend([
+        {"name": "SEN_SHIPPO_W", "label": "SEN SHIPPO",
+         "state": 1300, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "SEN_SHIPPO_S", "label": "SEN SHIPPO S",
+         "state": 1330, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 8)]},
+        {"name": "NIKU_MAN", "label": "NIKU MAN O KUU",
+         "state": 2000, "posture": 3, "time": 26,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 4)]},
+        {"name": "SENKI_HAKKEI", "label": "SEN KI HAKKEI",
+         "state": 2100, "posture": 3, "time": 26,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "CHOURYUU", "label": "CHOURYUU RENKEN",
+         "state": 2200, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0),
+                   (4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+    ])
+
+if "chin" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("chin", []).extend([
+        (107, 1203, 1203),     # Fire Zake (extra)
+        (108, 1300, 1300),     # Fire Zake
+        (109, 1400, 1400),     # upper strong
+        (110, 1750, 1750),     # Super Long Walk Hell
+        (111, 2200, 2201),     # Hyper Long Walk Hell (reuse the rush)
+    ])
+    PROJECTILE_RELEASE.setdefault("chin", {}).update({107: 7, 108: 2})
+    POST_CAL_PROJS.setdefault("chin", {}).update({
+        107: (0x0500, 20, 0x0A),
+        108: (0x0500, 20, 0x0A),
+    })
+    _chin = POST_CAL_TWEAKS.setdefault("chin", {})
+    _chin.setdefault("slice_damage", {}).update({
+        107: 20, 108: 20, 109: 15, 110: 30, 111: 40})
+    _chin.setdefault("hitdef_override", {}).update({
+        111: {"active": 1, "damage": 40, "gdamage": 2, "fall": 1,
+              "p2state": 0xFF, "gvx": 0, "gvy": 0},
+    })
+    _chin.setdefault("cmd_priority", []).append("HYPER_WALK")
+    _chin.setdefault("cmd_extra", []).extend([
+        {"name": "FIRE_ZAKE2", "label": "FIRE ZAKE",
+         "state": 1203, "posture": 3, "time": 24,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "FIRE_ZAKE3", "label": "FIRE ZAKE S",
+         "state": 1300, "posture": 3, "time": 24,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 8)]},
+        {"name": "UPPER_S", "label": "UPPER STRONG",
+         "state": 1400, "posture": 3, "time": 22,
+         "elems": [(4, 0), (2, 0), (6, 0), (0, 4)]},
+        {"name": "LONG_WALK", "label": "SUPER LONG WALK HELL",
+         "state": 1750, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 4)]},
+        {"name": "HYPER_WALK", "label": "HYPER LONG WALK HELL",
+         "state": 2200, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0),
+                   (4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+    ])
+
+if "chang" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("chang", []).extend([
+        (107, 1400, 1400),     # Haki Kyaku
+        (108, 3400, 1400),     # Tekkyuu Dai Assatsu lvl 2
+    ])
+    _chang = POST_CAL_TWEAKS.setdefault("chang", {})
+    _chang.setdefault("slice_damage", {}).update({107: 20, 108: 40})
+    _chang.setdefault("hitdef_override", {}).update({
+        108: {"active": 2, "damage": 40, "gdamage": 2, "fall": 1},
+    })
+    _chang.setdefault("cmd_priority", []).append("TEKKYUU_L2")
+    _chang.setdefault("cmd_extra", []).extend([
+        {"name": "HAKI_KYAKU", "label": "HAKI KYAKU",
+         "state": 1400, "posture": 3, "time": 22,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 4)]},
+        {"name": "TEKKYUU_L2", "label": "TEKKYUU DAI ASSATSU L2",
+         "state": 3400, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 3)]},
+    ])
+
+if "choi" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("choi", []).extend([
+        (107, 1000, 1000),     # Tatsumaki Shippuu Zan weak
+        (108, 1010, 1010),     # Tatsumaki Shippuu Zan strong
+        (109, 1100, 1160),     # Senpuu Hien Shitotsu (reuse the dive)
+        (110, 1200, 1000),     # Hishou Kuuretsu Zan
+        (111, 1600, 1000),     # Shissou Hishou Zan
+        (112, 2400, 2901),     # Ultimate Storm (reuse the rush)
+        (113, 3100, 1000),     # Zan! En Getsu Rin
+        (114, 3200, 1010),     # Houou Kyaku
+    ])
+    _choi = POST_CAL_TWEAKS.setdefault("choi", {})
+    _choi.setdefault("slice_damage", {}).update({
+        107: 25, 108: 30, 109: 20, 110: 20,
+        111: 15, 112: 30, 113: 35, 114: 30})
+    _choi.setdefault("hitdef_override", {}).update({
+        109: {"active": 1, "damage": 20, "gdamage": 2, "fall": 1},
+        110: {"active": 3, "damage": 20, "gdamage": 2, "fall": 1},
+        111: {"active": 3, "damage": 15, "gdamage": 2, "fall": 1},
+        112: {"active": 1, "damage": 30, "gdamage": 2, "fall": 1,
+              "p2state": 0xFF, "gvx": 0, "gvy": 0},
+        113: {"active": 3, "damage": 35, "gdamage": 2, "fall": 1},
+        114: {"active": 3, "damage": 30, "gdamage": 2, "fall": 1},
+    })
+    _choi.setdefault("cmd_priority", []).extend(["SHISSOU", "HOUOU"])
+    _choi.setdefault("cmd_extra", []).extend([
+        {"name": "TATSU_W", "label": "TATSUMAKI SHIPPUU ZAN",
+         "state": 1000, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "TATSU_S", "label": "TATSUMAKI SHIPPUU ZAN S",
+         "state": 1010, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 8)]},
+        {"name": "SENPUU", "label": "SENPUU HIEN SHITOTSU",
+         "state": 1100, "posture": 3, "time": 22,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 12)]},
+        {"name": "HISHOU", "label": "HISHOU KUURETSU ZAN",
+         "state": 1200, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 12)]},
+        {"name": "SHISSOU", "label": "SHISSOU HISHOU ZAN",
+         "state": 1600, "posture": 3, "time": 22,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "STORM", "label": "ULTIMATE STORM",
+         "state": 2400, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 4)]},
+        {"name": "ENGETSU", "label": "ZAN EN GETSU RIN",
+         "state": 3100, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "HOUOU", "label": "HOUOU KYAKU",
+         "state": 3200, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 12)]},
+    ])
+
 if "iori" in CHARS:
     # Ya Sakazuki: the source roots 3100/3110/3150 only play a short
     # invocation; the flame lives in helper 3120 (projectile 3104).  Use

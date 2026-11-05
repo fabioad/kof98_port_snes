@@ -85,6 +85,9 @@ A correção do bit3 também foi o que destravou esses projéteis.
 `tools/test_category_d_batch2_headless.py` — **40 golpes PASS**
 (terceiro bloco, 05/11: Takuma, Joe, Mai, Kim, King, Yuri, Mr. Big e Eiji).
 
+`tools/test_category_d_batch3_headless.py` — **20 golpes PASS**
+(quarto bloco, 05/11: Kensou, Chin, Chang e Choi).
+
 - Terry: 1050 14, 1450 12, 1550 30, 1560 34, 1600 16, 1700 20,
   3100 32, 3200 34 (3 contatos), 3250 48 (3 contatos), 3050 50;
 - Andy: 1400 12, 1450 8, 1500 14, 1160 14, 3000 37, 3010 52, 3050 57,
@@ -244,6 +247,31 @@ Verificação: `tools/test_category_d_batch2_headless.py` — **40 golpes
 PASS**. Os comandos originais dos oito personagens foram conferidos no
 headless (QCF/QCB/DP/SUP1/SUP2 continuam entrando nos states antigos).
 
+### Kensou, Chin, Chang e Choi (quarto bloco)
+
+| Personagem | Golpes ligados (sid) | Dano medido |
+|---|---|---|
+| **Kensou** | Sen Shippo 1300/1330 (107/108), Niku Man 2000 (109), Sen Ki Hakkei 2100 (110), Chouryuu Renken 2200 (111) | 23/28/0/30/25 |
+| **Chin** | Fire Zake 1203/1300 (107/108, projéteis), upper forte 1400 (109), Super Long Walk Hell 1750 (110), Hyper Long Walk Hell 2200 (111) | 20/20/17/32/40 |
+| **Chang** | Haki Kyaku 1400 (107), Tekkyuu Dai Assatsu nível 2 3400 (108) | 20/80 |
+| **Choi** | Tatsumaki 1000/1010 (107/108), Senpuu 1100 (109), Hishou 1200 (110), Shissou 1600 (111), Ultimate Storm 2400 (112), Zan! En Getsu Rin 3100 (113), Houou Kyaku 3200 (114) | 25/30/20/20/15/30/35/30 |
+
+Observações:
+
+- Chin 1203/1300 usam `POST_CAL_PROJS` (o fogo vive no projétil 1201);
+  o lançamento é liberado nos elementos 8/3 do clipe.
+- Chin 2200 reusa o rush 2201; Chang 3400 reusa o clipe do Haki Kyaku.
+- Choi 1100 reusa o clipe 1160; 1200/1600/3100 reusam 1000/1010;
+  2400 reusa o rush 2901; 3200 reusa o 1010.
+- Kensou 2000 é um power-up: entra e recupera sem dano.
+- Os comandos novos foram escolhidos para não colidir com os antigos
+  (QCB/QCF/DP/SUP). Chin/Chang/Choi continuam com os double-taps e
+  half-circles antigos que já resolviam em states mais curtos antes
+  deste bloco.
+
+Verificação: `tools/test_category_d_batch3_headless.py` — **20 golpes
+PASS**.
+
 ### Ainda bloqueado
 
 - **Kyo 3010** (Orochinagi forte) — o comando QCF+a não estabilizou no
@@ -257,10 +285,10 @@ headless (QCF/QCB/DP/SUP1/SUP2 continuam entrando nos states antigos).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$5487`**
-- layout MSU **`0x487E`**
-- `.sfc` SHA-256 `4a284ad5…379bf5`
-- `.msu` SHA-256 `3b27f6f3…2658c5`
+- checksum **`$F475`**
+- layout MSU **`0xF8A5`**
+- `.sfc` SHA-256 `16879e6e…544c6a`
+- `.msu` SHA-256 `9dbbbc0b…0f0cc1`
 
 Copie `.sfc` e `.msu` juntos.
 
