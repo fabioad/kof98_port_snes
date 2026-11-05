@@ -269,9 +269,9 @@ def main():
         assert 85 in states or 86 in states, (
             f"Shinkuu Hadouken state never played: {states}")
         assert shot, f"Shinkuu Hadouken launched no projectile: {states}"
-        # The super shot uses the generic five-contact sequence: 5 x 14 HP.
-        assert hp0 - hp_min == 70, (
-            f"Shinkuu Hadouken should land five 14 HP contacts (70), "
+        # The super shot uses eight 9 HP contacts (Ryu's fireball art).
+        assert hp0 - hp_min == 72, (
+            f"Shinkuu Hadouken should land eight 9 HP contacts (72), "
             f"got {hp0 - hp_min}")
         print(f"PASS Sakura Shinkuu Hadouken: states={states[:6]}, "
               f"damage={hp0 - hp_min}")

@@ -86,9 +86,9 @@ def main():
         qcf(core, STRONG_P, twice=True)
         hold_air(core, 120)
         hp3 = core.word(F_HP2)
-        assert hp3 == hp2 - 70, (
-            f"multi-hit super lost contacts: hp={hp3}, want {hp2 - 70}")
-        print("PASS air juggle: multi-hit super keeps all five contacts")
+        assert hp3 == hp2 - 72, (
+            f"multi-hit super lost contacts: hp={hp3}, want {hp2 - 72}")
+        print("PASS air juggle: multi-hit super keeps all eight contacts")
 
         core.put(F_Y2, 0)
         core.put(F_VY2, 0)

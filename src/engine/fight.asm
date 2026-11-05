@@ -14128,7 +14128,7 @@ PS_ground:
 +   ldy fofs
     lda FP+F_STATE,y                     ; remember whether the launch state
     jsr IsSpecialState                    ;   was a special/super (survivor)
-    bcc +
+    bcc PTS_idx0                          ; not a special: single-hit setup
     lda.w SPARKS+SPK_ATTR,x
     ora #$20.b                           ; bit5 = special/super projectile
     sta.w SPARKS+SPK_ATTR,x
@@ -14173,7 +14173,7 @@ PTS_notstorm:
     lda.w SPARKS+SPK_ATTR,x
     ora #$01.b                        ; multi-hit shot: exempt from the
     sta.w SPARKS+SPK_ATTR,x           ;   one-proj-per-fall cap
-    bra PTS_notmulti
+    bra PTS_sakura_check
 PTS_storm:
     lda #1
     ldy scr3
@@ -14181,6 +14181,29 @@ PTS_storm:
     lda.w SPARKS+SPK_GRD,x
     ora #$01.b
     sta.w SPARKS+SPK_GRD,x
+PTS_sakura_check:
+    ; Sakura's Shinkuu travels far, so it lands 8 contacts (9 HP each)
+    ; instead of the generic five-contact super sequence.
+    rep #$20
+    .ACCU 16
+    ldy fofs
+    lda FP+F_CHAR,y
+    cmp #CharSakura
+    bne PTS_notmulti
+    sep #$20
+    .ACCU 8
+    lda FP+F_STATE,y
+    cmp #85
+    beq PTS_sak_many
+    cmp #86
+    beq PTS_sak_many
+    cmp #87
+    beq PTS_sak_many
+    bra PTS_notmulti
+PTS_sak_many:
+    lda #8
+    ldy scr3
+    sta.w RT_PROJHITS,y
 PTS_notmulti:
 +   rep #$20
     .ACCU 16

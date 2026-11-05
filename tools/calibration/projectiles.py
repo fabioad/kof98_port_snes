@@ -16,9 +16,11 @@ PROJECTILE_ACTIONS = {
     "lucky": 2101,
     # Kyo's EX variants share the base Kyo flame clip.
     "kyonests": 1005, "kyoash": 1005,
-    # Sakura's QCF+P helper (state 1020) carries the fireball in AIR 1020;
-    # its own HitDef is the shot hitbox, there is no Projectile controller.
-    "sakura": 1020,
+    # Sakura's QCF+P helper (state 1020) carries the fireball in AIR 1020,
+    # but the port now draws the shot with Ryu's compact fireball clip
+    # (PROJECTILE_FX_ALIAS below) and uses this action only as the source
+    # reference.  The old 13000/alternate 64x54 atlas distorted tiles.
+    "sakura": 1021,
     # Rugal: the AIR was stripped to the firing actions (1000/1010); the
     # MUGEN projanim 1006 lives only as SFF group 1002.  build_char
     # synthesizes that action from the sprite group via projectile_air.
@@ -125,15 +127,6 @@ PROJECTILE_ALT_EFFECTS = {
         "sids": (82,),
         "release": 3,
     },
-    # Sakura's Shinkuu Hadouken uses a large multi-hit fireball.  The
-    # primary 1020 clip keeps the small launch ball plus the thin tail cel;
-    # the alternate atlas uses the 64x54 cell (frame 2) so the super reads
-    # as a big shot.  It rides the five-contact super sequence.
-    "sakura": {
-        "action": 1020,
-        "frames": ((2, 8),),
-        "sids": (85, 86, 87),
-    },
 }
 
 # Characters that reuse another character's compiled projectile effect.  The
@@ -145,6 +138,10 @@ PROJECTILE_ALT_EFFECTS = {
 # Takuma is one of the fixed descriptors in fight.asm, so his row is updated
 # there as well.
 PROJECTILE_FX_ALIAS = {
+    # Sakura's hadouken/super shots now use Ryu's compact fireball atlas.
+    # The old Sakura-specific atlas (the 64x54 alternate cel) overflowed the
+    # effect page and showed distorted tiles in the Shinkuu sequence.
+    "sakura": "ryu",
     "ryo": "yuri",
     "robert": "yuri",
     "takuma": "yuri",

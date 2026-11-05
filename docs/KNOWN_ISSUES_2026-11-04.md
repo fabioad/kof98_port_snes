@@ -470,18 +470,18 @@ segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
 - **Shinkuu Hadouken (QCFx2 + soco):** os estados 3000/3010 (sids 85/86)
   não tinham projétil: o tiro real morava nos helpers 3005/3055, que não
   são estados de runtime no port.
-  - `ProjTab[85/86/87] = 14 HP por contato`, com a velocidade 12/14 px/tick
-    (sids 85/86; o 87 já vinha do source). O tiro entra no sequencial de
-    **5 contatos** do motor (5 x 14 = 70 HP), o mesmo comportamento do
-    MAX 3050 e o que o jogador via antes.
-  - **Projétil maior:** o clipe primário 1020 guarda a bolinha de saída e
-    o último cel fino; o atlas alternativo (`PROJECTILE_ALT_EFFECTS`) usa
-    o cel de 64x54 (frame 2), então o super aparece como uma bola grande
-    no adversário. O `ProjTab` marca o bit do clipe alternativo para
-    85/86/87.
-  - O sequencial é "pinado" na vítima por `ProjPinIfMulti` (um contato a
-    cada 4 ticks), como os demais supers multi-hit. O Raging Storm do
-    Geese continua com um contato único e o hitbox alto.
+  - **Arte do Ryu:** o Hadouken normal e o Shinkuu agora usam o atlas do
+    projétil do Ryu (`PROJECTILE_FX_ALIAS["sakura"] = "ryu"`). O atlas
+    alternativo antigo (cel de 64x54) estourava a página de efeitos e
+    deixava tiles distorcidos no Shinkuu; ele foi removido. A ação 1021
+    fica só como referência de origem.
+  - **8 contatos:** `ProjTab[85/86/87] = 9 HP por contato` e o `ProjSpawn`
+    dá 8 contatos aos supers da Sakura (85/86/87), em vez dos 5 genéricos:
+    **8 x 9 = 72 HP**. A velocidade continua 12/14 px/tick (bem mais
+    rápida que o Hadouken normal, 3/4) e o sequencial é "pinado" na vítima
+    por `ProjPinIfMulti` (um contato a cada 4 ticks), como os demais
+    supers multi-hit. O Raging Storm do Geese continua com um contato
+    único e o hitbox alto.
 - **Shun Goku Satsu (QCF + chute forte):** 3300 -> 3305 -> 3306 -> fim.
   O golpe estava no sid 111 (StAirSpec, aplicava gravidade) e o comando
   não existia para o chute forte; foi para o sid 114 (StSpecial) e ganhou
@@ -519,7 +519,7 @@ segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
   - `VrDma`, `PushOamShadow` e `ShakeScroll` saíram do banco Fight para a
     seção `SakuraCinema` (chamadas `jsl`) para abrir espaço.
 - Regressão: `tools/test_sakura_fixes_headless.py` (arremesso, choke,
-  Shinkuu 70 HP em 5 contatos, Otoshi, SGS 15 hits, tela preta 50/0/47,
+  Shinkuu 72 HP em 8 contatos, Otoshi, SGS 15 hits, tela preta 50/0/47,
   final de costas e **SGS no Practice sem travamento**). O
   `test_ai_headless` fixa `rng`/`framecnt` depois do início da luta para
   a cobertura não depender do frame de boot.
@@ -541,7 +541,7 @@ segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
   (5 x 14 = 70), o Ko'ou Ken e os demais supers multi-hit continuam
   acertando todos os contatos mesmo numa vítima no ar.
 - Regressão: `tools/test_air_juggle_headless.py` (1º tiro acerta, 2º
-  passa, super mantém 5 contatos, pousar libera o próximo tiro).
+  passa, super mantém 8 contatos, pousar libera o próximo tiro).
 - `FaceEachOther` saiu do banco Fight para `SakuraCinema` (chamada `jsl`)
   para abrir espaço para a regra.
 
@@ -586,9 +586,9 @@ segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$5F50`**
+- checksum **`$DFEC`**
 - layout MSU **`0x514F`**
-- `.sfc` SHA-256 `41710207…e649fbc4`
+- `.sfc` SHA-256 `39e216c0…a37eb7b8`
 - `.msu` SHA-256 `3be2fcd0…c0f4e154`
 - `.msu` 51.396.096 bytes
 
