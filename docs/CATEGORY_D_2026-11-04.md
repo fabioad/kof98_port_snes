@@ -95,8 +95,9 @@ A correção do bit3 também foi o que destravou esses projéteis.
 (sexto bloco, 05/11: Yamazaki, Blue Mary, Geese, Krauser, Ken, Chun-Li,
 Sakura, Heavy D, Brian, Billy e Lucky).
 
-`tools/test_category_d_final_headless.py` — **5 golpes PASS**
-(Kyo/Nests/Ash 3010 e Omega Rugal 7100/8000 no runtime).
+`tools/test_category_d_final_headless.py` — **10 golpes PASS**
+(Kyo/Nests/Ash 3010 e Omega Rugal 7100/1050/1055/2310/1010/1011/8000
+no runtime).
 
 - Terry: 1050 14, 1450 12, 1550 30, 1560 34, 1600 16, 1700 20,
   3100 32, 3200 34 (3 contatos), 3250 48 (3 contatos), 3050 50;
@@ -344,11 +345,12 @@ PASS**.
   3051 (a segunda passada de `tail_ticks` estende o último frame), então
   os três fazem **55**, igual ao Kyo base.
 - **Omega Rugal em runtime**: o harness agora seleciona as formas
-  escondidas com L+R na célula do Rugal e L/R na célula do Kyo. O 7100
-  Gravity shot faz **14**; o 8000 RE entra no state 83, mas o hitbox do
-  rush é apenas visual nesta aproximação (0 de dano). A seleção e os
-  estados são exercitados de verdade em
-  `tools/test_category_d_final_headless.py` (**5 golpes PASS**).
+  escondidas com L+R na célula do Rugal e L/R na célula do Kyo.
+  Implementados: 7100 Gravity Shot (14), 1050/1055 Gravity Smash
+  (40/47), 2310 RE2 (30), 1010/1011 dark dashes (24/26) e 8000 RE
+  (entra no state 83, mas o hitbox do rush segue visual, 0 de dano).
+  A seleção e os estados são exercitados em
+  `tools/test_category_d_final_headless.py` (**10 golpes PASS**).
 
 Nenhum item da tabela da Categoria D permanece bloqueado.
 
@@ -361,10 +363,10 @@ opcionais e os efeitos da Categoria E.
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$E83C`**
-- layout MSU **`0xB33B`**
-- `.sfc` SHA-256 `8f63c134…e8a600`
-- `.msu` SHA-256 `b669bdce…142c3d`
+- checksum **`$B788`**
+- layout MSU **`0x9980`**
+- `.sfc` SHA-256 `8c64da3d…a99e23`
+- `.msu` SHA-256 `389cef46…37bf46`
 
 Copie `.sfc` e `.msu` juntos.
 
