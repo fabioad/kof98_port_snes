@@ -132,7 +132,7 @@ continuações/fases do golpe pai.
 | **Iori** | Ya Sakazuki 3100/3110/3150 implementados em 05/11 (6/8/12; clipe do root + projétil 3104) |
 | **Kyo / Nests / Ash** | Mushiki '96 3100/3150 (47/58), MAX Mushiki 3250 (24), Koto Tsuki You 1400/1410 (10), 182 Shiki '99 (18) e Orochinagi MAX 3050 (55) implementados em 05/11; 3000, 3500/3550 e 3305 em 04/11. O Orochinagi forte 3010 (20) foi implementado em 05/11 via HCB+A+B no sid 104 |
 | **Rugal** | Beads Destruction 1800 (14) e Eye Beam 1702 (14) implementados em 05/11 (AIR 1702 reusa o Reppuken e a AIR 1704 é sintetizada do grupo 1700); Gravity Smash forte 1560 pendente |
-| **Omega Rugal** | Gravity shot 7100 (14), Gravity Smash 1050/1055 (40/47), RE2 2310 (30), dark dashes 1010/1011 (24/26) e RE 8000 (state 83, visual) rodam no runtime via seleção escondida L+R em 05/11 |
+| **Omega Rugal** | Gravity shot 7100 (14), Gravity Smash 1050/1055 (40/47), RE2 2310 (30) e dark dashes 1010/1011 (24/26) rodam no runtime; o comando RE usa o clipe do Gravity Smash (30) porque o state 8000 original tem o hitbox visual e o victim state 8001 não veio no pacote |
 | **Takuma** | Mouko Burai Gan 1400/1410 (13), Koho 1600/1610 (13), Ko'ou Ken ura 1050/1060 (14/18), Haoh 1500/1510 (20), Shin Kishin Geki 3100 (32) e Kyokugen Koho 3300/3320 (36) implementados em 05/11. O 3200/3210 é a mesma família Haoh coberta pelo 1500/1510; o MAX 3220 segue ligado |
 | **Terry** | 1050/1450/1550/1560/1600/1700/3100 implementados em 05/11 (14/12/30/34/16/20/32); Buster Wolf 3200/3250 com 3 contatos (34/48); MAX Geyser 3050 50 |
 | **Andy** | 1400/1450/1500/1160, Chou Reppa 3000/3010/3050 (12/8/14/14/37/52/57), Dan Da Dan 3200/3210/3250 (33/33/44, 2 contatos) e Bakushin 1700 (45, agarrão) implementados em 05/11 |
@@ -264,10 +264,10 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$B788`**
-- layout MSU **`0x9980`**
-- `.sfc` SHA-256 `8c64da3d…a99e23`
-- `.msu` SHA-256 `389cef46…37bf46`
+- checksum **`$C15B`**
+- layout MSU **`0x7E26`**
+- `.sfc` SHA-256 `d93fc703…454365`
+- `.msu` SHA-256 `bc4a419e…56acaf`
 
 ## Referências
 

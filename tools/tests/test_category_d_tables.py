@@ -18,7 +18,8 @@ class CategoryDTablesTests(unittest.TestCase):
         text = (GEN / "omegarugal_spr.inc").read_text()
         cmd = body(text, "omegarugalCmdTab")
         self.assertRegex(cmd, r"\.db \d+,0,0,3,0,0,82")
-        self.assertRegex(cmd, r"\.db \d+,0,0,3,0,0,83")
+        self.assertRegex(cmd, r"\.db \d+,0,0,3,0,0,107")
+        self.assertRegex(cmd, r"\.db \d+,0,0,3,0,0,109")
         rows = re.findall(r"\.db \$([0-9A-F]{2}),\$([0-9A-F]{2}),(\d+),",
                           body(text, "omegarugalProjTab"))
         self.assertGreater(len(rows), 82)

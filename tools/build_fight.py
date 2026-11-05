@@ -3148,7 +3148,7 @@ if "omegarugal" in CHARS:
     POST_CAL_REACTIVATED.setdefault("omegarugal", []).extend([
         (82, 7100, 1358),      # Gravity shot
         (83, 8000, 1074),      # RE rush (reuse a close punch clip)
-        (84, 8005, 8005),      # RE finisher
+        (112, 8005, 1074),     # RE finisher (reuse the close punch)
         (107, 1050, 1074),     # Gravity Smash weak
         (108, 1055, 1074),     # Gravity Smash strong
         (109, 2310, 1100),     # RE2
@@ -3160,21 +3160,23 @@ if "omegarugal" in CHARS:
     })
     _orug = POST_CAL_TWEAKS.setdefault("omegarugal", {})
     _orug.setdefault("slice_damage", {}).update({
-        83: 40, 84: 40, 107: 30, 108: 35, 109: 30, 110: 0, 111: 0})
+        83: 40, 112: 40, 107: 30, 108: 35, 109: 30, 110: 0, 111: 0})
     _orug.setdefault("hitdef_override", {}).update({
         83: {"active": 1, "damage": 40, "p2state": 0xFF, "gvx": 0,
              "gvy": 0, "fall": 1},
-        84: {"active": 4, "damage": 40, "p2state": 0xFF, "fall": 1},
+        112: {"active": 1, "damage": 40, "p2state": 0xFF, "fall": 1},
         107: {"active": 1, "damage": 30, "fall": 1},
         108: {"active": 1, "damage": 35, "fall": 1},
         109: {"active": 4, "damage": 30, "p2state": 0xFF, "fall": 1},
     })
     _orug.setdefault("air_box_patch_frames", {})[8005] = {
         3: [(0, -100, 70, 0)]}
+    # The source 8005 HitDef is armed by its frame-3 ActTab event; replace
+    # the event table so the reused close clip hits from frame 0.
+    _orug.setdefault("act_override", {})[8005] = [(0, 18, 1, 0)]
     _orug.setdefault("extra_trans", []).extend([
         (52, 107, 0, 0), (53, 108, 0, 0),   # Gravity Smash air phase
         (64, 109, 0, 0),                    # RE -> RE2
-        (83, 84, 0, 0),                     # RE -> finisher
         (48, 110, 0, 0), (49, 111, 0, 0),   # dark dash air phases
     ])
     # The source rush crosses the whole screen before its frame-18 hitbox;
@@ -3187,7 +3189,7 @@ if "omegarugal" in CHARS:
         "elems": [(2, 0), (6, 0), (4, 0), (0, 32)],
     }, {
         "name": "RE_RUSH", "label": "RE",
-        "state": 8000, "posture": 3, "time": 22,
+        "state": 1050, "posture": 3, "time": 22,
         "elems": [(2, 0), (10, 0), (8, 0), (0, 32)],
     }, {
         "name": "RE2", "label": "RE2",
@@ -8493,6 +8495,21 @@ def build_char(name, cfg, global_pal=None):
         air[anum] = (frames[:-1] + [
             (g, n, x, y, max(1, min(255, int(ticks))), flip, atk, hurt)],
             loopstart)
+
+    # Second air-box pass: POST_CAL_TWEAKS can add patches after the first
+    # pass above (Omega's RE finisher box, for example).
+    for anum, frame_patch in (cfg.get("air_box_patch_frames") or {}).items():
+        if anum not in air:
+            continue
+        frames, loopstart = air[anum]
+        frames = list(frames)
+        for idx, boxes in frame_patch.items():
+            idx = int(idx)
+            if not (0 <= idx < len(frames)):
+                continue
+            g, n, x, y, t, flip, atk, hurt = frames[idx]
+            frames[idx] = (g, n, x, y, t, flip, list(boxes), hurt)
+        air[anum] = (frames, loopstart)
 
     # Which super slots are MAX/SDM versions?  Stored in a descriptor byte
     # (CH_MAXMASK) so the matcher no longer guesses from the sid number.

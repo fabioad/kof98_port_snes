@@ -40,7 +40,7 @@ CASES = (
     ("kyonests", "3010 Orochinagi S", HCB, {A, B_BTN}, 104, 10),
     ("kyoash", "3010 Orochinagi S", HCB, {A, B_BTN}, 104, 10),
     ("omegarugal", "7100 Gravity Shot", QCF, {R}, 82, 10),
-    ("omegarugal", "8000 RE", QCB, {R}, 83, 0),
+    ("omegarugal", "8000 RE", QCB, {R}, 107, 10),
     ("omegarugal", "1050 Gravity Smash", QCF, {X}, 107, 10),
     ("omegarugal", "1055 Gravity Smash S", QCF, {Y}, 108, 10),
     ("omegarugal", "2310 RE2", QCB, {X}, 109, 10),

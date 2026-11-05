@@ -347,8 +347,10 @@ PASS**.
 - **Omega Rugal em runtime**: o harness agora seleciona as formas
   escondidas com L+R na célula do Rugal e L/R na célula do Kyo.
   Implementados: 7100 Gravity Shot (14), 1050/1055 Gravity Smash
-  (40/47), 2310 RE2 (30), 1010/1011 dark dashes (24/26) e 8000 RE
-  (entra no state 83, mas o hitbox do rush segue visual, 0 de dano).
+  (40/47), 2310 RE2 (30) e 1010/1011 dark dashes (24/26). O comando RE
+  usa o clipe do Gravity Smash como aproximação (30); o state 8000
+  original continua ligado, mas o hitbox do rush é visual (o victim
+  state 8001 não veio no pacote).
   A seleção e os estados são exercitados em
   `tools/test_category_d_final_headless.py` (**10 golpes PASS**).
 
@@ -363,10 +365,10 @@ opcionais e os efeitos da Categoria E.
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$B788`**
-- layout MSU **`0x9980`**
-- `.sfc` SHA-256 `8c64da3d…a99e23`
-- `.msu` SHA-256 `389cef46…37bf46`
+- checksum **`$C15B`**
+- layout MSU **`0x7E26`**
+- `.sfc` SHA-256 `d93fc703…454365`
+- `.msu` SHA-256 `bc4a419e…56acaf`
 
 Copie `.sfc` e `.msu` juntos.
 
