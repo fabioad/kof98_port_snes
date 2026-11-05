@@ -339,6 +339,10 @@ PalFX/AfterImage (Categoria E).
   ROM (upload real, ARAM, áudio e UI).
 - `tools/tests/test_approved_music.py`: **3 passed / 17 subtests**.
 - O `.msu` da build de referência contém o pacote FFG atual.
+- **Chizuru**: as 10 vozes da `VoiceTab_chizuru` foram transmitidas do
+  `.msu` e conferidas byte a byte, e um `PlaySnd` de especial (QCF+X)
+  chegou ao `SfxPlay`. Regressão:
+  `tools/test_chizuru_audio_headless.py`.
 
 ## Build de referência
 
