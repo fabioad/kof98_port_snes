@@ -138,7 +138,7 @@ continuações/fases do golpe pai.
 | **Andy** | 1400/1450/1500/1160, Chou Reppa 3000/3010/3050 (12/8/14/14/37/52/57) e Dan Da Dan 3200/3210/3250 (33/33/44, aproximação de 2 contatos) implementados em 05/11; Bakushin 1700 pendente |
 | **Joe** | Screw Upper forte 3010; Bakuretsu 3100; Thunder Fire 3200/3250; Slash Kick forte 1310. MAX 3150 religado (04/11) |
 | **Ryo** | 1150/1160/1250/1260/2100/3250, Ko'ou Ken EX 1050, Renbu 1400 e aéreo 2000/2010 implementados em 05/11 (26/32/14/28/13/30/14/12/14/14); MAX Ryuuko 3150 pendente |
-| **Robert** | 1050/3200/3210/3220/3270 implementados em 05/11 (14/24/37/47/44); Hien 1250/1260, Renbu 1400, Sen'en 1450 e Haoh 3000/3010/3020 pendentes |
+| **Robert** | 1050/3200/3210/3220/3270 implementados em 05/11 (14/24/37/47/44); 1250/1260 Hien (28/42), 1400 Renbu (16, 4 contatos), 1450 Sen'en (16, 4 contatos) e Haoh 3000/3010/3020 (14/14/14) em 05/11 |
 | **Yuri** | MAX Haoh 550; MAX Ryuuko 560 |
 | **Athena** | Phoenix Fang Arrow 2000/2020/2050. 3000/3050/3100 implementados com a bola 7700 (48/42/40); 4000 confirmado (62) |
 | **Kensou** | Sen Shippo 1300/1330; Niku Man 2000; Sen Ki Hakkei 2100; Chouryuu Renken 2200 |
@@ -201,10 +201,13 @@ continuações/fases do golpe pai.
    (Kyo/Nests/Ash 3500/3550/3305, Terry 3000/3010/3050, Athena
    3000/3050/3100/4000). Segundo bloco concluído em 05/11: Terry
    1050/1450/1550/1560/1600/1700/3100 e Buster Wolf 3200/3250 (3
-   contatos), Andy 1400/1450/1500/1160/3000/3010/3050, Ryo
-   1150/1160/1250/1260/2100/3250, Robert 1050/3200/3210/3220/3270,
+   contatos), Andy 1400/1450/1500/1160/3000/3010/3050 e Dan Da Dan
+   3200/3210/3250, Ryo 1150/1160/1250/1260/2100/3250/1050/1400/2000/2010,
+   Robert 1050/1250/1260/1400/1450/3000/3010/3020/3200/3210/3220/3270,
    Rugal 1800 e Iori 3100/3110/3150. Restam Omega Rugal (AIR 8000/8001),
-   Takuma (limite do banco de tabelas) e Rugal Eye Beam (AIR 1704).
+   Takuma (limite do banco de tabelas), Rugal Eye Beam (AIR 1704),
+   Andy Bakushin 1700, Ryo MAX Ryuuko 3150 e os demais personagens da
+   tabela D.
 2. **Categoria E** — efeitos e victim states (Ralf, Mature, Chizuru,
    bola de metal do Chang). Na Chizuru faltam os PalFX/AfterImage e o
    clone visual dos supers.
@@ -236,7 +239,8 @@ PalFX/AfterImage (Categoria E).
 
 ## Resumo do que falta
 
-- **Categoria D (restante)** — Omega Rugal (Gravity shot 7100 / RE 8000:
+- **Categoria D (restante)** — Robert concluído em 05/11 (Hien, Renbu,
+  Sen'en e Haoh); Omega Rugal (Gravity shot 7100 / RE 8000:
   AIR 8000 e victim state 8001 ausentes; Eye Beam 1700: AIR 1704
   ausente), Takuma (tabela no limite de 32 KiB; 1400/1410, 1600/1610,
   1050/1060, Haoh e Kyokugen Koho), Andy Bakushin 1700, Ryo MAX Ryuuko
@@ -257,10 +261,10 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$DAE7`**
-- layout MSU **`0x3E20`**
-- `.sfc` SHA-256 `3bcd1a54…25ed0a`
-- `.msu` SHA-256 `285ef936…5b279d`
+- checksum **`$611D`**
+- layout MSU **`0xE91C`**
+- `.sfc` SHA-256 `5f59d101…d2e5a0`
+- `.msu` SHA-256 `cba3c807…5e2986b`
 
 ## Referências
 

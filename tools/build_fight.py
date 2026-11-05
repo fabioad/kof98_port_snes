@@ -3103,6 +3103,62 @@ if "ryo" in CHARS:
             "elems": [(2, 0), (6, 0), (4, 0), (0, 3)],
         }])
 
+# ---------------------------------------------------------------------------
+# Robert: Hien Shippuu Kyaku '95 (1250/1260), Renbu Kyaku (1400),
+# Sen'en Renbu Kyaku (1450) and Haoh Shikou Ken (3000/3010/3020).
+# ---------------------------------------------------------------------------
+if "robert" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("robert", []).extend([
+        (66, 1250, 1250),      # Hien Shippuu '95 weak
+        (68, 1260, 1260),      # Hien Shippuu '95 strong
+        (107, 1400, 1400),     # Renbu Kyaku
+        (108, 1450, 1450),     # Sen'en Renbu Kyaku
+        (109, 3000, 3000),     # Haoh Shikou Ken weak
+        (110, 3010, 3010),     # Haoh Shikou Ken strong
+        (111, 3020, 3020),     # MAX Haoh Shikou Ken
+    ])
+    _btw = POST_CAL_TWEAKS.setdefault("robert", {})
+    _btw.setdefault("slice_damage", {}).update({107: 4, 108: 4})
+    _btw["slice_no_fall"] = sorted(
+        set(_btw.get("slice_no_fall", ())) | {107, 108})
+    _btw.setdefault("hit_soft_resets", {}).update(
+        {1400: [12, 19], 1450: [7, 13, 19]})
+    _btw.setdefault("cmd_priority", []).extend([
+        "HAOH_MAX", "HAOH_S", "HAOH_W", "SENEN", "RENBU",
+        "HIEN_S", "HIEN_W"])
+    _btw.setdefault("cmd_extra", []).extend([{
+        "name": "HIEN_W", "label": "HIEN SHIPPUU 95",
+        "state": 1250, "posture": 3, "time": 22,
+        "elems": [(2, 0), (10, 0), (8, 0), (0, 1)],
+    }, {
+        "name": "HIEN_S", "label": "HIEN SHIPPUU 95 S",
+        "state": 1260, "posture": 3, "time": 22,
+        "elems": [(2, 0), (10, 0), (8, 0), (0, 32)],
+    }, {
+        "name": "RENBU", "label": "RENBU KYAKU",
+        "state": 1400, "posture": 3, "time": 22,
+        "elems": [(4, 0), (2, 0), (6, 0), (0, 32)],
+    }, {
+        "name": "SENEN", "label": "SEN'EN RENBU",
+        "state": 1450, "posture": 3, "time": 22,
+        "elems": [(4, 0), (2, 0), (6, 0), (0, 3)],
+    }, {
+        "name": "HAOH_W", "label": "HAOH SHIKOU KEN",
+        "state": 3000, "posture": 3, "time": 30,
+        "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
+                  (0, 4)],
+    }, {
+        "name": "HAOH_S", "label": "HAOH SHIKOU KEN S",
+        "state": 3010, "posture": 3, "time": 30,
+        "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
+                  (0, 8)],
+    }, {
+        "name": "HAOH_MAX", "label": "HAOH SHIKOU KEN MAX",
+        "state": 3020, "posture": 3, "time": 30,
+        "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
+                  (0, 12)],
+    }])
+
 # Omega Rugal's Gravity shot (7100) and RE rush (8000) are intentionally
 # left out of this pass: the source AIR 8000 sprites and the 8001 victim
 # state are not ported, and the character shares Rugal's select cell in the

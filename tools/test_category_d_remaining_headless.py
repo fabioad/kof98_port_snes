@@ -85,6 +85,13 @@ CASES = (
     ("robert", "3220 Muei Shippuu MAX", QCF2, {A, B_BTN}, {64}, 25, None),
     ("robert", "3270 Muei Senpuu MAX",
      (D, DB, BACK, DB, D, DF, F), {A, B_BTN}, {65}, 25, None),
+    ("robert", "1250 Hien Shippuu 95", QCB, {X}, {66}, 20, None),
+    ("robert", "1260 Hien Shippuu 95 S", QCB, {Z}, {68}, 25, None),
+    ("robert", "1400 Renbu Kyaku", DP, {Z}, {107}, 10, None),
+    ("robert", "1450 Sen'en Renbu", DP, {X, Y}, {108}, 10, None),
+    ("robert", "3000 Haoh Shikou Ken", QCB2, {A}, {109}, 8, None),
+    ("robert", "3010 Haoh Shikou Ken S", QCB2, {B_BTN}, {110}, 8, None),
+    ("robert", "3020 Haoh Shikou Ken MAX", QCB2, {A, B_BTN}, {111}, 8, None),
     # Rugal
     ("rugal", "1800 Beads Destruction", HCB, {X, Y}, {66}, 8, None),
     # Iori

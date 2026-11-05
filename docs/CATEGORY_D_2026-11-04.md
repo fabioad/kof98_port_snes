@@ -79,7 +79,7 @@ A correção do bit3 também foi o que destravou esses projéteis.
 - Terry 3000: 25; 3010: 30; 3050: 50;
 - Athena 4000: 62; 3000: 48; 3050: 42; 3100: 40.
 
-`tools/test_category_d_remaining_headless.py` — **39 golpes PASS**
+`tools/test_category_d_remaining_headless.py` — **46 golpes PASS**
 (segundo bloco, 05/11):
 
 - Terry: 1050 14, 1450 12, 1550 30, 1560 34, 1600 16, 1700 20,
@@ -88,7 +88,9 @@ A correção do bit3 também foi o que destravou esses projéteis.
   Dan Da Dan 3200/3210/3250 33/33/44 (2 contatos, aproximação);
 - Ryo: 1150 26, 1160 32, 1250 14, 1260 28, 2100 13, 3250 30,
   1050 14, 1400 12 (3 contatos), 2000/2010 14/14 (aéreo);
-- Robert: 1050 14, 3200 24, 3210 37, 3220 47, 3270 44;
+- Robert: 1050 14, 3200 24, 3210 37, 3220 47, 3270 44, 1250 28,
+  1260 42, 1400 16 (4 contatos), 1450 16 (4 contatos), Haoh 3000/3010/3020
+  14/14/14;
 - Rugal: 1800 14;
 - Iori: 3100 6, 3110 8, 3150 12.
 
@@ -156,8 +158,11 @@ aéreo). O 3150 (MAX Ryuuko Ranbu) continua pendente.
 
 ### Robert
 
-1050 (Ryuugeki Ken EX), 3200/3210/3220 (Muei Shippuu Juudan Kyaku) e
-3270 (MAX Muei Senpuu, reusando o clipe MAX).
+1050 (Ryuugeki Ken EX), 3200/3210/3220 (Muei Shippuu Juudan Kyaku),
+3270 (MAX Muei Senpuu), 1250/1260 (Hien Shippuu '95), 1400 (Renbu
+Kyaku), 1450 (Sen'en Renbu Kyaku) e 3000/3010/3020 (Haoh Shikou Ken).
+Renbu e Sen'en usam `hit_soft_resets` nos elementos de cada golpe; os
+Haoh saem como projéteis (helper 3005/3025).
 
 ### Rugal
 
@@ -185,10 +190,10 @@ root com dano por ProjTab 6/8/12 e release no segundo frame.
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$DAE7`**
-- layout MSU **`0x3E20`**
-- `.sfc` SHA-256 `3bcd1a54…25ed0a`
-- `.msu` SHA-256 `285ef936…5b279d`
+- checksum **`$611D`**
+- layout MSU **`0xE91C`**
+- `.sfc` SHA-256 `5f59d101…d2e5a0`
+- `.msu` SHA-256 `cba3c807…5e2986b`
 
 Copie `.sfc` e `.msu` juntos.
 
