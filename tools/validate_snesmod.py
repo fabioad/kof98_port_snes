@@ -3,6 +3,8 @@
 import re
 import subprocess
 import sys
+import tempfile
+from pathlib import Path
 
 MAX_MODULE_BYTES = 44500  # ARAM budget with the combat effects + stream buffer
 # SNESMOD data starts at $1A00; spcAllocateSoundRegion(18) reserves the top
@@ -18,8 +20,12 @@ def main(tool, paths):
         raise SystemExit("validate_snesmod: no modules supplied")
     failures = []
     for path in paths:
-        result = subprocess.run([tool, "-V", path], capture_output=True,
-                                text=True)
+        # smconv also exports an SPC by default, even in verbose validation.
+        # Keep that scratch export away from source/approved preview files.
+        with tempfile.TemporaryDirectory(prefix='validate-snesmod-') as directory:
+            result = subprocess.run([tool, "-V", "-o",
+                                     str(Path(directory) / 'check.spc'), path],
+                                    capture_output=True, text=True)
         report = result.stdout + result.stderr
         match = re.search(r"Total:\s*\[\s*(\d+) bytes\]", report)
         if result.returncode or "module is too big" in report.lower() or not match:

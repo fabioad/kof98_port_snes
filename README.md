@@ -94,6 +94,9 @@ Formas ocultas:
 - **Attract demo:** após alguns segundos sem input, a ROM mostra uma luta
   CPU vs CPU e depois entra na abertura.
 - **Opções e sound test:** ajustes de jogo e audição das faixas.
+- **Áudio:** 17 músicas com timbres e bateria baseados em Final Fight Guy,
+  preservando as notas e o andamento. Fontes aprovadas em
+  [`assets/audio/ffg`](assets/audio/ffg/README.md).
 - **Paletas P2:** em espelho, o segundo jogador recebe a próxima paleta do
   pacote de origem.
 - **IA:** perfis de zoner, rush, grappler e equilibrado; a agressividade,
@@ -281,6 +284,9 @@ emulator).
 - **Mirror-match palettes** when both players pick the same fighter.
 - Music and sound effects through SPC700/SNESMOD; graphics, voices and extras
   can be streamed from the MSU-1 file.
+- 17 music tracks use the approved Final Fight Guy instrument/drum profile,
+  preserving their notes and timing; sources live in
+  [`assets/audio/ffg`](assets/audio/ffg/README.md).
 
 ### Port numbers
 

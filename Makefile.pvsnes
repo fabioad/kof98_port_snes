@@ -108,9 +108,7 @@ ANNOUNCER_WAVS := assets/audio/announcer/common_00052.wav \
 # module order: sfx.it first, then one module per stage (see
 # tools/build_stages.py:STAGE_SONGS + tools/build_stage_music.py)
 STG_ITS := $(patsubst %,build/gen_audio/it/stg%.it,0 1 2 3 4 5 6 7 8 9)
-# frontend songs (module 11..17): intro, title-idle, menu, select, endings,
-# and winner.  The select module is rebuilt from its MIDI below; the other
-# modules are prebuilt from the sibling kof98snesfest tree.
+# Frontend songs (module 11..17), using the same approved FFG pack as stages.
 MENU_ITS := assets/audio/menu/cipher.it assets/audio/menu/cipher_beta.it \
 	assets/audio/menu/kof.it \
 	assets/audio/menu/lastdance.it assets/audio/menu/sunset.it \
@@ -118,20 +116,12 @@ MENU_ITS := assets/audio/menu/cipher.it assets/audio/menu/cipher_beta.it \
 AUDIOFILES := assets/audio/esaka/sfx.it $(STG_ITS) $(MENU_ITS)
 export SOUNDBANK := build/gen_audio/soundbank
 AUDIO_GEN := build/gen_audio/spc_ids.inc build/gen_audio/spc_sfxmap.inc
+FFG_MUSIC := assets/audio/ffg/manifest.json $(wildcard assets/audio/ffg/*.it)
 
-# Rebuild the select track from the repository MIDI through the same SNESMOD
-# conversion path used for stage songs.
-assets/audio/menu/kof.it: music/The_King_of_Fighters.mid \
-		tools/build_menu_music.py tools/build_stage_music.py \
-		tools/it_reduce.py \
-		$(wildcard assets/audio/esaka/instruments/*.iti)
-	UV_CACHE_DIR=/tmp/kof98-uv-cache python3 tools/build_menu_music.py
-
-assets/audio/menu/crystal.it: assets/survival_ending/kof00_crystal.mid \
-		tools/build_survival_ending.py tools/build_stage_music.py \
-		tools/mid2it.py tools/it_reduce.py \
-		$(wildcard assets/audio/esaka/instruments/*.iti)
-	UV_CACHE_DIR=/tmp/kof98-uv-cache python3 tools/build_survival_ending.py
+# Keep all seven frontend modules identical to the reviewed source pack.
+$(MENU_ITS) &: $(FFG_MUSIC) tools/approved_music.py \
+        music/The_King_of_Fighters.mid assets/survival_ending/kof00_crystal.mid
+	python3 tools/approved_music.py --frontend
 
 include $(PVSNESLIB_HOME)/devkitsnes/snes_rules
 
@@ -244,17 +234,15 @@ assets/audio/esaka/sfx.it: tools/build_sfx_it.py tools/build_spc_neogeo.py \
 	$(wildcard assets/ui/*.wav)
 	python3 tools/build_sfx_it.py
 
-$(STG_ITS): build/gen_audio/stage_music.stamp
-
-
-build/gen_audio/stage_music.stamp: tools/build_stage_music.py \
+$(STG_ITS) build/gen_audio/stage_music.stamp &: tools/build_stage_music.py \
+		tools/approved_music.py $(FFG_MUSIC) \
 		tools/build_stages.py tools/it_reduce.py \
 		tools/mid2it.py assets/audio/menu/cipher_beta.it \
 		$(filter-out %\ %,$(wildcard music/*.mid)) \
 		$(wildcard assets/audio/esaka/instruments/*.iti) \
 		assets/audio/esaka/esaka.it
 	UV_CACHE_DIR=/tmp/kof98-uv-cache python3 tools/build_stage_music.py
-	touch $@
+	touch build/gen_audio/stage_music.stamp
 
 $(SOUNDBANK).asm: $(AUDIOFILES)
 	@mkdir -p build/gen_audio

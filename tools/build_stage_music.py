@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Build one SNESMOD .it module per stage song.
 
+Known songs use the approved FFG source pack, guarded by MIDI/payload hashes.
+The MIDI conversion below is retained for additional, unapproved songs.
+
 Each stage's source MIDI (tools/build_stages.py:STAGE_SONGS) is split into
 per-channel MIDI files, the duplicates are dropped, and the three densest
 melodic channels are kept -- highest average pitch as lead, lowest as bass,
@@ -19,6 +22,7 @@ import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_stages
+from approved_music import ApprovedMusicError, install_for_midi
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 MUSIC = os.path.join(ROOT, "music")
@@ -138,6 +142,10 @@ def build_module(midi_name, out_it):
     midi_path = (midi_name if os.path.isabs(midi_name)
                  else os.path.join(MUSIC, midi_name))
     midi_base = os.path.basename(midi_path)
+    # Ship exactly the timbres, notes and headroom reviewed in the MP3s.
+    # This path also serves selection and the SURVIVOR ending builders.
+    if install_for_midi(midi_path, out_it):
+        return subprocess.CompletedProcess(['approved-ffg', midi_path], 0)
     with tempfile.TemporaryDirectory() as wd:
         parts = split_channels(midi_path, wd)
         lines = ["name: stage", "settings:",
@@ -202,6 +210,8 @@ def main():
         try:
             build_module(midi, out_it)
         except Exception as exc:
+            if isinstance(exc, ApprovedMusicError):
+                raise  # never hide a stale approved arrangement with a 909 fallback
             print(f"stg{idx} {name}: midi2tracker failed ({exc}); "
                   "using the in-tree MIDI-to-IT converter")
             subprocess.run([

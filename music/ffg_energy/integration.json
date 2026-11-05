@@ -1,0 +1,156 @@
+{
+  "rom": "kof98-snes.sfc",
+  "romSha256": "e7ef30b18374ce3fd74d15c87392f53ed3b904a18166d4b626700592ce7cff02",
+  "msuSha256": "e705d231568bbbe5412a43eff767b6a79c6128359b7b18eb8ce074f329e0a6d9",
+  "checksum": "0x1c58",
+  "soundbankBytes": 224670,
+  "approvedModules": 17,
+  "activeModulesMatchPreviews": true,
+  "bankEmbeddedExactly": true,
+  "liveSoundTest": [
+    {
+      "song": "menu_cipher",
+      "index": 0,
+      "status": "passed",
+      "liveHeaderMatchesPreview": true,
+      "uniqueGameTicks": 234,
+      "audibleBatches": 134
+    },
+    {
+      "song": "menu_cipher_beta",
+      "index": 1,
+      "status": "passed",
+      "liveHeaderMatchesPreview": true,
+      "uniqueGameTicks": 236,
+      "audibleBatches": 240
+    },
+    {
+      "song": "menu_kof",
+      "index": 2,
+      "status": "passed",
+      "liveHeaderMatchesPreview": true,
+      "uniqueGameTicks": 227,
+      "audibleBatches": 231
+    },
+    {
+      "song": "menu_lastdance",
+      "index": 3,
+      "status": "passed",
+      "liveHeaderMatchesPreview": true,
+      "uniqueGameTicks": 222,
+      "audibleBatches": 189
+    },
+    {
+      "song": "menu_sunset",
+      "index": 4,
+      "status": "passed",
+      "liveHeaderMatchesPreview": true,
+      "uniqueGameTicks": 210,
+      "audibleBatches": 214
+    },
+    {
+      "song": "menu_winner",
+      "index": 5,
+      "status": "passed",
+      "liveHeaderMatchesPreview": true,
+      "uniqueGameTicks": 236,
+      "audibleBatches": 240
+    },
+    {
+      "song": "menu_crystal",
+      "index": 6,
+      "status": "passed",
+      "liveHeaderMatchesPreview": true,
+      "uniqueGameTicks": 217,
+      "audibleBatches": 138
+    },
+    {
+      "song": "stg0",
+      "index": 7,
+      "status": "passed",
+      "liveHeaderMatchesPreview": true,
+      "uniqueGameTicks": 214,
+      "audibleBatches": 218
+    },
+    {
+      "song": "stg1",
+      "index": 8,
+      "status": "passed",
+      "liveHeaderMatchesPreview": true,
+      "uniqueGameTicks": 211,
+      "audibleBatches": 140
+    },
+    {
+      "song": "stg2",
+      "index": 9,
+      "status": "passed",
+      "liveHeaderMatchesPreview": true,
+      "uniqueGameTicks": 206,
+      "audibleBatches": 210
+    },
+    {
+      "song": "stg3",
+      "index": 10,
+      "status": "passed",
+      "liveHeaderMatchesPreview": true,
+      "uniqueGameTicks": 220,
+      "audibleBatches": 125
+    },
+    {
+      "song": "stg4",
+      "index": 11,
+      "status": "passed",
+      "liveHeaderMatchesPreview": true,
+      "uniqueGameTicks": 217,
+      "audibleBatches": 222
+    },
+    {
+      "song": "stg5",
+      "index": 12,
+      "status": "passed",
+      "liveHeaderMatchesPreview": true,
+      "uniqueGameTicks": 217,
+      "audibleBatches": 222
+    },
+    {
+      "song": "stg6",
+      "index": 13,
+      "status": "passed",
+      "liveHeaderMatchesPreview": true,
+      "uniqueGameTicks": 198,
+      "audibleBatches": 204
+    },
+    {
+      "song": "stg7",
+      "index": 14,
+      "status": "passed",
+      "liveHeaderMatchesPreview": true,
+      "uniqueGameTicks": 213,
+      "audibleBatches": 217
+    },
+    {
+      "song": "stg8",
+      "index": 15,
+      "status": "passed",
+      "liveHeaderMatchesPreview": true,
+      "uniqueGameTicks": 203,
+      "audibleBatches": 207
+    },
+    {
+      "song": "stg9",
+      "index": 16,
+      "status": "passed",
+      "liveHeaderMatchesPreview": true,
+      "uniqueGameTicks": 212,
+      "audibleBatches": 216
+    }
+  ],
+  "regressionsPassed": [
+    "stage8_single_survivor_team",
+    "demo_music_handoff",
+    "voice_transition_leak",
+    "approved_music_unit_guards"
+  ],
+  "backup": "music/ffg_energy/integration-backup-20261105-093142.tar.gz",
+  "cleanRegenerationMatchesApproved": true
+}

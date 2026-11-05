@@ -1,0 +1,158 @@
+{
+  "profile": "Final Fight Guy \u2014 approved 2026-11-05",
+  "modules": [
+    {
+      "file": "stg0.it",
+      "target": "build/gen_audio/it/stg0.it",
+      "midi": "music/EsakaVer3.mid",
+      "midiSha256": "dec1c1dda0e40e7fa70be5b27b8ad19eeb749281dc4f573702df0900db49f4f1",
+      "sha256": "2a5845a1cad684dace28160aecbd8ad44ec98c7f2e2ef64f4f630704518cc009",
+      "patternSha256": "9e00544ec433846cc14af8b561bb8c38aa681c26d67d017b3939aadadce3d075",
+      "aramBytes": 23723
+    },
+    {
+      "file": "stg1.it",
+      "target": "build/gen_audio/it/stg1.it",
+      "midi": "music/kof98_dora.mid",
+      "midiSha256": "098ada0d727b7d87a84700b37d1a6bb12ca73ee6d2bb89f09c481355fc0d832e",
+      "sha256": "965690768dce73a8c49a5f177c03b1a01b950279e69382c19453812166b1c14c",
+      "patternSha256": "3ecb9bd09ca698ad0ec70d0eae3db065e0bf2685571ae9380e30f51fd40de393",
+      "aramBytes": 25773
+    },
+    {
+      "file": "stg2.it",
+      "target": "build/gen_audio/it/stg2.it",
+      "midi": "music/KOF98Arashi2.mid",
+      "midiSha256": "9f9507bb90d1bf1371e30076fe193dcf4a73b3eefefd2176dc4ed164d25cbb0f",
+      "sha256": "f33facc5c3b95bb7e6af137ebed9a5728ebbf7c2b67472189c62590060942268",
+      "patternSha256": "06bbd7ce928de9dcaf6bf08c80b13ddc3ff7290aa30e8eceff3248c51fb5d6ee",
+      "aramBytes": 29527
+    },
+    {
+      "file": "stg3.it",
+      "target": "build/gen_audio/it/stg3.it",
+      "midi": "music/kof98_stown.mid",
+      "midiSha256": "c3cde4f7177782f912c476341ca8af615b4ff263411d406b65b8be1bca68b0cd",
+      "sha256": "13c6d1ddf5b1ddb8051609f1702c893d944d155785f5325375700f7313099958",
+      "patternSha256": "7d48c13b0398fa8ab941ee05b11e58896e9b9d0567c9c798e87ee5d5423e8927",
+      "aramBytes": 18354
+    },
+    {
+      "file": "stg4.it",
+      "target": "build/gen_audio/it/stg4.it",
+      "midi": "music/Rumbling.mid",
+      "midiSha256": "1caaef08dc86d3fe28d5ab95544f9a14b08ab1269a607494995e34a9fcbc5518",
+      "sha256": "298a3892f2c70b41f547c50c396beee432643a272d00a816c2a6fa0a3d434dfc",
+      "patternSha256": "55b6c91c0440ddab97b24634824ff75a127e10582989e8525005feb7764d734b",
+      "aramBytes": 21158
+    },
+    {
+      "file": "stg5.it",
+      "target": "build/gen_audio/it/stg5.it",
+      "midi": "music/rugalomega98.mid",
+      "midiSha256": "b3d06ee54e88cfe5a1a8a742b4b72771779032f22ed0ce672653d52ae991b03a",
+      "sha256": "f0ffebfa34e5bd3c0afdcd17e49fc1aa9ef058cefe7dd9d22930e17e2936c103",
+      "patternSha256": "e24361db8a591d1a992fc3c90fbd27827b3146fb94da3352bd29480a7146b6d6",
+      "aramBytes": 19829
+    },
+    {
+      "file": "stg6.it",
+      "target": "build/gen_audio/it/stg6.it",
+      "midi": "music/Fairy98.mid",
+      "midiSha256": "40f046eb6fb9313c21e7fa44eccf3983982ab9d0b5887dbf3b5a26b8c165662c",
+      "sha256": "a023e2473831f7bef53074d84319010d26f2d876cf73ba7ab9ebb5ea86a63136",
+      "patternSha256": "32d6d27a479f7cf4d42ee8378ee004ff7d6e66376063a1e1b8c2d46ae8cd1fe0",
+      "aramBytes": 33614
+    },
+    {
+      "file": "stg7.it",
+      "target": "build/gen_audio/it/stg7.it",
+      "midi": "music/KOF98Slum.mid",
+      "midiSha256": "e1daffd8de4a28fc480cd61eca20a397576a7ebe9ec43a4ef9a3e1527b1f4e75",
+      "sha256": "50dc3f3ae4dffd3b33cce71dcc82ca78daad0b66cc1897025771c0b2a540d99d",
+      "patternSha256": "c3ad00f8bce01dec4a0528f4001dec00d959d8faefd06b710a68e79c984de63c",
+      "aramBytes": 24201
+    },
+    {
+      "file": "stg8.it",
+      "target": "build/gen_audio/it/stg8.it",
+      "midi": "music/Ryu-ko_Final.mid",
+      "midiSha256": "fa495551322461673acd147a31f9ce96529cf57099ba8f526e2b81afdd0385ec",
+      "sha256": "13fb66dbbe49bf25072e59dc26037936285768a12b139b78079e9b80688d19fa",
+      "patternSha256": "615f80609b8a3cdd631d27599fb9a630b51f6b6f51c4bfa488f20a36474a6033",
+      "aramBytes": 31895
+    },
+    {
+      "file": "stg9.it",
+      "target": "build/gen_audio/it/stg9.it",
+      "midi": "music/Kurikinton_Gomame_Guitar_Ver_.mid",
+      "midiSha256": "5ba91dc2b9ad7bd26fa1ca0d27305322cbc9a0426ee03708dedb63bef8fdf2fb",
+      "sha256": "5610b134e416ca0f961e9e80727165a00ce6ecb482ff09cb23236539db26c817",
+      "patternSha256": "93f837ef8f4d87de15d5cc0a9753659fce683ad9c55a31fd30ad6acb71a827dd",
+      "aramBytes": 25195
+    },
+    {
+      "file": "menu_cipher.it",
+      "target": "assets/audio/menu/cipher.it",
+      "midi": null,
+      "midiSha256": null,
+      "sha256": "a59beeffaead00dee12ef831b2dbef9c670376c0ef882e988802cb33a016bbe9",
+      "patternSha256": "0ede54ab8912f156f76f66c41dcde7c43a107c7071f0d30bc9ad0389a9b4159c",
+      "aramBytes": 6908
+    },
+    {
+      "file": "menu_cipher_beta.it",
+      "target": "assets/audio/menu/cipher_beta.it",
+      "midi": null,
+      "midiSha256": null,
+      "sha256": "611d1b834c8ecda52a2c694e05b50647506d73be3e951de5417b6e9c8ff38e25",
+      "patternSha256": "3ab4d74dff9d909226558f6e98e63a6278592c4dba4a6a7991e3825c5d7a1358",
+      "aramBytes": 4433
+    },
+    {
+      "file": "menu_crystal.it",
+      "target": "assets/audio/menu/crystal.it",
+      "midi": "assets/survival_ending/kof00_crystal.mid",
+      "midiSha256": "3fbd78022a22fedfdf1c716da1a95ea7aa482b4ca5cad3d65c6f8986e3483a9f",
+      "sha256": "cc9d2b8d0fdc0211f70e3cdf9254b12fc2b5a682abca5bd85a2eff9c00448af7",
+      "patternSha256": "37cdc9692c96b0008d527408b01d0411153de0a7a5f448d0c49bde3c4d6e7b6b",
+      "aramBytes": 21016
+    },
+    {
+      "file": "menu_kof.it",
+      "target": "assets/audio/menu/kof.it",
+      "midi": "music/The_King_of_Fighters.mid",
+      "midiSha256": "dddd2ce1ede0f6b4359168216da0a01dd7e28af573583977cc9693035e9e099f",
+      "sha256": "0032717193541d63ac8b3f83bcf2f2713cafd8ec7dd81bb1cc1ecbb903c714bb",
+      "patternSha256": "8a1071ee62dd7301f8eb4e4fbd995fa0841b629f77b232f1da2d937647fa215d",
+      "aramBytes": 13080
+    },
+    {
+      "file": "menu_lastdance.it",
+      "target": "assets/audio/menu/lastdance.it",
+      "midi": null,
+      "midiSha256": null,
+      "sha256": "49a40585c79feb2d9472fcf858ef5baf5833a45ed67d2cd353e477778914d091",
+      "patternSha256": "5dd17764fba2192fa98d80903114c17b51ac7c4f8bca8b629caedafc3aad532f",
+      "aramBytes": 17458
+    },
+    {
+      "file": "menu_sunset.it",
+      "target": "assets/audio/menu/sunset.it",
+      "midi": null,
+      "midiSha256": null,
+      "sha256": "657091d7e01064ed2aadd8015e4c8b26a3fa357ec183e9b5483baaf354d8412c",
+      "patternSha256": "f8f842d5ba9d241bfa8917c55178d24906e33802966b3451705de33947b1a47d",
+      "aramBytes": 25933
+    },
+    {
+      "file": "menu_winner.it",
+      "target": "assets/audio/menu/winner.it",
+      "midi": null,
+      "midiSha256": null,
+      "sha256": "eee29a16db7924496f17f75b8dab58431420dd3ba9e70ad531142a8498605fa2",
+      "patternSha256": "6f6df9c25065a4d8d4c548e873eaf713e1ee34cb4460850ecbb3bcfd0bef173e",
+      "aramBytes": 2791
+    }
+  ]
+}
