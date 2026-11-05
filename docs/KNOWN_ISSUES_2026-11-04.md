@@ -133,19 +133,19 @@ continuações/fases do golpe pai.
 | **Kyo / Nests / Ash** | Mushiki '96 3100/3150 (47/58), MAX Mushiki 3250 (24), Koto Tsuki You 1400/1410 (10), 182 Shiki '99 (18) e Orochinagi MAX 3050 (55) implementados em 05/11; 3000, 3500/3550 e 3305 em 04/11. Resta apenas o Orochinagi forte 3010 |
 | **Rugal** | Beads Destruction 1800 (14) e Eye Beam 1702 (14) implementados em 05/11 (AIR 1702 reusa o Reppuken e a AIR 1704 é sintetizada do grupo 1700); Gravity Smash forte 1560 pendente |
 | **Omega Rugal** | Gravity shot 7100 (14) e RE 8000 (40) ligados em 05/11 (victim state 8001 aproximado por knockdown); restam Gravity Smash 1050/1055, projéteis 1010/1011 e RE2 2310 |
-| **Takuma** | Mouko Burai Gan 1400/1410; Koho 1600/1610; Ko'ou Ken EX 1050/1060; Haoh 1500/1510/3200/3210; Kyokugen Koho 3300/3320 |
+| **Takuma** | Mouko Burai Gan 1400/1410 (13), Koho 1600/1610 (13), Ko'ou Ken ura 1050/1060 (14/18), Haoh 1500/1510 (20), Shin Kishin Geki 3100 (32) e Kyokugen Koho 3300/3320 (36) implementados em 05/11. O 3200/3210 é a mesma família Haoh coberta pelo 1500/1510; o MAX 3220 segue ligado |
 | **Terry** | 1050/1450/1550/1560/1600/1700/3100 implementados em 05/11 (14/12/30/34/16/20/32); Buster Wolf 3200/3250 com 3 contatos (34/48); MAX Geyser 3050 50 |
 | **Andy** | 1400/1450/1500/1160, Chou Reppa 3000/3010/3050 (12/8/14/14/37/52/57), Dan Da Dan 3200/3210/3250 (33/33/44, 2 contatos) e Bakushin 1700 (45, agarrão) implementados em 05/11 |
-| **Joe** | Screw Upper forte 3010; Bakuretsu 3100; Thunder Fire 3200/3250; Slash Kick forte 1310. MAX 3150 religado (04/11) |
+| **Joe** | Screw Upper 3010 (34), Bakuretsu 3100/3101 (64), Thunder Fire 3200/3201 e MAX 3250/3251 (39/49) e Slash Kick 1310 (19) implementados em 05/11 |
 | **Ryo** | 1150/1160/1250/1260/2100/3250, Ko'ou Ken EX 1050, Renbu 1400, aéreo 2000/2010 e MAX Ryuuko 3150 (98) implementados em 05/11 (26/32/14/28/13/30/14/12/14/14/98) |
 | **Robert** | 1050/3200/3210/3220/3270 implementados em 05/11 (14/24/37/47/44); 1250/1260 Hien (28/42), 1400 Renbu (16, 4 contatos), 1450 Sen'en (16, 4 contatos) e Haoh 3000/3010/3020 (14/14/14) em 05/11 |
-| **Yuri** | MAX Haoh 550; MAX Ryuuko 560 |
+| **Yuri** | MAX Haoh 550 (20, projétil) e MAX Ryuuko 560/561 (10) implementados em 05/11 |
 | **Athena** | Phoenix Fang Arrow 2000/2020/2050. 3000/3050/3100 implementados com a bola 7700 (48/42/40); 4000 confirmado (62) |
 | **Kensou** | Sen Shippo 1300/1330; Niku Man 2000; Sen Ki Hakkei 2100; Chouryuu Renken 2200 |
 | **Chin** | Fire Zake 1203/1300; upper forte 1400; Super Long Walk Hell 1750; Hyper 2200. Zake FireBall Double 1920 religado (04/11) |
-| **King** | Mirage Dance 1500; MAX Illusion 3200; Silent Flash 3300/3400; Surprise Rose 3600/3700; Dragooner 3800 |
-| **Mai** | Bachi 1038/1040; Toki Tsubute 1050; Hishou Ryuu'en Jin 1080/1082; MAX2 2030. 2070 religado (04/11) |
-| **Kim** | Houou Kyaku 3000/3020; Houou Hiten 3200/3210/3220 |
+| **King** | Mirage Dance 1500 (24), MAX Illusion 3200 (46), Silent Flash 3300/3400 (30/40), Surprise Rose 3600/3700 (39/49) e Dragooner 3800 (61) implementados em 05/11 |
+| **Mai** | Bachi 1038/1040 (16), Toki Tsubute 1050 (20), Hishou Ryuu'en Jin 1080/1082 (30/35) e MAX2 2030/2031 (5) implementados em 05/11 |
+| **Kim** | Houou Kyaku 3000/3020 (15/25) e Houou Hiten 3200/3201/3210/3220/3221 (16/16/61) implementados em 05/11 |
 | **Chang** | Haki Kyaku 1400; Tekkyuu Dai Assatsu 3400 |
 | **Choi** | Tatsumaki 1000/1010; Senpuu 1100; Hishou 1200/1210; Shissou 1600/1610; Ultimate Storm 2400; Zan! En Getsu Rin 3100/3110; Houou Kyaku 3200/3250 |
 | **Yashiro** | Orochi 2200/2210, 2300/2310; MAX Million Bash 3020; Final Impact 3100/3120; Orochi supers 3510/3520/3600/3620/3700/3720 |
@@ -162,8 +162,8 @@ continuações/fases do golpe pai.
 | **Brian** | American Supernova 3300; Galaxy Cyclone 3400; Big Bang Tackle 3500/3600 |
 | **Billy** | Flaming Stick Spin 1860; entradas 2510/2600/6000 |
 | **Lucky** | Shoot 2/3/4 2200/2300/2400; Finger Roll 2500; Slam 2700/2800; 4700; Finger Roll SDM 3100; Shoot Out 3400/3500 |
-| **Mr. Big** | Crazy Drum 1100; Drum Shot 1500; Blaster Wave MAX 3050; Rising Spear 3100 |
-| **Eiji** | Kikouhou 1000; Mukuro Nui 1600; Zantetsu Tourouken 3100/3120; Yamikari 3200 |
+| **Mr. Big** | Crazy Drum 1100/1101 (12), Drum Shot 1500 (20), MAX Blaster Wave 3050 (30, projétil) e Rising Spear 3100 (30) implementados em 05/11 |
+| **Eiji** | Kikouhou 1000 (14, projétil), Mukuro Nui 1600 (14), Zantetsu Tourouken 3100/3120 (20/30) e Yamikari 3200 (35) implementados em 05/11 |
 
 ## E. Efeitos (Explod/PalFX/AfterImage) ausentes ou aproximados
 
@@ -207,8 +207,10 @@ continuações/fases do golpe pai.
    3020/3200/3210/3220/3270, Kyo/Nests/Ash Mushiki '96 3100/3150, MAX
    Mushiki 3250, Koto Tsuki You 1400/1410, 182 Shiki '99 e Orochinagi
    MAX 3050, Rugal 1800 + Eye Beam 1702, Omega Rugal 7100/8000 e Iori
-   3100/3110/3150. Restam Takuma (limite do banco de tabelas), Kyo
-   Orochinagi 3010 e os demais personagens da tabela D.
+   3100/3110/3150. Terceiro bloco concluído em 05/11: Takuma, Joe, Mai,
+   Kim, King, Yuri, Mr. Big e Eiji (40 golpes; ver
+   `tools/test_category_d_batch2_headless.py`). Restam Kyo Orochinagi
+   3010 e os demais personagens da tabela D.
 2. **Categoria E** — efeitos e victim states (Ralf, Mature, Chizuru,
    bola de metal do Chang). Na Chizuru faltam os PalFX/AfterImage e o
    clone visual dos supers.
@@ -240,14 +242,14 @@ PalFX/AfterImage (Categoria E).
 
 ## Resumo do que falta
 
-- **Categoria D (restante)** — Robert, Andy, Ryo, Kyo/Nests/Ash, Rugal
-  (Eye Beam) e Omega Rugal (7100/8000) concluídos em 05/11; resta Takuma
-  (tabela no limite de 32 KiB; 1400/1410, 1600/1610, 1050/1060, Haoh e
-  Kyokugen Koho), o Kyo Orochinagi forte 3010, o runtime do Omega (célula
-  37 compartilhada no harness) e as pendências dos demais personagens
-  listadas na tabela da seção D (Joe, Yuri, Kensou, Chin, King, Mai, Kim,
-  Chang, Choi, Yashiro, Shermie, Chris, Yamazaki, Mary, Geese, Krauser,
-  Ken, Chun-Li, Sakura, Heavy D, Brian, Billy, Lucky, Mr. Big, Eiji).
+- **Categoria D (restante)** — Robert, Andy, Ryo, Kyo/Nests/Ash, Rugal,
+  Omega Rugal (7100/8000), Takuma, Joe, Mai, Kim, King, Yuri, Mr. Big e
+  Eiji concluídos em 05/11 (este último grupo com 40 golpes no
+  `tools/test_category_d_batch2_headless.py`); restam o Kyo Orochinagi
+  forte 3010, o runtime do Omega (célula 37 compartilhada no harness) e
+  as pendências dos demais personagens listadas na tabela da seção D
+  (Kensou, Chin, Chang, Choi, Yashiro, Shermie, Chris, Yamazaki, Mary,
+  Geese, Krauser, Ken, Chun-Li, Sakura, Heavy D, Brian, Billy, Lucky).
 - **Categoria E** — efeitos/victim states: Ralf (queimadura), Mature
   (PalFX/Explod), Chizuru (clone/PalFX) e a bola de metal do Chang.
 - **Clark** — Frankensteiner 1400/1410→1420 ainda faz só 1 de dano.
@@ -260,10 +262,10 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$6EEA`**
-- layout MSU **`0xADFA`**
-- `.sfc` SHA-256 `cfea46f4…408d6b`
-- `.msu` SHA-256 `e6aea1dd…a182d6`
+- checksum **`$5487`**
+- layout MSU **`0x487E`**
+- `.sfc` SHA-256 `4a284ad5…379bf5`
+- `.msu` SHA-256 `3b27f6f3…2658c5`
 
 ## Referências
 

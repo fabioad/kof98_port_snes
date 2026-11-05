@@ -3323,10 +3323,381 @@ if "robert" in CHARS:
 # headless roster (cell 37), so the moves cannot be exercised by the
 # regression harness yet.  The Eye Beam (1700) is likewise missing AIR 1704.
 
-# Takuma's extra specials are parked for a later pass: the character's
-# generated table already sits at the 32 KiB bank limit (see the build-time
-# assert), so adding six command slots would overflow it.  The four existing
-# commands remain untouched.
+# Takuma: Mouko Burai Gan, Koho, the ura Ko'ou Ken, Haoh Shikou Ken,
+# Shin Kishin Geki and Kyokugen Koho.  Bank 83's low half was at the 32 KiB
+# limit, so the metasprite blob is split into _meta.inc (see SPLIT_OLD).
+# Weak/strong pairs share one clip where the source only changes the timing.
+if "takuma" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("takuma", []).extend([
+        (107, 1400, 1400),     # Mouko Burai Gan (QCB+P)
+        (108, 1600, 1600),     # Koho (DP+K)
+        (109, 1050, 1050),     # Ko'ou Ken ura weak
+        (110, 1060, 1060),     # Ko'ou Ken ura strong
+        (111, 1500, 1500),     # Haoh Shikou Ken weak (QCFx2+P)
+        (113, 3100, 3105),     # Shin Kishin Geki (reuse the flurry clip)
+        (114, 3300, 3300),     # Kyokugen Koho weak/strong/MAX
+    ])
+    # The Haoh/Ko'ou ura shots live in helpers the native engine does not
+    # run; spawn them from the root state's release element instead.
+    PROJECTILE_RELEASE.setdefault("takuma", {}).update(
+        {109: 6, 110: 6, 111: 0})
+    POST_CAL_PROJS.setdefault("takuma", {}).update({
+        109: (0x0600, 14, 0x0A),
+        110: (0x0600, 18, 0x0A),
+        111: (0x0500, 20, 0x0A),
+    })
+    _tak = POST_CAL_TWEAKS.setdefault("takuma", {})
+    _tak.setdefault("slice_damage", {}).update({
+        107: 13, 108: 13, 109: 14, 110: 18,
+        111: 20, 113: 32, 114: 22})
+    # 3100's source damage lives in the helper grab state and its own clip
+    # has no attack boxes; reuse the flurry clip and give the body a real
+    # super-sized hit with a normal knockdown (3106 is not ported).
+    _tak.setdefault("hitdef_override", {}).update({
+        113: {"active": 3, "damage": 32, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "gvx": 0, "gvy": 0, "throw": 0},
+    })
+    # QCFx2+P is also the existing Ryuuko shortcut (sid 88); keep Haoh on
+    # the same-length tie.
+    _tak.setdefault("cmd_priority", []).extend(["HAOH_W", "HAOH_S"])
+    _tak.setdefault("cmd_extra", []).extend([
+        {"name": "MOUKO_W", "label": "MOUKO BURAI GAN",
+         "state": 1400, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 1)]},
+        {"name": "MOUKO_S", "label": "MOUKO BURAI GAN S",
+         "state": 1400, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 2)]},
+        {"name": "KOHO_W", "label": "KOHO",
+         "state": 1600, "posture": 3, "time": 22,
+         "elems": [(4, 0), (2, 0), (6, 0), (0, 4)]},
+        {"name": "KOHO_S", "label": "KOHO S",
+         "state": 1600, "posture": 3, "time": 22,
+         "elems": [(4, 0), (2, 0), (6, 0), (0, 8)]},
+        {"name": "KOOU_EX_W", "label": "KO'OU KEN URA",
+         "state": 1050, "posture": 3, "time": 22,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 3)]},
+        {"name": "KOOU_EX_S", "label": "KO'OU KEN URA S",
+         "state": 1060, "posture": 3, "time": 22,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 12)]},
+        {"name": "HAOH_W", "label": "HAOH SHIKOU KEN",
+         "state": 1500, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 1)]},
+        {"name": "HAOH_S", "label": "HAOH SHIKOU KEN S",
+         "state": 1500, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 2)]},
+        {"name": "SHIN_W", "label": "SHIN KISHIN GEKI",
+         "state": 3100, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 1)]},
+        {"name": "SHIN_S", "label": "SHIN KISHIN GEKI S",
+         "state": 3100, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 2)]},
+        {"name": "KYOKUGEN_W", "label": "KYOKUGEN KOHO",
+         "state": 3300, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 4)]},
+        {"name": "KYOKUGEN_S", "label": "KYOKUGEN KOHO S",
+         "state": 3300, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 8)]},
+        {"name": "KYOKUGEN_MAX", "label": "KYOKUGEN KOHO MAX",
+         "state": 3300, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 12)]},
+    ])
+
+# ---------------------------------------------------------------------------
+# Category D: Joe, Mai, Kim, King, Yuri, Mr. Big and Eiji.
+# ---------------------------------------------------------------------------
+if "joe" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("joe", []).extend([
+        (107, 3010, 3100),     # Screw Upper (reuse the flurry clip)
+        (108, 3100, 3100),     # Bakuretsu Hurricane Tiger Kakato
+        (109, 3101, 3101),     # ... air follow-up
+        (110, 3200, 3200),     # Thunder Fire
+        (111, 3201, 3201),     # ... air follow-up
+        (112, 3250, 3200),     # MAX Thunder Fire
+        (113, 3251, 3251),     # ... air follow-up
+        (114, 1310, 1400),     # Slash Kick strong (reuse the ground kick)
+    ])
+    _joe = POST_CAL_TWEAKS.setdefault("joe", {})
+    _joe.setdefault("slice_damage", {}).update({
+        107: 20, 108: 35, 109: 15, 110: 25,
+        111: 20, 112: 35, 113: 25, 114: 19})
+    _joe.setdefault("hitdef_override", {}).update({
+        107: {"active": 4, "damage": 20, "fall": 1, "gdamage": 2},
+        114: {"active": 2, "damage": 19, "fall": 1, "gdamage": 2},
+    })
+    _joe.setdefault("cmd_extra", []).extend([
+        {"name": "SCREW_W", "label": "SCREW UPPER",
+         "state": 3010, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 1)]},
+        {"name": "SCREW_S", "label": "SCREW UPPER S",
+         "state": 3010, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 2)]},
+        {"name": "BAKURETSU_W", "label": "BAKURETSU HURRICANE",
+         "state": 3100, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 4)]},
+        {"name": "BAKURETSU_S", "label": "BAKURETSU HURRICANE S",
+         "state": 3100, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 8)]},
+        {"name": "THUNDER_W", "label": "THUNDER FIRE",
+         "state": 3200, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 1)]},
+        {"name": "THUNDER_S", "label": "THUNDER FIRE S",
+         "state": 3200, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 2)]},
+        {"name": "THUNDER_MAX", "label": "THUNDER FIRE MAX",
+         "state": 3250, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 3)]},
+        {"name": "SLASH_S", "label": "SLASH KICK S",
+         "state": 1310, "posture": 3, "time": 22,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 8)]},
+    ])
+
+if "mai" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("mai", []).extend([
+        (107, 1038, 1040),     # Bachi (air dash)
+        (108, 1050, 1043),     # Toki Tsubute (air throw)
+        (109, 1080, 1080),     # Hishou Ryuu'en Jin weak
+        (110, 1082, 1082),     # Hishou Ryuu'en Jin strong
+        (111, 2030, 1080),     # MAX2 launcher (reuse the reliable rush clip)
+        (112, 2031, 2031),     # MAX2 rush
+    ])
+    _mai = POST_CAL_TWEAKS.setdefault("mai", {})
+    _mai.setdefault("slice_damage", {}).update({
+        107: 0, 108: 20, 109: 30, 110: 35, 111: 5, 112: 45})
+    _mai.setdefault("hitdef_override", {}).update({
+        108: {"damage": 20, "gdamage": 2, "p2state": 0xFF, "fall": 1,
+              "throw": 0, "gvx": 0, "gvy": 0},
+        111: {"damage": 5, "gdamage": 1, "p2state": 0xFF, "fall": 1},
+    })
+    # 2030 lands before its source landing ChangeState is reachable; chain
+    # straight into the rush on the animation end.  2031 rises without a
+    # source landing state, so give it the shared landing recovery row.
+    _mai.setdefault("extra_trans", []).extend([
+        (111, 112, 0, 0), (112, 17, 1, 0)])
+    _mai.setdefault("cmd_extra", []).extend([
+        {"name": "BACHI_W", "label": "BACHI",
+         "state": 1038, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "BACHI_S", "label": "BACHI S",
+         "state": 1038, "posture": 3, "time": 26,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 8)]},
+        {"name": "TOKI_W", "label": "TOKI TSUBUTE",
+         "state": 1050, "posture": 3, "time": 26,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 1)]},
+        {"name": "TOKI_S", "label": "TOKI TSUBUTE S",
+         "state": 1050, "posture": 3, "time": 26,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 2)]},
+        {"name": "HISHOU_W", "label": "HISHOU RYUU'EN JIN",
+         "state": 1080, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 4)]},
+        {"name": "HISHOU_S", "label": "HISHOU RYUU'EN JIN S",
+         "state": 1082, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 8)]},
+        {"name": "MAX2", "label": "MAX2",
+         "state": 2030, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 12)]},
+    ])
+
+if "kim" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("kim", []).extend([
+        (107, 3000, 3000),     # Houou Kyaku weak
+        (108, 3020, 3000),     # MAX Houou Kyaku (same clip)
+        (109, 3200, 3200),     # Houou Hiten Kyaku weak
+        (110, 3201, 3201),     # ... follow-up
+        (111, 3210, 3210),     # Houou Hiten Kyaku strong
+        (112, 3220, 3220),     # MAX Houou Hiten Kyaku
+        (113, 3221, 3221),     # ... finisher
+    ])
+    _kim = POST_CAL_TWEAKS.setdefault("kim", {})
+    _kim.setdefault("slice_damage", {}).update({
+        107: 15, 108: 25, 109: 16, 110: 10,
+        111: 16, 112: 16, 113: 45})
+    _kim.setdefault("hitdef_override", {}).update({
+        112: {"fall": 0, "gvx": 0, "gvy": 0, "avx": 0, "avy": 0},
+        113: {"active": 11, "damage": 45, "gdamage": 2, "fall": 1,
+              "gvx": 0, "gvy": 0},
+    })
+    _kim.setdefault("extra_trans", []).append((112, 113, 0, 0))
+    _kim.setdefault("cmd_extra", []).extend([
+        {"name": "HOUOU_W", "label": "HOUOU KYAKU",
+         "state": 3000, "posture": 3, "time": 26,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "HOUOU_S", "label": "HOUOU KYAKU S",
+         "state": 3000, "posture": 3, "time": 26,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 8)]},
+        {"name": "HOUOU_MAX", "label": "HOUOU KYAKU MAX",
+         "state": 3020, "posture": 3, "time": 26,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 12)]},
+        {"name": "HITEN_W", "label": "HOUOU HITEN KYAKU",
+         "state": 3200, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 4)]},
+        {"name": "HITEN_S", "label": "HOUOU HITEN KYAKU S",
+         "state": 3210, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 8)]},
+        {"name": "HITEN_MAX", "label": "HOUOU HITEN KYAKU MAX",
+         "state": 3220, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 12)]},
+    ])
+
+if "king" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("king", []).extend([
+        (107, 1500, 1500),     # Mirage Dance
+        (108, 3200, 3400),     # MAX Illusion Dance (reuse Silent Flash)
+        (109, 3300, 3300),     # Silent Flash weak
+        (110, 3400, 3400),     # Silent Flash strong
+        (111, 3600, 3400),     # Surprise Rose weak
+        (112, 3700, 3400),     # Surprise Rose strong
+        (113, 3800, 3400),     # Dragooner
+    ])
+    _king = POST_CAL_TWEAKS.setdefault("king", {})
+    _king.setdefault("slice_damage", {}).update({
+        107: 24, 108: 40, 109: 30, 110: 40,
+        111: 25, 112: 35, 113: 45})
+    _king.setdefault("hitdef_override", {}).update({
+        108: {"active": 5, "damage": 40, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "gvx": 0, "gvy": 0},
+        111: {"active": 5, "damage": 25, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "gvx": 0, "gvy": 0},
+        112: {"active": 5, "damage": 35, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "gvx": 0, "gvy": 0},
+        113: {"active": 5, "damage": 45, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "gvx": 0, "gvy": 0},
+    })
+    _king.setdefault("cmd_extra", []).extend([
+        {"name": "MIRAGE_W", "label": "MIRAGE DANCE",
+         "state": 1500, "posture": 3, "time": 26,
+         "elems": [(4, 0), (2, 0), (6, 0), (0, 1)]},
+        {"name": "MIRAGE_S", "label": "MIRAGE DANCE S",
+         "state": 1500, "posture": 3, "time": 26,
+         "elems": [(4, 0), (2, 0), (6, 0), (0, 2)]},
+        {"name": "ILLUSION_MAX", "label": "MAX ILLUSION DANCE",
+         "state": 3200, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 3)]},
+        {"name": "SILENT_W", "label": "SILENT FLASH",
+         "state": 3300, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 1)]},
+        {"name": "SILENT_S", "label": "SILENT FLASH S",
+         "state": 3400, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 2)]},
+        {"name": "ROSE_W", "label": "SURPRISE ROSE",
+         "state": 3600, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 4)]},
+        {"name": "ROSE_S", "label": "SURPRISE ROSE S",
+         "state": 3700, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 8)]},
+        {"name": "DRAGOONER", "label": "DRAGOONER",
+         "state": 3800, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 3)]},
+    ])
+
+if "yuri" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("yuri", []).extend([
+        (107, 550, 550),       # MAX Haoh Shikou Ken
+        (108, 560, 560),       # MAX Ryuuko Ranbu
+        (109, 561, 561),       # ... rush
+    ])
+    PROJECTILE_RELEASE.setdefault("yuri", {}).update({107: 0})
+    POST_CAL_PROJS.setdefault("yuri", {}).update({
+        107: (0x0500, 20, 0x0A),
+    })
+    _yuri = POST_CAL_TWEAKS.setdefault("yuri", {})
+    _yuri.setdefault("slice_damage", {}).update({
+        107: 20, 108: 10, 109: 52})
+    _yuri.setdefault("hitdef_override", {}).update({
+        108: {"active": 18, "damage": 10, "gdamage": 2, "fall": 1,
+              "gvx": 0, "gvy": 0},
+    })
+    _yuri.setdefault("extra_trans", []).append((108, 109, 0, 0))
+    _yuri.setdefault("cmd_extra", []).extend([
+        {"name": "HAOH_MAX", "label": "MAX HAOH SHIKOU KEN",
+         "state": 550, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 3)]},
+        {"name": "RYUUKO_MAX", "label": "MAX RYUUKO RANBU",
+         "state": 560, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 12)]},
+    ])
+
+if "mrbig" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("mrbig", []).extend([
+        (107, 1100, 1100),     # Crazy Drum
+        (108, 1101, 1101),     # ... follow-up
+        (109, 1500, 1500),     # Drum Shot
+        (110, 3050, 3000),     # MAX Blaster Wave
+        (111, 3100, 3100),     # Rising Spear
+    ])
+    PROJECTILE_RELEASE.setdefault("mrbig", {}).update({110: 0})
+    POST_CAL_PROJS.setdefault("mrbig", {}).update({
+        110: (0x0600, 30, 0x0A),
+    })
+    _big = POST_CAL_TWEAKS.setdefault("mrbig", {})
+    _big.setdefault("slice_damage", {}).update({
+        107: 12, 108: 8, 109: 20, 110: 30, 111: 30})
+    _big.setdefault("hitdef_override", {}).update({
+        109: {"active": 1, "damage": 20, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+        111: {"active": 1, "damage": 30, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+    })
+    _big.setdefault("cmd_extra", []).extend([
+        {"name": "CRAZY_DRUM", "label": "CRAZY DRUM",
+         "state": 1100, "posture": 3, "time": 22,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 4)]},
+        {"name": "DRUM_SHOT", "label": "DRUM SHOT",
+         "state": 1500, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 1)]},
+        {"name": "BLASTER_MAX", "label": "MAX BLASTER WAVE",
+         "state": 3050, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 3)]},
+        {"name": "RISING_SPEAR_W", "label": "RISING SPEAR",
+         "state": 3100, "posture": 3, "time": 22,
+         "elems": [(4, 0), (2, 0), (6, 0), (0, 4)]},
+        {"name": "RISING_SPEAR_S", "label": "RISING SPEAR S",
+         "state": 3100, "posture": 3, "time": 22,
+         "elems": [(4, 0), (2, 0), (6, 0), (0, 8)]},
+    ])
+
+if "eiji" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("eiji", []).extend([
+        (107, 1000, 1000),     # Kikouhou
+        (108, 1600, 3100),     # Mukuro Nui (reuse the sword clip)
+        (109, 3100, 3100),     # Zantetsu Tourouken weak
+        (110, 3120, 3100),     # MAX Zantetsu
+        (111, 3200, 3200),     # Yamikari
+    ])
+    PROJECTILE_RELEASE.setdefault("eiji", {}).update({107: 0})
+    POST_CAL_PROJS.setdefault("eiji", {}).update({
+        107: (0x0500, 14, 0x0A),
+    })
+    _eiji = POST_CAL_TWEAKS.setdefault("eiji", {})
+    _eiji.setdefault("slice_damage", {}).update({
+        107: 14, 108: 25, 109: 20, 110: 30, 111: 35})
+    _eiji.setdefault("hitdef_override", {}).update({
+        108: {"active": 7, "damage": 25, "gdamage": 2, "fall": 1},
+        111: {"active": 1, "damage": 35, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+    })
+    _eiji.setdefault("cmd_extra", []).extend([
+        {"name": "KIKOUHOU", "label": "KIKOUHOU",
+         "state": 1000, "posture": 3, "time": 26,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 1)]},
+        {"name": "MUKURO_W", "label": "MUKURO NUI",
+         "state": 1600, "posture": 3, "time": 22,
+         "elems": [(4, 0), (2, 0), (6, 0), (0, 4)]},
+        {"name": "MUKURO_S", "label": "MUKURO NUI S",
+         "state": 1600, "posture": 3, "time": 22,
+         "elems": [(4, 0), (2, 0), (6, 0), (0, 8)]},
+        {"name": "ZANTETSU_W", "label": "ZANTETSU TOUROUKEN",
+         "state": 3100, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 1)]},
+        {"name": "ZANTETSU_MAX", "label": "MAX ZANTETSU",
+         "state": 3120, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 3)]},
+        {"name": "YAMIKARI_W", "label": "YAMIKARI",
+         "state": 3200, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "YAMIKARI_S", "label": "YAMIKARI S",
+         "state": 3200, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 8)]},
+    ])
 
 if "iori" in CHARS:
     # Ya Sakazuki: the source roots 3100/3110/3150 only play a short
@@ -3371,7 +3742,10 @@ CELL = 16
 SPLIT_OLD = ("vice", "mature", "leona", "ralf",
              # Reactivated supers need their metasprite banks separated
              # from the near-full 32 KiB table windows.
-             "saisyu", "clark")
+             "saisyu", "clark",
+             # Takuma's bank 83 low half was at the limit; the eight new
+             # command slots need the metasprite blob moved out.
+             "takuma")
 CHARSET = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:!?'-/+>,@\""
 
 # Victory-quote languages.  The first item is the JSON file name, the second

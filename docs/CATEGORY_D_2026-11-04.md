@@ -82,6 +82,9 @@ A correção do bit3 também foi o que destravou esses projéteis.
 `tools/test_category_d_remaining_headless.py` — **70 golpes PASS**
 (segundo bloco, 05/11):
 
+`tools/test_category_d_batch2_headless.py` — **40 golpes PASS**
+(terceiro bloco, 05/11: Takuma, Joe, Mai, Kim, King, Yuri, Mr. Big e Eiji).
+
 - Terry: 1050 14, 1450 12, 1550 30, 1560 34, 1600 16, 1700 20,
   3100 32, 3200 34 (3 contatos), 3250 48 (3 contatos), 3050 50;
 - Andy: 1400 12, 1450 8, 1500 14, 1160 14, 3000 37, 3010 52, 3050 57,
@@ -205,11 +208,44 @@ estático `tools/tests/test_category_d_tables.py`), não em runtime.
 chama vive no helper 3120 (projétil 3104). Os três slots usam o clipe do
 root com dano por ProjTab 6/8/12 e release no segundo frame.
 
+### Takuma, Joe, Mai, Kim, King, Yuri, Mr. Big e Eiji (terceiro bloco)
+
+O limite de 32 KiB do banco do Takuma foi resolvido movendo o blob de
+metasprites para `_meta.inc` (`SPLIT_OLD`), como já era feito com Saisyu e
+Clark. Isso liberou o banco de tabelas para os novos comandos.
+
+| Personagem | Golpes ligados (sid) | Dano medido |
+|---|---|---|
+| **Takuma** | Mouko Burai Gan 1400 (107), Koho 1600 (108), Ko'ou Ken ura 1050/1060 (109/110), Haoh 1500 (111), Shin Kishin Geki 3100 (113), Kyokugen Koho 3300 (114) | 13/13/14/18/20/32/36 |
+| **Joe** | Screw Upper 3010 (107), Bakuretsu 3100/3101 (108/109), Thunder Fire 3200/3201 (110/111), MAX 3250/3251 (112/113), Slash Kick 1310 (114) | 34/64/39/49/19 |
+| **Mai** | Bachi 1038/1040 (107), Toki Tsubute 1050 (108), Hishou Ryuu'en Jin 1080/1082 (109/110), MAX2 2030/2031 (111/112) | 16/20/30/35/5 |
+| **Kim** | Houou Kyaku 3000/3020 (107/108), Houou Hiten 3200/3201/3210 (109/110/111), MAX 3220/3221 (112/113) | 15/25/16/16/61 |
+| **King** | Mirage Dance 1500 (107), MAX Illusion 3200 (108), Silent Flash 3300/3400 (109/110), Surprise Rose 3600/3700 (111/112), Dragooner 3800 (113) | 24/46/30/40/39/49/61 |
+| **Yuri** | MAX Haoh 550 (107, projétil), MAX Ryuuko 560/561 (108/109) | 20/10 |
+| **Mr. Big** | Crazy Drum 1100/1101 (107/108), Drum Shot 1500 (109), MAX Blaster Wave 3050 (110, projétil), Rising Spear 3100 (111) | 12/20/30/30 |
+| **Eiji** | Kikouhou 1000 (107, projétil), Mukuro Nui 1600 (108), Zantetsu 3100/3120 (109/110), Yamikari 3200 (111) | 14/14/20/30/35 |
+
+Observações de implementação:
+
+- O Takuma usa `POST_CAL_PROJS` para os Ko'ou Ken ura e o Haoh (os
+  projéteis vivem em helpers), com o ProjFx do Yuri.
+- O 3200/3210 do Takuma são a mesma família Haoh do 1500/1510; o 1500 já
+  cobre o par e o MAX 3220 continua ligado pelo comando original.
+- Kim 3220→3221 mantém a vítima no lugar (`gvy=0`) para o finalizador
+  acertar; o total é 61.
+- King 3200/3600/3700/3800 reusam o clipe do Silent Flash (3400) porque
+  os inícios não têm caixa própria no pacote.
+- Joe 3010 reusa o clipe do Bakuretsu; 3200/3250 usam o clipe de fogo.
+- Mai 2030 reusa o clipe do Hishou para o launcher do MAX2; 2031 tem
+  aterrissagem própria.
+- Eiji 1600 reusa o clipe do Zantetsu; 3120 compartilha o clipe do 3100.
+
+Verificação: `tools/test_category_d_batch2_headless.py` — **40 golpes
+PASS**. Os comandos originais dos oito personagens foram conferidos no
+headless (QCF/QCB/DP/SUP1/SUP2 continuam entrando nos states antigos).
+
 ### Ainda bloqueado
 
-- **Takuma** — 1400/1410, 1600/1610 e 1050/1060: a tabela gerada do
-  personagem está no limite de 32 KiB do banco; seis sids novos estouram
-  o assert de build. Os quatro comandos existentes seguem intactos.
 - **Kyo 3010** (Orochinagi forte) — o comando QCF+a não estabilizou no
   harness (o slot colide com o MAX 3050); o MAX 3050 está entregue.
 - **Omega Rugal em runtime** — o seletor do harness usa a célula 37
@@ -221,10 +257,10 @@ root com dano por ProjTab 6/8/12 e release no segundo frame.
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$6EEA`**
-- layout MSU **`0xADFA`**
-- `.sfc` SHA-256 `cfea46f4…408d6b`
-- `.msu` SHA-256 `e6aea1dd…a182d6`
+- checksum **`$5487`**
+- layout MSU **`0x487E`**
+- `.sfc` SHA-256 `4a284ad5…379bf5`
+- `.msu` SHA-256 `3b27f6f3…2658c5`
 
 Copie `.sfc` e `.msu` juntos.
 
