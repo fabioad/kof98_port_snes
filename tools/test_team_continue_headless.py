@@ -40,7 +40,9 @@ def pick_trio(core):
 
 
 def boot_team(core):
-    wait(core, lambda: core.ram[GS] == 7, "opening")
+    wait(core, lambda: core.ram[GS] in (7, 14), "opening")
+    if core.ram[GS] == 14:
+        tap(core, 3)
     tap(core, 3)
     wait(core, lambda: core.ram[GS] == 0, "title")
     core.step(4)

@@ -15,8 +15,12 @@
 SelP1ReclaimCheck:
     sep #$20
     .ACCU 8
+    lda.w M_START_SIDE
+    bne SPR_no                            ; P2 started: P1 START joins, not reclaims
     lda.w G_MODE
     beq SPR_no                            ; VS: both sides are already human
+    cmp #3
+    beq SPR_no                            ; Team VS: both sides human
     lda.b cpu2
     bne SPR_no
     rep #$20
@@ -141,4 +145,31 @@ TitlePaletteFar:
     .ACCU 16
     rtl
 
+.ENDS
+
+; P2 STARTED from the mode menu: keep Pad2 human and make P1 the CPU side
+; until P1 presses START on the select screen.  Kept out of the full Fight
+; bank; MenuToSelect calls it with JSL.
+.BANK 84 SLOT 0
+.ORGA $E700
+.SECTION "MenuP2StartFar" FORCE
+MenuP2StartSetup:
+    sep #$20
+    .ACCU 8
+    lda.w M_START_SIDE
+    beq MPS_done
+    stz.b cpu2
+    stz.b lock1
+    stz.b lock2
+    lda.w G_MODE
+    beq MPS_done                        ; Single VS: both pads human
+    cmp #3
+    beq MPS_done                        ; Team VS: both pads human
+    lda #1
+    sta.b cpu1                          ; P1 is CPU until its START joins
+    sta.w C_HUMAN_SIDE                  ; campaign follows the P2 pad
+MPS_done:
+    sep #$20
+    .ACCU 8
+    rtl
 .ENDS

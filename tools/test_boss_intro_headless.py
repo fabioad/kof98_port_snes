@@ -146,8 +146,10 @@ def team_boss_intro():
 
         wait(core, lambda: core.ram[GS] == 4, "Omega team entrance", 3000)
         assert core.ram[SEL2] == 14, f"Omega not swapped in: sel2={core.ram[SEL2]}"
-        assert core.ram[F_STATE2] == S_INTRO, (
-            f"Omega team entrance has no intro: state={core.ram[F_STATE2]}")
+        # The incoming member first plays the jump-in (43), then the intro
+        # (92); the intro screen can appear while 43 is still finishing.
+        wait(core, lambda: core.ram[F_STATE2] == S_INTRO,
+             "Omega team intro state", 120)
         wait(core, lambda: core.ram[GS] == 1, "team round ready", 3000)
 
         # The boss team is out: fade to black and open ending1 directly.

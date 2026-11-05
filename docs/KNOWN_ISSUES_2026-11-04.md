@@ -307,6 +307,14 @@ PalFX/AfterImage (Categoria E).
   timers antes de `StartFight`, evitando o travamento após a escolha.
   Regressões: `test_menu_p2_start_headless.py`,
   `test_midfight_join_headless.py` e `test_team_vs_start_headless.py`.
+- **Cursor P1/P2 no select (05/11)** — quando o P2 iniciava Single Play
+  ou Team Play, o select acendia os dois anéis (`cpu1=0` e `cpu2=0`).
+  Agora o P2 iniciado mantém `cpu2=0` (humano) e coloca `cpu1=1` (CPU) +
+  `C_HUMAN_SIDE=1`: só o anel do P2 aparece. START do P1 no select
+  junta o P1 sem derrubar o P2; o reclaim só vale quando foi o P1 que
+  iniciou. No Team Play o CPU P1 escolhe o trio primeiro e depois o
+  cursor do P2 fica ativo. Regressão:
+  `tools/test_menu_p2_start_headless.py`.
 - **Robert (05/11)** — Ryuga agora sobe (follow-ups 1101/1111 ligados);
   o Hien Ryujin aéreo ganhou caixa de contato desde o primeiro frame;
   o Hien Shippuu '95 passou para chute e o HCB+K real tem prioridade.
@@ -377,9 +385,9 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$0D7F`**
+- checksum **`$1BFB`**
 - layout MSU **`0x77D7`**
-- `.sfc` SHA-256 `f1c20993…4e1a536`
+- `.sfc` SHA-256 `7e384238…825143e`
 - `.msu` SHA-256 `cefef5ff…0f1c486`
 - `.msu` 51.428.864 bytes
 

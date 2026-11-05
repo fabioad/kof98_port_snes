@@ -2251,11 +2251,7 @@ MTS_done:
 MTS_both_human:
     stz.b cpu2
 MTS_cpu_ready:
-    lda.w M_START_SIDE
-    beq MTS_side_done
-    stz.b cpu2                          ; P2 started: keep Pad2 human
-    stz.b lock1
-    stz.b lock2
+    jsl MenuP2StartSetup
 MTS_side_done:
     sep #$10
     .INDEX 8
