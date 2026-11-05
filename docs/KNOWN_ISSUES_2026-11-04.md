@@ -332,6 +332,13 @@ PalFX/AfterImage (Categoria E).
   (195). Nos demais personagens L sozinho continua taunt; só Omega usa o
   token s para a esquiva. Regressão:
   `tools/test_omega_dodge_headless.py`.
+- **Blowback aéreo (05/11)** — o R no ar reutiliza o clipe do normal
+  aéreo forte (sid 24), cujo Clsn1 cobria só o braço. Enquanto o latch
+  de air-blowback está ativo, o `MinReachBox` une uma caixa de corpo
+  inteiro à caixa original do atacante (preservando o alcance do braço);
+  os mesmos frames e timings são mantidos. O normal aéreo forte sem o
+  latch continua com a caixa original. Regressão:
+  `tools/test_air_blowback_headless.py`.
 - **Categoria A** — concluída; manter a regressão de comandos.
 
 ## Áudio
@@ -358,9 +365,9 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$D46C`**
+- checksum **`$F243`**
 - layout MSU **`0xA7E9`**
-- `.sfc` SHA-256 `98b37767…b08d456`
+- `.sfc` SHA-256 `a7fb32e0…9133632`
 - `.msu` SHA-256 `81685d8b…50d115`
 - `.msu` 51.265.024 bytes
 

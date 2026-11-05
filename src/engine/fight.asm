@@ -20258,8 +20258,58 @@ MinReachBox:
     .ACCU 16
     lda fofs
     cmp aofs
-    bne MRB_out
+    beq MRB_same
+    jmp MRB_out
+MRB_same:
     ldx aofs
+    lda FP+F_TFLAGS,x
+    and #$0010.w
+    beq MRB_normal
+    ; Air blowback (R in the air) reuses sid 24's strong-air clip, whose
+    ; Clsn1 only covers the fist/arm.  While the air-blowback latch is set,
+    ; cover the whole body; the frame count and timing are unchanged.
+    lda FP+F_X,x
+    xba
+    and #$00FF.w
+    sta scr0                            ; attacker X (px)
+    lda #GROUND_Y.w
+    sta scr2
+    lda FP+F_Y,x
+    xba
+    and #$00FF.w
+    sta scr3
+    lda scr2
+    sec
+    sbc scr3
+    sta scr2                            ; base screen Y at the feet
+    lda scr0
+    sec
+    sbc #48.w
+    cmp box0
+    bpl MRB_keep_l
+    sta box0
+MRB_keep_l:
+    lda scr0
+    clc
+    adc #48.w
+    cmp box0+4
+    bmi MRB_keep_r
+    sta box0+4
+MRB_keep_r:
+    lda scr2
+    sec
+    sbc #160.w
+    cmp box0+2
+    bpl MRB_keep_t
+    sta box0+2
+MRB_keep_t:
+    lda scr2
+    cmp box0+6
+    bmi MRB_keep_b
+    sta box0+6
+MRB_keep_b:
+    jmp MRB_out
+MRB_normal:
     lda FP+F_X,x
     xba
     and #$00FF.w
