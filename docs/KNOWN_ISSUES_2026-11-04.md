@@ -324,8 +324,9 @@ PalFX/AfterImage (Categoria E).
 - **Omega Rugal / evasivas (05/11)** — os comandos `ESQ_L/ESQ_F/ESQ_B`
   existiam no CMD mas não tinham regra `State -1` nem slots. Agora:
   L+frente = rolagem para frente (1010/sid 95), L+trás = rolagem para
-  trás (1011/sid 94), DODGE (Y+B) = esquiva parada 720 (sid 69) e L
-  sozinho = taunt, igual aos demais personagens. As evasivas reutilizam
+  trás (1011/sid 94), L sozinho = esquiva parada 720 (sid 69) e DODGE
+  (Y+B) também entra na 720. Nos demais personagens L sozinho continua
+  taunt; só Omega usa o token s para a esquiva. As evasivas reutilizam
   os clipes 1009/1010 já existentes. Regressão:
   `tools/test_omega_dodge_headless.py`.
 - **Categoria A** — concluída; manter a regressão de comandos.
@@ -343,9 +344,9 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$D7EF`**
+- checksum **`$D4BB`**
 - layout MSU **`0xA7E9`**
-- `.sfc` SHA-256 `50414546…d9a90eab`
+- `.sfc` SHA-256 `3a41dc9f…24fd56`
 - `.msu` SHA-256 `81685d8b…50d115`
 - `.msu` 51.265.024 bytes
 

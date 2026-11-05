@@ -8,7 +8,7 @@ port-added in-place 720 pose:
   * L + forward -> sid 95 / state 1010
   * L + back    -> sid 94 / state 1011
   * Y + B       -> sid 69 / state 720 (the standard DODGE input)
-  * L alone     -> taunt, exactly like every character.
+  * L alone     -> neutral dodge (Omega-specific; other characters taunt).
 
 Run after a PVSnesLib build:
 
@@ -29,11 +29,11 @@ F_STATE = 0x4008
 L, FWD, BACK, Y, B = 10, 7, 6, 1, 0
 
 
-def run(directions, buttons, wanted):
+def run(directions, buttons, wanted, character="omegarugal"):
     core = Core(CORE, str(ROM))
     try:
         select = boot_select(core)
-        enter_fight(core, select, "omegarugal", "kyo")
+        enter_fight(core, select, character, "kyo")
         core.ram[0x1090] = core.ram[0x1091] = 0
         core.step(30)
         held = set().union(*directions) if directions else set()
@@ -69,9 +69,13 @@ def main():
     assert 69 in seen, f"DODGE did not start ({seen})"
     print("PASS Omega DODGE (Y+B) -> neutral dodge (sid 69)")
 
-    seen = run((), (L,), 47)
-    assert 47 in seen, f"L alone did not taunt ({seen})"
-    print("PASS Omega L alone -> taunt, like all characters")
+    seen = run((), (L,), 69)
+    assert 69 in seen, f"L alone did not dodge ({seen})"
+    print("PASS Omega L alone -> neutral dodge (sid 69)")
+
+    seen = run((), (L,), 47, "kyo")
+    assert 47 in seen, f"other characters lost the L-alone taunt ({seen})"
+    print("PASS other characters keep L alone -> taunt")
 
 
 if __name__ == "__main__":

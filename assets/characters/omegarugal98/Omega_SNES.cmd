@@ -459,7 +459,9 @@ trigger1 = ctrl
 
 [State -1, Taunt]
 type = ChangeState
-value = 195
+; Port: L alone and START both map to the s token.  Omega uses this slot
+; for the neutral dodge; the other characters keep the taunt pose.
+value = 720
 triggerall = command = "start"
 triggerall = statetype = S
 trigger1 = ctrl
