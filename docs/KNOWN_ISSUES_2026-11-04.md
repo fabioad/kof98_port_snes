@@ -129,16 +129,16 @@ continuações/fases do golpe pai.
 
 | Personagem | Principais pendências |
 |---|---|
-| **Iori** | Ya Sakazuki 3100/3110/3150 |
+| **Iori** | Ya Sakazuki 3100/3110/3150 implementados em 05/11 (6/8/12; clipe do root + projétil 3104) |
 | **Kyo / Nests / Ash** | Koto Tsuki You 1400/1410; Orochinagi/Mushiki 3010/3050/3100/3150/3250/3350. 3000 religado nos três; 3500/3550 (agarrões) e 3305 também (04/11) |
-| **Rugal** | Eye Beam 1700; Beads Destruction 1800; Gravity Smash forte 1560 |
+| **Rugal** | Beads Destruction 1800 implementado em 05/11 (14); Eye Beam 1700 bloqueado (AIR 1704 ausente); Gravity Smash forte 1560 pendente |
 | **Omega Rugal** | Gravity Smash 1050/1055; projéteis 1010/1011; RE2 2310; gravity 7100; RE 8000 |
 | **Takuma** | Mouko Burai Gan 1400/1410; Koho 1600/1610; Ko'ou Ken EX 1050/1060; Haoh 1500/1510/3200/3210; Kyokugen Koho 3300/3320 |
-| **Terry** | Power Wave EX 1050; Power Charge MOW 1550/1560; Fire Kick 1600; Double Kong 1700; High Angle Geyser 3100; Power Dunk MOW 1450. Power Geyser 3000/3010 e Buster Wolf 3050 com HitDef de corpo (04/11) |
-| **Andy** | Gekiheki Haisui 1400/1450; Genei Shiranui 1500; Bakushin 1700; Chou Reppa Dan 3000/3010/3050; Dan Da Dan 3200/3210/3250; Hishou Ken EX 1160 |
+| **Terry** | 1050/1450/1550/1560/1600/1700/3100 implementados em 05/11 (14/12/30/34/16/20/32); Buster Wolf 3200/3250 com 3 contatos (34/48); MAX Geyser 3050 50 |
+| **Andy** | 1400/1450/1500/1160 e Chou Reppa 3000/3010/3050 implementados em 05/11 (12/8/14/14/37/52/57); Bakushin 1700 e Dan Da Dan 3200/3210/3250 pendentes |
 | **Joe** | Screw Upper forte 3010; Bakuretsu 3100; Thunder Fire 3200/3250; Slash Kick forte 1310. MAX 3150 religado (04/11) |
-| **Ryo** | Ko'ou Ken EX 1050; Koho EX 1150/1160; Hien Shippuu 1250/1260; Renbu 1400; Ko'ou aéreo 2000/2010; Ko'ou Geki 2100; MAX Ryuuko 3150; MAX Tenchi 3250 |
-| **Robert** | Ryuugeki Ken EX 1050; Hien 1250/1260; Renbu 1400; Sen'en 1450; Haoh 3000/3010/3020; Muei Shippuu 3200/3210/3220; Muei Senpuu 3270 |
+| **Ryo** | 1150/1160/1250/1260/2100/3250 implementados em 05/11 (26/32/14/28/13/30); Ko'ou Ken EX 1050, Renbu 1400, aéreo 2000/2010 e MAX Ryuuko 3150 pendentes |
+| **Robert** | 1050/3200/3210/3220/3270 implementados em 05/11 (14/24/37/47/44); Hien 1250/1260, Renbu 1400, Sen'en 1450 e Haoh 3000/3010/3020 pendentes |
 | **Yuri** | MAX Haoh 550; MAX Ryuuko 560 |
 | **Athena** | Phoenix Fang Arrow 2000/2020/2050. 3000/3050/3100 implementados com a bola 7700 (48/42/40); 4000 confirmado (62) |
 | **Kensou** | Sen Shippo 1300/1330; Niku Man 2000; Sen Ki Hakkei 2100; Chouryuu Renken 2200 |
@@ -197,10 +197,14 @@ continuações/fases do golpe pai.
 
 ## Prioridade recomendada
 
-1. **Categoria D (em andamento)** — primeiro bloco concluído em 04/11:
-   Kyo/Nests/Ash 3500/3550/3305, Terry 3000/3010/3050 e Athena
-   3000/3050/3100/4000. Restam Terry EX/MOW, Andy, Ryo, Robert,
-   Rugal/Omega, Takuma, Iori e os MAX/SDM da tabela.
+1. **Categoria D (em andamento)** — primeiro bloco concluído em 04/11
+   (Kyo/Nests/Ash 3500/3550/3305, Terry 3000/3010/3050, Athena
+   3000/3050/3100/4000). Segundo bloco concluído em 05/11: Terry
+   1050/1450/1550/1560/1600/1700/3100 e Buster Wolf 3200/3250 (3
+   contatos), Andy 1400/1450/1500/1160/3000/3010/3050, Ryo
+   1150/1160/1250/1260/2100/3250, Robert 1050/3200/3210/3220/3270,
+   Rugal 1800 e Iori 3100/3110/3150. Restam Omega Rugal (AIR 8000/8001),
+   Takuma (limite do banco de tabelas) e Rugal Eye Beam (AIR 1704).
 2. **Categoria E** — efeitos e victim states (Ralf, Mature, Chizuru,
    bola de metal do Chang). Na Chizuru faltam os PalFX/AfterImage e o
    clone visual dos supers.
@@ -232,10 +236,10 @@ Ainda faltam os outros golpes de clone dela (1000/1004, 1100/1102,
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$9C60`**
-- layout MSU **`0x1135`**
-- `.sfc` SHA-256 `187bc733…cf776`
-- `.msu` SHA-256 `6d9ca6ba…f9528`
+- checksum **`$B269`**
+- layout MSU **`0x9EF1`**
+- `.sfc` SHA-256 `3d0a06e4…b81b9`
+- `.msu` SHA-256 `ae7d0481…5dd83`
 
 ## Referências
 

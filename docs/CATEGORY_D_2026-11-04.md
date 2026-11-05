@@ -72,12 +72,23 @@ A correção do bit3 também foi o que destravou esses projéteis.
 
 ## Verificação
 
-Novo `tools/test_category_d_headless.py` — **12 golpes PASS**:
+`tools/test_category_d_headless.py` — **12 golpes PASS** (primeiro bloco):
 
 - Kyo 3500/3550: 41; Kyo 3305: 18;
 - Nests 3500: 41; Ash 3550: 41;
-- Terry 3000: 25; 3010: 30; 3050: 20;
+- Terry 3000: 25; 3010: 30; 3050: 50;
 - Athena 4000: 62; 3000: 48; 3050: 42; 3100: 40.
+
+`tools/test_category_d_remaining_headless.py` — **32 golpes PASS**
+(segundo bloco, 05/11):
+
+- Terry: 1050 14, 1450 12, 1550 30, 1560 34, 1600 16, 1700 20,
+  3100 32, 3200 34 (3 contatos), 3250 48 (3 contatos), 3050 50;
+- Andy: 1400 12, 1450 8, 1500 14, 1160 14, 3000 37, 3010 52, 3050 57;
+- Ryo: 1150 26, 1160 32, 1250 14, 1260 28, 2100 13, 3250 30;
+- Robert: 1050 14, 3200 24, 3210 37, 3220 47, 3270 44;
+- Rugal: 1800 14;
+- Iori: 3100 6, 3110 8, 3150 12.
 
 Regressões: `pytest -q tools/tests` **272 passed**, além de
 `test_category_a_headless`, `test_clark_chains_headless`,
@@ -87,23 +98,90 @@ poses) e `test_super_stage_vram_headless`.
 
 > Alguns testes antigos de input com `L` sem direção (`test_andy_hishouken`,
 > caso Andy do `test_kyokugen_projectile_anim`) continuam falhando também
-> no par anterior; são anteriores a esta mudança.
+> no par anterior; são anteriores a estas mudanças.
 
-## Ainda na Categoria D
+## Segundo bloco (05/11/2026)
 
-- Terry: Power Wave EX 1050, Power Charge MOW 1550/1560, Fire Kick 1600,
-  Double Kong 1700, High Angle Geyser 3100, Power Dunk MOW 1450.
-- Andy, Ryo, Robert e os demais personagens da tabela de 24/10.
-- Rugal/Omega Rugal, Takuma, Iori e os MAX/SDM restantes.
-- O Buster Wolf pode ganhar os três contatos com slices/`slice_no_fall`.
+### Infraestrutura
+
+- `POST_CAL_TWEAKS` / `POST_CAL_PROJS`: hooks aplicados **depois** de
+  `apply_profile`, para adicionar golpes/comandos/projéteis sem invalidar
+  os perfis de calibração existentes.
+- As linhas de `hit_resets`/`hit_soft_resets` passaram para depois de
+  `apply_profile`, permitindo que os novos golpes também declarem
+  rearmes de HitDef.
+- O Buster Wolf usa `hit_soft_resets` no rush (dois contatos) e o
+  finalizador 3205/3255 como terceiro contato; `slice_no_fall` mantém a
+  vítima em hitstun entre os contatos.
+
+### Terry
+
+| Golpe | State | Sid | Dano |
+|---|---|---|---|
+| Power Wave EX | 1050 | 60 | 14 |
+| Power Dunk MOW | 1450 | 61 | 12 |
+| Power Charge MOW fraco | 1550 | 64 | 30 |
+| Power Charge MOW forte | 1560 | 65 | 34 |
+| Fire Kick | 1600 | 62 | 16 |
+| Double Kong | 1700 | 63 | 20 |
+| High Angle Geyser | 3100/3101 | 105/106 | 32 |
+| Buster Wolf | 3200 → 3205 | 88/103 | 34 (3 contatos) |
+| MAX Buster Wolf | 3250 → 3255 | 89/104 | 48 (3 contatos) |
+| MAX Power Geyser | 3050 | 87 | 50 |
+
+`3050` é o MAX Power Geyser da origem (três pilares), não o Buster Wolf;
+o HitDef de corpo usado como workaround foi removido e o golpe roda como
+projétil estacionário com o clipe alternativo 3020. O Buster Wolf real
+está em 3200/3250. O Double Kong reusa o clipe do Power Dunk para caber no
+orçamento de CHR.
+
+### Andy
+
+1400/1450 (Gekiheki Haisui), 1500 (Genei Shiranui), 1160 (Hishou Ken EX),
+3000/3010/3050 (Chou Reppa Dan). 1400 e 1450 usam os rearmes de
+`MoveHitReset` da origem; 3000/3010/3050 rearmam a cada golpe e mantêm a
+vítima em hitstun.
+
+### Ryo
+
+1150/1160 (Koho EX), 1250/1260 (Hien Shippuu '95), 2100 (Ko'ou Geki,
+projétil de dois níveis de helper) e 3250 (MAX Tenchi Haoh Ken).
+
+### Robert
+
+1050 (Ryuugeki Ken EX), 3200/3210/3220 (Muei Shippuu Juudan Kyaku) e
+3270 (MAX Muei Senpuu, reusando o clipe MAX).
+
+### Rugal
+
+1800 (Beads Destruction). A AIR 1800 não veio no pacote importado; o
+golpe reusa um clipe de soco e mantém o HitDef/alcance. O Eye Beam 1700
+continua bloqueado: a AIR 1704 também não existe no pacote.
+
+### Iori
+
+3100/3110/3150 (Ya Sakazuki): os roots da origem só tocam a invocação; a
+chama vive no helper 3120 (projétil 3104). Os três slots usam o clipe do
+root com dano por ProjTab 6/8/12 e release no segundo frame.
+
+### Ainda bloqueado
+
+- **Omega Rugal** — Gravity shot 7100 e RE 8000: a AIR 8000 e o victim
+  state 8001 não foram portados; o personagem também compartilha a célula
+  37 com o Rugal no seletor, então o harness headless não o seleciona.
+- **Takuma** — 1400/1410, 1600/1610 e 1050/1060: a tabela gerada do
+  personagem está no limite de 32 KiB do banco; seis sids novos estouram
+  o assert de build. Os quatro comandos existentes seguem intactos.
+- **Rugal** — Eye Beam 1700 (AIR 1704 ausente).
 
 ## Build
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$9C60`**
-- layout MSU **`0x1135`**
-- `.sfc` SHA-256 `187bc733…cf776`
-- `.msu` SHA-256 `6d9ca6ba…f9528`
+- checksum **`$B269`**
+- layout MSU **`0x9EF1`**
+- `.sfc` SHA-256 `3d0a06e4…b81b9`
+- `.msu` SHA-256 `ae7d0481…5dd83`
 
 Copie `.sfc` e `.msu` juntos.
+

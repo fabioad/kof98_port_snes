@@ -88,7 +88,7 @@ PROJECTILE_ALT_EFFECTS = {
         "frames": ((0, 4), (6, 12), (10, 13)),
         "pre_scale": 3,
         "zoom": 1,
-        "sids": (85, 86),
+        "sids": (85, 86, 87),
         "release": 6,
     },
     # Athena's Phoenix Fang charge levels (3000/3050/3100).  The source

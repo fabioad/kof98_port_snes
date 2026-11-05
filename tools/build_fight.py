@@ -1805,7 +1805,7 @@ POST_CAL_REACTIVATED = {
                  (87, 3050, 3000), (89, 3100, 3100),
                  (88, 3150, 3100), (60, 3160, 3110),
                  (61, 3161, 3111), (62, 3170, 3120)],
-    "terry":    [(87, 3050, 3050)],
+    "terry":    [(87, 3050, 3000)],
     "andy":     [(87, 3150, 3150)],
     "ryo":      [(87, 3050, 3050)],
     "robert":   [(87, 3120, 3120), (88, 3250, 3250),
@@ -1830,6 +1830,14 @@ POST_CAL_REACTIVATED = {
 # Reactivated command targets intentionally left off until their victim or
 # helper chains are ported.  The regression test skips these states.
 POST_CAL_REACTIVATED_DISABLED = {}
+# Late config additions for Category D follow-ups.  Applied after
+# apply_profile, so they never invalidate an existing calibration profile.
+# Keys use the same names as the CHARS entry (hitdef_override, slice_damage,
+# hit_soft_resets, slice_no_fall, extra_trans, cmd_extra, cmd_priority...).
+POST_CAL_TWEAKS = {}
+# Projectile rows that only exist for post-calibration moves.  sid ->
+# (vx, damage, guard mask).
+POST_CAL_PROJS = {}
 # Existing low special slots that are intentionally retargeted from a held
 # follow-up to the close-range grab attempt (the source CMD's "strong"
 # commands enter the held state otherwise).
@@ -2742,6 +2750,320 @@ if "terry" in CHARS:
     _terry.setdefault("air_box_patch_frames", {})
     _terry["air_box_patch_frames"][3050] = {
         i: [(-20, -110, 70, 0)] for i in range(6, 22)}
+
+    # ------------------------------------------------------------------
+    # Category D: remaining Terry specials and the three-contact Buster
+    # Wolf.  3050 is the source MAX Power Geyser (three helper pillars), so
+    # the old body HitDef workaround is neutralised below and the move runs
+    # as a stationary alternate-clip projectile instead.
+    # ------------------------------------------------------------------
+    POST_CAL_REACTIVATED.setdefault("terry", []).extend([
+        (88, 3200, 3200),      # Buster Wolf (weak / strong share state)
+        (89, 3250, 3250),      # MAX Buster Wolf
+        (103, 3205, 3205),     # Buster Wolf finisher
+        (104, 3255, 3205),     # MAX finisher (reuses AIR 3205)
+        (60, 1050, 1050),      # Power Wave EX
+        (61, 1450, 1450),      # Power Dunk MOW
+        (62, 1600, 1600),      # Fire Kick
+        (63, 1700, 1400),      # Double Kong (reuses Power Dunk clip)
+        (64, 1550, 1500),      # Power Charge MOW weak (reuses dash clip)
+        (65, 1560, 1510),      # Power Charge MOW strong
+        (105, 3100, 3100),     # High Angle Geyser
+        (106, 3101, 3100),     # High Angle Geyser rise (reuses startup)
+    ])
+    POST_CAL_PROJS.setdefault("terry", {}).update({
+        # MAX Power Geyser keeps the stationary geyser clip; the native
+        # super-projectile path gives it the five sequential contacts.
+        87: (0x0000, 10, 0x02),
+        # Power Wave EX travels with the source helper 1070 speed (4 px).
+        60: (0x0400, 14, 0x0A),
+    })
+    POST_CAL_TWEAKS.setdefault("terry", {}).update({
+        # 3050 has no root HitDef in the source (the attack lives in the
+        # geyser helper), so drop the old body-hit approximation.
+        "hitdef_override": {87: {}},
+        "slice_damage": {
+            61: 12, 62: 16, 63: 20, 64: 16, 65: 20,
+            88: 7, 89: 7, 103: 20, 104: 34,
+            105: 18, 106: 18,
+        },
+        # Buster Wolf: the second rush contact re-arms the HitDef, and the
+        # finisher (3205/3255) supplies the third contact.  Both rush rows
+        # stay in hitstun so the finisher can connect.
+        "hit_soft_resets": {3200: [13], 3250: [13]},
+        "slice_no_fall": [88, 89],
+        "extra_trans": [
+            (88, 103, 0, 0),
+            (89, 104, 0, 0),
+        ],
+        "cmd_priority": [
+            "BUSTER_WOLF_MAX", "BUSTER_WOLF", "HIGH_ANGLE_GEYSER",
+            "POWER_CHARGE_MOW_W", "POWER_CHARGE_MOW_S",
+            "POWER_DUNK_MOW", "FIRE_KICK", "DOUBLE_KONG",
+            "POWER_WAVE_EX",
+        ],
+        "cmd_extra": [{
+            "name": "POWER_WAVE_EX", "label": "POWER WAVE EX",
+            "state": 1050, "posture": 3, "time": 22,
+            "elems": [(2, 0), (10, 0), (8, 0), (0, 3)],
+        }, {
+            "name": "POWER_DUNK_MOW", "label": "POWER DUNK MOW",
+            "state": 1450, "posture": 3, "time": 22,
+            "elems": [(4, 0), (2, 0), (6, 0), (0, 12)],
+        }, {
+            "name": "FIRE_KICK", "label": "FIRE KICK",
+            "state": 1600, "posture": 3, "time": 22,
+            "elems": [(2, 0), (6, 0), (4, 0), (0, 12)],
+        }, {
+            "name": "DOUBLE_KONG", "label": "DOUBLE KONG",
+            "state": 1700, "posture": 3, "time": 22,
+            "elems": [(4, 0), (2, 0), (6, 0), (0, 3)],
+        }, {
+            "name": "POWER_CHARGE_MOW_W", "label": "POWER CHARGE MOW",
+            "state": 1550, "posture": 3, "time": 26,
+            "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 12)],
+        }, {
+            "name": "POWER_CHARGE_MOW_S", "label": "POWER CHARGE MOW S",
+            "state": 1560, "posture": 3, "time": 26,
+            "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 3)],
+        }, {
+            "name": "HIGH_ANGLE_GEYSER", "label": "HIGH ANGLE GEYSER",
+            "state": 3100, "posture": 3, "time": 30,
+            "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0),
+                      (0, 4)],
+        }, {
+            "name": "BUSTER_WOLF", "label": "BUSTER WOLF",
+            "state": 3200, "posture": 3, "time": 30,
+            "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0),
+                      (0, 1)],
+        }, {
+            "name": "BUSTER_WOLF_MAX", "label": "BUSTER WOLF MAX",
+            "state": 3250, "posture": 3, "time": 30,
+            "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0),
+                      (0, 3)],
+        }],
+    })
+
+# ---------------------------------------------------------------------------
+# Category D: Andy's missing specials/supers.
+# ---------------------------------------------------------------------------
+if "andy" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("andy", []).extend([
+        (60, 1400, 1400),      # Gekiheki Haisui Shou
+        (61, 1450, 1450),      # Gekiheki Haisui Shou (ura)
+        (62, 1500, 1500),      # Genei Shiranui
+        (63, 1160, 1160),      # Hishou Ken EX (helper projectile)
+        (64, 3000, 3000),      # Chou Reppa Dan weak
+        (65, 3010, 3010),      # Chou Reppa Dan strong
+        (66, 3050, 3010),      # MAX Chou Reppa Dan (reuses strong clip)
+        (103, 1451, 1451),     # Gekiheki Haisui follow-up 1
+        (104, 1452, 1452),     # Gekiheki Haisui follow-up 2
+        (105, 3005, 3005),     # Chou Reppa Dan landing
+        (106, 3015, 3015),     # MAX landing
+    ])
+    POST_CAL_TWEAKS.setdefault("andy", {}).update({
+        "slice_damage": {
+            60: 3, 61: 4, 62: 7, 64: 4, 65: 5, 66: 6,
+            103: 6, 104: 4,
+        },
+        # Keep the victim in hitstun through the multi-hit rushes; the
+        # engine's compiled MoveHitReset rows re-arm each contact.
+        "slice_no_fall": [60, 64, 65, 66],
+        "hitdef_override": {60: {"guard": 2}},
+        "extra_trans": [
+            (61, 103, 0, 0),
+            (103, 104, 0, 0),
+        ],
+        "cmd_priority": ["CHOU_REPPA_MAX", "CHOU_REPPA_S", "CHOU_REPPA_W"],
+        "cmd_extra": [{
+            "name": "GEKIHEKI_X", "label": "GEKIHEKI HAISUI",
+            "state": 1400, "posture": 3, "time": 22,
+            "elems": [(2, 0), (6, 0), (4, 0), (0, 1)],
+        }, {
+            "name": "GEKIHEKI_Y", "label": "GEKIHEKI HAISUI URA",
+            "state": 1450, "posture": 3, "time": 22,
+            "elems": [(2, 0), (6, 0), (4, 0), (0, 32)],
+        }, {
+            "name": "GENEI_SHIRANUI", "label": "GENEI SHIRANUI",
+            "state": 1500, "posture": 3, "time": 22,
+            "elems": [(4, 0), (2, 0), (6, 0), (0, 1)],
+        }, {
+            "name": "HISHOUKEN_EX", "label": "HISHOU KEN EX",
+            "state": 1160, "posture": 3, "time": 22,
+            "elems": [(2, 0), (10, 0), (8, 0), (0, 32)],
+        }, {
+            "name": "CHOU_REPPA_W", "label": "CHOU REPPA DAN",
+            "state": 3000, "posture": 3, "time": 30,
+            "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0),
+                      (0, 4)],
+        }, {
+            "name": "CHOU_REPPA_S", "label": "CHOU REPPA DAN S",
+            "state": 3010, "posture": 3, "time": 30,
+            "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0),
+                      (0, 8)],
+        }, {
+            "name": "CHOU_REPPA_MAX", "label": "CHOU REPPA DAN MAX",
+            "state": 3050, "posture": 3, "time": 30,
+            "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0),
+                      (0, 12)],
+        }],
+    })
+
+# ---------------------------------------------------------------------------
+# Category D: Ryo's missing Koho/Hien variants and MAX Tenchi.
+# ---------------------------------------------------------------------------
+if "ryo" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("ryo", []).extend([
+        (55, 1150, 1150),      # Koho weak (ura)
+        (56, 1160, 1160),      # Koho strong (ura)
+        (62, 1250, 1250),      # Hien Shippuu Kyaku '95 weak
+        (63, 1260, 1260),      # Hien Shippuu Kyaku '95 strong
+        (64, 2100, 2100),      # Ko'ou Geki (helper projectile)
+        (103, 3250, 3250),     # MAX Tenchi Haoh Ken
+    ])
+    POST_CAL_PROJS.setdefault("ryo", {}).update({
+        # Ko'ou Geki fires from a two-level helper chain (2100 -> 2101 ->
+        # 2102); the generic one-level walk stops at 2101, so pin the shot.
+        64: (0x0500, 13, 0x0A),
+    })
+    POST_CAL_TWEAKS.setdefault("ryo", {}).update({
+        "slice_damage": {55: 13, 56: 16, 62: 14, 63: 14, 103: 30},
+        "slice_no_fall": [55, 56],
+        "cmd_priority": ["TENCHI_MAX", "KOHO_EX_W", "KOHO_EX_S",
+                         "HIEN_95_W", "HIEN_95_S", "KOUOU_GEKI"],
+        "cmd_extra": [{
+            "name": "KOHO_EX_W", "label": "KOHO EX",
+            "state": 1150, "posture": 3, "time": 22,
+            "elems": [(2, 0), (6, 0), (4, 0), (0, 32)],
+        }, {
+            "name": "KOHO_EX_S", "label": "KOHO EX S",
+            "state": 1160, "posture": 3, "time": 22,
+            "elems": [(2, 0), (10, 0), (8, 0), (0, 32)],
+        }, {
+            "name": "HIEN_95_W", "label": "HIEN SHIPPUU 95",
+            "state": 1250, "posture": 3, "time": 22,
+            "elems": [(4, 0), (2, 0), (6, 0), (0, 4)],
+        }, {
+            "name": "HIEN_95_S", "label": "HIEN SHIPPUU 95 S",
+            "state": 1260, "posture": 3, "time": 22,
+            "elems": [(4, 0), (2, 0), (6, 0), (0, 8)],
+        }, {
+            "name": "KOUOU_GEKI", "label": "KOUOU GEKI",
+            "state": 2100, "posture": 3, "time": 22,
+            "elems": [(2, 0), (10, 0), (8, 0), (0, 3)],
+        }, {
+            "name": "TENCHI_MAX", "label": "TENCHI HAOH KEN MAX",
+            "state": 3250, "posture": 3, "time": 30,
+            "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0),
+                      (0, 4)],
+        }],
+    })
+
+# ---------------------------------------------------------------------------
+# Category D: Robert's Ryuugeki EX and the Muei Shippuu family.
+# ---------------------------------------------------------------------------
+if "robert" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("robert", []).extend([
+        (60, 1050, 1050),      # Ryuugeki Ken EX (helper projectile)
+        (62, 3200, 3200),      # Muei Shippuu Juudan Kyaku weak
+        (63, 3210, 3210),      # Muei Shippuu Juudan Kyaku strong
+        (64, 3220, 3220),      # MAX Muei Shippuu Juudan Kyaku
+        (65, 3270, 3220),      # MAX Muei Senpuu (reuses MAX clip)
+    ])
+    POST_CAL_TWEAKS.setdefault("robert", {}).update({
+        "slice_damage": {60: 12, 62: 4, 63: 5, 64: 5, 65: 30},
+        "slice_no_fall": [62, 63, 64],
+        "cmd_priority": ["MUEI_SHIPPUU_MAX", "MUEI_SHIPPUU_S",
+                         "MUEI_SHIPPUU_W", "MUEI_SENPUU_MAX",
+                         "RYUUGEKI_EX"],
+        "cmd_extra": [{
+            "name": "RYUUGEKI_EX", "label": "RYUUGEKI KEN EX",
+            "state": 1050, "posture": 3, "time": 22,
+            "elems": [(2, 0), (6, 0), (4, 0), (0, 32)],
+        }, {
+            "name": "MUEI_SHIPPUU_W", "label": "MUEI SHIPPUU",
+            "state": 3200, "posture": 3, "time": 30,
+            "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0),
+                      (0, 4)],
+        }, {
+            "name": "MUEI_SHIPPUU_S", "label": "MUEI SHIPPUU S",
+            "state": 3210, "posture": 3, "time": 30,
+            "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0),
+                      (0, 8)],
+        }, {
+            "name": "MUEI_SHIPPUU_MAX", "label": "MUEI SHIPPUU MAX",
+            "state": 3220, "posture": 3, "time": 30,
+            "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0),
+                      (0, 12)],
+        }, {
+            "name": "MUEI_SENPUU_MAX", "label": "MUEI SENPUU MAX",
+            "state": 3270, "posture": 3, "time": 30,
+            "elems": [(2, 0), (10, 0), (8, 0), (10, 0), (2, 0), (6, 0),
+                      (4, 0), (0, 12)],
+        }],
+    })
+
+# ---------------------------------------------------------------------------
+# Category D: Rugal / Omega Rugal / Takuma / Iori.
+# ---------------------------------------------------------------------------
+if "rugal" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("rugal", []).append(
+        (66, 1800, 300))       # Beads Destruction (AIR 1800 was stripped)
+    POST_CAL_TWEAKS.setdefault("rugal", {}).update({
+        "slice_damage": {66: 14},
+        "cmd_extra": [{
+            "name": "BEADS_DESTRUCTION", "label": "BEADS DESTRUCTION",
+            "state": 1800, "posture": 3, "time": 26,
+            "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 3)],
+        }],
+        "cmd_priority": ["BEADS_DESTRUCTION"],
+    })
+
+# Omega Rugal's Gravity shot (7100) and RE rush (8000) are intentionally
+# left out of this pass: the source AIR 8000 sprites and the 8001 victim
+# state are not ported, and the character shares Rugal's select cell in the
+# headless roster (cell 37), so the moves cannot be exercised by the
+# regression harness yet.  The Eye Beam (1700) is likewise missing AIR 1704.
+
+# Takuma's extra specials are parked for a later pass: the character's
+# generated table already sits at the 32 KiB bank limit (see the build-time
+# assert), so adding six command slots would overflow it.  The four existing
+# commands remain untouched.
+
+if "iori" in CHARS:
+    # Ya Sakazuki: the source roots 3100/3110/3150 only play a short
+    # invocation; the flame lives in helper 3120 (projectile 3104).  Use
+    # the root clip on three special slots with per-slot ProjTab damage.
+    POST_CAL_REACTIVATED.setdefault("iori", []).extend([
+        (106, 3100, 3100),     # Ya Sakazuki weak
+        (107, 3110, 3100),     # Ya Sakazuki strong
+        (108, 3150, 3100),     # MAX Ya Sakazuki
+    ])
+    PROJECTILE_RELEASE.setdefault("iori", {}).update(
+        {106: 1, 107: 1, 108: 1})
+    POST_CAL_PROJS.setdefault("iori", {}).update({
+        106: (0x0400, 6, 0x20),
+        107: (0x0400, 8, 0x20),
+        108: (0x0400, 12, 0x20),
+    })
+    POST_CAL_TWEAKS.setdefault("iori", {}).update({
+        "cmd_priority": ["YASAKAZAKI_MAX", "YASAKAZAKI_S",
+                         "YASAKAZAKI_W"],
+        "cmd_extra": [{
+            "name": "YASAKAZAKI_W", "label": "YA SAKAZAKI",
+            "state": 3100, "posture": 3, "time": 24,
+            "elems": [(2, 0), (10, 0), (8, 0), (0, 32)],
+        }, {
+            "name": "YASAKAZAKI_S", "label": "YA SAKAZAKI S",
+            "state": 3110, "posture": 3, "time": 24,
+            "elems": [(2, 0), (10, 0), (8, 0), (0, 3)],
+        }, {
+            "name": "YASAKAZAKI_MAX", "label": "YA SAKAZAKI MAX",
+            "state": 3150, "posture": 3, "time": 30,
+            "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0),
+                      (0, 32)],
+        }],
+    })
 
 CELL = 16
 # Old-roster fighters whose generated tables live in hand-mapped fixed
@@ -6634,24 +6956,6 @@ def build_char(name, cfg, global_pal=None):
         _all += [(int(_f), int(_dx)) for _f, _dx in _rows]
         cns_posadds[_state] = sorted(set(_all))
 
-    # Synthetic MoveHitReset rows for flurries whose source re-issues the
-    # HitDef on each strike element instead of using a MoveHitReset
-    # controller (Sakura's Haru Ichiban 3100).  Values are 1-based source
-    # animation elements, like AnimElem.
-    for _state, _elems in (cfg.get("hit_resets") or {}).items():
-        _rows = list(cns_acts.get(_state, ()))
-        for _e in _elems:
-            _rows.append((max(0, min(0x7F, int(_e) - 1)), 18, 0, 0))
-        cns_acts[_state] = sorted(set(_rows))
-    # Arg 1 keeps the per-move counter, so MoveHitFinisher can still count
-    # the contacts and force the fifth-hit knockdown (Chun-Li's Hyakuretsu
-    # Kyaku).  Arg 0 is the hard reset used by flurries with a finish state.
-    for _state, _elems in (cfg.get("hit_soft_resets") or {}).items():
-        _rows = list(cns_acts.get(_state, ()))
-        for _e in _elems:
-            _rows.append((max(0, min(0x7F, int(_e) - 1)), 18, 1, 0))
-        cns_acts[_state] = sorted(set(_rows))
-
     # Optional verified calibration, preserving the existing native table ABI.
     # Stale source hashes or changed manual values fail closed at build time.
     from calibration.native import apply_profile
@@ -6691,6 +6995,42 @@ def build_char(name, cfg, global_pal=None):
     for _sid in range(98, max(cfg.get("moves", {0})) + 1):
         anims.setdefault(_sid, 5000)
         cfg.setdefault("anims", {}).setdefault(_sid, 5000)
+
+    # Category D follow-up tuning.  These dictionaries are applied after
+    # apply_profile for the same reason as POST_CAL_REACTIVATED: adding a
+    # move must not invalidate a profile written against the reduced
+    # config.  The only values read earlier in build_char are the source
+    # animations (handled above) and the air-box patches.
+    for _key, _value in POST_CAL_TWEAKS.get(name, {}).items():
+        if isinstance(_value, dict):
+            cfg.setdefault(_key, {}).update(_value)
+        elif isinstance(_value, (list, tuple, set)):
+            _cur = list(cfg.get(_key, ()))
+            for _item in _value:
+                if _item not in _cur:
+                    _cur.append(_item)
+            cfg[_key] = _cur
+        else:
+            cfg[_key] = _value
+
+    # Synthetic MoveHitReset rows for flurries whose source re-issues the
+    # HitDef on each strike element instead of using a MoveHitReset
+    # controller (Sakura's Haru Ichiban 3100).  Values are 1-based source
+    # animation elements, like AnimElem.  Kept after apply_profile so the
+    # post-calibration move additions can contribute rows too.
+    for _state, _elems in (cfg.get("hit_resets") or {}).items():
+        _rows = list(cns_acts.get(_state, ()))
+        for _e in _elems:
+            _rows.append((max(0, min(0x7F, int(_e) - 1)), 18, 0, 0))
+        cns_acts[_state] = sorted(set(_rows))
+    # Arg 1 keeps the per-move counter, so MoveHitFinisher can still count
+    # the contacts and force the fifth-hit knockdown (Chun-Li's Hyakuretsu
+    # Kyaku).  Arg 0 is the hard reset used by flurries with a finish state.
+    for _state, _elems in (cfg.get("hit_soft_resets") or {}).items():
+        _rows = list(cns_acts.get(_state, ()))
+        for _e in _elems:
+            _rows.append((max(0, min(0x7F, int(_e) - 1)), 18, 1, 0))
+        cns_acts[_state] = sorted(set(_rows))
 
     # Which super slots are MAX/SDM versions?  Stored in a descriptor byte
     # (CH_MAXMASK) so the matcher no longer guesses from the sid number.
@@ -6833,6 +7173,10 @@ def build_char(name, cfg, global_pal=None):
         vx, dmg = vals[:2]
         old = projs.get(sid, (0, 0, 0, 0x0A))
         projs[sid] = (vx, dmg, old[2], old[3])
+    for sid, vals in POST_CAL_PROJS.get(name, {}).items():
+        vx, dmg, guard = vals[:3]
+        old = projs.get(sid, (0, 0, 0, 0x0A))
+        projs[sid] = (vx, dmg, old[2], guard)
 
     repair_invisible_move_anims(name, cfg, anims, air)
     # Team member entrance: state 43 is not otherwise dispatched, so reuse
