@@ -1,0 +1,59 @@
+{
+  "stages": [
+    {
+      "file": "KOF98-ChinaStage.png",
+      "tiles": 512,
+      "losslessRoundTrip": true
+    },
+    {
+      "file": "KOF98-JpnStreetStage.png",
+      "tiles": 478,
+      "losslessRoundTrip": true
+    },
+    {
+      "file": "KOF98-JpnTempleStage.png",
+      "tiles": 512,
+      "losslessRoundTrip": true
+    },
+    {
+      "file": "KOF98-KoreaStage.png",
+      "tiles": 512,
+      "losslessRoundTrip": true
+    },
+    {
+      "file": "KOF98-Mid.EastStage.png",
+      "tiles": 512,
+      "losslessRoundTrip": true
+    },
+    {
+      "file": "KOF98-RugalStage.png",
+      "tiles": 512,
+      "losslessRoundTrip": true
+    },
+    {
+      "file": "KOF98-SpainStage.png",
+      "tiles": 512,
+      "losslessRoundTrip": true
+    },
+    {
+      "file": "KOF98-USAWharfStage-B.png",
+      "tiles": 474,
+      "losslessRoundTrip": true
+    },
+    {
+      "file": "KOF98-USAWharfStage.png",
+      "tiles": 512,
+      "losslessRoundTrip": true
+    },
+    {
+      "file": "KOF98-USAYardStage.png",
+      "tiles": 512,
+      "losslessRoundTrip": true
+    }
+  ],
+  "preservedOriginalFiles": 273,
+  "animationGraphicsAndTablesIdentical": true,
+  "rugalIdentical": true,
+  "romBuilt": false,
+  "backup": "assets/stages/stages_png_snes-backup-20261105-000609.tar.gz"
+}

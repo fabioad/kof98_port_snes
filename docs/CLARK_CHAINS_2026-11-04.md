@@ -99,9 +99,9 @@ Todos PASS. Regressões: `pytest -q tools/tests` **272 passed**, mais
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$B269`**
+- checksum **`$0CA0`**
 - layout MSU **`0x9EF1`**
-- `.sfc` SHA-256 `3d0a06e4…b81b9`
+- `.sfc` SHA-256 `ef1612aa…3a89`
 - `.msu` SHA-256 `ae7d0481…5dd83`
 
 O `.msu` cresceu com as animações do Flashing Elbow (1600/1605/1606).

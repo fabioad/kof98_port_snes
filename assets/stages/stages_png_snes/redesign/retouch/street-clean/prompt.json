@@ -1,0 +1,5 @@
+{
+  "prompt": "Use case: precise-object-edit. Edit this exact 512x224 SNES fighting stage. ONLY clean the asphalt ground in bottom 48 pixels, primarily the left two thirds. Remove the scattered dark mottled weathering, cracks and noisy patch texture. Replace it with a calm clean uniform muted warm gray asphalt plane, with at most one very subtle broad shadow near the parked cars. Preserve absolutely all architecture, people, cars, lettering, street crossing white stripes, curb and circular manhole. Same exact composition and restricted 15 color pixel art palette, crisp pixel edges, no antialiasing, no gradients, no new objects, no HUD or borders. Minimal purposeful clean ground which lets fighting sprites read clearly.",
+  "reference": "/home/fabio/.codex/generated_images/01a1a9a2-0fb2-7142-b10c-160d4566f8d6/exec-eedb92b9-30e5-40cd-9464-4bf1f8f622b6.png",
+  "application": "Clean asphalt visual direction applied with exact original palette indices and a protected mask."
+}

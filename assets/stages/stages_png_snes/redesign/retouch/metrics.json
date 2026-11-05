@@ -1,0 +1,42 @@
+[
+  {
+    "name": "KOF98-ChinaStage.png",
+    "tiles": 512,
+    "colors": 15,
+    "lockedTiles": 455,
+    "editedCells": 396,
+    "changedPixels": 6304
+  },
+  {
+    "name": "KOF98-JpnStreetStage.png",
+    "tiles": 512,
+    "colors": 15,
+    "lockedTiles": 464,
+    "editedCells": 240,
+    "changedPixels": 15636
+  },
+  {
+    "name": "KOF98-SpainStage.png",
+    "tiles": 512,
+    "colors": 15,
+    "lockedTiles": 464,
+    "editedCells": 320,
+    "changedPixels": 15540
+  },
+  {
+    "name": "KOF98-USAWharfStage-B.png",
+    "tiles": 474,
+    "colors": 15,
+    "lockedTiles": 464,
+    "editedCells": 340,
+    "changedPixels": 13212
+  },
+  {
+    "name": "KOF98-USAWharfStage.png",
+    "tiles": 512,
+    "colors": 15,
+    "lockedTiles": 464,
+    "editedCells": 326,
+    "changedPixels": 19943
+  }
+]

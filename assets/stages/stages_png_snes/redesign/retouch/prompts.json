@@ -1,0 +1,27 @@
+[
+  {
+    "name": "KOF98-ChinaStage.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing SNES fighting game pixel art background with very localized retouches. Only refine distant mountain silhouettes on the right half: replace rectangular chunky cliff shapes with graceful irregular stepped natural rock contours and restrained broad facets. Keep every tree, pavilion, boat, rower and wooden foreground unchanged. Keep same exact 512x224 composition, aspect ratio 16:7, no cropping, no new objects, no characters, no labels. Crisp native pixel clusters, no blur, no antialiasing or gradients, same existing restricted palette with at most 15 colors. Improve awkward large block geometry into artistically pleasing contours while keeping economical repeating 8x8 tile motifs suitable for <=512 unique tiles. The input is the edit target, not merely inspiration. Retain all other details.",
+    "source": "/home/fabio/.codex/generated_images/01a1a9a2-0fb2-7142-b10c-160d4566f8d6/exec-b7a5cb7e-9ffb-417a-a163-16efc6bdce25.png"
+  },
+  {
+    "name": "KOF98-JpnStreetStage.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing SNES fighting game pixel art background with very localized retouches. Only refine the asphalt in bottom 55 pixels: replace large axis-aligned rectangular shade patches with subtle narrow diagonal perspective cracks and tapered irregular worn asphalt patches. Keep cars, spectators, crossing stripes, manhole and all architecture exactly unchanged. Keep same exact 512x224 composition, aspect ratio 16:7, no cropping, no new objects, no characters, no labels. Crisp native pixel clusters, no blur, no antialiasing or gradients, same existing restricted palette with at most 15 colors. Improve awkward large block geometry into artistically pleasing contours while keeping economical repeating 8x8 tile motifs suitable for <=512 unique tiles. The input is the edit target, not merely inspiration. Retain all other details.",
+    "source": "/home/fabio/.codex/generated_images/01a1a9a2-0fb2-7142-b10c-160d4566f8d6/exec-7e47982e-34bf-4f94-934c-cadaf061eaf3.png"
+  },
+  {
+    "name": "KOF98-SpainStage.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing SNES fighting game pixel art background with very localized retouches. Only refine the bottom 55 pixel floor reflections: replace rectangular patches with graceful interrupted tapered vertical reflections and subtle horizontal ripples. Preserve architecture, fountain, columns, plants, all upper pixels and lighting. Keep same exact 512x224 composition, aspect ratio 16:7, no cropping, no new objects, no characters, no labels. Crisp native pixel clusters, no blur, no antialiasing or gradients, same existing restricted palette with at most 15 colors. Improve awkward large block geometry into artistically pleasing contours while keeping economical repeating 8x8 tile motifs suitable for <=512 unique tiles. The input is the edit target, not merely inspiration. Retain all other details.",
+    "source": "/home/fabio/.codex/generated_images/01a1a9a2-0fb2-7142-b10c-160d4566f8d6/exec-1fda9c74-3388-4e87-8b87-3a31496a24b2.png"
+  },
+  {
+    "name": "KOF98-USAWharfStage.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing SNES fighting game pixel art background with very localized retouches. Only refine the blue sky and distant city: remove the coarse rectangular patch boundaries with a coherent mostly flat navy sky and clean stepped building silhouettes, tiny repeated window motifs. Preserve warehouse, hoop, lettering, sails, vehicles, foreground and exact composition. Keep same exact 512x224 composition, aspect ratio 16:7, no cropping, no new objects, no characters, no labels. Crisp native pixel clusters, no blur, no antialiasing or gradients, same existing restricted palette with at most 15 colors. Improve awkward large block geometry into artistically pleasing contours while keeping economical repeating 8x8 tile motifs suitable for <=512 unique tiles. The input is the edit target, not merely inspiration. Retain all other details.",
+    "source": "/home/fabio/.codex/generated_images/01a1a9a2-0fb2-7142-b10c-160d4566f8d6/exec-9ccd4335-af12-423e-bc2b-c3db6d302d70.png"
+  },
+  {
+    "name": "KOF98-USAWharfStage-B.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing SNES fighting game pixel art background with very localized retouches. Only refine the red sky and distant city: remove coarse rectangular patch boundaries with a coherent mostly flat crimson sky and clean stepped distant building silhouettes. Preserve warehouse, hoop, lettering, sails, vehicles, foreground and exact composition. Keep same exact 512x224 composition, aspect ratio 16:7, no cropping, no new objects, no characters, no labels. Crisp native pixel clusters, no blur, no antialiasing or gradients, same existing restricted palette with at most 15 colors. Improve awkward large block geometry into artistically pleasing contours while keeping economical repeating 8x8 tile motifs suitable for <=512 unique tiles. The input is the edit target, not merely inspiration. Retain all other details.",
+    "source": "/home/fabio/.codex/generated_images/01a1a9a2-0fb2-7142-b10c-160d4566f8d6/exec-8ee0c4f6-b138-4d33-9de9-adce6207525e.png"
+  }
+]

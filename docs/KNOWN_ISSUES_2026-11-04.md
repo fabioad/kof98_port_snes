@@ -229,16 +229,36 @@ velocidade de subida (`vy = -9.5 px/tick` no elemento 7) e o HitDef do
 Helper (18 de dano, knockdown). Teste: `tools/test_chizuru_dp_headless.py`
 — pico de ~98 px, P2 200→182, knockdown e retorno ao estado 0.
 
-Ainda faltam os outros golpes de clone dela (1000/1004, 1100/1102,
-1300/1400, 2000/2100/2200), que podem seguir o mesmo padrão.
+Os especiais/supers de clone dela (1000/1004, 1100/1102, 1300/1400,
+1500, 2000/2100/2200) foram religados em 04/11 e acertam com os HitDefs
+de origem. O que resta é o **sprite do clone** e os efeitos de
+PalFX/AfterImage (Categoria E).
+
+## Resumo do que falta
+
+- **Categoria D (restante)** — Omega Rugal (Gravity shot 7100 / RE 8000:
+  AIR 8000 e victim state 8001 ausentes; Eye Beam 1700: AIR 1704
+  ausente), Takuma (tabela no limite de 32 KiB; 1400/1410, 1600/1610,
+  1050/1060, Haoh e Kyokugen Koho) e as pendências dos demais
+  personagens listadas na tabela da seção D (Kyo 1400/1410 e supers, Joe,
+  Yuri, Kensou, Chin, King, Mai, Kim, Chang, Choi, Yashiro, Shermie,
+  Chris, Yamazaki, Mary, Geese, Krauser, Ken, Chun-Li, Sakura, Heavy D,
+  Brian, Billy, Lucky, Mr. Big, Eiji).
+- **Categoria E** — efeitos/victim states: Ralf (queimadura), Mature
+  (PalFX/Explod), Chizuru (clone/PalFX) e a bola de metal do Chang.
+- **Clark** — Frankensteiner 1400/1410→1420 ainda faz só 1 de dano.
+- **Categoria F** — MAX em slot especial sem desconto (Iori 103,
+  Saisyu/Heidern/Clark 66) e a calibração de dano de alguns golpes
+  (ex.: Shou'ou Ken forte da Sakura, 30 vs 26).
+- **Categoria A** — concluída; manter a regressão de comandos.
 
 ## Build de referência
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$B269`**
+- checksum **`$0CA0`**
 - layout MSU **`0x9EF1`**
-- `.sfc` SHA-256 `3d0a06e4…b81b9`
+- `.sfc` SHA-256 `ef1612aa…3a89`
 - `.msu` SHA-256 `ae7d0481…5dd83`
 
 ## Referências
