@@ -90,7 +90,7 @@ class CommandListTests(unittest.TestCase):
 
     def test_specials_show_a_button(self):
         """Long motions must not push the button past the 11-cell field."""
-        buttons = set(bf.SNES_BTN_TEXT.values())
+        buttons = set(bf.SNES_BTN_TEXT.values()) | {"SELECT"}
         for name in sorted(bf.CHARS):
             for sid, cat, move, command in _parse_table(name):
                 if cat not in (2, 3, 4):
@@ -103,9 +103,9 @@ class CommandListTests(unittest.TestCase):
         kyo = {row[0]: row for row in _parse_table("kyo")}
         self.assertEqual((2, "DP + Y"), (kyo[50][1], kyo[50][3]))
         self.assertTrue(kyo[50][2].startswith("ONIYAKI"))
-        # Physical L/R routing: R = blowback, L = taunt, L+DIR = dodge.
+        # Physical pad routing: R = blowback, SELECT = taunt, L+DIR = dodge.
         self.assertEqual((1, "R"), (kyo[67][1], kyo[67][3]))
-        self.assertEqual("L", kyo[47][3])
+        self.assertEqual("SELECT", kyo[47][3])
         self.assertEqual("L + DIR", kyo[69][3])
         self.assertEqual("L + BACK", kyo[94][3])
         self.assertEqual("L + FWD", kyo[95][3])

@@ -6960,12 +6960,12 @@ MOTION_TEXT = {
     ("B", "B"): "B,B",
     ("D", "F"): "DF",
 }
-# Physical pad action for the L/R system moves.  PushHist (fight.asm) reroutes
+# Physical pad action for the system moves.  PushHist (fight.asm) reroutes
 # the shoulder buttons into the legacy MUGEN tokens used by the CMD files
-# (L -> c, R -> y|b, L+R -> s), so the command list must show the button the
-# player actually presses instead of those internal tokens.
+# (L -> c, R -> y|b, SELECT -> s), so the command list must show the button
+# the player actually presses instead of those internal tokens.
 PHYSICAL_SYS_CMD = {
-    47: "L",         # taunt (L alone)
+    47: "SELECT",    # taunt (dedicated pad button)
     67: "R",         # blowback
     69: "L + DIR",   # dodge/roll while holding a direction
     94: "L + BACK",  # back roll
@@ -7074,7 +7074,7 @@ def _snes_button(cfg, bits):
         if bits & BTN_TOK[name]:
             mask = cfg.get("buttons", {}).get(name)
             labels.append(SNES_BTN_TEXT.get(
-                mask, "START" if name == "s" else name.upper()))
+                mask, "SELECT" if name == "s" else name.upper()))
     return "+".join(labels) if labels else "?"
 
 

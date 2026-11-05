@@ -519,7 +519,7 @@
 .DEFINE UI_SLOT_ROW $7E4FBB             ; word: UiSrc row being reloaded
 .DEFINE UI_SLOT_NEW $7E4FBE             ; word: slot returned by spcLoadEffect
                                         ;   (kept clear of ROW's high byte)
-; Pause menu (SELECT during a fight): lives in the free tail of the
+; Pause menu (START during a fight): lives in the free tail of the
 ; PRACTICE command-list block ($4FB0 in the hybrid build, $0870 standalone).
 .DEFINE PZ_ON      CL_VARS+$70         ; 1 while the fight is paused
 .DEFINE PZ_SEL     CL_VARS+$71         ; 0 = CONTINUE, 1 = EXIT
@@ -6213,8 +6213,7 @@ PushHist:                               ; X=fofs, acc mode free
     lsr a
     tsb ct_tmp
     pla
-    and #$10                            ; ST -> s token (64)
-    asl a
+    and #$20                            ; SELECT -> s token (64)
     asl a
     tsb ct_tmp
     lda FP+F_JOYPR,x                    ; X=$40 A=$80 L=$20 R=$10
@@ -6945,21 +6944,21 @@ CT_next:
     jmp CT_rule
 
 ; ---------------------------------------------------------------------------
-; Pause menu: SELECT during a fight freezes the match and offers
+; Pause menu: START during a fight freezes the match and offers
 ; CONTINUE / EXIT.  EXIT returns to the title in the solo modes
 ; (SINGLE PLAY, TEAM PLAY, SURVIVOR, PRACTICE) and to character select in
 ; the versus modes (SINGLE VS, TEAM VS).
 PauseOpen:
     sep #$20
     .ACCU 8
-    lda FP+F_JOYPR+1                    ; SELECT is $2000: test the high
-    and #$20.b                          ;   byte so this stays 8-bit.
+    lda FP+F_JOYPR+1                    ; START is $1000: test the high
+    and #$10.b                          ;   byte so this stays 8-bit.
     beq PO_p2
     stz.w PZ_SIDE                       ; P1 opened: show P1's command list
     bra PO_open
 PO_p2:
     lda FP+F_JOYPR+FP2OFS+1
-    and #$20.b
+    and #$10.b
     beq PO_no
     lda #1
     sta.w PZ_SIDE                       ; P2 opened: show P2's command list

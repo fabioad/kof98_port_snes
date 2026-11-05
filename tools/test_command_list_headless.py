@@ -2,7 +2,7 @@
 """Exercise the PRACTICE command-list submenu through the real menu flow.
 
 Checks:
-  * SELECT -> pause -> COMMAND LIST opens the overlay; B/START returns to
+  * START -> pause -> COMMAND LIST opens the overlay; B/START returns to
     the pause menu;
   * the active character's list is rendered (name + command + category tag);
   * P1/P2 usage markers are tracked independently;
@@ -123,8 +123,8 @@ def start_practice(core, p2=1, cpu2=1):
 
 
 def open_command_list(core):
-    """SELECT -> pause -> DOWN to COMMAND LIST -> A."""
-    press(core, SELECT)
+    """START -> pause -> DOWN to COMMAND LIST -> A."""
+    press(core, START)
     core.step(4)
     press(core, DOWN)
     press(core, A)
@@ -284,7 +284,7 @@ def test_pause_either_pad_and_continue_clears_vram():
     try:
         start_practice(core)
         for port, side in ((0, 0), (1, 1)):
-            press(core, SELECT, port=port)
+            press(core, START, port=port)
             core.step(4)
             assert core.ram[PZ_ON] == 1, port
             assert core.ram[PZ_SIDE] == side, port
@@ -337,7 +337,7 @@ def test_system_moves_show_shoulder_buttons():
             return next(cmd for name, cmd in rows.items() if label in name)
 
         assert command_for("BLOWBACK") == "R", rows
-        assert command_for("TAUNT") == "L", rows
+        assert command_for("TAUNT") == "SELECT", rows
         assert command_for("DODGE") == "L + DIR", rows
         assert command_for("ROLL BACK") == "L + BACK", rows
         assert command_for("ROLL FWD") == "L + FWD", rows

@@ -307,6 +307,15 @@ PalFX/AfterImage (Categoria E).
   timers antes de `StartFight`, evitando o travamento após a escolha.
   Regressões: `test_menu_p2_start_headless.py`,
   `test_midfight_join_headless.py` e `test_team_vs_start_headless.py`.
+- **SELECT/START na luta (05/11)** — durante o combate, SELECT agora
+  executa o taunt e START abre a pausa, nos dois pads. O token `s` que o
+  matcher usa para o comando `start` passou a ser gerado por SELECT; a
+  pausa (`PauseOpen`) passou a testar START. Fora da luta (menus, select,
+  command list) os botões continuam como antes; o START também continua
+  confirmando a opção atual dentro da pausa. Para o Omega Rugal, os golpes
+  `striker` e `tamtam` usavam START e agora ficam em QCF/QCB+SELECT, sem
+  perder o acesso. O command list mostra `SELECT` na linha TAUNT.
+  Regressão: `tools/test_fight_select_start_swap_headless.py`.
 - **Cursor P1/P2 no select (05/11)** — quando o P2 iniciava Single Play
   ou Team Play, o select acendia os dois anéis (`cpu1=0` e `cpu2=0`).
   Agora o P2 iniciado mantém `cpu2=0` (humano) e coloca `cpu1=1` (CPU) +
@@ -439,9 +448,9 @@ segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$C8B9`**
+- checksum **`$BA77`**
 - layout MSU **`0x8E43`**
-- `.sfc` SHA-256 `1aebaf6b…eed6c6f6`
+- `.sfc` SHA-256 `6b8ac291…c3fa6a83`
 - `.msu` SHA-256 `6cc4291f…1ddb1444`
 - `.msu` 51.363.328 bytes
 
