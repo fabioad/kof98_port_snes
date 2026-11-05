@@ -5643,9 +5643,12 @@ ApplyTimeActions:
     .ACCU 16
     ldx fofs
     lda FP+F_STIME,x
-    beq ATA_done
-    cmp #$007F.w
-    bcs ATA_done
+    bne +
+    jmp ATA_done
++   cmp #$007F.w
+    bcc +
+    jmp ATA_done
++
     ldy #CH_ACTTAB.w
     ldx #boxp
     jsr CharPtr
@@ -5675,6 +5678,17 @@ ATA_row:
     cmp FP+F_STIME,x
     bne ATA_next
     phy
+    ; ActOp may call EnterState on the victim (op4 TargetState), which
+    ; rewrites sptr with the victim's animation table.  Without saving it,
+    ; the rest of this row scan reads garbage time/op bytes from that table;
+    ; in the SGS finisher (3306 -> 816) the garbage op chain recursed until
+    ; the fight froze.  Keep the ActTab cursor across every op.
+    lda sptr+2
+    pha
+    rep #$20
+    lda sptr
+    pha
+    sep #$20
     iny
     lda [sptr],y
     sta scr6
@@ -5698,6 +5712,12 @@ ATA_row:
 +   lda scr6
     jsr ActOp
 ATA_skip:
+    rep #$20
+    pla
+    sta sptr
+    sep #$20
+    pla
+    sta sptr+2
     ldx fofs
     ply
 ATA_next:
@@ -14145,23 +14165,6 @@ PTS_idx0:
     lda #5
     ldy scr3
     sta.w RT_PROJHITS,y
-    ; Sakura's Shinkuu Hadouken (3000/3010) is one large fireball in KOF98,
-    ; not the generic five-contact super sequence.  Keep the five contacts
-    ; for the MAX 3050 row and for every other super projectile.
-    rep #$20
-    .ACCU 16
-    ldy fofs
-    lda FP+F_CHAR,y
-    cmp #CharSakura
-    bne PTS_not_sakura
-    sep #$20
-    .ACCU 8
-    lda FP+F_STATE,y
-    cmp #85
-    beq PTS_one_hit
-    cmp #86
-    beq PTS_one_hit
-PTS_not_sakura:
     ; Geese's Raging Storm is a single-hit tall anti-air pillar in KOF98,
     ; not the generic five-contact super projectile.  SPK_GRD bit0 marks
     ; the tall hitbox (the guard bits themselves live in 4-7).
@@ -14189,11 +14192,6 @@ PTS_storm:
     lda.w SPARKS+SPK_GRD,x
     ora #$01.b
     sta.w SPARKS+SPK_GRD,x
-    bra PTS_notmulti
-PTS_one_hit:                         ; zero remaining contacts = ordinary
-    lda #0                           ;   one-hit shot: it flies its clip and
-    ldy scr3                         ;   is consumed on the first contact
-    sta.w RT_PROJHITS,y
 PTS_notmulti:
 +   rep #$20
     .ACCU 16
@@ -16771,12 +16769,27 @@ CmdTrack:
     sta.w CL_TMP
     lda.w G_MODE
     cmp.b #5
-    bne CT_out
+    beq CT_mode
+    jmp CT_out
+CT_mode:
     lda.w CL_TMP
     cmp #S_PUNCH.b
-    bcc CT_out
+    bcs CT_state
+    jmp CT_out
+CT_state:
     cmp.b #98
-    bcs CT_out
+    bcc CT_ready
+    jmp CT_out
+CT_ready:
+    ; A throw/hit victim is not a command.  Logging it ran CmdListPtr from
+    ; inside the SGS finisher (TargetState 816 -> sid 77) and hung the fight
+    ; in Practice, where the command-list tracker is active.
+    ldx fofs
+    lda FP+F_GRAB,x
+    and #$01.b
+    beq CT_go
+    jmp CT_out
+CT_go:
     ldx fofs
     jsr CmdListPtr
     ldy #0
@@ -16805,7 +16818,10 @@ CT_scan:
     inx
     bra CT_scan
 CT_found:
-    rep #$20
+    cpx #48.w                          ; CL_SEEN1/2 are 48-byte tables
+    bcc +
+    jmp CT_out
++   rep #$20
     .ACCU 16
     lda fofs
     bne CT_side2

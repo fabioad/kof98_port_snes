@@ -44,6 +44,11 @@ VHELD = 76
 THROW = 75
 SGS_FINISH = 113
 TAUNT = 47
+GS, FRAME = 0x1020, 0x1024
+M_ITEM, MSUOK = 0xF070, 0x107A
+SCUR1, LOCK1, LOCK2 = 0xF052, 0x108E, 0x108F
+CPU2 = 0x1091
+START = 3
 
 
 def press(core, buttons, ticks=3):
@@ -61,6 +66,82 @@ def motion(core, steps, button, keep_last=False):
     core.buttons[0] = (last if keep_last else set()) | set(button)
     core.step(3)
     core.buttons[0] = set()
+
+
+def practice_sgs(core):
+    """Start PRACTICE from a cold boot, pick Sakura x Billy and run the SGS.
+
+    The practice command-list tracker (CmdTrack) runs on every EnterState.
+    Logging the throw victim's release state used to hang the fight after
+    the SGS black screen; this path is Practice-only, so the VS scenarios
+    above cannot catch it.
+    """
+    for _ in range(220):
+        if core.ram[GS] == 6:
+            break
+        core.buttons[0] = {START}
+        core.step(4)
+        core.buttons[0] = set()
+        core.step(8)
+    assert core.ram[GS] == 6, f"mode menu not reached: gs={core.ram[GS]}"
+    core.ram[MSUOK] = 1                 # Sakura is a streamed character
+    core.ram[M_ITEM] = 5                # PRACTICE
+    for _ in range(30):
+        core.buttons[0] = {START}
+        core.step(4)
+        core.buttons[0] = set()
+        core.step(8)
+        for _ in range(20):
+            if core.ram[GS] == 5:
+                break
+            core.step()
+        if core.ram[GS] == 5:
+            break
+    assert core.ram[GS] == 5, f"practice select not reached: gs={core.ram[GS]}"
+    for side, cell, lock in ((0, 46, LOCK1), (1, 32, LOCK2)):
+        core.ram[SCUR1 + side] = cell
+        for _ in range(10):
+            core.step(4)
+            core.buttons[side] = {A_BTN}
+            core.step(4)
+            core.buttons[side] = set()
+            core.step(8)
+            if core.ram[lock] == 1:
+                break
+    core.ram[CPU2] = 1
+    core.step(4)
+    core.buttons[0] = {START}
+    core.step(4)
+    core.buttons[0] = set()
+    for _ in range(6000):
+        if core.ram[GS] == 1:
+            break
+        core.step()
+    assert core.ram[GS] == 1, f"practice fight not reached: gs={core.ram[GS]}"
+    core.step(40)
+    core.put(FP1, 82 << 8)
+    core.put(FP2, 100 << 8)
+    core.put(F_POWER, 3000)
+    core.step(10)
+    for direction in QCF:
+        core.buttons[0] = set(direction)
+        core.step(3)
+    core.buttons[0] = {A_BTN}
+    core.step(4)
+    core.buttons[0] = set()
+    seen = []
+    frame0 = core.word(FRAME)
+    for _ in range(420):
+        core.step()
+        key = (core.ram[F_STATE1], core.ram[F_STATE2])
+        if not seen or seen[-1] != key:
+            seen.append(key)
+    frame1 = core.word(FRAME)
+    assert any(p1 == SGS_FINISH for p1, _ in seen), (
+        f"practice SGS never reached the finisher: {seen}")
+    assert core.ram[F_STATE1] == 0 and core.ram[F_STATE2] == 0, (
+        f"practice SGS did not recover: {seen}")
+    assert frame1 != frame0, "fight clock froze during the practice SGS"
 
 
 def brightness(core, box=(32, 32, 224, 190)):
@@ -188,8 +269,9 @@ def main():
         assert 85 in states or 86 in states, (
             f"Shinkuu Hadouken state never played: {states}")
         assert shot, f"Shinkuu Hadouken launched no projectile: {states}"
-        assert hp0 - hp_min == 34, (
-            f"Shinkuu Hadouken should be one 34 HP contact, "
+        # The super shot uses the generic five-contact sequence: 5 x 14 HP.
+        assert hp0 - hp_min == 70, (
+            f"Shinkuu Hadouken should land five 14 HP contacts (70), "
             f"got {hp0 - hp_min}")
         print(f"PASS Sakura Shinkuu Hadouken: states={states[:6]}, "
               f"damage={hp0 - hp_min}")
@@ -254,6 +336,14 @@ def main():
               f"brightness={before:.0f}/{during:.0f}/{after:.0f}")
     finally:
         core.close()
+
+    core2 = Core(CORE, ROOT / "kof98-snes.sfc")
+    try:
+        practice_sgs(core2)
+    finally:
+        core2.close()
+    print("PASS Sakura SGS in Practice does not freeze the command tracker")
+
     print("PASS Sakura: throw, Otoshi complement and Shun Goku Satsu")
 
 

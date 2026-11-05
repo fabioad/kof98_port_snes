@@ -470,16 +470,18 @@ segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
 - **Shinkuu Hadouken (QCFx2 + soco):** os estados 3000/3010 (sids 85/86)
   não tinham projétil: o tiro real morava nos helpers 3005/3055, que não
   são estados de runtime no port.
-  - `ProjTab[85] = (12 px/tick, 26 HP, guarda M)` e
-    `ProjTab[86] = (14 px/tick, 34 HP, guarda M)`. A arte é o clipe 1020
-    (a mesma bola do Hadouken normal). O disparo usa o 3º frame da
-    animação, o mesmo ponto do Hadouken normal.
-  - **Correção do pino:** qualquer projétil de super era "pinado" na
-    vítima por `ProjPinIfMulti` e acertava no frame do spawn, em qualquer
-    distância. O pino agora só vale para o sequencial de vários contatos;
-    um tiro de um contato (Sakura 85/86, Raging Storm do Geese) voa o
-    clipe inteiro e é consumido no primeiro acerto. O teste confere
-    dano 26/34 e um único contato.
+  - `ProjTab[85/86/87] = 14 HP por contato`, com a velocidade 12/14 px/tick
+    (sids 85/86; o 87 já vinha do source). O tiro entra no sequencial de
+    **5 contatos** do motor (5 x 14 = 70 HP), o mesmo comportamento do
+    MAX 3050 e o que o jogador via antes.
+  - **Projétil maior:** o clipe primário 1020 guarda a bolinha de saída e
+    o último cel fino; o atlas alternativo (`PROJECTILE_ALT_EFFECTS`) usa
+    o cel de 64x54 (frame 2), então o super aparece como uma bola grande
+    no adversário. O `ProjTab` marca o bit do clipe alternativo para
+    85/86/87.
+  - O sequencial é "pinado" na vítima por `ProjPinIfMulti` (um contato a
+    cada 4 ticks), como os demais supers multi-hit. O Raging Storm do
+    Geese continua com um contato único e o hitbox alto.
 - **Shun Goku Satsu (QCF + chute forte):** 3300 -> 3305 -> 3306 -> fim.
   O golpe estava no sid 111 (StAirSpec, aplicava gravidade) e o comando
   não existia para o chute forte; foi para o sid 114 (StSpecial) e ganhou
@@ -497,35 +499,38 @@ segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
     por 40 ticks. É a pose da Sakura de costas para a câmera, com o
     adversário caindo ao fundo. O teste exige estado 113, ausência do 47
     e `F_NFR = 1` (clip de um único cel).
-- **Travamento após a tela preta (MSU):** o staging de CHR guardava o seek
-  de um lado e o vblank podia consumi-lo com o DMA do outro. O SD2SNES
-  lê a posição errada (tiles trocados) e, se o chunk cruzar a página de
-  8 KiB, segura o barramento com a CPU parada — o sintoma de "luta
-  travada, áudio continua". Correções:
-  1. `SP_MSUOWN` registra qual lado posicionou o seek; o `SprDmaFar` só
-     inicia o DMA desse lado e descarta o chunk perdido.
-  2. `SprPrepBoth` limpa os chunks não consumidos e alterna a ordem dos
-     lados (`framecnt & 1`), para um sprite grande de P1 não sequestrar
-     o stream todas as frames.
-  3. O vblank prefere o dono do seek em vez de alternar às cegas.
-  - O emulador não reproduz o stall do SD2SNES; a validação é o teste de
-    visibilidade de 960 páginas de CHR + as invariantes em
-    `tools/tests/test_sprite_upload_staging.py`.
-  - Para caber o código, `VrDma`, `PushOamShadow` e `ShakeScroll` saíram
-    do banco Fight para a seção `SakuraCinema` (chamadas `jsl`).
+- **Travamento do SGS após a tela preta (Practice):** reproduzido no
+  emulador com Sakura x Billy no Practice (estado 113 da Sakura, vítima
+  em 77). A causa é o **`CmdTrack`** — o log de comandos do Practice —
+  sendo chamado no `EnterState` da **vítima** (TargetState 816 -> 77)
+  dentro do finisher. Ele consulta a lista de comandos e trava o
+  `EnterState` da vítima, congelando `framecnt`/a luta. O ROM anterior
+  também travava; não era o staging MSU.
+  - Correção: `CmdTrack` não registra vítimas de arremesso
+    (`F_GRAB` bit0) e o índice de `CL_SEEN1/2` é limitado a 48 (as
+    tabelas têm 48 bytes).
+  - Aproveitei para corrigir um bug latente no `ApplyTimeActions`: o
+    cursor `sptr` era perdido quando o op4 chamava `EnterState` na
+    vítima; agora é salvo/restaurado em volta de cada `ActOp`.
+  - O staging MSU ganhou uma correção separada (`SP_MSUOWN`): o vblank
+    só consome o seek do lado que o posicionou e os chunks não
+    consumidos são descartados. Isso evita CHR trocado/chunk cruzando a
+    página de 8 KiB no SD2SNES, mas não era a causa deste travamento.
+  - `VrDma`, `PushOamShadow` e `ShakeScroll` saíram do banco Fight para a
+    seção `SakuraCinema` (chamadas `jsl`) para abrir espaço.
 - Regressão: `tools/test_sakura_fixes_headless.py` (arremesso, choke,
-  Shinkuu 26/34 com projétil real, Otoshi, SGS 15 hits, tela preta
-  50/0/47 e final de costas). O `test_ai_headless` agora fixa `rng` e
-  `framecnt` depois do início da luta; a cobertura de anti-aéreo em queda
-  e combo dependia do fluxo de RNG, que mudava com um frame de boot.
+  Shinkuu 70 HP em 5 contatos, Otoshi, SGS 15 hits, tela preta 50/0/47,
+  final de costas e **SGS no Practice sem travamento**). O
+  `test_ai_headless` fixa `rng`/`framecnt` depois do início da luta para
+  a cobertura não depender do frame de boot.
 
 ## Build de referência
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$72B9`**
+- checksum **`$91D8`**
 - layout MSU **`0x514F`**
-- `.sfc` SHA-256 `7704b4b0…bd3588ba`
+- `.sfc` SHA-256 `d5172500…d5dde602`
 - `.msu` SHA-256 `3be2fcd0…c0f4e154`
 - `.msu` 51.396.096 bytes
 

@@ -4393,8 +4393,10 @@ if "sakura" in CHARS:
     # active sid's ProjTab row; use the compact 1020 fireball (the same art
     # as the normal Hadouken helper) and launch it from the thrust cel.
     _sak.setdefault("projs", {}).update({
-        85: (0x0C00, 26, 4),          # 3000: Shinkuu Hadouken (x)
-        86: (0x0E00, 34, 4),          # 3010: Shinkuu Hadouken (y)
+        85: (0x0C00, 14, 4),          # 3000: Shinkuu Hadouken (x)
+        86: (0x0E00, 14, 4),          # 3010: Shinkuu Hadouken (y)
+        # Same five-contact sequence as the MAX 3050 row (5 x 14 = 70 HP).
+        # The bigger alternate clip is compiled from action 1020 frame 2.
     })
     _sak.setdefault("slice_damage", {}).update({
         65: 6, 86: 26, 107: 20, 108: 35, 109: 30, 110: 40})

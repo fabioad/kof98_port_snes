@@ -125,6 +125,15 @@ PROJECTILE_ALT_EFFECTS = {
         "sids": (82,),
         "release": 3,
     },
+    # Sakura's Shinkuu Hadouken uses a large multi-hit fireball.  The
+    # primary 1020 clip keeps the small launch ball plus the thin tail cel;
+    # the alternate atlas uses the 64x54 cell (frame 2) so the super reads
+    # as a big shot.  It rides the five-contact super sequence.
+    "sakura": {
+        "action": 1020,
+        "frames": ((2, 8),),
+        "sids": (85, 86, 87),
+    },
 }
 
 # Characters that reuse another character's compiled projectile effect.  The
