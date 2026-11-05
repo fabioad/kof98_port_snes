@@ -524,13 +524,34 @@ segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
   `test_ai_headless` fixa `rng`/`framecnt` depois do início da luta para
   a cobertura não depender do frame de boot.
 
+## Juggle aéreo por projétil (05/11)
+
+- **Queda no ar:** um oponente em `S_DOWN` com altura (`F_Y > 0`) deixou de
+  ser pass-through para projéteis. O acerto entra em `S_HIT`, aplica o
+  dano/pushback e, quando o hitstun acaba no ar, `PickJumpState` escolhe
+  outra queda — ou seja, o tiro reinicia a queda e estende o combo.
+  `S_DOWN` no chão continua sendo pass-through.
+- **Limite por queda:** `F_AIRPROJ` (byte por lado, offset 181) marca que
+  aquela queda já consumiu um projétil de **um contato**. Um segundo tiro
+  de um contato atravessa sem dano. O flag zera quando o lutador toca o
+  chão (`F_Y == 0`, verificado no `TickFighter`) e no início do round.
+- **Exceção multi-hit:** no `ProjSpawn`, o sequencial de 5 contatos marca
+  `SPK_ATTR` bit0. O `ProjHit` isenta esses tiros do limite — inclusive no
+  último contato, quando `RT_PROJHITS` já está em 1. Assim o Shinkuu
+  (5 x 14 = 70), o Ko'ou Ken e os demais supers multi-hit continuam
+  acertando todos os contatos mesmo numa vítima no ar.
+- Regressão: `tools/test_air_juggle_headless.py` (1º tiro acerta, 2º
+  passa, super mantém 5 contatos, pousar libera o próximo tiro).
+- `FaceEachOther` saiu do banco Fight para `SakuraCinema` (chamada `jsl`)
+  para abrir espaço para a regra.
+
 ## Build de referência
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$91D8`**
+- checksum **`$6F1B`**
 - layout MSU **`0x514F`**
-- `.sfc` SHA-256 `d5172500…d5dde602`
+- `.sfc` SHA-256 `bb47a396…750156d6`
 - `.msu` SHA-256 `3be2fcd0…c0f4e154`
 - `.msu` 51.396.096 bytes
 

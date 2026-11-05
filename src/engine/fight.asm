@@ -267,6 +267,7 @@
 .DEFINE F_LASTSTATE 187                 ; CmdTry: state at that scan
 .DEFINE ct_cut      $53                 ; CmdTry: ring age cap (frames)
 .DEFINE F_PROJDONE  180                 ; spare tail byte; must not alias F_MAX
+.DEFINE F_AIRPROJ   181                 ; projectile already juggled this fall
 .DEFINE F_PATKBOX   182                 ; collision geometry queued with tiles
 .DEFINE F_PHURTBOX  184
                                         ; F_TFLAGS bit2 = afterimage trail on
@@ -4226,6 +4227,12 @@ SF_carry:
     lda #30.w                             ; fresh juggle budget per round
     sta FUS_JUGGLE
     sta FUS_JUGGLE+FP2OFS
+    sep #$20
+    .ACCU 8
+    stz FP+F_AIRPROJ                     ; no projectile juggle used yet
+    stz FP+F_AIRPROJ+FP2OFS
+    rep #$20
+    .ACCU 16
     stz FUS_CTR
     sep #$20
     .ACCU 8
@@ -7220,7 +7227,7 @@ FightTick:
                                         ; before AnimSetFrame advances the
                                         ; logical frame over the box
     jsr PracDrive
-    jsr FaceEachOther
+    jsl FaceEachOtherFar
     ldx #0
     stx fofs
     jsr TickFighter
@@ -7702,75 +7709,22 @@ DrawTimer:
     .ACCU 16
     rts
 
-FaceEachOther:
-    rep #$20
-    .ACCU 16
-    lda FP+F_X
-    cmp FP+F_X+FP2OFS
-    bcs FE_right
-    ; p1 left of p2: p1 faces right, p2 faces left (grounded fighters only;
-    ; MUGEN has noAutoTurn while airborne).  Only idle/movement states
-    ; (0-4) auto-turn: attacks, hits, guards and throws own their facing
-    ; (the throw bind would flip-flop facing every tick otherwise).
-    lda FP+F_GRAB
-    and #$00FF.w
-    bne +
-    lda FP+F_STATE
-    and #$00FF.w
-    cmp #5.w
-    bcs +
-    lda FP+F_Y
-    bne +
-    lda #1
-    sta FP+F_FACING
-+   lda FP+F_GRAB+FP2OFS
-    and #$00FF.w
-    bne FE_done
-    lda FP+F_STATE+FP2OFS
-    and #$00FF.w
-    cmp #5.w
-    bcs FE_done
-    lda FP+F_Y+FP2OFS
-    bne FE_done
-    lda #$FFFF.w
-    sta FP+F_FACING+FP2OFS
-    bra FE_done
-FE_right:
-    lda FP+F_GRAB
-    and #$00FF.w
-    bne +
-    lda FP+F_STATE
-    and #$00FF.w
-    cmp #5.w
-    bcs +
-    lda FP+F_Y
-    bne +
-    lda #$FFFF.w
-    sta FP+F_FACING
-+   lda FP+F_GRAB+FP2OFS
-    and #$00FF.w
-    bne FE_done
-    lda FP+F_STATE+FP2OFS
-    and #$00FF.w
-    cmp #5.w
-    bcs FE_done
-    lda FP+F_Y+FP2OFS
-    bne FE_done
-    lda #1
-    sta FP+F_FACING+FP2OFS
-FE_done:
-    jsl FaceCloseAttack
-    rep #$20
-    .ACCU 16
-    rts
-
 TickFighter:
     rep #$20
     .ACCU 16
     ldx fofs
     jsr PushHist
     ldx fofs
-    inc FP+F_STIME,x
+    ; A grounded fighter starts a new fall budget: the next airborne
+    ; sequence may consume one single-hit projectile juggle again.
+    lda FP+F_Y,x
+    bne +
+    sep #$20
+    .ACCU 8
+    stz FP+F_AIRPROJ,x
+    rep #$20
+    .ACCU 16
++   inc FP+F_STIME,x
     sep #$20
     .ACCU 8
     lda FP+F_INVUL,x                      ; NotHitBy countdown; $FF means
@@ -13524,12 +13478,32 @@ PH_proceed:
     rep #$20
     .ACCU 16
     ldy scr6
-    lda FP+F_STATE,y                  ; victim already down is a pass-through
-    and #$00FF.w                      ;   (no hitting a knocked-down foe), but
-    cmp #S_DOWN.w                     ;   a victim still in hitstun can be
-    bne +                             ;   juggled by a projectile: that is
-    jmp PH_miss                       ;   what lets cr.HP combo into a shot
-+
+    lda FP+F_STATE,y                  ; a grounded downed foe is a pass-through
+    and #$00FF.w
+    cmp #S_DOWN.w
+    bne PH_notdown
+    lda FP+F_Y,y                      ; still falling: allow the juggle
+    bne PH_notdown
+    jmp PH_miss                       ; flat on the floor: no hit
+PH_notdown:
+    ; Airborne victims can be juggled by a projectile, but only one
+    ; single-hit shot per fall (otherwise two shots could loop forever).
+    ; Multi-hit supers keep their own contact sequence.
+    lda FP+F_Y,y
+    beq PH_hitbox
+    lda FP+F_AIRPROJ,y
+    and #$00FF.w
+    beq PH_hitbox
+    sep #$20
+    .ACCU 8
+    lda.w SPARKS+SPK_ATTR,x           ; bit0 = shot was spawned multi-hit
+    and #$01.b
+    beq +
+    rep #$20
+    .ACCU 16
+    bra PH_hitbox                     ; exempt, even on its last contact
++   jmp PH_miss                       ; one-hit shot already used this fall
+PH_hitbox:
     lda FP+F_INVUL,y                  ; invulnerable: flies through
     and #$00FF.w
     beq +
@@ -13639,6 +13613,18 @@ PH_hit:
     jmp PH_guard
 +
     ; --- hit: dmg + normal hitstun on the victim ---
+    rep #$20
+    .ACCU 16
+    ldy scr6
+    lda FP+F_Y,y                      ; mark this fall as already juggled so
+    beq +                             ;   a second one-hit shot passes through
+    sep #$20
+    .ACCU 8
+    lda #1
+    sta FP+F_AIRPROJ,y
+    rep #$20
+    .ACCU 16
++
     sep #$20
     .ACCU 8
     lda scr6
@@ -14184,6 +14170,9 @@ PTS_idx0:
 PTS_notstorm:
     sep #$20
     .ACCU 8
+    lda.w SPARKS+SPK_ATTR,x
+    ora #$01.b                        ; multi-hit shot: exempt from the
+    sta.w SPARKS+SPK_ATTR,x           ;   one-proj-per-fall cap
     bra PTS_notmulti
 PTS_storm:
     lda #1
@@ -23091,6 +23080,70 @@ CounterClear:
 .BANK 126 SLOT 0
 .ORGA $E900
 .SECTION "SakuraCinema" FORCE
+; Facing auto-turn.  Moved out of the full Fight bank; the only caller
+; uses the long form.
+FaceEachOtherFar:
+    rep #$20
+    .ACCU 16
+    lda FP+F_X
+    cmp FP+F_X+FP2OFS
+    bcs FE_right
+    ; p1 left of p2: p1 faces right, p2 faces left (grounded fighters only;
+    ; MUGEN has noAutoTurn while airborne).  Only idle/movement states
+    ; (0-4) auto-turn: attacks, hits, guards and throws own their facing
+    ; (the throw bind would flip-flop facing every tick otherwise).
+    lda FP+F_GRAB
+    and #$00FF.w
+    bne +
+    lda FP+F_STATE
+    and #$00FF.w
+    cmp #5.w
+    bcs +
+    lda FP+F_Y
+    bne +
+    lda #1
+    sta FP+F_FACING
++   lda FP+F_GRAB+FP2OFS
+    and #$00FF.w
+    bne FE_done
+    lda FP+F_STATE+FP2OFS
+    and #$00FF.w
+    cmp #5.w
+    bcs FE_done
+    lda FP+F_Y+FP2OFS
+    bne FE_done
+    lda #$FFFF.w
+    sta FP+F_FACING+FP2OFS
+    bra FE_done
+FE_right:
+    lda FP+F_GRAB
+    and #$00FF.w
+    bne +
+    lda FP+F_STATE
+    and #$00FF.w
+    cmp #5.w
+    bcs +
+    lda FP+F_Y
+    bne +
+    lda #$FFFF.w
+    sta FP+F_FACING
++   lda FP+F_GRAB+FP2OFS
+    and #$00FF.w
+    bne FE_done
+    lda FP+F_STATE+FP2OFS
+    and #$00FF.w
+    cmp #5.w
+    bcs FE_done
+    lda FP+F_Y+FP2OFS
+    bne FE_done
+    lda #1
+    sta FP+F_FACING+FP2OFS
+FE_done:
+    jsl FaceCloseAttack
+    rep #$20
+    .ACCU 16
+    rtl
+
 ; Stage camera + shake scroll.  Moved out of the full Fight bank; all call
 ; sites use the long form.
 ShakeScrollFar:
