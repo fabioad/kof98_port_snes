@@ -46,6 +46,8 @@ CASES = (
     ("omegarugal", "2310 RE2", QCB, {X}, 109, 10),
     ("omegarugal", "1010 Dark dash", (F, D, DF), {A}, 110, 0),
     ("omegarugal", "1011 Dark dash B", (F, D, DF), {B_BTN}, 111, 0),
+    ("clark", "Frankensteiner", (F, D, DF), {A}, 56, 20),
+    ("sakura", "3010 Shou'ou Ken S", (D, DF, F, D, DF, F), {Y}, 86, 20),
 )
 
 

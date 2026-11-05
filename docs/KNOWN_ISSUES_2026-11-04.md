@@ -111,8 +111,8 @@ alguns funcionam, outros ficam incompletos):
   - **Running Three MAX** ganhou o input HCF×2+C para não colidir com o
     Ultra Argentine (HCB×2+X/Y).
   - 1205/1305 reutilizam a anim 1200 e 1420 reutiliza a 3011 (pose visual
-    reaproveitada). O Frankensteiner 1400/1410→1420 ainda faz só 1 de
-    dano (pendência separada).
+    reaproveitada). O Frankensteiner 1400/1410→1420 foi calibrado em
+    05/11: o agarrão agora faz 30 de dano (`slice_damage` 56/57).
 - **Ralf**
   - 520/550/570 estão ligados e dão dano/knockdown, mas de forma
     **aproximada**: faltam os victim states de queimadura (80010/80011/
@@ -168,14 +168,14 @@ continuações/fases do golpe pai.
 
 ## E. Efeitos (Explod/PalFX/AfterImage) ausentes ou aproximados
 
-- **Ralf** — 520/550/570 sem os explods/palFX e victim states de
-  queimadura.
-- **Chizuru** — efeitos de clone/PalFX/AfterImage dos supers
-  (2000/2100/2200); o DP já foi convertido para uma aproximação nativa.
-- **Chang** — a **bola de metal não aparece em cima** durante o golpe
-  (visual do projétil/Explod ausente). Reportado em 04/11.
-- **Mature** — variantes e efeitos de PalFX/Explod dos supers
-  3000/3500/3600.
+- **Ralf** — 520/550/570 ganharam um flash de impacto (PalFX) em 05/11;
+  os explods e os victim states de queimadura continuam aproximados.
+- **Chizuru** — os supers 2000/2100/2200 ganharam flash de impacto em
+  05/11; o sprite do clone e o AfterImage continuam ausentes.
+- **Chang** — flash de impacto adicionado em 05/11, mas a **bola de metal
+  ainda não aparece em cima** (precisa de um Explod dedicado).
+- **Mature** — os supers 3500/3600 ganharam flash de impacto em 05/11;
+  os Explods completos e as variantes 3000 ainda são aproximados.
 - **Athena/Kensou/Chin** — os efeitos de magia (orbes, MagicBurst,
   garrafa do Chin) já foram implementados em boa parte; o que resta são
   Explods/continuações específicas.
@@ -193,8 +193,10 @@ continuações/fases do golpe pai.
   `value = 3050 + var(...)` podem ter a variante MAX/SDM faltando mesmo
   com o comando base funcionando; a varredura de comando só pega o valor
   literal.
-- **Calibração de dano**: exemplos conhecidos são o Shou'ou Ken forte da
-  Sakura (30 vs 26) e ajustes pontuais de dano de alguns supers.
+- **Calibração de dano**: o corpo do Shou'ou Ken forte da Sakura foi
+  ajustado para 26 em 05/11 (o projétil ainda soma à parte); restam
+  ajustes pontuais de outros supers. O **MAX em slot especial sem
+  desconto** (Iori 103, Saisyu/Heidern/Clark 66) continua pendente.
 
 ## Prioridade recomendada
 
@@ -216,13 +218,14 @@ continuações/fases do golpe pai.
    Heavy D, Brian, Billy e Lucky (49 golpes). Fechamento em 05/11: Kyo
    Orochinagi 3010 (20 nas três variantes) e Omega Rugal no runtime
    (L+R na célula do Rugal; 7100/8000). A Categoria D está concluída.
-2. **Categoria E** — efeitos e victim states (Ralf, Mature, Chizuru,
-   bola de metal do Chang). Na Chizuru faltam os PalFX/AfterImage e o
-   clone visual dos supers.
-3. **Clark** — cadeias e Flashing Elbow concluídos em 04/11; resta o
-   Frankensteiner 1400/1410→1420 (1 de dano).
-4. **Chizuru** — DP e golpes de clone concluídos em 04/11 (10 comandos);
-   resta apenas o sprite do clone/efeitos.
+2. **Categoria E** — flashes de impacto adicionados em 05/11 (Ralf,
+   Mature, Chizuru, Chang e Clark); ainda faltam os Explods completos, os
+   victim states de queimadura do Ralf, a bola de metal do Chang e o
+   sprite/AfterImage do clone da Chizuru.
+3. **Clark** — cadeias, Flashing Elbow e Frankensteiner (30 de dano)
+   concluídos.
+4. **Chizuru** — DP e golpes de clone concluídos; resta o sprite do
+   clone/efeitos.
 5. **Categoria A** — concluída em 04/11 (ver tabela acima); manter a
    regressão dos comandos ao mexer no parser/matcher.
 
@@ -254,19 +257,19 @@ PalFX/AfterImage (Categoria E).
   victim state 8001 não veio no pacote.
 - **Categoria E** — efeitos/victim states: Ralf (queimadura), Mature
   (PalFX/Explod), Chizuru (clone/PalFX) e a bola de metal do Chang.
-- **Clark** — Frankensteiner 1400/1410→1420 ainda faz só 1 de dano.
+- **Clark** — Frankensteiner corrigido em 05/11 (30 de dano).
 - **Categoria F** — MAX em slot especial sem desconto (Iori 103,
-  Saisyu/Heidern/Clark 66) e a calibração de dano de alguns golpes
-  (ex.: Shou'ou Ken forte da Sakura, 30 vs 26).
+  Saisyu/Heidern/Clark 66) continua; a calibração do corpo do Shou'ou Ken
+  forte da Sakura foi feita (26), mas o projétil soma à parte.
 - **Categoria A** — concluída; manter a regressão de comandos.
 
 ## Build de referência
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$C15B`**
+- checksum **`$C1B1`**
 - layout MSU **`0x7E26`**
-- `.sfc` SHA-256 `d93fc703…454365`
+- `.sfc` SHA-256 `aa749ea4…d11cbc`
 - `.msu` SHA-256 `bc4a419e…56acaf`
 
 ## Referências

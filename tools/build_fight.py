@@ -4319,7 +4319,7 @@ if "sakura" in CHARS:
     ])
     _sak = POST_CAL_TWEAKS.setdefault("sakura", {})
     _sak.setdefault("slice_damage", {}).update({
-        107: 20, 108: 35, 109: 30, 110: 40, 111: 30})
+        86: 26, 107: 20, 108: 35, 109: 30, 110: 40, 111: 30})
     _sak.setdefault("hitdef_override", {}).update({
         107: {"active": 4, "damage": 20, "gdamage": 2, "fall": 1},
         111: {"active": 2, "damage": 30, "gdamage": 2, "p2state": 0xFF,
@@ -4468,6 +4468,23 @@ if "lucky" in CHARS:
          "state": 3400, "posture": 3, "time": 30,
          "elems": [(2, 0), (6, 0), (4, 0), (0, 12)]},
     ])
+
+# Categoria E: impact flashes for the effects that lived in helpers/Explods.
+for _c, _rows in {
+    "ralf": {520: [(6, 8, 6, 0)], 550: [(5, 8, 6, 0), (91, 8, 6, 0)],
+             570: [(44, 8, 6, 0)]},
+    "mature": {3500: [(6, 8, 6, 0), (15, 8, 6, 0), (24, 8, 6, 0)],
+               3600: [(6, 8, 6, 0), (15, 8, 6, 0), (24, 8, 6, 0)]},
+    "chizuru": {2000: [(20, 8, 6, 0)], 2100: [(10, 8, 6, 0)],
+                2200: [(10, 8, 6, 0)]},
+    "chang": {3200: [(0, 8, 6, 0)], 3300: [(6, 8, 6, 0)]},
+    "clark": {1400: [(4, 8, 4, 0)], 1410: [(4, 8, 4, 0)]},
+}.items():
+    if _c in CHARS:
+        _tw = POST_CAL_TWEAKS.setdefault(_c, {})
+        _ao = _tw.setdefault("act_override", {})
+        for _st, _rs in _rows.items():
+            _ao.setdefault(_st, []).extend(_rs)
 
 if "iori" in CHARS:
     # Ya Sakazuki: the source roots 3100/3110/3150 only play a short
@@ -4712,6 +4729,7 @@ if "clark" in CHARS:
     # MAX Ultra Argentine: reuse the already-ported 3010-3016 Ultra
     # Argentine chain instead of adding the eight-state 3060-3067 copy.
     _clark["hitdef_override"][87] = {"p1mugen": 3010}
+    _clark.setdefault("slice_damage", {}).update({56: 30, 57: 30})
     # MAX Running Three: 3155's grab redirects to the same 3110 throw used
     # by the weak/strong versions, avoiding the 3160-3163 duplicate chain.
     _clark["hitdef_override"][64] = {"p1mugen": 3110}
