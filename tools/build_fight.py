@@ -4209,7 +4209,7 @@ if "geese" in CHARS:
 if "krauser" in CHARS:
     POST_CAL_REACTIVATED.setdefault("krauser", []).extend([
         (107, 1600, 1600),     # Phoenix Throw
-        (108, 1700, 1700),     # Kaiser Claw
+        (108, 1700, 1300),     # Kaiser Claw (reuse the body clip)
         (109, 3100, 3100),     # Kaiser Inferno
         (110, 3150, 3150),     # MAX Kaiser Inferno
         (111, 3300, 3300),     # Unlimited Desire
@@ -4222,8 +4222,7 @@ if "krauser" in CHARS:
         111: 30, 112: 35, 113: 40})
     _kra.setdefault("hitdef_override", {}).update({
         107: {"active": 3, "damage": 25, "gdamage": 2, "fall": 1},
-        108: {"active": 6, "damage": 30, "gdamage": 2, "p2state": 0xFF,
-              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+        108: {"active": 5, "damage": 30, "gdamage": 2, "fall": 1},
     })
     _kra.setdefault("cmd_priority", []).extend(
         ["INFERNO_MAX", "INFERNO"])
@@ -4287,7 +4286,7 @@ if "chunli" in CHARS:
         (107, 1050, 1000),     # Kikouken novo (reuse the fireball)
         (108, 1250, 1250),     # Spinning Bird aereo
         (109, 3000, 3000),     # Kikou Shou
-        (110, 3100, 1250),     # Houyoku Sen
+        (110, 3100, 3200),     # Houyoku Sen (reuse Hazan Tenshou)
         (111, 3200, 3200),     # Hazan Tenshou
     ])
     PROJECTILE_RELEASE.setdefault("chunli", {}).update({107: 0, 109: 11})
@@ -4298,6 +4297,8 @@ if "chunli" in CHARS:
     _chun = POST_CAL_TWEAKS.setdefault("chunli", {})
     _chun.setdefault("slice_damage", {}).update({
         107: 0, 108: 25, 109: 0, 110: 30, 111: 35})
+    _chun.setdefault("hitdef_override", {})[110] = {
+        "active": 3, "damage": 30, "gdamage": 2, "fall": 1}
     _chun.setdefault("cmd_priority", []).append("HOUYOKU")
     _chun.setdefault("cmd_extra", []).extend([
         {"name": "KIKOUKEN_NEW", "label": "KIKOUKEN",
@@ -4319,7 +4320,7 @@ if "chunli" in CHARS:
 
 if "sakura" in CHARS:
     POST_CAL_REACTIVATED.setdefault("sakura", []).extend([
-        (107, 1400, 1400),     # Ouka Kyaku
+        (107, 1400, 3200),     # Ouka Kyaku (reuse Midare Zakura)
         (108, 3150, 3150),     # Haru Ichiban
         (109, 3200, 3200),     # Midare Zakura
         (110, 3250, 3250),     # MAX Midare Zakura
@@ -4328,6 +4329,12 @@ if "sakura" in CHARS:
     _sak = POST_CAL_TWEAKS.setdefault("sakura", {})
     _sak.setdefault("slice_damage", {}).update({
         86: 26, 107: 20, 108: 35, 109: 30, 110: 40, 111: 30})
+    _sak.setdefault("act_override", {})[1400] = [
+        (0, 5, 0, 0), (0, 15, 0, 0)]
+    # Ouka Kyaku is an air dive; pull the reused clip's box down so it
+    # meets a standing opponent.
+    _sak.setdefault("air_box_patch_frames", {})[3200] = {
+        3: [(0, -40, 60, 20)], 4: [(0, -40, 60, 20)]}
     _sak.setdefault("hitdef_override", {}).update({
         107: {"active": 4, "damage": 20, "gdamage": 2, "fall": 1},
         111: {"active": 2, "damage": 30, "gdamage": 2, "p2state": 0xFF,
@@ -4336,10 +4343,10 @@ if "sakura" in CHARS:
     _sak.setdefault("cmd_priority", []).append("HARU")
     _sak.setdefault("cmd_extra", []).extend([
         {"name": "OUKA", "label": "OUKA KYAKU",
-         "state": 1400, "posture": 3, "time": 22,
+         "state": 1200, "posture": 3, "time": 22,
          "elems": [(2, 0), (10, 0), (8, 0), (0, 1)]},
         {"name": "OUKA_S", "label": "OUKA KYAKU S",
-         "state": 1400, "posture": 3, "time": 22,
+         "state": 1200, "posture": 3, "time": 22,
          "elems": [(2, 0), (10, 0), (8, 0), (0, 2)]},
         {"name": "HARU", "label": "HARU ICHIBAN",
          "state": 3150, "posture": 3, "time": 30,
@@ -4428,12 +4435,12 @@ if "billy" in CHARS:
 
 if "lucky" in CHARS:
     POST_CAL_REACTIVATED.setdefault("lucky", []).extend([
-        (107, 2200, 2100),     # Shoot 2/3/4
-        (108, 2500, 2100),     # Finger Roll
-        (109, 2700, 2100),     # Slam
-        (110, 4700, 2100),     # Air Slam
-        (111, 3100, 2900),     # Finger Roll SDM (projectile)
-        (112, 3400, 2100),     # Shoot Out / Desperate
+        (107, 2200, 3203),     # Shoot 2/3/4
+        (108, 2500, 3203),     # Finger Roll
+        (109, 2700, 3203),     # Slam
+        (110, 4700, 3203),     # Air Slam
+        (111, 3100, 3203),     # Finger Roll SDM (projectile)
+        (112, 3400, 3203),     # Shoot Out / Desperate
     ])
     PROJECTILE_RELEASE.setdefault("lucky", {}).update({111: 4})
     POST_CAL_PROJS.setdefault("lucky", {}).update({
@@ -4441,7 +4448,11 @@ if "lucky" in CHARS:
     })
     _luc = POST_CAL_TWEAKS.setdefault("lucky", {})
     _luc.setdefault("slice_damage", {}).update({
-        107: 20, 108: 25, 109: 25, 110: 30, 111: 0, 112: 35})
+        107: 20, 108: 25, 109: 25, 110: 30, 111: 30, 112: 35})
+    for _sid, _dmg in ((107, 20), (108, 25), (109, 25), (110, 30),
+                       (111, 30), (112, 35)):
+        _luc.setdefault("hitdef_override", {})[_sid] = {
+            "active": 1, "damage": _dmg, "gdamage": 2, "fall": 1}
     _luc.setdefault("hitdef_override", {}).update({
         107: {"active": 1, "damage": 20, "gdamage": 2, "fall": 1},
         108: {"active": 1, "damage": 25, "gdamage": 2, "fall": 1},

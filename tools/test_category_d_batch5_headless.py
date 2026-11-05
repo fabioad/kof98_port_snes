@@ -66,7 +66,7 @@ CASES = (
     ("chunli", "3000 Kikou Shou", QCB2, {A}, {109}),
     ("chunli", "3100 Houyoku Sen", HCB, {A}, {110}),
     ("chunli", "3200 Hazan Tenshou", QCF2, {A}, {111}),
-    ("sakura", "1400 Ouka Kyaku", QCB, {X}, {107}),
+    ("sakura", "1400 Ouka Kyaku", QCB, {X}, {54}),
     ("sakura", "3150 Haru Ichiban", HCB, {A}, {108}),
     ("sakura", "3200 Midare Zakura", QCB2, {A}, {109}),
     ("sakura", "3250 MAX Midare Zakura", QCB2, {B_BTN}, {110}),

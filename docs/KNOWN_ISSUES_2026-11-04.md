@@ -201,8 +201,12 @@ continuações/fases do golpe pai.
   literal.
 - **Calibração de dano**: o corpo do Shou'ou Ken forte da Sakura foi
   ajustado para 26 em 05/11 (o projétil ainda soma à parte); restam
-  ajustes pontuais de outros supers. O **MAX em slot especial sem
-  desconto** (Iori 103, Saisyu/Heidern/Clark 66) continua pendente.
+  ajustes pontuais de outros supers.
+- **Adaptações de dano (05/11)**: Krauser 1700 Kaiser Claw (30),
+  Chun-Li 3100 Houyoku Sen (30), Sakura 1400 Ouka Kyaku (agora entra no
+  state 1200, 30) e os golpes do Lucky 2200/2300/2400/2500/2700/2800/
+  4700/3100/3400/3500 (20–35) foram religados reusando clipes
+  existentes, sem arte nova.
 
 ## Prioridade recomendada
 
@@ -285,10 +289,10 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$7A23`**
-- layout MSU **`0x7E26`**
-- `.sfc` SHA-256 `86eb319a…b01ebb`
-- `.msu` SHA-256 `bc4a419e…56acaf`
+- checksum **`$16DA`**
+- layout MSU **`0xDA0E`**
+- `.sfc` SHA-256 `c72ddf31…bec113`
+- `.msu` SHA-256 `e705d231…e0a6d9`
 
 ## Referências
 
