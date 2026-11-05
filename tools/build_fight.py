@@ -2700,7 +2700,8 @@ for _key, _ov in _KYO_VARIANTS.items():
     # Nests/Ash have their own AIR without the base package's synthetic
     # 3026 attack clip.  Clone the Oniyaki action into that slot so the
     # Orochinagi follow-up (state 3005) has a drawable, hittable timeline.
-    _cfg["air_synth"] = {3026: 1110}
+    _cfg["air_synth"] = {3026: 3051}
+    _cfg["tail_ticks"] = {3026: 80}
     CHARS[_key] = _cfg
     # The source command table is shared with base Kyo, so the Orochinagi
     # [State -1] rows point at 3000/3005 for all three variants.  Base Kyo
@@ -2728,12 +2729,24 @@ for _k in ("kyo", "kyonests", "kyoash"):
         # Koto Tsuki You (1400/1410 -> 1405) and the remaining supers.
         (99, 1410, 1400),      # Koto Tsuki You strong dash
         (101, 3050, 3050),     # MAX Orochinagi charge -> 3005
+        (104, 3010, 3051),     # Orochinagi strong (reuse the MAX flame)
         (113, 1400, 1400),     # Koto Tsuki You weak dash
         (114, 1405, 1405),     # Koto Tsuki You strike
     ])
     _ktw = POST_CAL_TWEAKS.setdefault(_k, {})
     _ktw.setdefault("slice_damage", {}).update(
-        {107: 19, 108: 8, 109: 19, 110: 11, 111: 12})
+        {104: 20, 107: 19, 108: 8, 109: 19, 110: 11, 111: 12})
+    _ktw.setdefault("hitdef_from_state", {})[60] = (
+        3020, {"active": 6, "damage": 12, "fall": 0, "gdamage": 2,
+               "gvx": 0, "gvy": 0})
+    _ktw.setdefault("act_override", {})[3005] = [
+        (0x80 | t, 18, 1, 0) for t in (25, 35, 45, 55)]
+    _ktw.setdefault("tail_ticks", {})[3026] = 80
+    _ktw["slice_no_fall"] = sorted(
+        set(_ktw.get("slice_no_fall", ())) | {60})
+    _ktw.setdefault("hitdef_from_state", {})[104] = (
+        3051, {"active": 1, "damage": 20, "fall": 1, "gdamage": 2,
+               "gvx": 0, "gvy": 0})
     _ktw["slice_no_fall"] = sorted(
         set(_ktw.get("slice_no_fall", ())) | {107, 108, 109, 110, 111})
     _ktw.setdefault("hit_soft_resets", {}).update({
@@ -2742,7 +2755,8 @@ for _k in ("kyo", "kyonests", "kyoash"):
         3250: [22, 28, 33, 36],
     })
     _ktw.setdefault("extra_trans", []).extend([
-        (107, 108, 0, 0), (109, 110, 0, 0), (111, 112, 0, 0)])
+        (98, 60, 0, 0), (107, 108, 0, 0), (109, 110, 0, 0),
+        (111, 112, 0, 0)])
     _ktw.setdefault("cmd_priority", []).extend([
         "MUSHIKI_96_MAX", "MUSHIKI_96", "MUSHIKI_GEN"])
     _ktw.setdefault("cmd_extra", []).extend([{
@@ -2765,7 +2779,7 @@ for _k in ("kyo", "kyonests", "kyoash"):
     _ktw.setdefault("extra_trans", []).extend([
         (101, 60, 0, 0)])
     _ktw.setdefault("cmd_priority", []).extend([
-        "SHIKI_99", "OROCHI_MAX"])
+        "SHIKI_99", "OROCHI_S", "OROCHI_MAX"])
     _ktw.setdefault("cmd_extra", []).extend([{
         "name": "KOTO_W", "label": "KOTO TSUKI YOU",
         "state": 1400, "posture": 3, "time": 26,
@@ -2776,6 +2790,10 @@ for _k in ("kyo", "kyonests", "kyoash"):
         "state": 1410, "posture": 3, "time": 26,
         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
                   (0, 3)],
+    }, {
+        "name": "OROCHI_S", "label": "OROCHINAGI S",
+        "state": 3010, "posture": 3, "time": 30,
+        "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 12)],
     }, {
         "name": "OROCHI_MAX", "label": "OROCHINAGI MAX",
         "state": 3050, "posture": 3, "time": 26,
@@ -3129,7 +3147,7 @@ if "rugal" in CHARS:
 if "omegarugal" in CHARS:
     POST_CAL_REACTIVATED.setdefault("omegarugal", []).extend([
         (82, 7100, 1358),      # Gravity shot
-        (83, 8000, 8000),      # RE rush
+        (83, 8000, 1074),      # RE rush (reuse a close punch clip)
     ])
     POST_CAL_PROJS.setdefault("omegarugal", {}).update({
         82: (0x0100, 14, 0x20),
@@ -3137,9 +3155,11 @@ if "omegarugal" in CHARS:
     _orug = POST_CAL_TWEAKS.setdefault("omegarugal", {})
     _orug.setdefault("slice_damage", {}).update({83: 40})
     _orug.setdefault("hitdef_override", {}).update({
-        83: {"damage": 40, "p2state": 0xFF, "gvx": 0, "gvy": 0,
-             "fall": 1},
+        83: {"active": 1, "damage": 40, "p2state": 0xFF, "gvx": 0,
+             "gvy": 0, "fall": 1},
     })
+    # The source rush crosses the whole screen before its frame-18 hitbox;
+    # the port reuses a close punch clip (AIB 1074) instead.
     _orug.setdefault("cmd_priority", []).extend(
         ["RE_RUSH", "GRAVITY_SHOT"])
     _orug.setdefault("cmd_extra", []).extend([{
@@ -8440,6 +8460,16 @@ def build_char(name, cfg, global_pal=None):
     for anum, src in (cfg.get("air_synth") or {}).items():
         if anum not in air and src in air:
             air[anum] = air[src]
+    # Re-apply tail holds for actions that only appeared in the late
+    # synthesis pass (the Nests/Ash synthetic 3026, for example).
+    for anum, ticks in (cfg.get("tail_ticks") or {}).items():
+        if anum not in air or not air[anum][0]:
+            continue
+        frames, loopstart = air[anum]
+        g, n, x, y, _t, flip, atk, hurt = frames[-1]
+        air[anum] = (frames[:-1] + [
+            (g, n, x, y, max(1, min(255, int(ticks))), flip, atk, hurt)],
+            loopstart)
 
     # Which super slots are MAX/SDM versions?  Stored in a descriptor byte
     # (CH_MAXMASK) so the matcher no longer guesses from the sid number.

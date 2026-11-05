@@ -38,6 +38,10 @@ CASES = {
                        (LEFT,)), False, False),
 }
 ACTOR = {False: (99, 100), True: (101, 102)}
+# Hidden roster forms: L+R on the Rugal cell selects Omega Rugal; L/R on
+# the Kyo cell selects Nests/Ash.  The select code reads held buttons, so
+# the A press must include the shoulder buttons on the same frame.
+HIDDEN = {"omegarugal": {10, 11}, "kyonests": {10}, "kyoash": {11}}
 
 
 def tap(core, button, port=0):
@@ -81,9 +85,13 @@ def enter_fight(core, select_state, p1, p2):
     core.step(4)
     for side, char, lock in ((0, p1, 0x108E), (1, p2, 0x108F)):
         core.ram[0xF052 + side] = roster[char]["cell"]
+        hold = HIDDEN.get(char, set())
         for _ in range(10):
             core.step(4)
-            tap(core, A, side)
+            core.buttons[side] = hold | {A}
+            core.step(4)
+            core.buttons[side] = set()
+            core.step(8)
             if core.ram[lock] == 1:
                 break
         else:

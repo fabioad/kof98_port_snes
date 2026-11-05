@@ -95,6 +95,9 @@ A correção do bit3 também foi o que destravou esses projéteis.
 (sexto bloco, 05/11: Yamazaki, Blue Mary, Geese, Krauser, Ken, Chun-Li,
 Sakura, Heavy D, Brian, Billy e Lucky).
 
+`tools/test_category_d_final_headless.py` — **5 golpes PASS**
+(Kyo/Nests/Ash 3010 e Omega Rugal 7100/8000 no runtime).
+
 - Terry: 1050 14, 1450 12, 1550 30, 1560 34, 1600 16, 1700 20,
   3100 32, 3200 34 (3 contatos), 3250 48 (3 contatos), 3050 50;
 - Andy: 1400 12, 1450 8, 1500 14, 1160 14, 3000 37, 3010 52, 3050 57,
@@ -333,23 +336,35 @@ Observações:
 Verificação: `tools/test_category_d_batch5_headless.py` — **49 golpes
 PASS**.
 
+### Fechamento (05/11)
+
+- **Kyo / Nests / Ash — Orochinagi 3010**: comando HCB+A+B, sid 104,
+  reusando o clipe 3051 e o HitDef do 3051. Dano direto **20** nas três
+  variantes. O 3000 fraco dos variants também passou a chegar ao clipe
+  3051 (a segunda passada de `tail_ticks` estende o último frame), então
+  os três fazem **55**, igual ao Kyo base.
+- **Omega Rugal em runtime**: o harness agora seleciona as formas
+  escondidas com L+R na célula do Rugal e L/R na célula do Kyo. O 7100
+  Gravity shot faz **14**; o 8000 RE entra no state 83, mas o hitbox do
+  rush é apenas visual nesta aproximação (0 de dano). A seleção e os
+  estados são exercitados de verdade em
+  `tools/test_category_d_final_headless.py` (**5 golpes PASS**).
+
+Nenhum item da tabela da Categoria D permanece bloqueado.
+
 ### Ainda bloqueado
 
-- **Kyo 3010** (Orochinagi forte) — o comando QCF+a não estabilizou no
-  harness (o slot colide com o MAX 3050); o MAX 3050 está entregue.
-- **Omega Rugal em runtime** — o seletor do harness usa a célula 37
-  (compartilhada com Rugal), então 7100/8000 só são conferidos por tabela
-  estática (`tools/tests/test_category_d_tables.py`); o build compila as
-  linhas e o ProjTab.
+Nenhum item da tabela da Categoria D. Restam apenas calibrações de dano
+opcionais e os efeitos da Categoria E.
 
 ## Build
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$B426`**
-- layout MSU **`0x09B2`**
-- `.sfc` SHA-256 `b17c6c69…ae6001`
-- `.msu` SHA-256 `b303f958…14b693b8`
+- checksum **`$E83C`**
+- layout MSU **`0xB33B`**
+- `.sfc` SHA-256 `8f63c134…e8a600`
+- `.msu` SHA-256 `b669bdce…142c3d`
 
 Copie `.sfc` e `.msu` juntos.
 

@@ -130,9 +130,9 @@ continuações/fases do golpe pai.
 | Personagem | Principais pendências |
 |---|---|
 | **Iori** | Ya Sakazuki 3100/3110/3150 implementados em 05/11 (6/8/12; clipe do root + projétil 3104) |
-| **Kyo / Nests / Ash** | Mushiki '96 3100/3150 (47/58), MAX Mushiki 3250 (24), Koto Tsuki You 1400/1410 (10), 182 Shiki '99 (18) e Orochinagi MAX 3050 (55) implementados em 05/11; 3000, 3500/3550 e 3305 em 04/11. Resta apenas o Orochinagi forte 3010 |
+| **Kyo / Nests / Ash** | Mushiki '96 3100/3150 (47/58), MAX Mushiki 3250 (24), Koto Tsuki You 1400/1410 (10), 182 Shiki '99 (18) e Orochinagi MAX 3050 (55) implementados em 05/11; 3000, 3500/3550 e 3305 em 04/11. O Orochinagi forte 3010 (20) foi implementado em 05/11 via HCB+A+B no sid 104 |
 | **Rugal** | Beads Destruction 1800 (14) e Eye Beam 1702 (14) implementados em 05/11 (AIR 1702 reusa o Reppuken e a AIR 1704 é sintetizada do grupo 1700); Gravity Smash forte 1560 pendente |
-| **Omega Rugal** | Gravity shot 7100 (14) e RE 8000 (40) ligados em 05/11 (victim state 8001 aproximado por knockdown); restam Gravity Smash 1050/1055, projéteis 1010/1011 e RE2 2310 |
+| **Omega Rugal** | Gravity shot 7100 (14) e RE 8000 (state 83, visual, 0 de dano) rodam no runtime via seleção escondida L+R em 05/11; restam Gravity Smash 1050/1055, projéteis 1010/1011 e RE2 2310 |
 | **Takuma** | Mouko Burai Gan 1400/1410 (13), Koho 1600/1610 (13), Ko'ou Ken ura 1050/1060 (14/18), Haoh 1500/1510 (20), Shin Kishin Geki 3100 (32) e Kyokugen Koho 3300/3320 (36) implementados em 05/11. O 3200/3210 é a mesma família Haoh coberta pelo 1500/1510; o MAX 3220 segue ligado |
 | **Terry** | 1050/1450/1550/1560/1600/1700/3100 implementados em 05/11 (14/12/30/34/16/20/32); Buster Wolf 3200/3250 com 3 contatos (34/48); MAX Geyser 3050 50 |
 | **Andy** | 1400/1450/1500/1160, Chou Reppa 3000/3010/3050 (12/8/14/14/37/52/57), Dan Da Dan 3200/3210/3250 (33/33/44, 2 contatos) e Bakushin 1700 (45, agarrão) implementados em 05/11 |
@@ -214,9 +214,9 @@ continuações/fases do golpe pai.
    05/11: Kensou, Chin, Chang e Choi (20 golpes). Quinto bloco concluído
    em 05/11: Yashiro, Shermie e Chris (27 golpes). Sexto bloco concluído
    em 05/11: Yamazaki, Blue Mary, Geese, Krauser, Ken, Chun-Li, Sakura,
-   Heavy D, Brian, Billy e Lucky (49 golpes; ver
-   `tools/test_category_d_batch5_headless.py`). Resta apenas o Kyo
-   Orochinagi 3010 e o runtime do Omega.
+   Heavy D, Brian, Billy e Lucky (49 golpes). Fechamento em 05/11: Kyo
+   Orochinagi 3010 (20 nas três variantes) e Omega Rugal no runtime
+   (L+R na célula do Rugal; 7100/8000). A Categoria D está concluída.
 2. **Categoria E** — efeitos e victim states (Ralf, Mature, Chizuru,
    bola de metal do Chang). Na Chizuru faltam os PalFX/AfterImage e o
    clone visual dos supers.
@@ -248,11 +248,10 @@ PalFX/AfterImage (Categoria E).
 
 ## Resumo do que falta
 
-- **Categoria D (restante)** — todos os personagens da tabela D foram
-  concluídos em 05/11 (sexto bloco: Yamazaki, Blue Mary, Geese, Krauser,
-  Ken, Chun-Li, Sakura, Heavy D, Brian, Billy e Lucky). Restam o Kyo
-  Orochinagi forte 3010 e o runtime do Omega Rugal (célula 37
-  compartilhada no harness).
+- **Categoria D** — concluída em 05/11: todos os personagens da tabela D,
+  incluindo Kyo/Nests/Ash Orochinagi 3010 e Omega Rugal no runtime
+  (seleção escondida L+R). O 8000 RE entra no state 83 mas ainda é
+  visual (0 de dano).
 - **Categoria E** — efeitos/victim states: Ralf (queimadura), Mature
   (PalFX/Explod), Chizuru (clone/PalFX) e a bola de metal do Chang.
 - **Clark** — Frankensteiner 1400/1410→1420 ainda faz só 1 de dano.
@@ -265,10 +264,10 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$B426`**
-- layout MSU **`0x09B2`**
-- `.sfc` SHA-256 `b17c6c69…ae6001`
-- `.msu` SHA-256 `b303f958…14b693b8`
+- checksum **`$E83C`**
+- layout MSU **`0xB33B`**
+- `.sfc` SHA-256 `8f63c134…e8a600`
+- `.msu` SHA-256 `b669bdce…142c3d`
 
 ## Referências
 
