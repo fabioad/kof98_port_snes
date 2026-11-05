@@ -552,6 +552,7 @@
 .DEFINE CINE_TIMER  $7E51F2             ; cinematic black-screen ticks
 .DEFINE CINE_ACTIVE $7E51F3             ; 1 while the saved backdrop is black
 .DEFINE CINE_BGCOL  $7E51F4             ; saved CGRAM colour 0 (word)
+.DEFINE SELPZ_OAM   CL_VARS+$7E        ; oamtop saved when the select pauses
 .DEFINE SUPERFX_TICKS 32                ; 4 flash + 28 dim (Kyo helper 7000)
 .DEFINE SUPERFX_FLASH 4
 .DEFINE shaketmr    $74                 ; EnvShake ticks remaining
@@ -839,7 +840,7 @@ FightMain:
     stz.b kotimer
     stz.b oamtop
     stz.b vbusy
-    jsr TelReset
+    jsl TelReset
     stz.b sfxseq
     stz.b sfxlast
     stz.b audiordy
@@ -3239,6 +3240,15 @@ SelP2JoinCheck:    clc
 SelTick:
     sep #$20
     .ACCU 8
+    lda.w PZ_ON
+    beq ST_notpaused
+    jsl SelPauseTick
+    rts
+ST_notpaused:
+    jsl SelPauseOpenCheck
+    bcc ST_nopauseopen
+    rts
+ST_nopauseopen:
     jsr SelLevelTick
     lda.w G_MODE
     cmp #2
@@ -15441,23 +15451,6 @@ DF_done:
     rts
 
 ; ---------------------------------------------------------------------------
-; Presentation telemetry ($51B0..$51DF).  The headless probe reads these
-; counters straight from WRAM; writing 1 to TEL_CTRL resets the block.
-; ---------------------------------------------------------------------------
-TelReset:
-    rep #$30
-    .ACCU 16
-    .INDEX 16
-    ldx #0
-    lda #0
--   sta.w TEL_FRAMES,x
-    inx
-    inx
-    cpx #(TEL_MAX2+1-TEL_FRAMES)
-    bne -
-    rts
-
-; ---------------------------------------------------------------------------
 ; PVSnesLib owns the NMI.  Immediately after WaitForVBlank returns, present
 ; the engine's shadow buffers while forced blank is active.
 ; ---------------------------------------------------------------------------
@@ -23152,6 +23145,21 @@ CounterClear:
 .BANK 126 SLOT 0
 .ORGA $E900
 .SECTION "SakuraCinema" FORCE
+; Far entry: the fight init calls this once.  The per-present TelPresent
+; below inlines the same clear loop, so this copy is only used by the
+; far call from the Fight bank.
+TelReset:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    ldx #0
+    lda #0
+-   sta.w TEL_FRAMES,x
+    inx
+    inx
+    cpx #(TEL_MAX2+1-TEL_FRAMES)
+    bne -
+    rtl
 TelPresent:
     rep #$20
     .ACCU 16
@@ -23269,5 +23277,286 @@ CA_black:
     sta.l CGDATA
     plp
     rtl
+
+; ---------------------------------------------------------------------------
+; Character-select pause menu.  START on a human pad opens a two-item
+; CONTINUE / EXIT overlay.  The select OAM is left in place and the pause
+; text is appended after its saved oamtop, so a single redraw restores it.
+; ---------------------------------------------------------------------------
+SelPauseOpenCheck:
+    rep #$20
+    .ACCU 16
+    lda FP+F_JOYPR
+    and #JOY_ST.w
+    beq +
+    sep #$20
+    .ACCU 8
+    lda.b cpu1
+    bne +
+    bra SelPauseOpen
++   rep #$20
+    .ACCU 16
+    lda FP+F_JOYPR+FP2OFS
+    and #JOY_ST.w
+    beq +
+    sep #$20
+    .ACCU 8
+    lda.b cpu2
+    bne +
+    bra SelPauseOpen
++   clc
+    rtl
+
+SelPauseOpen:
+    sep #$20
+    .ACCU 8
+    lda #1
+    sta.w PZ_ON
+    stz.w PZ_SEL
+    lda.b oamtop
+    sta.w SELPZ_OAM
+    lda #SFX_SELECT.b
+    jsl SfxPlayFar
+    jsr SelPauseDraw
+    sec
+    rtl
+
+SelPauseTick:
+    jsr SelPauseDraw
+    rep #$20
+    .ACCU 16
+    lda FP+F_JOYPR
+    ora FP+F_JOYPR+FP2OFS
+    sta scr0
+    and #JOY_UP.w
+    beq SP_down
+    sep #$20
+    .ACCU 8
+    lda.w PZ_SEL
+    beq SP_up_done
+    dec a
+    sta.w PZ_SEL
+    lda #SFX_MOVE.b
+    jsl SfxPlayFar
+    jsr SelPauseDraw
+SP_up_done:
+    jmp SP_done
+SP_down:
+    rep #$20
+    .ACCU 16
+    lda scr0
+    and #JOY_DN.w
+    beq SP_confirm
+    sep #$20
+    .ACCU 8
+    lda.w PZ_SEL
+    cmp #1.b
+    bcs SP_dn_done
+    inc a
+    sta.w PZ_SEL
+    lda #SFX_MOVE.b
+    jsl SfxPlayFar
+    jsr SelPauseDraw
+SP_dn_done:
+    jmp SP_done
+SP_confirm:
+    rep #$20
+    .ACCU 16
+    lda scr0
+    and #(JOY_A|JOY_X|JOY_Y|JOY_ST).w
+    beq SP_cancel
+    sep #$20
+    .ACCU 8
+    lda.w PZ_SEL
+    bne SP_exit
+    jmp SelPauseClose
+SP_exit:
+    jmp SelPauseExit
+SP_cancel:
+    rep #$20
+    .ACCU 16
+    lda scr0
+    and #JOY_B.w
+    beq SP_done
+    jmp SelPauseClose
+SP_done:
+    sep #$20
+    .ACCU 8
+    rtl
+
+SelPauseClose:
+    sep #$20
+    .ACCU 8
+    lda #0
+    sta.w PZ_ON
+    sta.w PZ_SEL
+    jsr SelPauseClearOam
+    lda #SFX_SELECT.b
+    jsl SfxPlayFar
+    rtl
+
+SelPauseExit:
+    sep #$20
+    .ACCU 8
+    lda #0
+    sta.w PZ_ON
+    sta.w PZ_SEL
+    sta.w UI_SFXLOAD
+    jsr SelPauseClearOam
+    lda #SFX_BACK.b
+    jsl SfxPlayFar
+    jsl YLFar_TitleEnter
+    rtl
+
+SelPauseClearOam:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    lda #$F0F0.w
+    ldx #0
+-   sta.w OAMBUF,x
+    inx
+    inx
+    cpx #512.w
+    bne -
+    ldx #0
+    txa
+-   sta.w OAMHI,x
+    inx
+    inx
+    cpx #32.w
+    bne -
+    sep #$20
+    .ACCU 8
+    stz.b oamtop
+    rts
+
+SelPauseDraw:
+    sep #$20
+    .ACCU 8
+    lda.w SELPZ_OAM
+    sta.b oamtop
+    ; title
+    rep #$20
+    .ACCU 16
+    lda #StrSelPause.w
+    sta.b scr2
+    sep #$20
+    .ACCU 8
+    lda.b tblbank
+    sta.b scr2+2
+    lda #96.b
+    sta.b scr0
+    lda #64.b
+    sta.b scr1
+    lda #$30.b
+    sta.b scr4
+    jsr SelPauseText
+    ; CONTINUE
+    rep #$20
+    .ACCU 16
+    lda #StrSelContinue.w
+    sta.b scr2
+    sep #$20
+    .ACCU 8
+    lda.b tblbank
+    sta.b scr2+2
+    lda #64.b
+    sta.b scr0
+    lda #100.b
+    sta.b scr1
+    lda #$30.b
+    sta.b scr4
+    jsr SelPauseText
+    ; EXIT
+    rep #$20
+    .ACCU 16
+    lda #StrSelExit.w
+    sta.b scr2
+    sep #$20
+    .ACCU 8
+    lda.b tblbank
+    sta.b scr2+2
+    lda #80.b
+    sta.b scr0
+    lda #120.b
+    sta.b scr1
+    lda #$30.b
+    sta.b scr4
+    jsr SelPauseText
+    ; cursor
+    lda #48.b
+    sta.b scr0
+    lda.w PZ_SEL
+    beq +
+    lda #120.b
+    bra ++
++   lda #100.b
+++  sta.b scr1
+    lda #45.b                           ; CHARSET '>' tile
+    sta.b scr3
+    lda #$30.b
+    sta.b scr4
+    jsr SelPauseCell
+    rts
+
+SelPauseText:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    ldx.b oamtop
+    ldy #0
+    sep #$20
+    .ACCU 8
+    lda.b [scr2],y
+    sta.b scr5
+    iny
+-   lda.b scr0
+    sta.w OAMBUF,x
+    lda.b scr1
+    sta.w OAMBUF+1,x
+    lda.b [scr2],y
+    sta.w OAMBUF+2,x
+    lda.b scr4
+    sta.w OAMBUF+3,x
+    lda.b scr0
+    clc
+    adc #8.b
+    sta.b scr0
+    inx
+    inx
+    inx
+    inx
+    iny
+    dec.b scr5
+    bne -
+    rep #$20
+    .ACCU 16
+    stx.b oamtop
+    rts
+
+SelPauseCell:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    ldx.b oamtop
+    sep #$20
+    .ACCU 8
+    lda.b scr0
+    sta.w OAMBUF,x
+    lda.b scr1
+    sta.w OAMBUF+1,x
+    lda.b scr3
+    sta.w OAMBUF+2,x
+    lda.b scr4
+    sta.w OAMBUF+3,x
+    rep #$20
+    .ACCU 16
+    inx
+    inx
+    inx
+    inx
+    stx.b oamtop
+    rts
 
 .ENDS

@@ -316,6 +316,14 @@ PalFX/AfterImage (Categoria E).
   `striker` e `tamtam` usavam START e agora ficam em QCF/QCB+SELECT, sem
   perder o acesso. O command list mostra `SELECT` na linha TAUNT.
   Regressão: `tools/test_fight_select_start_swap_headless.py`.
+- **Pausa no select de personagens (05/11)** — START no pad de um lado
+  humano abre um overlay com **CONTINUE** e **EXIT**. UP/DOWN move o
+  cursor; START/A/X/Y confirma e B cancela. CONTINUE volta ao select;
+  EXIT vai para a tela título. Em pads CPU, START continua fazendo
+  join/reclaim daquele lado (preserva o fluxo de 2P e o mid-fight join).
+  O menu usa o font 8x8 do select via OAM, sem trocar a tela; ao fechar,
+  o OAM é limpo e o select redesenha. Regressão:
+  `tools/test_select_pause_headless.py`.
 - **Cursor P1/P2 no select (05/11)** — quando o P2 iniciava Single Play
   ou Team Play, o select acendia os dois anéis (`cpu1=0` e `cpu2=0`).
   Agora o P2 iniciado mantém `cpu2=0` (humano) e coloca `cpu1=1` (CPU) +
@@ -480,9 +488,9 @@ segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$3856`**
+- checksum **`$FF7F`**
 - layout MSU **`0x514F`**
-- `.sfc` SHA-256 `2420a29d…ebe4f795`
+- `.sfc` SHA-256 `e4d24bd8…1364ad82`
 - `.msu` SHA-256 `3be2fcd0…c0f4e154`
 - `.msu` 51.396.096 bytes
 

@@ -12552,6 +12552,10 @@ def build_hud():
         "StrBenimaru": "BENIMARU",
         "StrDaimon": "DAIMON",
         "StrORugal": "O.RUGAL",
+        # Select-screen pause uses the 8x8 menu font, not the big HUD glyphs.
+        "StrSelPause": "PAUSE",
+        "StrSelContinue": "CONTINUE",
+        "StrSelExit": "EXIT",
     }
     for _k in NEW_CHARS:
         if _k in CHARS:
