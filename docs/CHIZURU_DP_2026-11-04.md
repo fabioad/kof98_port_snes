@@ -51,10 +51,10 @@ Sem mexer no mapeamento do comando (`moves[52] = 1200`, necessário para o
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$0CA0`**
-- layout MSU **`0x9EF1`**
-- `.sfc` SHA-256 `ef1612aa…3a89`
-- `.msu` SHA-256 `ae7d0481…5dd83`
+- checksum **`$DAE7`**
+- layout MSU **`0x3E20`**
+- `.sfc` SHA-256 `3bcd1a54…25ed0a`
+- `.msu` SHA-256 `285ef936…5b279d`
 
 > O clipe 13000 adicionou tiles ao blob CHR do Chizuru, então o **layout e
 > o `.msu` mudaram**. Copie `.sfc` e `.msu` deste build juntos.

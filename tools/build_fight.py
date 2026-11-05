@@ -3019,6 +3019,90 @@ if "rugal" in CHARS:
         "cmd_priority": ["BEADS_DESTRUCTION"],
     })
 
+# ---------------------------------------------------------------------------
+# Andy: Dan Da Dan (3200/3210/3250 -> rush 3201/3211/3251 -> finisher).
+# The source loops the rush state up to 4/10 times; the native engine has no
+# per-state loop, so the entrance, one rush contact and the finisher are
+# wired.  The result is a two-contact super approximation.
+# ---------------------------------------------------------------------------
+if "andy" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("andy", []).extend([
+        (107, 3200, 3200),     # Dan Da Dan weak entrance
+        (108, 3210, 3210),     # strong entrance
+        (109, 3250, 3250),     # MAX entrance
+        (110, 3201, 3201),     # weak rush
+        (111, 3211, 3201),     # strong rush
+        (112, 3251, 3201),     # MAX rush
+        (113, 3205, 3205),     # weak finisher
+        (114, 3215, 3215),     # strong finisher
+        (68, 3255, 3255),      # MAX finisher
+    ])
+    _atw = POST_CAL_TWEAKS.setdefault("andy", {})
+    _atw.setdefault("slice_damage", {}).update({
+        110: 13, 111: 13, 112: 18, 113: 20, 114: 20, 68: 26})
+    _atw["slice_no_fall"] = sorted(
+        set(_atw.get("slice_no_fall", ())) | {110, 111, 112})
+    _atw.setdefault("extra_trans", []).extend([
+        (107, 110, 0, 0), (108, 111, 0, 0), (109, 112, 0, 0),
+        (110, 113, 0, 0), (111, 114, 0, 0), (112, 68, 0, 0),
+    ])
+    _atw.setdefault("cmd_priority", []).extend([
+        "DAN_DA_DAN_MAX", "DAN_DA_DAN_S", "DAN_DA_DAN_W"])
+    _atw.setdefault("cmd_extra", []).extend([{
+            "name": "DAN_DA_DAN_W", "label": "DAN DA DAN",
+            "state": 3200, "posture": 3, "time": 30,
+            "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
+                      (0, 4)],
+        }, {
+            "name": "DAN_DA_DAN_S", "label": "DAN DA DAN S",
+            "state": 3210, "posture": 3, "time": 30,
+            "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
+                      (0, 8)],
+        }, {
+            "name": "DAN_DA_DAN_MAX", "label": "DAN DA DAN MAX",
+            "state": 3250, "posture": 3, "time": 30,
+            "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
+                      (0, 12)],
+        }])
+
+# ---------------------------------------------------------------------------
+# Ryo: Ko'ou Ken EX (1050), Kyokugenryuu Renbu Ken (1400) and the air
+# Ko'ou Ken (2000/2010).
+# ---------------------------------------------------------------------------
+if "ryo" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("ryo", []).extend([
+        (107, 1050, 1050),     # Ko'ou Ken EX (helper 1020 projectile)
+        (108, 1400, 1400),     # Renbu Ken (four grounded strikes)
+        (109, 2000, 2000),     # air Ko'ou Ken weak
+        (110, 2010, 2000),     # air Ko'ou Ken strong
+    ])
+    _rtw = POST_CAL_TWEAKS.setdefault("ryo", {})
+    _rtw.setdefault("slice_damage", {}).update({108: 4})
+    _rtw["slice_no_fall"] = sorted(
+        set(_rtw.get("slice_no_fall", ())) | {108})
+    # Re-arm the first HitDef on the later strike elements (the source
+    # uses four separate HitDef windows).
+    _rtw.setdefault("hit_soft_resets", {}).update({1400: [12, 18]})
+    _rtw.setdefault("cmd_priority", []).extend([
+        "RENBU_KEN", "AIR_KOUKEN_S", "AIR_KOUKEN_W", "KOUKEN_EX"])
+    _rtw.setdefault("cmd_extra", []).extend([{
+            "name": "KOUKEN_EX", "label": "KO'OU KEN EX",
+            "state": 1050, "posture": 3, "time": 22,
+            "elems": [(2, 0), (6, 0), (4, 0), (0, 3)],
+        }, {
+            "name": "RENBU_KEN", "label": "RENBU KEN",
+            "state": 1400, "posture": 3, "time": 22,
+            "elems": [(2, 0), (10, 0), (8, 0), (0, 1)],
+        }, {
+            "name": "AIR_KOUKEN_W", "label": "AIR KO'OU KEN",
+            "state": 2000, "posture": 4, "time": 22,
+            "elems": [(2, 0), (6, 0), (4, 0), (0, 1)],
+        }, {
+            "name": "AIR_KOUKEN_S", "label": "AIR KO'OU KEN S",
+            "state": 2010, "posture": 4, "time": 22,
+            "elems": [(2, 0), (6, 0), (4, 0), (0, 3)],
+        }])
+
 # Omega Rugal's Gravity shot (7100) and RE rush (8000) are intentionally
 # left out of this pass: the source AIR 8000 sprites and the 8001 victim
 # state are not ported, and the character shares Rugal's select cell in the

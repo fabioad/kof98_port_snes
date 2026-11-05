@@ -37,6 +37,7 @@ DB = frozenset({DOWN, LEFT})
 BACK = frozenset({LEFT})
 QCF = (D, DF, F)
 QCB = (D, DB, BACK)
+QCB2 = (D, DB, BACK, D, DB, BACK)
 DP = (F, D, DF)
 HCB = (F, DF, D, DB, BACK)
 QCF2 = (D, DF, F, D, DF, F)
@@ -57,12 +58,15 @@ CASES = (
     ("terry", "3050 MAX Power Geyser", (BACK, F), {X, Y}, {87}, 30, None),
     # Andy
     ("andy", "1400 Gekiheki Haisui", QCF, {X}, {60}, 8, None),
-    ("andy", "1450 Gekiheki Haisui Ura", QCF, {Z}, {61}, 5, None),
+    ("andy", "1450 Gekiheki Haisui Ura", QCF, {Z}, {61}, 3, None),
     ("andy", "1500 Genei Shiranui", DP, {X}, {62}, 8, None),
     ("andy", "1160 Hishou Ken EX", QCB, {Z}, {63}, 8, None),
     ("andy", "3000 Chou Reppa Dan", QCF2, {A}, {64}, 20, None),
     ("andy", "3010 Chou Reppa Dan S", QCF2, {B_BTN}, {65}, 25, None),
     ("andy", "3050 Chou Reppa Dan MAX", QCF2, {A, B_BTN}, {66}, 30, None),
+    ("andy", "3200 Dan Da Dan", QCB2, {A}, {107}, 25, None),
+    ("andy", "3210 Dan Da Dan S", QCB2, {B_BTN}, {108}, 25, None),
+    ("andy", "3250 Dan Da Dan MAX", QCB2, {A, B_BTN}, {109}, 35, None),
     # Ryo
     ("ryo", "1150 Koho EX", QCF, {Z}, {55}, 15, None),
     ("ryo", "1160 Koho EX S", QCB, {Z}, {56}, 20, None),
@@ -70,6 +74,10 @@ CASES = (
     ("ryo", "1260 Hien Shippuu 95 S", DP, {B_BTN}, {63}, 15, None),
     ("ryo", "2100 Ko'ou Geki", QCB, {X, Y}, {64}, 8, None),
     ("ryo", "3250 Tenchi Haoh MAX", QCF2, {A}, {103}, 20, None),
+    ("ryo", "1050 Ko'ou Ken EX", QCF, {X, Y}, {107}, 8, None),
+    ("ryo", "1400 Renbu Ken", QCB, {X}, {108}, 8, None),
+    ("ryo", "AIR 2000 Ko'ou Ken", QCF, {X}, {109}, 8, None),
+    ("ryo", "AIR 2010 Ko'ou Ken S", QCF, {X, Y}, {110}, 8, None),
     # Robert
     ("robert", "1050 Ryuugeki Ken EX", QCF, {Z}, {60}, 8, None),
     ("robert", "3200 Muei Shippuu", QCF2, {A}, {62}, 12, None),
@@ -114,6 +122,11 @@ def run_case(rom, case):
         core.put(F_POWER, 3000)
         core.step(30)
         hp0 = core.word(F_HP2)
+        if label.startswith("AIR "):
+            core.buttons[0] = {4}          # jump, then cancel into the air shot
+            core.step(6)
+            core.buttons[0] = set()
+            core.step(2)
         feed(core, steps, buttons, charge)
         seen = set()
         hpseq = [hp0]
