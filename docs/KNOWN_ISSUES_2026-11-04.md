@@ -119,8 +119,9 @@ alguns funcionam, outros ficam incompletos):
     80002/80018) e os explods/palFX originais.
 - **Iori** — 1310 (Koto Tsuki In forte) e a família Tsumagushi 1501/1511
   são adaptações, não os states originais.
-- **Takuma** — a tabela foi cortada para caber no banco 83; só quatro
-  comandos foram mantidos.
+- **Takuma** — o limite do banco 83 foi resolvido com a separação do
+  blob de metasprites (`SPLIT_OLD`); os especiais restantes estão
+  implementados e listados na seção D.
 
 ## D. Variantes MAX/SDM e especiais ainda não religados
 
@@ -148,8 +149,6 @@ continuações/fases do golpe pai.
 | **Kim** | Houou Kyaku 3000/3020 (15/25) e Houou Hiten 3200/3201/3210/3220/3221 (16/16/61) implementados em 05/11 |
 | **Chang** | Haki Kyaku 1400 (20) e Tekkyuu Dai Assatsu nível 2 3400 (80) implementados em 05/11 |
 | **Choi** | Tatsumaki 1000/1010 (25/30), Senpuu 1100 (20), Hishou 1200 (20), Shissou 1600 (15), Ultimate Storm 2400 (30), Zan! En Getsu Rin 3100 (35) e Houou Kyaku 3200 (30) implementados em 05/11 |
-| **Chang** | Haki Kyaku 1400; Tekkyuu Dai Assatsu 3400 |
-| **Choi** | Tatsumaki 1000/1010; Senpuu 1100; Hishou 1200/1210; Shissou 1600/1610; Ultimate Storm 2400; Zan! En Getsu Rin 3100/3110; Houou Kyaku 3200/3250 |
 | **Yashiro** | Odoru Daichi 2200/2210 (20), Kujiku Daichi 2300/2310 (22), MAX Million Bash 3020 (44), Final Impact 3100/3120 (49), Araburu Daichi 3600/3620 (30) e Ankoku Jigoku 3700/3720 (40) implementados em 05/11 |
 | **Shermie** | Axle Spin/Shoot 1000/1050/1100/1150 (15), Whip 1200/1250 (20), Spiral 1300 (25), Carnival 2100 (30), Shajitsu 7100/7150 (25), Mugetsu/Yatanagi 7225/7250/7275/7350 (30), Shukumei 8000 (40) e Ankoku Raikouken 8100/8150 (25) implementados em 05/11 |
 | **Chris** | Slide Touch 1300/1350 (20), Direction Change 1500/1550 (20), Shooting Dancer 1600/1650 (10), Twister/Chain Slide 2100/2200 (8), Taiyou 7000/7010 (15), Tsuki 7200/7250 (30), Shishi 7300/7350 (35) e Gouka/Ankoku Orochinagi 8000/8050/8100/8105 (45) implementados em 05/11 |
@@ -199,7 +198,7 @@ continuações/fases do golpe pai.
 
 ## Prioridade recomendada
 
-1. **Categoria D (em andamento)** — primeiro bloco concluído em 04/11
+1. **Categoria D (concluída)** — primeiro bloco concluído em 04/11
    (Kyo/Nests/Ash 3500/3550/3305, Terry 3000/3010/3050, Athena
    3000/3050/3100/4000). Segundo bloco concluído em 05/11: Terry
    1050/1450/1550/1560/1600/1700/3100 e Buster Wolf 3200/3250 (3
@@ -250,8 +249,9 @@ PalFX/AfterImage (Categoria E).
 
 - **Categoria D** — concluída em 05/11: todos os personagens da tabela D,
   incluindo Kyo/Nests/Ash Orochinagi 3010 e Omega Rugal no runtime
-  (seleção escondida L+R). O 8000 RE entra no state 83 mas ainda é
-  visual (0 de dano).
+  (seleção escondida L+R). O comando RE usa o clipe do Gravity Smash
+  (30) como aproximação; o state 8000 original continua visual porque o
+  victim state 8001 não veio no pacote.
 - **Categoria E** — efeitos/victim states: Ralf (queimadura), Mature
   (PalFX/Explod), Chizuru (clone/PalFX) e a bola de metal do Chang.
 - **Clark** — Frankensteiner 1400/1410→1420 ainda faz só 1 de dano.
