@@ -3191,9 +3191,12 @@ if "omegarugal" in CHARS:
         (110, 1010, 1009),     # air dash forward
         (111, 1011, 1010),     # air dash back
         # Fusion evades on the system slots used by every character:
-        # L+forward, L+back and L alone (port-added state 720).
-        (94, 1011, 1010),
-        (95, 1010, 1009),
+        # L+forward, L+back and L alone (port-added state 720).  The source
+        # clips for 1010/1011 are swapped relative to the port's visual
+        # forward/back convention, so 1010 uses the forward clip (1010) and
+        # 1011 uses the back clip (1009).
+        (94, 1011, 1009),
+        (95, 1010, 1010),
         (69, 720, 1009),
     ])
     POST_CAL_PROJS.setdefault("omegarugal", {}).update({

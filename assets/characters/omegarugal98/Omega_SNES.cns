@@ -2991,7 +2991,7 @@ ctrl = 1
 type = S
 movetype = I
 physics = S
-anim = 1009
+anim = 1010
 velset = 0,0
 ctrl = 0
 sprpriority = 1
@@ -3075,7 +3075,7 @@ type = S
 movetype = I
 physics = N
 ctrl = 0
-anim = 1010
+anim = 1009
 velset = 0,0,0
 poweradd = IfElse((prevstateno = 150 || prevstateno = 152),-500,0)
 
@@ -16710,6 +16710,18 @@ time = 20
 type = SprPriority
 trigger1 = Time = 0
 value = -1
+
+[State 720, Afterimage]
+type = afterimage
+trigger1 = Time = 0
+time = 13
+length = 8
+PalBright   =   0,  0,  0
+PalContrast = 255,255,255
+PalAdd      =   0,  0,  0
+PalMul      =  1,1,1
+FrameGap = 2
+ignorehitpause = 1
 
 [State 720, PlaySnd]
 type = PlaySnd

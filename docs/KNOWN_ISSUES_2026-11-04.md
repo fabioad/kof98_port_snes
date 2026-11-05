@@ -325,9 +325,12 @@ PalFX/AfterImage (Categoria E).
   existiam no CMD mas não tinham regra `State -1` nem slots. Agora:
   L+frente = rolagem para frente (1010/sid 95), L+trás = rolagem para
   trás (1011/sid 94), L sozinho = esquiva parada 720 (sid 69) e DODGE
-  (Y+B) também entra na 720. Nos demais personagens L sozinho continua
-  taunt; só Omega usa o token s para a esquiva. As evasivas reutilizam
-  os clipes 1009/1010 já existentes. Regressão:
+  (Y+B) também entra na 720. Os clipes 1009/1010 foram trocados entre
+  1010/1011 para corrigir a inversão visual: frente usa 1010 e trás usa
+  1009. A esquiva parada ganhou afterimage e a regressão confere o
+  ponteiro de animação, garantindo que L sozinho não caia no taunt
+  (195). Nos demais personagens L sozinho continua taunt; só Omega usa o
+  token s para a esquiva. Regressão:
   `tools/test_omega_dodge_headless.py`.
 - **Categoria A** — concluída; manter a regressão de comandos.
 
@@ -357,7 +360,7 @@ PalFX/AfterImage (Categoria E).
 
 - checksum **`$D46C`**
 - layout MSU **`0xA7E9`**
-- `.sfc` SHA-256 `5e6eae59…49cfc66`
+- `.sfc` SHA-256 `98b37767…b08d456`
 - `.msu` SHA-256 `81685d8b…50d115`
 - `.msu` 51.265.024 bytes
 
