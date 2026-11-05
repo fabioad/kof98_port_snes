@@ -79,15 +79,19 @@ A correção do bit3 também foi o que destravou esses projéteis.
 - Terry 3000: 25; 3010: 30; 3050: 50;
 - Athena 4000: 62; 3000: 48; 3050: 42; 3100: 40.
 
-`tools/test_category_d_remaining_headless.py` — **46 golpes PASS**
+`tools/test_category_d_remaining_headless.py` — **57 golpes PASS**
 (segundo bloco, 05/11):
 
 - Terry: 1050 14, 1450 12, 1550 30, 1560 34, 1600 16, 1700 20,
   3100 32, 3200 34 (3 contatos), 3250 48 (3 contatos), 3050 50;
 - Andy: 1400 12, 1450 8, 1500 14, 1160 14, 3000 37, 3010 52, 3050 57,
-  Dan Da Dan 3200/3210/3250 33/33/44 (2 contatos, aproximação);
+  Dan Da Dan 3200/3210/3250 33/33/44 (2 contatos, aproximação),
+  Bakushin 45 (agarrão);
 - Ryo: 1150 26, 1160 32, 1250 14, 1260 28, 2100 13, 3250 30,
-  1050 14, 1400 12 (3 contatos), 2000/2010 14/14 (aéreo);
+  1050 14, 1400 12 (3 contatos), 2000/2010 14/14 (aéreo),
+  3150 MAX Ryuuko 98;
+- Kyo / Nests / Ash: Mushiki '96 3100 47, MAX 3150 58 e MAX Mushiki
+  3250 24 (as três variantes);
 - Robert: 1050 14, 3200 24, 3210 37, 3220 47, 3270 44, 1250 28,
   1260 42, 1400 16 (4 contatos), 1450 16 (4 contatos), Haoh 3000/3010/3020
   14/14/14;
@@ -146,15 +150,25 @@ orçamento de CHR.
 usam os rearmes de `MoveHitReset` da origem; 3000/3010/3050 rearmam a cada
 golpe e mantêm a vítima em hitstun. O Dan Da Dan da origem repete o rush
 até 4/10 vezes; sem loop de state no motor, ele foi aproximado como
-entrada + um contato do rush + finalizador (2 contatos). Bakushin 1700
-segue pendente (cadeia de agarrão 1705/1710).
+entrada + um contato do rush + finalizador (2 contatos). O **Bakushin**
+(1700) usa a cadeia 1700→1710→1715: o `p1stateno` 1705 foi redirecionado
+para 1710 e o `TargetLifeAdd` do 1715 aplica o dano (45 no headless).
 
 ### Ryo
 
 1150/1160 (Koho EX), 1250/1260 (Hien Shippuu '95), 2100 (Ko'ou Geki,
 projétil de dois níveis de helper), 3250 (MAX Tenchi Haoh Ken), 1050
-(Ko'ou Ken EX), 1400 (Renbu Ken, 3 contatos) e 2000/2010 (Ko'ou Ken
-aéreo). O 3150 (MAX Ryuuko Ranbu) continua pendente.
+(Ko'ou Ken EX), 1400 (Renbu Ken, 3 contatos), 2000/2010 (Ko'ou Ken
+aéreo) e **3150 MAX Ryuuko Ranbu** (98): a ativação acerta, encadeia no
+flurry 3160 (10 rearmes de HitDef) e finaliza em 3161.
+
+### Kyo / Nests / Ash
+
+**3100/3101** (Mushiki '96, 47), **3150/3151** (MAX, 58) e
+**3250/3251** (MAX Mushiki, 24). Os três compartilham o CNS e o CMD;
+as mesmas linhas pós-calibração são aplicadas a `kyo`, `kyonests` e
+`kyoash`. Os flurries usam `hit_soft_resets` nos elementos de ataque e
+`slice_no_fall` para manter a vítima em hitstun.
 
 ### Robert
 
@@ -190,10 +204,10 @@ root com dano por ProjTab 6/8/12 e release no segundo frame.
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$611D`**
-- layout MSU **`0xE91C`**
-- `.sfc` SHA-256 `5f59d101…d2e5a0`
-- `.msu` SHA-256 `cba3c807…5e2986b`
+- checksum **`$A9AD`**
+- layout MSU **`0x3310`**
+- `.sfc` SHA-256 `8ef11dee…f4dbdf`
+- `.msu` SHA-256 `3841c9af…b2809b`
 
 Copie `.sfc` e `.msu` juntos.
 

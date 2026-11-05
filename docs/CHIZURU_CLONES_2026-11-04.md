@@ -71,10 +71,10 @@ poses), `test_super_stage_vram_headless`, `test_attract_demo_headless`,
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$611D`**
-- layout MSU **`0xE91C`**
-- `.sfc` SHA-256 `5f59d101…d2e5a0`
-- `.msu` SHA-256 `cba3c807…5e2986b` (inalterado; o clipe 13001 reusa os
+- checksum **`$A9AD`**
+- layout MSU **`0x3310`**
+- `.sfc` SHA-256 `8ef11dee…f4dbdf`
+- `.msu` SHA-256 `3841c9af…b2809b` (inalterado; o clipe 13001 reusa os
   sprites do 2000)
 
 Copie `.sfc` e `.msu` juntos.

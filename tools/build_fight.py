@@ -2712,6 +2712,51 @@ for _key, _ov in _KYO_VARIANTS.items():
     POST_CAL_CATEGORIES.setdefault(_key, {}).update({98: 3})
     POST_CAL_POW_OVERRIDE.setdefault(_key, {}).update({98: -1000})
 
+# Category D: Mushiki '96 (3100/3101 and MAX 3150/3151) and the original
+# MAX Mushiki (3250/3251) for Kyo, Nests and Ash.  The three share the CNS
+# and command table; only the AIR/SFF differ.
+for _k in ("kyo", "kyonests", "kyoash"):
+    if _k not in CHARS:
+        continue
+    POST_CAL_REACTIVATED.setdefault(_k, []).extend([
+        (107, 3100, 3100),     # Mushiki '96 weak
+        (108, 3101, 3101),     # weak follow-up flurry
+        (109, 3150, 3100),     # Mushiki '96 MAX (root uses AIR 3100)
+        (110, 3151, 3151),     # MAX follow-up flurry
+        (111, 3250, 3250),     # original MAX Mushiki
+        (112, 3251, 3251),     # landing
+    ])
+    _ktw = POST_CAL_TWEAKS.setdefault(_k, {})
+    _ktw.setdefault("slice_damage", {}).update(
+        {107: 19, 108: 8, 109: 19, 110: 11, 111: 12})
+    _ktw["slice_no_fall"] = sorted(
+        set(_ktw.get("slice_no_fall", ())) | {107, 108, 109, 110, 111})
+    _ktw.setdefault("hit_soft_resets", {}).update({
+        3101: [21, 27, 34],
+        3151: [21, 29, 40, 46, 53],
+        3250: [22, 28, 33, 36],
+    })
+    _ktw.setdefault("extra_trans", []).extend([
+        (107, 108, 0, 0), (109, 110, 0, 0), (111, 112, 0, 0)])
+    _ktw.setdefault("cmd_priority", []).extend([
+        "MUSHIKI_96_MAX", "MUSHIKI_96", "MUSHIKI_GEN"])
+    _ktw.setdefault("cmd_extra", []).extend([{
+        "name": "MUSHIKI_96", "label": "MUSHIKI 96",
+        "state": 3100, "posture": 3, "time": 30,
+        "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
+                  (0, 4)],
+    }, {
+        "name": "MUSHIKI_96_MAX", "label": "MUSHIKI 96 MAX",
+        "state": 3150, "posture": 3, "time": 30,
+        "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
+                  (0, 12)],
+    }, {
+        "name": "MUSHIKI_GEN", "label": "MAX MUSHIKI",
+        "state": 3250, "posture": 3, "time": 30,
+        "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
+                  (0, 8)],
+    }])
+
 if "athena" in CHARS:
     # Phoenix Fang charge levels: the source helper spawns a stationary
     # 7701 hitbox with a visible 7700 ball.  The native pool fires the
@@ -2849,10 +2894,13 @@ if "terry" in CHARS:
 # ---------------------------------------------------------------------------
 if "andy" in CHARS:
     POST_CAL_REACTIVATED.setdefault("andy", []).extend([
-        (60, 1400, 1400),      # Gekiheki Haisui Shou
-        (61, 1450, 1450),      # Gekiheki Haisui Shou (ura)
-        (62, 1500, 1500),      # Genei Shiranui
+        (56, 1400, 1400),      # Gekiheki Haisui Shou
+        (57, 1450, 1450),      # Gekiheki Haisui Shou (ura)
+        (59, 1500, 1500),      # Genei Shiranui
         (63, 1160, 1160),      # Hishou Ken EX (helper projectile)
+        (60, 1700, 1700),      # Bakushin grab
+        (61, 1710, 1710),      # Bakushin throw
+        (62, 1715, 1715),      # Bakushin impact / TargetLifeAdd
         (64, 3000, 3000),      # Chou Reppa Dan weak
         (65, 3010, 3010),      # Chou Reppa Dan strong
         (66, 3050, 3010),      # MAX Chou Reppa Dan (reuses strong clip)
@@ -2863,18 +2911,23 @@ if "andy" in CHARS:
     ])
     POST_CAL_TWEAKS.setdefault("andy", {}).update({
         "slice_damage": {
-            60: 3, 61: 4, 62: 7, 64: 4, 65: 5, 66: 6,
+            56: 3, 57: 4, 59: 7, 64: 4, 65: 5, 66: 6,
             103: 6, 104: 4,
         },
         # Keep the victim in hitstun through the multi-hit rushes; the
         # engine's compiled MoveHitReset rows re-arm each contact.
-        "slice_no_fall": [60, 64, 65, 66],
-        "hitdef_override": {60: {"guard": 2}},
+        "slice_no_fall": [56, 64, 65, 66],
+        "hitdef_override": {
+            56: {"guard": 2},
+            60: {"p1mugen": 1710},
+        },
+        "target_life_fix": {1715: -22},
         "extra_trans": [
-            (61, 103, 0, 0),
+            (57, 103, 0, 0),
             (103, 104, 0, 0),
         ],
-        "cmd_priority": ["CHOU_REPPA_MAX", "CHOU_REPPA_S", "CHOU_REPPA_W"],
+        "cmd_priority": ["BAKUSHIN", "CHOU_REPPA_MAX", "CHOU_REPPA_S",
+                         "CHOU_REPPA_W"],
         "cmd_extra": [{
             "name": "GEKIHEKI_X", "label": "GEKIHEKI HAISUI",
             "state": 1400, "posture": 3, "time": 22,
@@ -2906,6 +2959,10 @@ if "andy" in CHARS:
             "state": 3050, "posture": 3, "time": 30,
             "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0),
                       (0, 12)],
+        }, {
+            "name": "BAKUSHIN", "label": "BAKUSHIN",
+            "state": 1700, "posture": 3, "time": 26,
+            "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 3)],
         }],
     })
 
@@ -3102,6 +3159,31 @@ if "ryo" in CHARS:
             "state": 2010, "posture": 4, "time": 22,
             "elems": [(2, 0), (6, 0), (4, 0), (0, 3)],
         }])
+
+# ---------------------------------------------------------------------------
+# Ryo: MAX Ryuuko Ranbu (3150 -> 3160 flurry -> 3161 finisher).
+# ---------------------------------------------------------------------------
+if "ryo" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("ryo", []).extend([
+        (111, 3150, 3150),     # MAX Ryuuko Ranbu activation
+        (112, 3160, 3160),     # MAX flurry
+        (113, 3161, 3161),     # MAX finisher
+    ])
+    _rmw = POST_CAL_TWEAKS.setdefault("ryo", {})
+    _rmw.setdefault("slice_damage", {}).update({111: 1, 112: 3, 113: 10})
+    _rmw["slice_no_fall"] = sorted(
+        set(_rmw.get("slice_no_fall", ())) | {111, 112, 113})
+    _rmw.setdefault("hit_soft_resets", {}).update({
+        3160: [6, 8, 11, 16, 24, 32, 45, 57, 70, 78]})
+    _rmw.setdefault("extra_trans", []).extend([
+        (111, 112, 3, 0), (112, 113, 0, 0), (113, 0, 1, 0)])
+    _rmw.setdefault("cmd_priority", []).append("RYUUKO_MAX")
+    _rmw.setdefault("cmd_extra", []).append({
+        "name": "RYUUKO_MAX", "label": "RYUUKO RANBU MAX",
+        "state": 3150, "posture": 3, "time": 30,
+        "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
+                  (0, 12)],
+    })
 
 # ---------------------------------------------------------------------------
 # Robert: Hien Shippuu Kyaku '95 (1250/1260), Renbu Kyaku (1400),

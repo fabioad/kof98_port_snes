@@ -57,9 +57,9 @@ CASES = (
     ("terry", "3250 Buster Wolf MAX", QCF2, {X, Y}, {89}, 30, 3),
     ("terry", "3050 MAX Power Geyser", (BACK, F), {X, Y}, {87}, 30, None),
     # Andy
-    ("andy", "1400 Gekiheki Haisui", QCF, {X}, {60}, 8, None),
-    ("andy", "1450 Gekiheki Haisui Ura", QCF, {Z}, {61}, 3, None),
-    ("andy", "1500 Genei Shiranui", DP, {X}, {62}, 8, None),
+    ("andy", "1400 Gekiheki Haisui", QCF, {X}, {56}, 8, None),
+    ("andy", "1450 Gekiheki Haisui Ura", QCF, {Z}, {57}, 3, None),
+    ("andy", "1500 Genei Shiranui", DP, {X}, {59}, 8, None),
     ("andy", "1160 Hishou Ken EX", QCB, {Z}, {63}, 8, None),
     ("andy", "3000 Chou Reppa Dan", QCF2, {A}, {64}, 20, None),
     ("andy", "3010 Chou Reppa Dan S", QCF2, {B_BTN}, {65}, 25, None),
@@ -67,6 +67,7 @@ CASES = (
     ("andy", "3200 Dan Da Dan", QCB2, {A}, {107}, 25, None),
     ("andy", "3210 Dan Da Dan S", QCB2, {B_BTN}, {108}, 25, None),
     ("andy", "3250 Dan Da Dan MAX", QCB2, {A, B_BTN}, {109}, 35, None),
+    ("andy", "Bakushin", HCB, {X, Y}, {60}, 30, None),
     # Ryo
     ("ryo", "1150 Koho EX", QCF, {Z}, {55}, 15, None),
     ("ryo", "1160 Koho EX S", QCB, {Z}, {56}, 20, None),
@@ -78,6 +79,7 @@ CASES = (
     ("ryo", "1400 Renbu Ken", QCB, {X}, {108}, 8, None),
     ("ryo", "AIR 2000 Ko'ou Ken", QCF, {X}, {109}, 8, None),
     ("ryo", "AIR 2010 Ko'ou Ken S", QCF, {X, Y}, {110}, 8, None),
+    ("ryo", "3150 MAX Ryuuko Ranbu", QCB2, {A, B_BTN}, {111}, 40, None),
     # Robert
     ("robert", "1050 Ryuugeki Ken EX", QCF, {Z}, {60}, 8, None),
     ("robert", "3200 Muei Shippuu", QCF2, {A}, {62}, 12, None),
@@ -98,6 +100,16 @@ CASES = (
     ("iori", "3100 Ya Sakazuki", QCB, {Z}, {106}, 4, None),
     ("iori", "3110 Ya Sakazuki S", QCB, {X, Y}, {107}, 5, None),
     ("iori", "3150 Ya Sakazuki MAX", QCF2, {Z}, {108}, 8, None),
+    # Kyo / Nests / Ash (shared CNS and command table)
+    ("kyo", "3100 Mushiki 96", QCB2, {A}, {107}, 30, None),
+    ("kyo", "3150 Mushiki 96 MAX", QCB2, {A, B_BTN}, {109}, 40, None),
+    ("kyo", "3250 MAX Mushiki", QCB2, {B_BTN}, {111}, 18, None),
+    ("kyonests", "3100 Mushiki 96", QCB2, {A}, {107}, 30, None),
+    ("kyonests", "3150 Mushiki 96 MAX", QCB2, {A, B_BTN}, {109}, 40, None),
+    ("kyonests", "3250 MAX Mushiki", QCB2, {B_BTN}, {111}, 18, None),
+    ("kyoash", "3100 Mushiki 96", QCB2, {A}, {107}, 30, None),
+    ("kyoash", "3150 Mushiki 96 MAX", QCB2, {A, B_BTN}, {109}, 40, None),
+    ("kyoash", "3250 MAX Mushiki", QCB2, {B_BTN}, {111}, 18, None),
 )
 
 
