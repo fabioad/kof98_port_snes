@@ -399,7 +399,7 @@ triggerall = statetype != A
 trigger1 = ctrl
 [State -1, Heaven's Gate strong]
 type = ChangeState
-value = 3010
+value = 3000
 triggerall = command = "QCBHCF_B"
 triggerall = statetype != A
 trigger1 = ctrl

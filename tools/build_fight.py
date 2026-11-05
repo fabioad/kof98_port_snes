@@ -1852,6 +1852,11 @@ POST_CAL_PROJS = {}
 POST_CAL_REACTIVATED_OVERWRITE = {
     "clark": {53, 55, 58},
 }
+# Existing low special slots that must stop shadowing a reactivated
+# grab-window follow-up.  state_to_sid is first-wins, so leaving the old
+# sid in cfg["moves"] would keep the p1stateno redirect pointing at the
+# normal-special copy and StVictimHeld would release the victim early.
+POST_CAL_MOVES_DROP = {}
 # Command-list categories for states parked outside 85-89.  2 = SPC,
 # 3 = SUP, 4 = MAX.
 POST_CAL_CATEGORIES = {
@@ -4808,6 +4813,85 @@ if "krauser" in CHARS:
         (4, 3, -10, 0), (8, 3, -10, 0), (12, 3, -10, 0),
         (13, 4, 3212, 0)]
 
+# --- Mature: Decide and Heaven's Gates grabs -------------------------------
+# The generated import wired only the root command targets.  Every source
+# HitDef redirects the attacker (p1stateno) to a follow-up state that owns
+# the TargetBind/TargetLifeAdd rows.  Those follow-ups must live in the
+# 103..114 grab window, otherwise StVictimHeld releases the victim before
+# the damage row fires.
+if "mature" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("mature", []).extend([
+        (103, 1201, 1201),           # Decide bind/life-add
+        (104, 3001, 3001),           # Heaven's Gates active HitDef
+        (105, 3004, 3004),           # dash/bind
+        (106, 3005, 3005),           # finisher
+        (107, 3006, 3006),           # aerial recovery
+    ])
+    # "Heaven's Gate strong" used to point at 3010, which is a victim pose.
+    # The source sends a and b to 3000; keep 3010 as the victim only.
+    POST_CAL_MOVES_DROP.setdefault("mature", set()).add(86)
+    _mature_tw = POST_CAL_TWEAKS.setdefault("mature", {})
+    _mature_tw.setdefault("extra_trans", []).extend([
+        (105, 106, 0, 0),           # 3004 FrontEdgeDist gate -> 3005
+    ])
+    _mature = CHARS["mature"]
+    # Decide's life add is a ceil()*IfElse() expression the extractor cannot
+    # evaluate.  Apply one port-scaled hit on element 6.
+    _mature.setdefault("act_override", {})[1201] = [(5, 3, -30, 0)]
+    # Heaven's Gates: release the victim into the generic throw flight on
+    # element 3 (the source 3011 victim state; 816 maps to S_VTHROW) and
+    # apply a DM-sized hit on element 4.  Both source TargetLifeAdd values
+    # are far above the 8-bit signed range and would wrap positive.
+    _mature["act_override"][3005] = [
+        (2, 4, 816, 0),             # TargetState 3011 -> S_VTHROW
+        (3, 3, -55, 0),             # TargetLifeAdd
+    ]
+
+# --- Vice: Deicide Slayer, Black Out, Gore Fest and Negative Gain --------
+# Same wiring: the attacker-side follow-up states (1210/1410/1510/3310/
+# 3410) own the life adds and must sit in the grab window.  The generated
+# CMD sent the "strong" variants straight to the follow-up state, so the
+# root HitDef never ran and nothing bound the victim.
+if "vice" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("vice", []).extend([
+        (108, 1210, 1210),           # Deicide Slayer bind/life
+        (109, 1410, 1410),           # Black Out multi-hit bind
+        (110, 1510, 1510),           # Gore Fest multi-hit bind
+        (111, 3310, 3310),           # Negative Gain weak finisher
+        (112, 3410, 3310),           # strong finisher (no AIR 3410)
+    ])
+    POST_CAL_MOVES_DROP.setdefault("vice", set()).update({53, 55})
+    _vice_tw = POST_CAL_TWEAKS.setdefault("vice", {})
+    # Keep the classic diagonal forms for the long double motions as well as
+    # the cardinal shortcut.  With diagonals sampled, the shorter QCB/HCB
+    # tail otherwise consumed the button before the long rule completed.
+    _vice_tw["cmd_no_shortcut"] = ["HCBF_X", "HCBF_Y",
+                                   "HCBHCB_A", "HCBHCB_B"]
+    _vice_tw.setdefault("hitdef_override", {})
+    # Deicide's HitDef is tagged S,SA (no T in the attribute), so the build
+    # treated it as a normal strike and never entered the victim state.
+    for _sid in (48, 49):
+        _vice_tw["hitdef_override"][_sid] = {
+            "p2state": 76, "throw": 1, "damage": 0, "gdamage": 0}
+    # Black Out's source victim state 1420 shares the global Iori slot that
+    # resolves to S_VTHROW; keep it held while 1410 runs its bind sequence.
+    _vice_tw["hitdef_override"][52] = {
+        "p2state": 76, "throw": 1, "damage": 0, "gdamage": 0}
+    _vice = CHARS["vice"]
+    # Source life adds are on the 1000-life scale; port HP is 200.
+    _vice.setdefault("target_life_fix", {}).update({
+        1210: -30,                  # one 154-point hit
+        1410: -15,                  # two 70-point hits -> 30 total
+        # The source fires four 28-point hits from two controllers on the
+        # same element; the ActTab dedupes by element, so each surviving
+        # controller row carries half the total.
+        1510: -18,                  # two rows -> 36 total
+    })
+    # Negative Gain's Floor(...IfElse()) damage expression is dropped by the
+    # extractor; supply the DM-sized hit on element 12.
+    _vice.setdefault("act_override", {})[3310] = [(11, 3, -45, 0)]
+    _vice["act_override"][3410] = [(11, 3, -45, 0)]
+
 # --- Clark: Ultra Argentine MAX + Running Three chains --------------------
 # The ROM diet drops Clark's 87-89 slots, so the MAX Ultra Argentine (3050)
 # and both Running Three roots (3100/3110) never reached a wired state.  The
@@ -6617,14 +6701,19 @@ def shortcut_elems(elems):
     return out if changed else None
 
 
-def apply_half_circle_shortcuts(cmddefs):
+def apply_half_circle_shortcuts(cmddefs, keep=()):
     """Replace HCF/HCB records with their diagonal-free matcher form.
 
     The classic input still matches because the matcher may skip the extra
     diagonal entries.  DP/RDP are kept classic here: their shortcut ends in
-    F/B instead of DF/DB, so both variants need their own rule.
+    F/B instead of DF/DB, so both variants need their own rule.  ``keep``
+    names long double motions that must retain the classic form as well
+    (the short rule was consuming the tail when diagonals were sampled).
     """
+    keep = set(keep)
     for name, (held, elems, window) in list(cmddefs.items()):
+        if name in keep:
+            continue
         if not elems:
             continue
         dirs = [d & 0x0F for d, _b in elems]
@@ -8557,6 +8646,10 @@ def build_char(name, cfg, global_pal=None):
         cfg["moves"][_sid] = _state
         cfg["anims"][_sid] = _anim
         anims[_sid] = _anim
+    # Retargeted follow-ups: drop the old normal-special sid so the new
+    # grab-window sid wins the state_to_sid first-wins lookup.
+    for _sid in POST_CAL_MOVES_DROP.get(name, ()):
+        cfg.get("moves", {}).pop(_sid, None)
     # The source dodge states carry a Turn controller gated by
     # `P2Dist X < 0`.  The native ActTab only carries animelem/random
     # conditions and was executing that Turn unconditionally, flipping the
@@ -10120,7 +10213,7 @@ def build_char(name, cfg, global_pal=None):
     # Keep the classic records for the PRACTICE command list; the matcher
     # uses the diagonal-free HCF/HCB forms plus DP/RDP shortcut rules.
     display_defs = dict(cmddefs)
-    apply_half_circle_shortcuts(cmddefs)
+    apply_half_circle_shortcuts(cmddefs, cfg.get("cmd_no_shortcut") or ())
     rules = cmd_rules(asset_path(cfg["cmd"]), cmddefs, wired)
     rules = add_shortcut_rules(rules, cmddefs)
     _disabled = set(cfg.get("cmd_disable") or ())

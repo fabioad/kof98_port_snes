@@ -307,7 +307,8 @@ SPECS = {
             # Source Heaven's Gate ends on a/b (kicks); Nocturnal Rites
             # ends on x/y (punches); Death Blow ends on a/b (kicks).
             ("Heaven's Gate weak", 3000, "QCBHCF_A", GND),
-            ("Heaven's Gate strong", 3010, "QCBHCF_B", GND),
+            # Both buttons enter the 3000 root; 3010 is the victim pose.
+            ("Heaven's Gate strong", 3000, "QCBHCF_B", GND),
             ("Nocturnal Rites weak", 3500, "QQCF_X", GND),
             ("Nocturnal Rites strong", 3600, "QQCF_Y", GND),
             ("Sacrilege weak", 1400, "DP_X", GND),
@@ -335,9 +336,11 @@ SPECS = {
             ("Withering Surface strong", 3100, "QQCF_Y", GND),
             ("Withering MAX", 3200, "QQCF_PP", GND),
             ("Gore Fest weak", 1500, "HCBF_X", GND),
-            ("Gore Fest strong", 1510, "HCBF_Y", GND),
+            # 1510/1410 are the attacker follow-ups; the commands must enter
+            # the roots so their HitDef can bind the victim first.
+            ("Gore Fest strong", 1500, "HCBF_Y", GND),
             ("Black Out weak", 1400, "DP_X", GND),
-            ("Black Out strong", 1410, "DP_Y", GND),
+            ("Black Out strong", 1400, "DP_Y", GND),
             ("Deicide Slayer weak", 1200, "HCB_A", GND),
             ("Deicide Slayer strong", 1250, "HCB_B", GND),
             ("Mayhem weak", 1300, "QCB_X", GND),

@@ -388,15 +388,62 @@ PalFX/AfterImage (Categoria E).
   `stg9.it` mudou. O render standalone com `smconv` confirma a redução a
   partir do trecho em que a guitarra entra.
 
+## Mature / Vice — agarrões especiais e supers (05/11)
+
+Os comandos entravam no state raiz, mas o `p1stateno` que prende a vítima
+e aplica o dano não estava ligado. Além disso, os comandos "strong" de
+Mature/Vice apontavam para states de **vítima** ou para o próprio
+follow-up, então o HitDef raiz nunca rodava. Correções:
+
+- **Mature — Decide (HCF+B, 1200 -> 1201):** follow-up 1201 no sid 103.
+  O `TargetLifeAdd` é uma expressão `ceil()*IfElse()` que o extrator não
+  avalia; o port aplica 30 pontos no elemento 6.
+- **Mature — Heaven's Gates (QCBHCF+A/B, 3000 -> 3001 -> 3004 -> 3005 ->
+  3006):** 3001/3004/3005/3006 religados nos sids 104–107. O comando
+  "strong" passou de 3010 (pose de vítima) para 3000. A vítima é solta no
+  voo genérico (`S_VTHROW`) no elemento 3; o dano de 55 pontos é aplicado
+  no elemento 4. Regra de transição 3004 -> 3005 religada.
+- **Vice — Deicide Slayer (HCB+A/B, 1200/1250 -> 1210):** 1210 no sid 108,
+  com `p2state=76`/`throw=1` (o HitDef é `S,SA` e o build antigo o tratava
+  como golpe normal). Dano de 30 pontos em `Time=25`.
+- **Vice — Black Out (DP+X/Y, 1400 -> 1410):** 1410 movido do sid 53 para
+  o 109; a vítima 1420 foi mantida em `S_VHELD` (o mapeamento global de
+  Iori a mandava direto para o voo) e os dois `TargetLifeAdd` valem 15
+  cada (30 no total). O comando "strong" passou de 1410 para 1400.
+- **Vice — Gore Fest (HCBF+X/Y, 1500 -> 1510):** 1510 movido do sid 55
+  para o 110; o comando "strong" passou de 1510 para 1500. Os dois
+  controladores de vida no mesmo elemento valem 18 cada (36 no total).
+- **Vice — Negative Gain (HCBHCB+A/B, 3300/3400 -> 3310/3410):**
+  follow-ups 3310/3410 nos sids 111/112. A expressão `Floor(...IfElse())`
+  não é extraída; o port aplica 45 pontos no elemento 12.
+
+Os valores de `TargetLifeAdd` acima de 127 estouravam o byte assinado do
+ActTab e viravam cura (`-154` -> `+102`, `-304` -> `+48`); por isso os
+valores foram reescalados para a barra de 200 HP e ficaram dentro de
+−128..−1. `POST_CAL_MOVES_DROP` remove os sids antigos para o
+`state_to_sid` first-wins resolver para os novos slots 103–112.
+
+Vice mantém a forma clássica (com diagonais) **e** a forma curta de
+`HCBF_X/Y` e `HCBHCB_A/B`. Com as diagonais amostradas, a regra curta de
+QCB/HCB consumia o botão antes da motion longa terminar; `cmd_no_shortcut`
+preserva as duas formas, então Gore Fest e Negative Gain saem tanto no
+rolamento clássico quanto no atalho cardinal.
+
+Regressão: `tools/test_mature_vice_grabs_headless.py` — 11 comandos
+(Decide, Heaven's Gates A/B, Deicide A/B, Black Out X/Y, Gore Fest X/Y e
+Negative Gain A/B). Cada caso confere o follow-up do atacante, a pose de
+segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
+46 e 46.
+
 ## Build de referência
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$79CD`**
-- layout MSU **`0x17CD`**
-- `.sfc` SHA-256 `68b41e2b…e02f3e6`
-- `.msu` SHA-256 `8bc55c82…21c73cf`
-- `.msu` 51.232.256 bytes
+- checksum **`$C8B9`**
+- layout MSU **`0x8E43`**
+- `.sfc` SHA-256 `1aebaf6b…eed6c6f6`
+- `.msu` SHA-256 `6cc4291f…1ddb1444`
+- `.msu` 51.363.328 bytes
 
 ## Referências
 

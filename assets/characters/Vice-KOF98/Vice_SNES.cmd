@@ -429,7 +429,7 @@ triggerall = statetype != A
 trigger1 = ctrl
 [State -1, Gore Fest strong]
 type = ChangeState
-value = 1510
+value = 1500
 triggerall = command = "HCBF_Y"
 triggerall = statetype != A
 trigger1 = ctrl
@@ -441,7 +441,7 @@ triggerall = statetype != A
 trigger1 = ctrl
 [State -1, Black Out strong]
 type = ChangeState
-value = 1410
+value = 1400
 triggerall = command = "DP_Y"
 triggerall = statetype != A
 trigger1 = ctrl

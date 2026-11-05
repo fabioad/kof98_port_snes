@@ -1,6 +1,6 @@
 {
   "character": "mature",
-  "config_hash": "9023e842c4282add9b8267cf0adebd7676966bb21bd58a701450b4164d050e08",
+  "config_hash": "d943850f20f8df633b645703f839f9fdd20418c30b1312c24c3920e81fe75d67",
   "corrections": [],
   "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/Mature-KOF98/Mature.def",
   "inputs": {
@@ -14,7 +14,7 @@
     "assets/characters/Mature-KOF98/Mature.sff": "538d15ac87984b2071286d4b8df8ea7462bce00e878d87846713809c47ccfaae",
     "assets/characters/Mature-KOF98/Mature.snd": "792b1f745718c30a83bbe0da6379f1afa3dedd9e00105f8861d315029d5a1916",
     "assets/characters/Mature-KOF98/Mature00.act": "34112155d59a6ee3cb0bcb3e2f2a55fdf3ad79246d4780cd4b83d49c377b6651",
-    "assets/characters/Mature-KOF98/Mature_SNES.cmd": "90620aa012a5efa20b29da3b10b6f2323913054eb8b6e214860f4bdff5d28da7",
+    "assets/characters/Mature-KOF98/Mature_SNES.cmd": "526dd6c2f6362cf299fc7d9e669e07f34284aea4510c5786af7ac81a023197dd",
     "assets/characters/Mature-KOF98/Mature_SNES.cns": "fc069732c42af1c7e6cc874053aec6cd3469beea7ed2328ff5b280bc9801ff4a",
     "assets/characters/Mature-KOF98/Rugal.cns": "0e935dc8c7c9f2f00e017672d1ae14d473cc47a221a5609711d90fa2528981bb",
     "assets/characters/Mature-KOF98/Vice.cns": "4e4c4b8d8a5899027abed840543eb4ef92e646a69602e9a79afca7700cc7139b",
