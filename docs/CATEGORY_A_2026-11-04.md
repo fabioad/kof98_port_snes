@@ -104,10 +104,10 @@ poses), `test_super_stage_vram_headless`, `test_chizuru_dp_headless`,
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$823D`**
-- layout MSU **`0x173A`**
-- `.sfc` SHA-256 `b4e477b0…c57b2`
-- `.msu` SHA-256 `ce4b2ade…12859`
+- checksum **`$BB7B`**
+- layout MSU **`0x1135`**
+- `.sfc` SHA-256 `ccd8e340…38120`
+- `.msu` SHA-256 `6d9ca6ba…f9528`
 
 O `.msu` cresceu ~295 KiB porque os follow-ups trazem animações novas
 (sobretudo o 3061 da Mary). Copie `.sfc` e `.msu` juntos.

@@ -32,7 +32,7 @@ Versus, SURVIVOR e PRACTICE continuam com a intro normal, sem pulo.
 - `T_ENTERFLAG` (bit0 P1, bit1 P2) congela o `camx` em `ShakeScroll` até o
   último membro aterrissar. `StartFight` e o fim da intro limpam a flag.
 - Como o estado 43 passou a ter código e a animação de pulo entrou no
-  conjunto de CHR, o `.msu` foi regerado. O layout (`0x173A`) mudou junto
+  conjunto de CHR, o `.msu` foi regerado. O layout (`0x1135`) mudou junto
   com o novo conjunto de CHR; copie `.sfc` e `.msu` deste build juntos.
 
 ## Verificação
@@ -53,10 +53,10 @@ Versus, SURVIVOR e PRACTICE continuam com a intro normal, sem pulo.
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$823D`**
-- layout MSU **`0x173A`**
-- `.sfc` SHA-256 `b4e477b0…c57b2`
-- `.msu` SHA-256 `ce4b2ade…12859` (copie os dois juntos)
+- checksum **`$BB7B`**
+- layout MSU **`0x1135`**
+- `.sfc` SHA-256 `ccd8e340…38120`
+- `.msu` SHA-256 `6d9ca6ba…f9528` (copie os dois juntos)
 
 > O ROM mudou depois desta correção (mount do Ralf e AI_ScanMove). Este é o
 > par atual; veja `docs/RALF_MOUNT_AI_FREEZE_2026-11-03.md`.

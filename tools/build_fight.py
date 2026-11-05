@@ -1685,6 +1685,10 @@ PROJECTILE_EXCLUDE = {
     # Benimaru's Handou Sandan follow-ups are melee; only the Raikouken
     # states (48-51, explicit rows) throw the electric ball.
     "benimaru": (56, 57),
+    # Kyo's MAX Mushiki (3550) is a command grab; the HitDef/ChangeState
+    # heuristic turned its 3551 bind state into a travelling shot and the
+    # grab chain never ran.  Kyo's real shots (1000/1010/3000) stay.
+    "kyo": (87,), "kyonests": (87,), "kyoash": (87,),
     # Choi, Kim, Mary, Vega and Yashiro have no travelling projectile in
     # their wired move set.  Their follow-up HitDefs/dashes were being
     # compiled as invisible shots.
@@ -2406,6 +2410,9 @@ if "kyo" in CHARS:
     # the Orochinagi flame box patched onto the later elements.
     POST_CAL_REACTIVATED.setdefault("kyo", []).extend([
         (98, 3000, 1110), (60, 3005, 3026),
+        # Chou Hissatsu Waza / MAX Mushiki command grabs: the roots only
+        # redirect to 3501/3551, which were never wired.
+        (65, 3501, 3501), (103, 3551, 3551),
     ])
     _kyo.setdefault("extra_trans", []).extend([
         (98, 60, 0, 0),               # charge/start -> Orochinagi attack
@@ -2424,6 +2431,9 @@ if "kyo" in CHARS:
         (0x80 | t, 18, 1, 0) for t in (25, 35, 45, 55)]
     _kyo["tail_ticks"] = dict(_kyo.get("tail_ticks", {}))
     _kyo["tail_ticks"][3026] = 80
+    # 3305 (108-Shiki '99) extracts as a 2-point source row; give the
+    # super-input special a normal special-sized hit.
+    _kyo.setdefault("slice_damage", {})[88] = 18
     _kyo["slice_no_fall"] = sorted(
         set(_kyo.get("slice_no_fall", ())) | {60})
 
@@ -2689,7 +2699,8 @@ for _key, _ov in _KYO_VARIANTS.items():
     # reactivates them after apply_profile; mirror those rows for the
     # variants (which are deep copies made before the base reactivation).
     POST_CAL_REACTIVATED.setdefault(_key, []).extend([
-        (98, 3000, 1110), (60, 3005, 3026)])
+        (98, 3000, 1110), (60, 3005, 3026),
+        (65, 3501, 3501), (103, 3551, 3551)])
     POST_CAL_CATEGORIES.setdefault(_key, {}).update({98: 3})
     POST_CAL_POW_OVERRIDE.setdefault(_key, {}).update({98: -1000})
 
@@ -2707,6 +2718,32 @@ if "terry" in CHARS:
         85: (0x0000, 26, 4, 2),
         86: (0x0000, 30, 4, 2),
     }
+    # The stationary pillar spawns in the ProjTab pool but its hit path does
+    # not connect (the spark sits at the floor while the super is still in
+    # its pause/attack window).  Give the ground punch a real body HitDef
+    # and an attack box on the root clip; the projectile stays as the visual.
+    _terry = CHARS["terry"]
+    _terry.setdefault("hitdef_override", {})
+    for _sid, _dmg in ((85, 26), (86, 30)):
+        _terry["hitdef_override"][_sid] = {
+            "active": 7, "fall": 1, "guard": 0x20,
+            "gvx": 0, "gvy": 0,
+        }
+    _terry.setdefault("slice_damage", {}).update({85: 26, 86: 30})
+    _terry.setdefault("air_box_patch_frames", {})
+    for _anim in (3000, 3010):
+        _terry["air_box_patch_frames"][_anim] = {
+            6: [(-20, -110, 70, 0)], 7: [(-20, -110, 70, 0)],
+            8: [(-20, -110, 70, 0)]}
+    # Buster Wolf (3050): the rush is three helper 3060 spawns with no root
+    # HitDef/Clsn1 in the port.  Add a body rush row and re-arm it for the
+    # three source contacts.
+    _terry["hitdef_override"][87] = {
+        "active": 7, "fall": 1, "guard": 0x20, "gvx": 0, "gvy": 0}
+    _terry.setdefault("slice_damage", {})[87] = 20
+    _terry.setdefault("hit_soft_resets", {})[3050] = [12, 18, 24]
+    _terry["air_box_patch_frames"][3050] = {
+        i: [(-20, -110, 70, 0)] for i in range(6, 22)}
 
 CELL = 16
 # Old-roster fighters whose generated tables live in hand-mapped fixed
@@ -2795,7 +2832,9 @@ VICTIM_STATE_IDS = {1025: 70, 1026: 71, 1027: 72, 1028: 73,
                     4021: 77,
                     # Clark Running Three victim poses: held during the
                     # throw, thrown on the finisher.
-                    3120: 76, 3121: 77}
+                    3120: 76, 3121: 77,
+                    # Kyo's Chou Hissatsu Waza / MAX Mushiki grabs.
+                    3502: 76, 3503: 77}
 
 # --- Category A: root supers whose damage is in a p1 follow-up ------------
 # The generated import wired the command target but not the state the root

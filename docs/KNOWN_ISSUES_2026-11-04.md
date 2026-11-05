@@ -130,17 +130,17 @@ continuações/fases do golpe pai.
 | Personagem | Principais pendências |
 |---|---|
 | **Iori** | Ya Sakazuki 3100/3110/3150 |
-| **Kyo / Nests / Ash** | Koto Tsuki You 1400/1410; Orochinagi/Mushiki 3010/3050/3100/3150/3250/3350. 3000 religado nos três (04/11) |
+| **Kyo / Nests / Ash** | Koto Tsuki You 1400/1410; Orochinagi/Mushiki 3010/3050/3100/3150/3250/3350. 3000 religado nos três; 3500/3550 (agarrões) e 3305 também (04/11) |
 | **Rugal** | Eye Beam 1700; Beads Destruction 1800; Gravity Smash forte 1560 |
 | **Omega Rugal** | Gravity Smash 1050/1055; projéteis 1010/1011; RE2 2310; gravity 7100; RE 8000 |
 | **Takuma** | Mouko Burai Gan 1400/1410; Koho 1600/1610; Ko'ou Ken EX 1050/1060; Haoh 1500/1510/3200/3210; Kyokugen Koho 3300/3320 |
-| **Terry** | Power Wave EX 1050; Power Charge MOW 1550/1560; Fire Kick 1600; Double Kong 1700; High Angle Geyser 3100; Buster Wolf 3200/3250; Power Dunk MOW 1450 |
+| **Terry** | Power Wave EX 1050; Power Charge MOW 1550/1560; Fire Kick 1600; Double Kong 1700; High Angle Geyser 3100; Power Dunk MOW 1450. Power Geyser 3000/3010 e Buster Wolf 3050 com HitDef de corpo (04/11) |
 | **Andy** | Gekiheki Haisui 1400/1450; Genei Shiranui 1500; Bakushin 1700; Chou Reppa Dan 3000/3010/3050; Dan Da Dan 3200/3210/3250; Hishou Ken EX 1160 |
 | **Joe** | Screw Upper forte 3010; Bakuretsu 3100; Thunder Fire 3200/3250; Slash Kick forte 1310. MAX 3150 religado (04/11) |
 | **Ryo** | Ko'ou Ken EX 1050; Koho EX 1150/1160; Hien Shippuu 1250/1260; Renbu 1400; Ko'ou aéreo 2000/2010; Ko'ou Geki 2100; MAX Ryuuko 3150; MAX Tenchi 3250 |
 | **Robert** | Ryuugeki Ken EX 1050; Hien 1250/1260; Renbu 1400; Sen'en 1450; Haoh 3000/3010/3020; Muei Shippuu 3200/3210/3220; Muei Senpuu 3270 |
 | **Yuri** | MAX Haoh 550; MAX Ryuuko 560 |
-| **Athena** | Phoenix Fang Arrow 2000/2020/2050; 3100 parcial |
+| **Athena** | Phoenix Fang Arrow 2000/2020/2050; 3100 parcial. O super 4000 está funcional (62); as fases de carga 3000/3050/3100 seguem sem ataque próprio |
 | **Kensou** | Sen Shippo 1300/1330; Niku Man 2000; Sen Ki Hakkei 2100; Chouryuu Renken 2200 |
 | **Chin** | Fire Zake 1203/1300; upper forte 1400; Super Long Walk Hell 1750; Hyper 2200. Zake FireBall Double 1920 religado (04/11) |
 | **King** | Mirage Dance 1500; MAX Illusion 3200; Silent Flash 3300/3400; Surprise Rose 3600/3700; Dragooner 3800 |
@@ -197,9 +197,10 @@ continuações/fases do golpe pai.
 
 ## Prioridade recomendada
 
-1. **Categoria D** — variantes MAX/SDM, começando pelos golpes normais
-   que ainda faltam (Phoenix Fang da Athena, Orochinagi do Nests/Ash em
-   outras variantes, especiais de Terry/Andy/Ryo/Robert).
+1. **Categoria D (em andamento)** — primeiro bloco concluído em 04/11:
+   Kyo/Nests/Ash 3500/3550/3305, Terry 3000/3010/3050 e confirmação do
+   Athena 4000. Restam Athena 3000/3050/3100, Terry EX/MOW, Andy, Ryo,
+   Robert, Rugal/Omega, Takuma, Iori e os MAX/SDM da tabela.
 2. **Categoria E** — efeitos e victim states (Ralf, Mature, Chizuru,
    bola de metal do Chang). Na Chizuru faltam os PalFX/AfterImage e o
    clone visual dos supers.
@@ -231,10 +232,10 @@ Ainda faltam os outros golpes de clone dela (1000/1004, 1100/1102,
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$823D`**
-- layout MSU **`0x173A`**
-- `.sfc` SHA-256 `b4e477b0…c57b2`
-- `.msu` SHA-256 `ce4b2ade…12859`
+- checksum **`$BB7B`**
+- layout MSU **`0x1135`**
+- `.sfc` SHA-256 `ccd8e340…38120`
+- `.msu` SHA-256 `6d9ca6ba…f9528`
 
 ## Referências
 
