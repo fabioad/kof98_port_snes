@@ -1,6 +1,6 @@
 {
   "character": "king",
-  "config_hash": "b2f83ca293bec7bf421758ca7e3ba673674fdaf60e0ada5ddd276a2697b5a4e5",
+  "config_hash": "be2d5457879b218c244704d8f62b38ff28a997997c5407ec671fc5ed630adfd7",
   "corrections": [],
   "definition": "/run/media/fabio/Dados/Fabio/kof98_port_snes/assets/characters/KING/KING.def",
   "inputs": {
@@ -12,7 +12,7 @@
     "assets/characters/KING/King.cmd": "72a1408f921ed52094b6247d41886ea820a1fd575b1570b8d3c8694beb4264a5",
     "assets/characters/KING/King.sff": "b8dff1d8c6aa384515a2c349a2c06bb3a7ef9344fec871997ab6d8ce895400e3",
     "assets/characters/KING/King.snd": "961d39602a1680d6eb157cb55d8ca8dbb84bc7de5cc0e22397edef80e36cb9eb",
-    "assets/characters/KING/King_SNES.cmd": "4deac12ca06e7b6c7fa6967e1508b35ca8991ffbe0aad2063da820fa3dfbf0a5",
+    "assets/characters/KING/King_SNES.cmd": "d7b33eb812b81292b3bae55f4a810e01e1da9b5903382c52e219e21b781502cd",
     "assets/characters/KING/King_SNES.cns": "fada3b49192855afbbbbc9c93d9c1f8decb0a7eee1135717e41d3ccdc1174a2d",
     "assets/characters/KING/palette/King01.act": "305790cc800fd76165a9ce8e24eec72a336ae2a5530f6d30d015a2357dd43bda",
     "assets/characters/KING/palette/King02.act": "a635a29561b24156f2ba291e001defd0d40daa81cf0574b5fbe79081f597d133",

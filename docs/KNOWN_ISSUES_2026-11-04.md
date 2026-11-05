@@ -339,6 +339,18 @@ PalFX/AfterImage (Categoria E).
   os mesmos frames e timings são mantidos. O normal aéreo forte sem o
   latch continua com a caixa original. Regressão:
   `tools/test_air_blowback_headless.py`.
+- **King/Yuri — normais de chão (05/11)** — o pack da King tem normais
+  close e far; o port misturava as duas séries (chute fraco usava o
+  chute forte close e chute forte usava o soco fraco far). Agora os
+  quatro botões usam as animações far 250/260/270/280. A Yuri foi
+  conferida e já estava correta (200/202/204/206). Regressão:
+  `tools/test_king_yuri_normals_headless.py`.
+- **Arremessos — pose do alvo (05/11)** — o alvo usava a animação de hit
+  em pé (5000), cujo eixo fica nos pés; preso no ponto da mão, parecia
+  ser segurado pelos pés. O slot 76 agora usa o sprite de hold ancorado
+  no torso (grupo 5011) do próprio SFF do alvo. Custa um sprite por
+  personagem, então o layout MSU foi repaginado. Regressão:
+  `tools/test_throw_hold_headless.py`.
 - **Categoria A** — concluída; manter a regressão de comandos.
 
 ## Áudio
@@ -365,11 +377,11 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$F243`**
-- layout MSU **`0xA7E9`**
-- `.sfc` SHA-256 `a7fb32e0…9133632`
-- `.msu` SHA-256 `81685d8b…50d115`
-- `.msu` 51.265.024 bytes
+- checksum **`$0D7F`**
+- layout MSU **`0x77D7`**
+- `.sfc` SHA-256 `f1c20993…4e1a536`
+- `.msu` SHA-256 `cefef5ff…0f1c486`
+- `.msu` 51.428.864 bytes
 
 ## Referências
 

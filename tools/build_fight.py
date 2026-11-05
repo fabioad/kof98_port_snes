@@ -8065,7 +8065,7 @@ def legacy_quote_lines(name, cfg):
     return out
 
 
-def wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers):
+def wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers, sff=None):
     """Wire the source throw bind + victim poses for every fighter.
 
     The roster tables predate the throw audit: most rows point sid 74/75 at
@@ -8201,6 +8201,17 @@ def wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers):
     if cfg["anims"].get(77) in (None, 47, 250, 300, 5000, 5050):
         cfg["anims"][77] = 5050 if 5050 in air else 47
         anims[77] = cfg["anims"][77]
+    # Every source SFF carries the torso-anchored hold sprite (group 5011)
+    # used by the original throw victim poses.  The old fallback used the
+    # standing hit action 5000, whose axis is at the feet: binding that at
+    # the attacker's hand looked like holding the opponent by the feet.
+    # Use the victim's own hold sprite so the bind point is the torso.
+    held = next((s for s in (sff.sprites if sff else ())
+                 if s.group == 5011), None)
+    if held is not None:
+        air[65003] = ([(held.group, held.number, 0, 0, 255, "", [], [])], 0)
+        cfg.setdefault("anims", {})[76] = 65003
+        anims[76] = 65003
 
 
 def _clean_def_path(value):
@@ -8536,7 +8547,7 @@ def build_char(name, cfg, global_pal=None):
     # Stale source hashes or changed manual values fail closed at build time.
     from calibration.native import apply_profile
     apply_profile(ROOT, name, cfg, cns_moves, air)
-    wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers)
+    wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers, sff)
     if name in COUNTER_GRAB_POST_CAL:
         _rows = COUNTER_GRAB_POST_CAL[name]
         wire_counter_grabs(cfg, _rows)
