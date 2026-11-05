@@ -19631,6 +19631,27 @@ AirBlowForce:
 +   rts
 .ENDS
 
+; Projectile-clash feedback: the two shots are already freed, so slot 0
+; is available for a normal impact spark at the contact point.  Lives in
+; the small gap after AirBlowForce ($0EDC-$0F00) because the Fight bank
+; and the ProjClash window are full.
+.BANK 50 SLOT 0
+.ORGA $0EE0
+.SECTION "ProjClashFx" FORCE
+PC_spark:
+    rep #$20
+    .ACCU 16
+    lda.w SPARKS
+    sta scr0
+    lda.w SPARKS+2
+    sta scr1
+    lda #0                              ; generic hit spark
+    jsr SparkSpawnAt
+    lda #SFX_GUARD.w                    ; metallic clash cue
+    jsr SfxPlay
+    rts
+.ENDS
+
 ; Benimaru's strong Raikouken: the source hand is at -116 (the weak hand is
 ; at -76) and the port's synthetic shot only had a horizontal VX.  Spawn the
 ; strong shot at the raised hand and give it a slight upward VY so the ball
@@ -19770,6 +19791,7 @@ ProjClash:
     stz.w SPARKS+SPK_ANIM+1
     stz.w SPARKS+SPK_ANIM+SPK_SIZE
     stz.w SPARKS+SPK_ANIM+SPK_SIZE+1
+    jsr PC_spark                        ; clash spark + guard cue
     rts
 PC_out8:
     rep #$20

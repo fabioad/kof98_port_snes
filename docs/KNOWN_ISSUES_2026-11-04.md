@@ -287,6 +287,12 @@ PalFX/AfterImage (Categoria E).
   de dano (corpo do Shou'ou Ken forte da Sakura em 26, projétil soma à
   parte).
 - **Clark** — Frankensteiner corrigido em 05/11 (30 de dano).
+- **Choque de projéteis (05/11)** — quando dois projéteis de lados
+  opostos se encontram, ambos são liberados e um spark de impacto +
+  `SFX_GUARD` marcam o choque. Sem arte nova; cobre o caso de dois tiros
+  simultâneos e preserva o tiro solitário. Regressões:
+  `tools/test_projectile_clash_headless.py` (slots injetados) e
+  `tools/test_projectile_clash_input_headless.py` (comandos reais).
 - **Categoria A** — concluída; manter a regressão de comandos.
 
 ## Áudio
@@ -302,9 +308,9 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$1723`**
+- checksum **`$20EB`**
 - layout MSU **`0xDA0E`**
-- `.sfc` SHA-256 `2ddfce44…57bfb`
+- `.sfc` SHA-256 `4718dd6a…31fad2`
 - `.msu` SHA-256 `e705d231…e0a6d9`
 
 ## Referências
