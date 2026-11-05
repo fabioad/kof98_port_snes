@@ -91,6 +91,10 @@ A correção do bit3 também foi o que destravou esses projéteis.
 `tools/test_category_d_batch4_headless.py` — **27 golpes PASS**
 (quinto bloco, 05/11: Yashiro, Shermie e Chris).
 
+`tools/test_category_d_batch5_headless.py` — **49 golpes PASS**
+(sexto bloco, 05/11: Yamazaki, Blue Mary, Geese, Krauser, Ken, Chun-Li,
+Sakura, Heavy D, Brian, Billy e Lucky).
+
 - Terry: 1050 14, 1450 12, 1550 30, 1560 34, 1600 16, 1700 20,
   3100 32, 3200 34 (3 contatos), 3250 48 (3 contatos), 3050 50;
 - Andy: 1400 12, 1450 8, 1500 14, 1160 14, 3000 37, 3010 52, 3050 57,
@@ -297,6 +301,38 @@ Observações:
 Verificação: `tools/test_category_d_batch4_headless.py` — **27 golpes
 PASS**.
 
+### Yamazaki, Blue Mary, Geese, Krauser, Ken, Chun-Li, Sakura, Heavy D, Brian, Billy e Lucky (sexto bloco)
+
+| Personagem | Golpes ligados (sid) | Dano medido |
+|---|---|---|
+| **Yamazaki** | Bakudan Pachiki 1400 (107), Todome 1600/1601 (108/109), MAX Guillotine 3020 (110) | 20/20/15/30 |
+| **Blue Mary** | Straight Slicer 1600/1610 (112/113), Super Dunk 3000/30000 (114/58), Dynamite Swing 3100 (62), Splash Rose 3300/3400 (64/66), Typhoon/Infinity Rose 3800 (68) | 20/22/30/40/25/25/30/30 |
+| **Geese** | Raimei Gouha Nage 1500 (107), Shinkuu Nage 1600 (108) | 25/30 |
+| **Krauser** | Phoenix Throw 1600 (107), Kaiser Claw 1700 (108), Kaiser Inferno 3100/3150 (109/110), Unlimited Desire 3300/3310/3320 (111/112/113) | 25/30/30/40/30/35/40 |
+| **Ken** | Tatsumaki aereo 1250 (107), Oosoto Mawashi 1320 (108), Shippuu Jinrai 3100/3150 (109/110), Shinryuuken 3200/3201 (111/112) | 20/25/30/40/30 |
+| **Chun-Li** | Kikouken 1050 (107), Spinning Bird aereo 1250 (108), Kikou Shou 3000 (109), Houyoku Sen 3100 (110), Hazan Tenshou 3200 (111) | 20/25/25/30/35 |
+| **Sakura** | Ouka Kyaku 1400 (107), Haru Ichiban 3150 (108), Midare Zakura 3200/3250 (109/110), Shinkuu Hadouken 3300 (111) | 20/35/30/40/30 |
+| **Heavy D!** | D. Shadow 2200 (107) | 35 |
+| **Brian** | American Supernova 3300 (107), Galaxy Cyclone 3400 (108), Big Bang Tackle 3500 (109), American Final Tackle 3600 (110) | 35/40/30/40 |
+| **Billy** | Flaming Stick Spin 1860 (107), Super Stick Swing S 2510 (108), Chou HongRenSalgon S 2600 (109), MAX2 6000 (110) | 25/30/35/45 |
+| **Lucky** | Shoot 2/3/4 2200/2300/2400 (107), Finger Roll 2500 (108), Slam 2700/2800 (109), Air Slam 4700 (110), Finger Roll SDM 3100 (111), Shoot Out 3400/3500 (112) | 20/25/25/30/30/35 |
+
+Observações:
+
+- Blue Mary usa os sids livres 58/62/64/66/68 e 112-114; os slots
+  originais 107-111 (Vertical Arrow, Goodnight e Typhoon) foram
+  preservados.
+- Geese Shinkuu Nage usa HCBx2 (o HCB+P já é o Raimei); Krauser Phoenix
+  usa DP+P; os golpes HCB dos demais ganharam prioridade para não serem
+  consumidos pelo QCB de mesmo tamanho.
+- Vários golpes reusam clipes já carregados: Yamazaki 2201/3020/3700;
+  Mary 3301; Krauser 3600/3700; Ken 1250; Heavy D 2000; Brian 3600;
+  Billy 2500; Lucky 2100/2900.
+- Projéteis: Chun-Li 1050/3000 e Lucky 3100 usam `POST_CAL_PROJS`.
+
+Verificação: `tools/test_category_d_batch5_headless.py` — **49 golpes
+PASS**.
+
 ### Ainda bloqueado
 
 - **Kyo 3010** (Orochinagi forte) — o comando QCF+a não estabilizou no
@@ -310,10 +346,10 @@ PASS**.
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$B0D3`**
-- layout MSU **`0x943B`**
-- `.sfc` SHA-256 `2dd74131…19bf04`
-- `.msu` SHA-256 `c7e9d780…445ed2`
+- checksum **`$B426`**
+- layout MSU **`0x09B2`**
+- `.sfc` SHA-256 `b17c6c69…ae6001`
+- `.msu` SHA-256 `b303f958…14b693b8`
 
 Copie `.sfc` e `.msu` juntos.
 

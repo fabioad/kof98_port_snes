@@ -153,17 +153,17 @@ continuações/fases do golpe pai.
 | **Yashiro** | Odoru Daichi 2200/2210 (20), Kujiku Daichi 2300/2310 (22), MAX Million Bash 3020 (44), Final Impact 3100/3120 (49), Araburu Daichi 3600/3620 (30) e Ankoku Jigoku 3700/3720 (40) implementados em 05/11 |
 | **Shermie** | Axle Spin/Shoot 1000/1050/1100/1150 (15), Whip 1200/1250 (20), Spiral 1300 (25), Carnival 2100 (30), Shajitsu 7100/7150 (25), Mugetsu/Yatanagi 7225/7250/7275/7350 (30), Shukumei 8000 (40) e Ankoku Raikouken 8100/8150 (25) implementados em 05/11 |
 | **Chris** | Slide Touch 1300/1350 (20), Direction Change 1500/1550 (20), Shooting Dancer 1600/1650 (10), Twister/Chain Slide 2100/2200 (8), Taiyou 7000/7010 (15), Tsuki 7200/7250 (30), Shishi 7300/7350 (35) e Gouka/Ankoku Orochinagi 8000/8050/8100/8105 (45) implementados em 05/11 |
-| **Yamazaki** | Bakudan Pachiki 1400; Todome 1600; MAX Guillotine 3020. 3000/3010/3150 religados (04/11) |
-| **Blue Mary** | Straight Slicer 1600/1610; Super Dunk 3000/30000; Dynamite 3100; Splash Rose 3300/3400; Typhoon 3800; Infinity Rose 50000. 3060/4000 religados (04/11) |
-| **Geese** | Raimei Gouha Nage 1500; Shinkuu Nage 1600. 3250 religado (04/11) |
-| **Krauser** | Phoenix Throw 1600; Kaiser Claw 1700; Kaiser Inferno 3100/3150; Unlimited Desire 3300/3310/3320. 3070/3220 religados (04/11) |
-| **Ken** | Tatsumaki aéreo 1250; Oosoto Mawashi 1320; Shippuu Jinrai 3100/3150; Shinryuuken 3200. 3050 religado (04/11) |
-| **Chun-Li** | Kikouken novo 1050; Spinning Bird aéreo 1250; Kikou Shou 3000; Houyoku Sen 3100; Hazan Tenshou 3200. 3300 religado (04/11) |
-| **Sakura** | Ouka Kyaku 1400; Haru Ichiban 3150; Midare Zakura 3200/3250; 3300 |
-| **Heavy D** | D. Shadow 2200 |
-| **Brian** | American Supernova 3300; Galaxy Cyclone 3400; Big Bang Tackle 3500/3600 |
-| **Billy** | Flaming Stick Spin 1860; entradas 2510/2600/6000 |
-| **Lucky** | Shoot 2/3/4 2200/2300/2400; Finger Roll 2500; Slam 2700/2800; 4700; Finger Roll SDM 3100; Shoot Out 3400/3500 |
+| **Yamazaki** | Bakudan Pachiki 1400 (20), Todome 1600/1601 (20/15) e MAX Guillotine 3020 (30) implementados em 05/11 |
+| **Blue Mary** | Straight Slicer 1600/1610 (20/22), Super Dunk 3000/30000 (30/40), Dynamite 3100 (25), Splash Rose 3300/3400 (25/30) e Typhoon/Infinity Rose 3800 (30) implementados em 05/11 |
+| **Geese** | Raimei Gouha Nage 1500 (25) e Shinkuu Nage 1600 (30) implementados em 05/11 |
+| **Krauser** | Phoenix Throw 1600 (25), Kaiser Claw 1700 (30), Kaiser Inferno 3100/3150 (30/40) e Unlimited Desire 3300/3310/3320 (30/35/40) implementados em 05/11 |
+| **Ken** | Tatsumaki aéreo 1250 (20), Oosoto Mawashi 1320 (25), Shippuu Jinrai 3100/3150 (30/40) e Shinryuuken 3200/3201 (30) implementados em 05/11 |
+| **Chun-Li** | Kikouken novo 1050 (20), Spinning Bird aéreo 1250 (25), Kikou Shou 3000 (25), Houyoku Sen 3100 (30) e Hazan Tenshou 3200 (35) implementados em 05/11 |
+| **Sakura** | Ouka Kyaku 1400 (20), Haru Ichiban 3150 (35), Midare Zakura 3200/3250 (30/40) e Shinkuu Hadouken 3300 (30) implementados em 05/11 |
+| **Heavy D** | D. Shadow 2200 (35) implementado em 05/11 |
+| **Brian** | American Supernova 3300 (35), Galaxy Cyclone 3400 (40), Big Bang Tackle 3500 (30) e American Final Tackle 3600 (40) implementados em 05/11 |
+| **Billy** | Flaming Stick Spin 1860 (25), Super Stick Swing S 2510 (30), Chou HongRenSalgon S 2600 (35) e MAX2 6000 (45) implementados em 05/11 |
+| **Lucky** | Shoot 2/3/4 2200/2300/2400 (20), Finger Roll 2500 (25), Slam 2700/2800 (25), Air Slam 4700 (30), Finger Roll SDM 3100 (30) e Shoot Out 3400/3500 (35) implementados em 05/11 |
 | **Mr. Big** | Crazy Drum 1100/1101 (12), Drum Shot 1500 (20), MAX Blaster Wave 3050 (30, projétil) e Rising Spear 3100 (30) implementados em 05/11 |
 | **Eiji** | Kikouhou 1000 (14, projétil), Mukuro Nui 1600 (14), Zantetsu Tourouken 3100/3120 (20/30) e Yamikari 3200 (35) implementados em 05/11 |
 
@@ -212,9 +212,11 @@ continuações/fases do golpe pai.
    3100/3110/3150. Terceiro bloco concluído em 05/11: Takuma, Joe, Mai,
    Kim, King, Yuri, Mr. Big e Eiji (40 golpes). Quarto bloco concluído em
    05/11: Kensou, Chin, Chang e Choi (20 golpes). Quinto bloco concluído
-   em 05/11: Yashiro, Shermie e Chris (27 golpes; ver
-   `tools/test_category_d_batch4_headless.py`). Restam Kyo Orochinagi
-   3010 e os demais personagens da tabela D.
+   em 05/11: Yashiro, Shermie e Chris (27 golpes). Sexto bloco concluído
+   em 05/11: Yamazaki, Blue Mary, Geese, Krauser, Ken, Chun-Li, Sakura,
+   Heavy D, Brian, Billy e Lucky (49 golpes; ver
+   `tools/test_category_d_batch5_headless.py`). Resta apenas o Kyo
+   Orochinagi 3010 e o runtime do Omega.
 2. **Categoria E** — efeitos e victim states (Ralf, Mature, Chizuru,
    bola de metal do Chang). Na Chizuru faltam os PalFX/AfterImage e o
    clone visual dos supers.
@@ -246,13 +248,11 @@ PalFX/AfterImage (Categoria E).
 
 ## Resumo do que falta
 
-- **Categoria D (restante)** — Robert, Andy, Ryo, Kyo/Nests/Ash, Rugal,
-  Omega Rugal (7100/8000), Takuma, Joe, Mai, Kim, King, Yuri, Mr. Big,
-  Eiji, Kensou, Chin, Chang, Choi, Yashiro, Shermie e Chris concluídos
-  em 05/11; restam o Kyo Orochinagi forte 3010, o runtime do Omega
-  (célula 37 compartilhada no harness) e as pendências dos demais
-  personagens listadas na tabela da seção D (Yamazaki, Mary, Geese,
-  Krauser, Ken, Chun-Li, Sakura, Heavy D, Brian, Billy, Lucky).
+- **Categoria D (restante)** — todos os personagens da tabela D foram
+  concluídos em 05/11 (sexto bloco: Yamazaki, Blue Mary, Geese, Krauser,
+  Ken, Chun-Li, Sakura, Heavy D, Brian, Billy e Lucky). Restam o Kyo
+  Orochinagi forte 3010 e o runtime do Omega Rugal (célula 37
+  compartilhada no harness).
 - **Categoria E** — efeitos/victim states: Ralf (queimadura), Mature
   (PalFX/Explod), Chizuru (clone/PalFX) e a bola de metal do Chang.
 - **Clark** — Frankensteiner 1400/1410→1420 ainda faz só 1 de dano.
@@ -265,10 +265,10 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$B0D3`**
-- layout MSU **`0x943B`**
-- `.sfc` SHA-256 `2dd74131…19bf04`
-- `.msu` SHA-256 `c7e9d780…445ed2`
+- checksum **`$B426`**
+- layout MSU **`0x09B2`**
+- `.sfc` SHA-256 `b17c6c69…ae6001`
+- `.msu` SHA-256 `b303f958…14b693b8`
 
 ## Referências
 

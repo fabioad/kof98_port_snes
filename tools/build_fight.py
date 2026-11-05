@@ -3711,6 +3711,7 @@ if "kensou" in CHARS:
     _ken.setdefault("slice_damage", {}).update({
         107: 15, 108: 18, 109: 0, 110: 30, 111: 25})
     _ken.setdefault("cmd_priority", []).append("CHOURYUU")
+    _ken.setdefault("cmd_priority", []).extend(["SHIPPU_MAX", "SHIPPU"])
     _ken.setdefault("cmd_extra", []).extend([
         {"name": "SEN_SHIPPO_W", "label": "SEN SHIPPO",
          "state": 1300, "posture": 3, "time": 22,
@@ -4035,6 +4036,392 @@ if "chris" in CHARS:
         {"name": "GOUKA", "label": "DAICHI O HARAU GOUKA",
          "state": 8000, "posture": 3, "time": 30,
          "elems": [(2, 0), (10, 0), (8, 0), (0, 3)]},
+    ])
+
+if "yamazaki" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("yamazaki", []).extend([
+        (107, 1400, 1400),     # Bakudan Pachiki
+        (108, 1600, 1600),     # Todome
+        (109, 1601, 1601),     # ... follow-up
+        (110, 3020, 3020),     # MAX Guillotine
+    ])
+    _yam = POST_CAL_TWEAKS.setdefault("yamazaki", {})
+    _yam.setdefault("slice_damage", {}).update({
+        107: 20, 108: 20, 109: 15, 110: 30})
+    _yam.setdefault("hitdef_override", {}).update({
+        107: {"active": 1, "damage": 20, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+        108: {"active": 4, "damage": 20, "gdamage": 2, "fall": 1},
+        109: {"active": 11, "damage": 15, "gdamage": 2, "fall": 1},
+    })
+    _yam.setdefault("cmd_priority", []).append("GUILLOTINE_MAX")
+    _yam.setdefault("cmd_extra", []).extend([
+        {"name": "BAKUDAN", "label": "BAKUDAN PACHIKI",
+         "state": 1400, "posture": 3, "time": 22,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 4)]},
+        {"name": "BAKUDAN_S", "label": "BAKUDAN PACHIKI S",
+         "state": 1400, "posture": 3, "time": 22,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 8)]},
+        {"name": "TODOME", "label": "TODOME",
+         "state": 1600, "posture": 3, "time": 26,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "GUILLOTINE_MAX", "label": "MAX GUILLOTINE",
+         "state": 3020, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+    ])
+
+if "mary" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("mary", []).extend([
+        (112, 1600, 1600),     # Straight Slicer
+        (113, 1610, 1610),     # Straight Slicer S
+        (114, 3000, 3000),     # Super Dunk
+        (58, 30000, 3000),     # Super Dunk MAX
+        (62, 3100, 3100),      # Mary's Dynamite Swing
+        (64, 3300, 3301),      # Splash Rose
+        (66, 3400, 3301),      # Splash Rose S
+        (68, 3800, 3800),      # Mary's Typhoon / Infinity Rose
+    ])
+    _mary = POST_CAL_TWEAKS.setdefault("mary", {})
+    _mary.setdefault("slice_damage", {}).update({
+        112: 20, 113: 22, 114: 30, 58: 40,
+        62: 25, 64: 25, 66: 30, 68: 30})
+    _mary.setdefault("hitdef_override", {}).update({
+        112: {"active": 4, "damage": 20, "gdamage": 2, "fall": 1},
+        113: {"active": 4, "damage": 22, "gdamage": 2, "fall": 1},
+        114: {"active": 1, "damage": 30, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+        58: {"active": 1, "damage": 40, "gdamage": 2, "p2state": 0xFF,
+             "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+        62: {"active": 4, "damage": 25, "gdamage": 2, "fall": 1},
+        64: {"active": 1, "damage": 25, "gdamage": 2, "p2state": 0xFF,
+             "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+        66: {"active": 1, "damage": 30, "gdamage": 2, "p2state": 0xFF,
+             "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+        68: {"active": 1, "damage": 30, "gdamage": 2, "p2state": 0xFF,
+             "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+    })
+    _mary.setdefault("cmd_extra", []).extend([
+        {"name": "SLICER_W", "label": "STRAIGHT SLICER",
+         "state": 1600, "posture": 3, "time": 22,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 1)]},
+        {"name": "SLICER_S", "label": "STRAIGHT SLICER S",
+         "state": 1610, "posture": 3, "time": 22,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 2)]},
+        {"name": "SUPER_DUNK", "label": "SUPER DUNK",
+         "state": 3000, "posture": 3, "time": 22,
+         "elems": [(4, 0), (2, 0), (6, 0), (0, 1)]},
+        {"name": "SUPER_DUNK_MAX", "label": "SUPER DUNK MAX",
+         "state": 30000, "posture": 3, "time": 26,
+         "elems": [(4, 0), (2, 0), (6, 0), (0, 2)]},
+        {"name": "DYNAMITE", "label": "MARY'S DYNAMITE SWING",
+         "state": 3100, "posture": 3, "time": 26,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 1)]},
+        {"name": "ROSE_W", "label": "SPLASH ROSE",
+         "state": 3300, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 1)]},
+        {"name": "ROSE_S", "label": "SPLASH ROSE S",
+         "state": 3400, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 2)]},
+        {"name": "TYPHOON", "label": "MARY'S TYPHOON",
+         "state": 3800, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 1)]},
+        {"name": "INFINITY", "label": "INFINITY ROSE",
+         "state": 3800, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 2)]},
+    ])
+
+if "geese" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("geese", []).extend([
+        (107, 1500, 1500),     # Raimei Gouha Nage
+        (108, 1600, 1600),     # Shinkuu Nage
+    ])
+    _gee = POST_CAL_TWEAKS.setdefault("geese", {})
+    _gee.setdefault("slice_damage", {}).update({107: 25, 108: 30})
+    _gee.setdefault("hitdef_override", {}).update({
+        107: {"active": 1, "damage": 25, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+        108: {"active": 1, "damage": 30, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+    })
+    _gee.setdefault("cmd_extra", []).extend([
+        {"name": "RAIMEI", "label": "RAIMEI GOUHA NAGE",
+         "state": 1500, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "SHINKUU", "label": "SHINKUU NAGE",
+         "state": 1600, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0),
+                   (4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+    ])
+
+if "krauser" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("krauser", []).extend([
+        (107, 1600, 1600),     # Phoenix Throw
+        (108, 1700, 1700),     # Kaiser Claw
+        (109, 3100, 3100),     # Kaiser Inferno
+        (110, 3150, 3150),     # MAX Kaiser Inferno
+        (111, 3300, 3300),     # Unlimited Desire
+        (112, 3310, 3310),     # Unlimited Desire S
+        (113, 3320, 3320),     # MAX Unlimited Desire
+    ])
+    _kra = POST_CAL_TWEAKS.setdefault("krauser", {})
+    _kra.setdefault("slice_damage", {}).update({
+        107: 25, 108: 30, 109: 30, 110: 40,
+        111: 30, 112: 35, 113: 40})
+    _kra.setdefault("hitdef_override", {}).update({
+        107: {"active": 3, "damage": 25, "gdamage": 2, "fall": 1},
+        108: {"active": 6, "damage": 30, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+    })
+    _kra.setdefault("cmd_priority", []).extend(
+        ["INFERNO_MAX", "INFERNO"])
+    _kra.setdefault("cmd_extra", []).extend([
+        {"name": "PHOENIX", "label": "PHOENIX THROW",
+         "state": 1600, "posture": 3, "time": 22,
+         "elems": [(4, 0), (2, 0), (6, 0), (0, 1)]},
+        {"name": "KAISER_CLAW", "label": "KAISER CLAW",
+         "state": 1700, "posture": 3, "time": 26,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "INFERNO", "label": "KAISER INFERNO",
+         "state": 3100, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "INFERNO_MAX", "label": "MAX KAISER INFERNO",
+         "state": 3150, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 8)]},
+        {"name": "UNLIMITED_W", "label": "UNLIMITED DESIRE",
+         "state": 3300, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 4)]},
+        {"name": "UNLIMITED_S", "label": "UNLIMITED DESIRE S",
+         "state": 3310, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 8)]},
+        {"name": "UNLIMITED_MAX", "label": "MAX UNLIMITED DESIRE",
+         "state": 3320, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 12)]},
+    ])
+
+if "ken" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("ken", []).extend([
+        (107, 1250, 1250),     # Tatsumaki aereo
+        (108, 1320, 1320),     # Oosoto Mawashi Geri
+        (109, 3100, 3100),     # Shippuu Jinrai Kyaku
+        (110, 3150, 3150),     # MAX Shippuu Jinrai
+        (111, 3200, 3200),     # Shinryuuken
+        (112, 3201, 3201),     # ... follow-up
+    ])
+    _ken = POST_CAL_TWEAKS.setdefault("ken", {})
+    _ken.setdefault("slice_damage", {}).update({
+        107: 20, 108: 25, 109: 30, 110: 40, 111: 30, 112: 20})
+    _ken.setdefault("cmd_priority", []).extend(["SHIPPU_MAX", "SHIPPU"])
+    _ken.setdefault("cmd_extra", []).extend([
+        {"name": "TATSUMAKI_AIR", "label": "TATSUMAKI AEREO",
+         "state": 1250, "posture": 3, "time": 22,
+         "elems": [(4, 0), (2, 0), (6, 0), (0, 4)]},
+        {"name": "OOSOTO", "label": "OOSOTO MAWASHI GERI",
+         "state": 1320, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 1)]},
+        {"name": "SHIPPU", "label": "SHIPPUU JINRAI KYAKU",
+         "state": 3100, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "SHIPPU_MAX", "label": "MAX SHIPPUU JINRAI",
+         "state": 3150, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 8)]},
+        {"name": "SHINRYUU", "label": "SHINRYUUKEN",
+         "state": 3200, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+    ])
+
+if "chunli" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("chunli", []).extend([
+        (107, 1050, 1000),     # Kikouken novo (reuse the fireball)
+        (108, 1250, 1250),     # Spinning Bird aereo
+        (109, 3000, 3000),     # Kikou Shou
+        (110, 3100, 1250),     # Houyoku Sen
+        (111, 3200, 3200),     # Hazan Tenshou
+    ])
+    PROJECTILE_RELEASE.setdefault("chunli", {}).update({107: 0, 109: 11})
+    POST_CAL_PROJS.setdefault("chunli", {}).update({
+        107: (0x0400, 20, 0x0A),
+        109: (0x0400, 25, 0x0A),
+    })
+    _chun = POST_CAL_TWEAKS.setdefault("chunli", {})
+    _chun.setdefault("slice_damage", {}).update({
+        107: 0, 108: 25, 109: 0, 110: 30, 111: 35})
+    _chun.setdefault("cmd_priority", []).append("HOUYOKU")
+    _chun.setdefault("cmd_extra", []).extend([
+        {"name": "KIKOUKEN_NEW", "label": "KIKOUKEN",
+         "state": 1050, "posture": 3, "time": 22,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 2)]},
+        {"name": "SPINNING_AIR", "label": "SPINNING BIRD AEREO",
+         "state": 1250, "posture": 3, "time": 22,
+         "elems": [(4, 0), (2, 0), (6, 0), (0, 1)]},
+        {"name": "KIKOU_SHOU", "label": "KIKOU SHOU",
+         "state": 3000, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "HOUYOKU", "label": "HOUYOKU SEN",
+         "state": 3100, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "HAZAN", "label": "HAZAN TENSHOU",
+         "state": 3200, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 4)]},
+    ])
+
+if "sakura" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("sakura", []).extend([
+        (107, 1400, 1400),     # Ouka Kyaku
+        (108, 3150, 3150),     # Haru Ichiban
+        (109, 3200, 3200),     # Midare Zakura
+        (110, 3250, 3250),     # MAX Midare Zakura
+        (111, 3300, 3300),     # Shinkuu Hadouken
+    ])
+    _sak = POST_CAL_TWEAKS.setdefault("sakura", {})
+    _sak.setdefault("slice_damage", {}).update({
+        107: 20, 108: 35, 109: 30, 110: 40, 111: 30})
+    _sak.setdefault("hitdef_override", {}).update({
+        107: {"active": 4, "damage": 20, "gdamage": 2, "fall": 1},
+        111: {"active": 2, "damage": 30, "gdamage": 2, "p2state": 0xFF,
+              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+    })
+    _sak.setdefault("cmd_priority", []).append("HARU")
+    _sak.setdefault("cmd_extra", []).extend([
+        {"name": "OUKA", "label": "OUKA KYAKU",
+         "state": 1400, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 1)]},
+        {"name": "OUKA_S", "label": "OUKA KYAKU S",
+         "state": 1400, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 2)]},
+        {"name": "HARU", "label": "HARU ICHIBAN",
+         "state": 3150, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "MIDARE", "label": "MIDARE ZAKURA",
+         "state": 3200, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "MIDARE_MAX", "label": "MAX MIDARE ZAKURA",
+         "state": 3250, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 8)]},
+        {"name": "SHINKUU", "label": "SHINKUU HADOUKEN",
+         "state": 3300, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 4)]},
+    ])
+
+if "heavyd" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("heavyd", []).append((107, 2200, 2000))
+    _heav = POST_CAL_TWEAKS.setdefault("heavyd", {})
+    _heav.setdefault("slice_damage", {}).update({107: 35})
+    _heav.setdefault("hitdef_override", {}).update({
+        107: {"active": 1, "damage": 35, "gdamage": 2, "fall": 1},
+    })
+    _heav.setdefault("cmd_priority", []).append("D_SHADOW")
+    _heav.setdefault("cmd_extra", []).append({
+        "name": "D_SHADOW", "label": "D. SHADOW",
+        "state": 2200, "posture": 3, "time": 30,
+        "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 4)]})
+
+if "brian" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("brian", []).extend([
+        (107, 3300, 3600),     # American Supernova
+        (108, 3400, 3600),     # Galaxy Cyclone
+        (109, 3500, 3600),     # Big Bang Tackle
+        (110, 3600, 3600),     # American Final Tackle
+    ])
+    _bri = POST_CAL_TWEAKS.setdefault("brian", {})
+    _bri.setdefault("slice_damage", {}).update({
+        107: 35, 108: 40, 109: 30, 110: 40})
+    _bri.setdefault("hitdef_override", {}).update({
+        107: {"active": 2, "damage": 35, "gdamage": 2, "fall": 1},
+        108: {"active": 2, "damage": 40, "gdamage": 2, "fall": 1},
+        109: {"active": 2, "damage": 30, "gdamage": 2, "fall": 1},
+        110: {"active": 2, "damage": 40, "gdamage": 2, "fall": 1},
+    })
+    _bri.setdefault("cmd_priority", []).append("GALAXY")
+    _bri.setdefault("cmd_extra", []).extend([
+        {"name": "SUPERNOVA", "label": "AMERICAN SUPERNOVA",
+         "state": 3300, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "GALAXY", "label": "GALAXY CYCLONE",
+         "state": 3400, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "BIGBANG", "label": "BIG BANG TACKLE",
+         "state": 3500, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "FINAL_TACKLE", "label": "AMERICAN FINAL TACKLE",
+         "state": 3600, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 8)]},
+    ])
+
+if "billy" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("billy", []).extend([
+        (107, 1860, 1860),     # Flaming Stick Spin
+        (108, 2510, 2500),     # Super Stick Swing S
+        (109, 2600, 2600),     # Chou HongRenSalgon S
+        (110, 6000, 6000),     # MAX2
+    ])
+    _bil = POST_CAL_TWEAKS.setdefault("billy", {})
+    _bil.setdefault("slice_damage", {}).update({
+        107: 25, 108: 30, 109: 35, 110: 45})
+    _bil.setdefault("cmd_priority", []).extend(["MAX2", "HONGREN"])
+    _bil.setdefault("cmd_extra", []).extend([
+        {"name": "FLAMING", "label": "FLAMING STICK SPIN",
+         "state": 1860, "posture": 3, "time": 26,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 4)]},
+        {"name": "STICK_S", "label": "SUPER STICK SWING S",
+         "state": 2510, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "HONGREN", "label": "CHOU HONGRENSALGON S",
+         "state": 2600, "posture": 3, "time": 30,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "MAX2", "label": "MAX2",
+         "state": 6000, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 4)]},
+    ])
+
+if "lucky" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("lucky", []).extend([
+        (107, 2200, 2100),     # Shoot 2/3/4
+        (108, 2500, 2100),     # Finger Roll
+        (109, 2700, 2100),     # Slam
+        (110, 4700, 2100),     # Air Slam
+        (111, 3100, 2900),     # Finger Roll SDM (projectile)
+        (112, 3400, 2100),     # Shoot Out / Desperate
+    ])
+    PROJECTILE_RELEASE.setdefault("lucky", {}).update({111: 4})
+    POST_CAL_PROJS.setdefault("lucky", {}).update({
+        111: (0x0500, 30, 0x0A),
+    })
+    _luc = POST_CAL_TWEAKS.setdefault("lucky", {})
+    _luc.setdefault("slice_damage", {}).update({
+        107: 20, 108: 25, 109: 25, 110: 30, 111: 0, 112: 35})
+    _luc.setdefault("hitdef_override", {}).update({
+        107: {"active": 1, "damage": 20, "gdamage": 2, "fall": 1},
+        108: {"active": 1, "damage": 25, "gdamage": 2, "fall": 1},
+        109: {"active": 1, "damage": 25, "gdamage": 2, "fall": 1},
+        110: {"active": 1, "damage": 30, "gdamage": 2, "fall": 1},
+        112: {"active": 1, "damage": 35, "gdamage": 2, "fall": 1},
+    })
+    _luc.setdefault("cmd_priority", []).extend(["AIR_SLAM", "FINGER"])
+    _luc.setdefault("cmd_extra", []).extend([
+        {"name": "SHOOT2", "label": "SHOOT 2",
+         "state": 2200, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 1)]},
+        {"name": "SHOOT3", "label": "SHOOT 3",
+         "state": 2200, "posture": 3, "time": 22,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 2)]},
+        {"name": "SHOOT4", "label": "SHOOT 4",
+         "state": 2200, "posture": 3, "time": 26,
+         "elems": [(2, 0), (10, 0), (8, 0), (0, 3)]},
+        {"name": "FINGER", "label": "FINGER ROLL",
+         "state": 2500, "posture": 3, "time": 22,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "SLAM", "label": "SLAM",
+         "state": 2700, "posture": 3, "time": 26,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        {"name": "AIR_SLAM", "label": "AIR SLAM",
+         "state": 4700, "posture": 3, "time": 26,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 8)]},
+        {"name": "FINGER_SDM", "label": "FINGER ROLL SDM",
+         "state": 3100, "posture": 3, "time": 26,
+         "elems": [(4, 0), (2, 0), (6, 0), (0, 3)]},
+        {"name": "SHOOTOUT", "label": "SHOOT OUT",
+         "state": 3400, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 12)]},
     ])
 
 if "iori" in CHARS:

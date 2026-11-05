@@ -82,7 +82,9 @@ class MaryRecoveryTests(unittest.TestCase):
             self.skipTest("generated tables not built")
         seg = _table(self.text, "maryAnimTab:", "maryAnim0:")
         ptrs = [l.strip() for l in seg.splitlines() if l.strip().startswith(".dw")]
-        self.assertEqual(len(ptrs), 112)
+        # The base roster stops at sid 111; the Category D pass adds the
+        # 112-114 follow-ups and reuses 58/62/64/66/68 for its specials.
+        self.assertGreaterEqual(len(ptrs), 112)
         self.assertEqual(ptrs[107], ".dw maryAnim107")
         self.assertEqual(ptrs[108], ".dw maryAnim107")   # same AIR 1111
         self.assertEqual(ptrs[109], ".dw maryAnim99")    # reuse 1505 cels
