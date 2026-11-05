@@ -59,17 +59,21 @@ reais:
 
 ## B. Golpes que dependem de clone/Helper
 
-**Chizuru (DP corrigido em 04/11; demais golpes de clone pendentes).**
-Quase todas as especiais/supers são um clone/Helper:
+**Chizuru (DP e especiais/supers de clone religados em 04/11).**
+Quase todas as especiais/supers da origem são um clone/Helper:
 
-- 1000/1004 (QCF), 1100/1102 (QCB), 1300/1400 (HCB), 2000/2100/2200
-  (supers) continuam aproximados.
-- O **DP/antiáreo (1200)** já foi corrigido: o state 1200 era só a
-  invocação do clone; quem subia era o Helper 1100 (anim 1100/1110,
-  `VelSet y=-9.5`, HitDefs e descida). Agora o sid 52 usa um clipe nativo
-  curto (AIR 13000) com a velocidade de subida e o HitDef do Helper. O
-  teste `test_chizuru_dp_headless` confirma subida de ~98 px, dano 18,
-  knockdown e recuperação.
+- O **DP/antiáreo (1200)** foi o caso crítico: o state 1200 era só a
+  invocação; quem subia era o Helper 1100. O sid 52 usa um clipe nativo
+  curto (AIR 13000) com a velocidade de subida e o HitDef do Helper.
+- **QCF/QCB/HCB/RDP (1000/1004, 1100/1102, 1300/1400, 1500)** e os
+  **supers 2000/2100/2200** agora chegam aos states e acertam com os
+  HitDefs de origem. O HCB era consumido pelo QCB (os dois encurtados para
+  quatro elementos); `cmd_priority` corrigiu a ordem.
+- O super 2000 usa o clipe 13001 (hold de invocação de 130 → 6 ticks) e
+  dois contatos (36); o 2200 foi fixado em 48.
+- O **sprite do clone** continua ausente: a Chizuru executa a pose/ataque
+  com o próprio corpo. É a mesma aproximação do DP; faltam só os efeitos
+  de PalFX/AfterImage (Categoria E).
 
 Outros com **HitDef/ataque real dentro de Helper** (o build aproxima;
 alguns funcionam, outros ficam incompletos):
@@ -193,15 +197,16 @@ continuações/fases do golpe pai.
 
 ## Prioridade recomendada
 
-1. **Chizuru** — DP concluído; faltam os outros golpes de clone
-   (1000/1004, 1100/1102, 1300/1400, 2000/2100/2200).
-2. **Categoria D** — variantes MAX/SDM, começando pelos golpes normais
+1. **Categoria D** — variantes MAX/SDM, começando pelos golpes normais
    que ainda faltam (Phoenix Fang da Athena, Orochinagi do Nests/Ash em
    outras variantes, especiais de Terry/Andy/Ryo/Robert).
-3. **Categoria E** — efeitos e victim states (Ralf, Mature, Chizuru,
-   bola de metal do Chang).
-4. **Clark** — cadeias e Flashing Elbow concluídos em 04/11; resta o
+2. **Categoria E** — efeitos e victim states (Ralf, Mature, Chizuru,
+   bola de metal do Chang). Na Chizuru faltam os PalFX/AfterImage e o
+   clone visual dos supers.
+3. **Clark** — cadeias e Flashing Elbow concluídos em 04/11; resta o
    Frankensteiner 1400/1410→1420 (1 de dano).
+4. **Chizuru** — DP e golpes de clone concluídos em 04/11 (10 comandos);
+   resta apenas o sprite do clone/efeitos.
 5. **Categoria A** — concluída em 04/11 (ver tabela acima); manter a
    regressão dos comandos ao mexer no parser/matcher.
 
@@ -226,9 +231,9 @@ Ainda faltam os outros golpes de clone dela (1000/1004, 1100/1102,
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$8701`**
+- checksum **`$823D`**
 - layout MSU **`0x173A`**
-- `.sfc` SHA-256 `b9042b00…85b9c`
+- `.sfc` SHA-256 `b4e477b0…c57b2`
 - `.msu` SHA-256 `ce4b2ade…12859`
 
 ## Referências

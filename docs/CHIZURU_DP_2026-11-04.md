@@ -51,9 +51,9 @@ Sem mexer no mapeamento do comando (`moves[52] = 1200`, necessário para o
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$8701`**
+- checksum **`$823D`**
 - layout MSU **`0x173A`**
-- `.sfc` SHA-256 `b9042b00…85b9c`
+- `.sfc` SHA-256 `b4e477b0…c57b2`
 - `.msu` SHA-256 `ce4b2ade…12859`
 
 > O clipe 13000 adicionou tiles ao blob CHR do Chizuru, então o **layout e
@@ -61,6 +61,8 @@ Sem mexer no mapeamento do comando (`moves[52] = 1200`, necessário para o
 
 ## Pendente
 
-Os outros golpes de clone da Chizuru (1000/1004, 1100/1102, 1300/1400,
-2000/2100/2200) continuam aproximados. O mesmo padrão (clipe nativo curto
-+ velocidade + HitDef do Helper) pode ser aplicado a eles.
+Os outros golpes de clone da Chizuru foram religados em 04/11 (ver
+`docs/CHIZURU_CLONES_2026-11-04.md`): QCF/QCB/HCB/RDP e os supers
+2000/2100/2200 chegam aos states e acertam. O sprite do clone continua
+ausente (a Chizuru executa a pose/ataque com o próprio corpo), restando
+apenas o clone visual e os efeitos de PalFX/AfterImage.

@@ -1953,6 +1953,28 @@ if _chizuru is not None:
     # Drop the source's early var(5)/animelem exit rows; the custom clip
     # ends on its own and the engine falls back to stand.
     _chizuru.setdefault("trans_drop", []).append((52, 0))
+    # The shortened HCB (F, D, B, x) and QCB (D, DB, B, x) motions both have
+    # four elements, so file order let QCB consume the HCB tail.  Give the
+    # half-circle-back commands priority; they only match when the leading
+    # F is present, so QCB still works.
+    _chizuru["cmd_priority"] = ("HCB_X", "HCB_Y")
+    # Super 2000's source clip holds the summon pose for 130 ticks before
+    # the clone rush; the engine does not run SuperPause, so that is dead
+    # time.  13001 is a copy with the hold shortened to 6.  The duplicate
+    # command on sid 88 shares the same state/animation.
+    _chizuru["anims"][85] = 13001
+    _chizuru["anims"][88] = 13001
+    # 2000 is a multi-hit clone rush; one HitDef row otherwise latches after
+    # the first contact.  Re-arm at the source's later strike elements.
+    _chizuru.setdefault("hit_soft_resets", {})[2000] = [12, 18, 30]
+    # 2200 has two source HitDefs (elements 22/23); the first knocks down in
+    # the port, so the second never connects.  Make the single contact a
+    # proper MAX-super hit instead.
+    _chizuru.setdefault("hit_soft_resets", {})[2200] = [23]
+    # slice_damage is applied after the Kyo-relative damage normalization,
+    # so 48 is the final HUD damage (a hitdef_override value would be scaled
+    # by the 0.12 Chizuru factor).
+    _chizuru.setdefault("slice_damage", {})[87] = 48
 
 # --- restored projectile moves --------------------------------------------
 # A few imported fighters keep their travelling shot in a helper state that
