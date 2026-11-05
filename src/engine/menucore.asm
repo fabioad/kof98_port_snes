@@ -1998,6 +1998,7 @@ MenuEnter:
     jsr MnLoadArt
     lda #0
     sta.w M_ITEM
+    stz.w M_START_SIDE
     jsl MenuDraw
     ; Screen loads can span frames while START is held. Consume edges but
     ; keep the held state so a still-held START cannot fabricate a press.
@@ -2098,7 +2099,14 @@ MT_nodir:
     lda.b scr0
     and #(JOY_ST|JOY_A).w
     beq MT_tryb
-    sep #$20
+    ; Remember which pad began the mode so MenuToSelect can leave that
+    ; player's cursor live instead of always handing the select to P1.
+    lda FP+F_JOYPR+FP2OFS.w
+    and #(JOY_ST|JOY_A).w
+    beq +
+    lda #1
+    sta.w M_START_SIDE
++   sep #$20
     .ACCU 8
     rep #$20
     .ACCU 16
@@ -2243,6 +2251,12 @@ MTS_done:
 MTS_both_human:
     stz.b cpu2
 MTS_cpu_ready:
+    lda.w M_START_SIDE
+    beq MTS_side_done
+    stz.b cpu2                          ; P2 started: keep Pad2 human
+    stz.b lock1
+    stz.b lock2
+MTS_side_done:
     sep #$10
     .INDEX 8
     lda.b framecnt

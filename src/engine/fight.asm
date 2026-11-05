@@ -515,6 +515,7 @@
 .DEFINE UI_SLOT_MOVE CL_VARS+$77
 .DEFINE UI_SLOT_BACK CL_VARS+$78
 .DEFINE UI_SLOT_WIN CL_VARS+$79          ; winner-screen announcer
+.DEFINE M_START_SIDE CL_VARS+$7A        ; menu START came from P2 (0/1)
 .DEFINE UI_SLOT_ROW $7E4FBB             ; word: UiSrc row being reloaded
 .DEFINE UI_SLOT_NEW $7E4FBE             ; word: slot returned by spcLoadEffect
                                         ;   (kept clear of ROW's high byte)
@@ -2655,6 +2656,9 @@ SDO_cur2:
     .ACCU 8
     lda.b cpu2
     beq SDO_p2human
+    lda.w G_MODE                          ; Team VS is always two human pads;
+    cmp #3                                ; cpu2 keeps its power-on default
+    beq SDO_p2human                       ;   and used to hide the P2 ring
     ; CPU side: show the ring while P1 steers the foe pick (solo campaign)
     lda.w G_MODE
     cmp #1
@@ -3530,7 +3534,6 @@ JE_team:
     sta.w T_PICK_SIDE                     ; the newcomer picks the trio
     stz.w T_STEP
     stz.w T_START
-    stz.w T_LASTFRAME
     rep #$20                              ; seed both cursors/faces from the
     .ACCU 16                              ;   members currently in the fight
     lda.w T_I1
@@ -3551,6 +3554,10 @@ JE_team:
     sta.b sel2
 
 JE_audio:
+    ; A fighter CHR stream may still be in flight when START opens the
+    ; select screen.  The far helper retires the pending MSU chunk and DMA
+    ; request before ShowSelect rebuilds VRAM (keeps the Fight bank small).
+    jsl JoinStreamStop
     ; Keep the stage module playing while the joiner picks.  Swapping to the
     ; select theme here forces StartFight to reload the stage module right
     ; after the pick; on SNESMOD that second spcLoad can hang waiting for the
@@ -3608,6 +3615,11 @@ JoinFinish:
     lda #3
     sta.w T_N2
 JF_single:
+    ; A join never runs CampStart (that would discard the waiting side's
+    ; trio).  The far helper clears the stale team launch timer and repairs
+    ; an invalid C_STAGE, which used to send StagePick outside StageTab and
+    ; leave the game frozen after the pick.
+    jsl JoinFinishPrep
     jmp StartFight
 
 ; TEAM VS selection: P1 chooses three fighters, then P2 chooses three.

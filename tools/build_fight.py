@@ -2513,6 +2513,34 @@ if "yuri" in CHARS:
 # category cover it.
 if "robert" in CHARS:
     POST_CAL_REACTIVATED.setdefault("robert", []).append((57, 1210, 1210))
+    # Ryuga 1100/1110 only leave the ground in the follow-up states
+    # 1101/1111 (source velset 2,-6 / 6,-8.5).  Without runtime targets the
+    # ChangeState at AnimTime=0 was dropped and the DP+P move stayed
+    # grounded.  The landing transition returns to stand.
+    POST_CAL_REACTIVATED.setdefault("robert", []).extend([
+        (98, 1101, 1101),
+        (99, 1111, 1111),
+    ])
+    _ro = POST_CAL_TWEAKS.setdefault("robert", {})
+    _ro.setdefault("slice_damage", {}).update({98: 20, 99: 25})
+    _ro.setdefault("extra_trans", []).extend([
+        (98, 0, 1, 0), (99, 0, 1, 0),      # Ryuga lands
+    ])
+    # The air Hien Ryujin dive's only Clsn1 lives on frame 2, after the
+    # imported landing check has already fired.  Arm a contact box from the
+    # first frame and start the HitDef window immediately.
+    _ro.setdefault("air_box_patch_frames", {}).update({
+        1300: {0: [(16, -32, 47, -1)],
+               1: [(16, -32, 47, -1)],
+               2: [(16, -32, 47, -1)]},
+        1310: {0: [(36, -60, 67, -29)],
+               1: [(36, -60, 67, -29)],
+               2: [(36, -60, 67, -29)]},
+    })
+    _ro.setdefault("hitdef_override", {}).update({
+        54: {"active": 1, "damage": 30, "gdamage": 2, "fall": 1},
+        55: {"active": 1, "damage": 30, "gdamage": 2, "fall": 1},
+    })
 
 # Eiji's Kotsu Hazaki: 1300/1310 dash into 1305 when the opponent is within
 # 60 px.  1305 had no runtime slot, so the distance-gated ChangeState was
@@ -3335,16 +3363,19 @@ if "robert" in CHARS:
     _btw.setdefault("hit_soft_resets", {}).update(
         {1400: [12, 19], 1450: [7, 13, 19]})
     _btw.setdefault("cmd_priority", []).extend([
+        # The real HCB+K Hien Shippuu command must win over the shorter
+        # QCB+K "Hien Shippuu '95" extra; both tails match an HCB input.
+        "MFDB_b+db+df", "MFDB_a+db+df",
         "HAOH_MAX", "HAOH_S", "HAOH_W", "SENEN", "RENBU",
         "HIEN_S", "HIEN_W"])
     _btw.setdefault("cmd_extra", []).extend([{
         "name": "HIEN_W", "label": "HIEN SHIPPUU 95",
         "state": 1250, "posture": 3, "time": 22,
-        "elems": [(2, 0), (10, 0), (8, 0), (0, 1)],
+        "elems": [(2, 0), (10, 0), (8, 0), (0, 4)],
     }, {
         "name": "HIEN_S", "label": "HIEN SHIPPUU 95 S",
         "state": 1260, "posture": 3, "time": 22,
-        "elems": [(2, 0), (10, 0), (8, 0), (0, 32)],
+        "elems": [(2, 0), (10, 0), (8, 0), (0, 8)],
     }, {
         "name": "RENBU", "label": "RENBU KYAKU",
         "state": 1400, "posture": 3, "time": 22,

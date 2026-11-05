@@ -25,7 +25,7 @@ F_STATE = 0x4008
 SPARKS = 0x4200
 SPK_SIZE = 20
 OAM = 0x1800
-START, A, DOWN, RIGHT, L = 3, 8, 5, 7, 10
+START, A, DOWN, LEFT, RIGHT, L = 3, 8, 5, 6, 7, 10
 # SNES Y = MUGEN x (weak punch); SNES X = MUGEN y (strong punch);
 # SNES L = MUGEN c (Andy's Hishou Ken command is QCF+c).
 WEAK, STRONG = 1, 9
@@ -35,10 +35,13 @@ EXPECTED_FRAMES = set(range(6))
 # effect on the projectile rows reached by QCF+strong in this port.  Ryo and
 # Robert keep the weak shot on their original sid and the strong one on the
 # next free special slot (61 and 59); Takuma already had both wired (48/49).
-CASES = (("yuri", 48, WEAK), ("ryo", 61, STRONG),
-         ("robert", 59, STRONG), ("takuma", 49, STRONG),
-         # Andy's Hishou Ken was aliased from Kyo's flame to Yuri's Ko'ou Ken.
-         ("andy", 58, L))
+CASES = (("yuri", 48, WEAK, ((DOWN,), (DOWN, RIGHT), (RIGHT,))),
+         ("ryo", 61, STRONG, ((DOWN,), (DOWN, RIGHT), (RIGHT,))),
+         ("robert", 59, STRONG, ((DOWN,), (DOWN, RIGHT), (RIGHT,))),
+         ("takuma", 49, STRONG, ((DOWN,), (DOWN, RIGHT), (RIGHT,))),
+         # Andy's Hishou Ken is QCB+P and lives on sid 52; the old test
+         # used the retired sid 58 / QCF+c mapping.
+         ("andy", 52, WEAK, ((DOWN,), (DOWN, LEFT), (LEFT,))))
 
 
 def step_buttons(core, buttons, ticks=2):
@@ -70,8 +73,14 @@ def effect_cells(core):
                and oam[i * 4 + 1] < 0xF0)
 
 
-def check_shot(core, button, sid):
-    for direction in ((DOWN,), (DOWN, RIGHT), (RIGHT,)):
+def check_shot(core, button, sid, motion):
+    if sid == 52:
+        # The Hishou Ken is an 80 px palm burst; put the dummy across the
+        # screen so the six animation frames are visible before it expires.
+        core.put(0x4000, 60 << 8)
+        core.put(0x4040, 200 << 8)
+        core.step(2)
+    for direction in motion:
         step_buttons(core, direction)
     step_buttons(core, {button})
 
@@ -102,9 +111,9 @@ def main():
     core = Core(CORE, ROM)
     try:
         select = boot_select(core)
-        for name, sid, button in CASES:
+        for name, sid, button, motion in CASES:
             enter_fight(core, select, name, "kyo")
-            check_shot(core, button, sid)
+            check_shot(core, button, sid, motion)
             wait(core, lambda: core.word(F_STATE) == 0, "recover")
             print(f"PASS {name}")
     finally:

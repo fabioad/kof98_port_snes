@@ -300,6 +300,22 @@ PalFX/AfterImage (Categoria E).
   simultâneos e preserva o tiro solitário. Regressões:
   `tools/test_projectile_clash_headless.py` (slots injetados) e
   `tools/test_projectile_clash_input_headless.py` (comandos reais).
+- **Controles/menu/join (05/11)** — no Team VS o anel do P2 agora é
+  desenhado mesmo com o `cpu2` padrão; START no menu com o Pad2 abre o
+  select com o cursor do P2 vivo; START do P2 no select liga o lado
+  oponente; o join limpa o stream de CHR pendente e valida `C_STAGE`/
+  timers antes de `StartFight`, evitando o travamento após a escolha.
+  Regressões: `test_menu_p2_start_headless.py`,
+  `test_midfight_join_headless.py` e `test_team_vs_start_headless.py`.
+- **Robert (05/11)** — Ryuga agora sobe (follow-ups 1101/1111 ligados);
+  o Hien Ryujin aéreo ganhou caixa de contato desde o primeiro frame;
+  o Hien Shippuu '95 passou para chute e o HCB+K real tem prioridade.
+  Regressões: `test_ryo_robert_antiair_headless.py` e
+  `test_kyokugen_projectile_anim_headless.py`.
+- **Omega Rugal (05/11)** — o Gravity Shot usa o projanim 1357 (feixe)
+  em um clipe alternativo comprimido (4 células por frame), não mais a
+  orbe do Gravity Smash; isso elimina o estouro de OAM/VRAM. Regressão:
+  `test_omega_gravity_headless.py` (14 de dano, 4 células).
 - **Categoria A** — concluída; manter a regressão de comandos.
 
 ## Áudio
@@ -315,9 +331,9 @@ PalFX/AfterImage (Categoria E).
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$3000`**
+- checksum **`$2817`**
 - layout MSU **`0xDA0E`**
-- `.sfc` SHA-256 `538a1c7d…e426c4`
+- `.sfc` SHA-256 `eeeaf2c7…d9d680d`
 - `.msu` SHA-256 `03cb0bf1…a3bc6c`
 
 ## Referências

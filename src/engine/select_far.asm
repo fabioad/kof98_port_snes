@@ -65,6 +65,38 @@ SPJ_no:
     rtl
 
 
+; Abort a mid-flight fighter CHR stream before the select screen rebuilds
+; OBJ/BG VRAM.  Called from JoinEnter; kept here so the Fight bank does not
+; grow by the eight clearing stores.
+JoinStreamStop:
+    sep #$20
+    .ACCU 8
+    stz.w SP_KIND
+    stz.w SP_KIND+2
+    stz.w SP_COUNT
+    stz.w SP_COUNT+2
+    stz.w SP_LEN
+    stz.w SP_DST
+    stz FP+F_DMAREQ
+    stz FP+F_DMAREQ+FP2OFS
+    rep #$20
+    .ACCU 16
+    rtl
+
+; Prepare the stage/timers for a mid-fight join without running CampStart
+; (that would discard the waiting side's character or trio).
+JoinFinishPrep:
+    sep #$20
+    .ACCU 8
+    stz.w T_START
+    lda.w C_STAGE
+    cmp #10.b
+    bcc +
+    stz.w C_STAGE
++   rep #$20
+    .ACCU 16
+    rtl
+
 ; OBJ palette 4 = gold title prompt.  The font glyphs use colour 3 for the
 ; body and colour 1 for the right/bottom shadow, so the body is the gold
 ; from the reference image and the shadow is the same hue, slightly darker.

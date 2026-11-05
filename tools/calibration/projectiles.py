@@ -110,6 +110,21 @@ PROJECTILE_ALT_EFFECTS = {
         "sids": (82,),
         "release": 3,
     },
+    # Omega's Gravity Shot (state 7100) is a beam: the source Projectile
+    # uses projanim 1357, while the primary ProjFx (1035) is the Gravity
+    # Smash orb.  Compile the beam with a 2x pre-scale and a 12-cell cap so
+    # it stays inside the effect/OAM budget instead of spilling over.
+    "omegarugal": {
+        "action": 1357,
+        # Frame 10 is larger than the effect page after cropping; frame 6
+        # already shows the beam.  Hold that frame so the one-shot alternate
+        # clip does not free the projectile before it crosses the screen.
+        "frames": ((3, 4), (6, 255)),
+        "pre_scale": 2,
+        "max_cells": 12,
+        "sids": (82,),
+        "release": 3,
+    },
 }
 
 # Characters that reuse another character's compiled projectile effect.  The

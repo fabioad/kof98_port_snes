@@ -58,6 +58,15 @@ def main():
         wait(core, lambda: core.ram[GS] == 5, "team vs select", 600)
 
         pick_trio(core, 0, 0xF052, LOCK1)
+        # P2 is always human in Team VS; the P2 cursor ring must be visible
+        # once it is Pad2's turn (cpu2 defaults to 1 and used to hide it).
+        best_ring = 0
+        for _ in range(24):
+            core.step()
+            best_ring = max(best_ring, sum(
+                1 for i in range(128)
+                if core.ram[0x1800 + i * 4 + 3] == 0x36))
+        assert best_ring >= 8, f"P2 ring cells missing: {best_ring}"
         pick_trio(core, 1, 0xF053, LOCK2)
         assert list(core.ram[T_TEAM1:T_TEAM1 + 3]) == [0, 1, 2]
         assert list(core.ram[T_TEAM2:T_TEAM2 + 3]) == [0, 1, 2]
