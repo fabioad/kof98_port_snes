@@ -123,7 +123,7 @@ alguns funcionam, outros ficam incompletos):
   blob de metasprites (`SPLIT_OLD`); os especiais restantes estão
   implementados e listados na seção D.
 
-## D. Variantes MAX/SDM e especiais ainda não religados
+## D. Variantes MAX/SDM e especiais — estado final (concluída)
 
 Auditoria de 24/10 contra o build atual. Alguns states podem ser
 continuações/fases do golpe pai.
@@ -255,12 +255,23 @@ PalFX/AfterImage (Categoria E).
   (seleção escondida L+R). O comando RE usa o clipe do Gravity Smash
   (30) como aproximação; o state 8000 original continua visual porque o
   victim state 8001 não veio no pacote.
-- **Categoria E** — efeitos/victim states: Ralf (queimadura), Mature
-  (PalFX/Explod), Chizuru (clone/PalFX) e a bola de metal do Chang.
-- **Clark** — Frankensteiner corrigido em 05/11 (30 de dano).
+- **Categoria E (principal pendência)** — os flashes de impacto já
+  entraram, mas faltam:
+  - **Ralf** — Explods e victim states de queimadura (80010/80011/
+    80002/80018).
+  - **Chang** — a bola de metal em cima (precisa de Explod dedicado).
+  - **Chizuru** — sprite do clone e AfterImage dos supers.
+  - **Mature** — Explods completos das variantes 3000/3500/3600.
+  - **Athena / Kensou / Chin** — Explods/continuações específicas.
+- **Categoria B** — golpes cujo ataque real vive em Helper continuam
+  aproximados (lista da seção B); não há caso crítico conhecido.
+- **Categoria C** — Ralf 520/550/570 aproximados; Iori 1310 e Tsumagushi
+  1501/1511 são adaptações.
 - **Categoria F** — MAX em slot especial sem desconto (Iori 103,
-  Saisyu/Heidern/Clark 66) continua; a calibração do corpo do Shou'ou Ken
-  forte da Sakura foi feita (26), mas o projétil soma à parte.
+  Saisyu/Heidern/Clark 66); victim states de arremesso não portados
+  (Ralf); comandos com variante por expressão; calibração fina de dano
+  (corpo do Shou'ou Ken forte da Sakura em 26, projétil soma à parte).
+- **Clark** — Frankensteiner corrigido em 05/11 (30 de dano).
 - **Categoria A** — concluída; manter a regressão de comandos.
 
 ## Build de referência
