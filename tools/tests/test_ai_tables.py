@@ -6,7 +6,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
 AI_TABLES = os.path.join(ROOT, "build", "gen_fight", "ai_tables.inc")
 FIGHT = os.path.join(ROOT, "src", "engine", "fight.asm")
-S_EXT_LAST = 111                        # last state dispatched by StateTab
+S_EXT_LAST = 114                        # last state dispatched by StateTab
 
 
 def parse_tables(text):

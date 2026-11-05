@@ -79,13 +79,21 @@ class ClarkUltraArgentineTests(unittest.TestCase):
     def test_generated_command_table_targets_starter(self):
         rows = rows_of(self.text, "clarkCmdTab")
         self.assertTrue(rows, "clarkCmdTab missing")
-        # {motion, ?, ?, cond, ?, ?, sid}: HCBHCB weak/strong are motions
-        # 1 and 2 and must both start the super at sid 85 (state 3000).
-        for motion in (1, 2):
-            match = [r for r in rows if len(r) >= 7 and r[0] == motion]
-            self.assertTrue(match, f"motion {motion} row missing")
-            self.assertEqual(match[0][-1], 85,
-                             f"motion {motion} must enter sid 85 (3000)")
+        # MAX_SUPER (x+y) now sorts before the HCBHCB x/y pair, so the
+        # motion indices are not stable.  Find the two rows that enter the
+        # Ultra Argentine starter (sid 85) and check their finishers are
+        # the single-button x (1) and y (2).
+        mot = {}
+        for m in re.finditer(
+                r"clarkMot(\d+): \.db \d+,\d+\n"
+                r"((?:    \.db \d+,\d+\n)+)", self.text):
+            mot[int(m.group(1))] = [
+                (int(a), int(b)) for a, b in
+                re.findall(r"    \.db (\d+),(\d+)", m.group(2))]
+        buttons = {mot[r[0]][-1][1] for r in rows
+                   if len(r) >= 7 and r[-1] == 85 and r[0] in mot}
+        self.assertTrue({1, 2} <= buttons,
+                        f"Ultra Argentine x/y rows target sid 85: {buttons}")
 
     def test_followup_bind_has_no_catch_all_hold(self):
         # 3010 now lives in the imported grab slot 109 (the chain below),

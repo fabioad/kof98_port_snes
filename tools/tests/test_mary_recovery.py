@@ -117,10 +117,11 @@ class MaryRecoveryTests(unittest.TestCase):
         self.assertIn(
             ".dw StAirSpec, StAirSpec, StSpecial, StSpecial, StAirSpec",
             asm)
-        self.assertIn(".DEFINE S_EXT_LAST 111", asm)
+        self.assertIn(".DEFINE S_EXT_LAST 114", asm)
         # 103-106 are the reversal follow-up slots; Clark borrows them for
-        # the Ultra Argentine lift/slam chain, so the held-victim range now
-        # starts at 103 (Blue Mary's 109-111 stay inside it).
+        # the Ultra Argentine lift/slam chain and 112-114 for the Flashing
+        # Elbow, so the held-victim range now starts at 103 and ends at 114
+        # (Blue Mary's 109-111 stay inside it).
         self.assertIn(".DEFINE S_EXT_GRAB 103", asm)
         # Imported grabs dispatch as ordinary specials: StateRet must keep
         # re-seating the bound victim from BindTab.

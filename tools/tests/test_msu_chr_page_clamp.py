@@ -279,20 +279,24 @@ class MsuVoicePageClampTests(unittest.TestCase):
         with open(VOICES) as source:
             cls.tables = voice_tables(source.read())
 
-    def test_known_crossing_voices_exist(self):
-        # Before the fix, these chunks started in the final 512-byte sector
-        # of an 8 KiB page: Daimon's weak Jiraishin and Ralf's special-move
-        # grunts.  This is the hardware freeze class the clamp removes.
+    def test_crossing_voices_exist(self):
+        # Every CHR layout change shifts the voice offsets, so scan the
+        # current tables instead of pinning the old Daimon/Ralf indices.
+        # At least one raw 512-byte chunk must still start in the final
+        # sector of an 8 KiB page: that is the hardware-freeze class the
+        # clamp removes (test_voice_clamp_covers_every_byte covers all).
         raw_cross = False
-        for name, index in (("daimon", 0), ("daimon", 4),
-                            ("daimon", 11), ("daimon", 18),
-                            ("ralf", 34), ("ralf", 36)):
-            with self.subTest(char=name, voice=index):
-                offset, total = self.tables[name][index]
+        for name, voices in self.tables.items():
+            for index, (offset, total) in enumerate(voices):
                 for aligned, _prefix, staged in voice_raw_chunks(
                         offset, total, 512):
                     if (aligned & (PAGE - 1)) + staged > PAGE:
                         raw_cross = True
+                        break
+                if raw_cross:
+                    break
+            if raw_cross:
+                break
         self.assertTrue(raw_cross)
 
     def test_voice_clamp_covers_every_byte(self):

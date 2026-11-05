@@ -190,15 +190,18 @@
 .DEFINE S_REVACT    103                 ;   follow-ups (Yamazaki, Kyo,
 .DEFINE S_REVACT_LAST 106               ;   Shingo, Billy); dispatched as
                                         ;   ordinary ground specials
-.DEFINE S_EXT_LAST 111                  ; 107-111 = imported extended
-                                        ;   follow-ups (Blue Mary); treated as
-                                        ;   specials by HitOne/AI/survivor
-.DEFINE S_EXT_GRAB 103                  ; 103-111 = grab/throw follow-ups:
+.DEFINE S_EXT_LAST 114                  ; 107-114 = imported extended
+                                        ;   follow-ups (Blue Mary/Clark);
+                                        ;   treated as specials by
+                                        ;   HitOne/AI/survivor
+.DEFINE S_EXT_GRAB 103                  ; 103-114 = grab/throw follow-ups:
                                         ;   StVictimHeld keeps the victim
                                         ;   bound while the owner is here.
                                         ;   103-106 double as reversal
                                         ;   follow-ups and as Clark's Ultra
                                         ;   Argentine lift/slam chain.
+                                        ;   112-114 are Clark's Flashing
+                                        ;   Elbow run/attack/recovery.
 .DEFINE S_DIZZY     11                  ; FUSION dizzy/stun (reuses S_WIN slot)
 .DEFINE S_AIRTHROW  44                  ; FUSION air-throw (reuses spare AnimTab slot)
 .DEFINE S_TJUMP     43                  ; team member jump-in (spare AnimTab slot)
@@ -7913,8 +7916,10 @@ StateTab:
     ;   Vertical Arrow air phases (107/108), the Goodnight throw (109) and
     ;   the Typhoon grabs (110/111).  Clark's Ultra Argentine chain uses
     ;   109-111 plus the free parry-counter slots 103-106.  They dispatch
-    ;   like ordinary specials.
+    ;   like ordinary specials.  112-114 are Clark's Flashing Elbow
+    ;   run/attack/recovery (ground states).
     .dw StAirSpec, StAirSpec, StSpecial, StSpecial, StAirSpec
+    .dw StSpecial, StSpecial, StSpecial
 
 StateRet:
     rep #$20
@@ -8544,12 +8549,21 @@ StVictimHeld:                           ; 820: bound pose, own anim data
     beq +
     cmp #S_CGRAB_LO.w
     beq +
+    ; Clark's Running Three throw chain uses the 60-69 knee-family slots
+    ; (the only free range HitOne already accepts).  Keep the victim bound
+    ; while the owner is in any of them.
+    cmp #S_KNEE.w
+    bcc VH_notknee
+    cmp #S_VSHAKE.w
+    bcc VH_ownerok
+VH_notknee:
     ; Imported throw follow-ups (Goodnight / Typhoon) are ordinary specials
     ; rather than 75/99/101, but they own the same TargetBind sequence.
     cmp #S_EXT_GRAB.w
     bcc VH_free
     cmp #(S_EXT_LAST+1).w
     bcs VH_free
+VH_ownerok:
 +   ldx fofs
     ; KOF98 throw tech: a fresh strong-button press (Y or B -- the throw
     ;   inputs) inside the opening ticks of the bind breaks the hold.

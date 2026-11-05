@@ -98,13 +98,17 @@ alguns funcionam, outros ficam incompletos):
 
 ## C. Cadeias desativadas / parciais
 
-- **Clark**
+- **Clark (corrigido em 04/11)**
   - **3050** (MAX Ultra Argentine) e **3100/3110/3150** (Running Three)
-    estão **desativados** até portar as cadeias 3060/3061-3067 e
-    3105/3155/3120/3121/1201.
-  - **1600** (Flashing Elbow) sem a cadeia completa.
+    religados. O MAX reutiliza a cadeia 3010–3016; o Running Three usa
+    3105 (agarrão), 3110 (arremesso) e 3111 (finalizador) na faixa 60–69.
+  - **1600** (Flashing Elbow) ligado em 112–114 (run/ataque/recuperação),
+    com comando direto QCF+C e follow-up opcional de 1420/1510.
+  - **Running Three MAX** ganhou o input HCF×2+C para não colidir com o
+    Ultra Argentine (HCB×2+X/Y).
   - 1205/1305 reutilizam a anim 1200 e 1420 reutiliza a 3011 (pose visual
-    reaproveitada).
+    reaproveitada). O Frankensteiner 1400/1410→1420 ainda faz só 1 de
+    dano (pendência separada).
 - **Ralf**
   - 520/550/570 estão ligados e dão dano/knockdown, mas de forma
     **aproximada**: faltam os victim states de queimadura (80010/80011/
@@ -191,12 +195,13 @@ continuações/fases do golpe pai.
 
 1. **Chizuru** — DP concluído; faltam os outros golpes de clone
    (1000/1004, 1100/1102, 1300/1400, 2000/2100/2200).
-2. **Clark** — religar as cadeias 3050/3100/3110/3150 e o Flashing Elbow.
-3. **Categoria D** — variantes MAX/SDM, começando pelos golpes normais
+2. **Categoria D** — variantes MAX/SDM, começando pelos golpes normais
    que ainda faltam (Phoenix Fang da Athena, Orochinagi do Nests/Ash em
    outras variantes, especiais de Terry/Andy/Ryo/Robert).
-4. **Categoria E** — efeitos e victim states (Ralf, Mature, Chizuru,
+3. **Categoria E** — efeitos e victim states (Ralf, Mature, Chizuru,
    bola de metal do Chang).
+4. **Clark** — cadeias e Flashing Elbow concluídos em 04/11; resta o
+   Frankensteiner 1400/1410→1420 (1 de dano).
 5. **Categoria A** — concluída em 04/11 (ver tabela acima); manter a
    regressão dos comandos ao mexer no parser/matcher.
 
@@ -221,10 +226,10 @@ Ainda faltam os outros golpes de clone dela (1000/1004, 1100/1102,
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$C316`**
-- layout MSU **`0x3061`**
-- `.sfc` SHA-256 `bb2105b4…bfe99`
-- `.msu` SHA-256 `4ab3f94c…2c8fe`
+- checksum **`$8701`**
+- layout MSU **`0x173A`**
+- `.sfc` SHA-256 `b9042b00…85b9c`
+- `.msu` SHA-256 `ce4b2ade…12859`
 
 ## Referências
 

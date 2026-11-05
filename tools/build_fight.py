@@ -1825,9 +1825,7 @@ POST_CAL_REACTIVATED = {
 }
 # Reactivated command targets intentionally left off until their victim or
 # helper chains are ported.  The regression test skips these states.
-POST_CAL_REACTIVATED_DISABLED = {
-    "clark": {3050, 3100, 3110, 3150},
-}
+POST_CAL_REACTIVATED_DISABLED = {}
 # Existing low special slots that are intentionally retargeted from a held
 # follow-up to the close-range grab attempt (the source CMD's "strong"
 # commands enter the held state otherwise).
@@ -2772,7 +2770,10 @@ VICTIM_STATE_IDS = {1025: 70, 1026: 71, 1027: 72, 1028: 73,
                     3164: 76, 3165: 77,
                     3270: 76, 3271: 76, 3222: 77,
                     3210: 76, 3211: 76, 3212: 77,
-                    4021: 77}
+                    4021: 77,
+                    # Clark Running Three victim poses: held during the
+                    # throw, thrown on the finisher.
+                    3120: 76, 3121: 77}
 
 # --- Category A: root supers whose damage is in a p1 follow-up ------------
 # The generated import wired the command target but not the state the root
@@ -2861,6 +2862,68 @@ if "krauser" in CHARS:
     _krauser.setdefault("act_override", {})[3222] = [
         (4, 3, -10, 0), (8, 3, -10, 0), (12, 3, -10, 0),
         (13, 4, 3212, 0)]
+
+# --- Clark: Ultra Argentine MAX + Running Three chains --------------------
+# The ROM diet drops Clark's 87-89 slots, so the MAX Ultra Argentine (3050)
+# and both Running Three roots (3100/3110) never reached a wired state.  The
+# MAX Running Three (3150) was dropped from sid 60 as well.  Put the roots
+# back, keep 3150 inside the 85-89 MAX-mask window (sid 86), and use the
+# 60-69 knee-family slots for the grab/throw chain.  Those slots are both
+# accepted by HitOne and (with the StVictimHeld extension) keep the victim
+# bound; 98-102 are outside the HitOne grab ranges.
+if "clark" in CHARS:
+    _clark = CHARS["clark"]
+    POST_CAL_REACTIVATED.setdefault("clark", []).extend([
+        (86, 3150, 3100),             # Running Three MAX root
+        (87, 3050, 3000),             # Ultra Argentine MAX root
+        (88, 3100, 3100),             # Running Three weak root
+        (66, 3110, 3110),             # Running Three throw animation
+        (62, 3105, 3105),             # Running Three grab attempt
+        (64, 3155, 3105),             # MAX Running Three grab attempt
+        (60, 3111, 3111),             # Running Three finisher
+        (112, 1600, 1600),            # Flashing Elbow run
+        (113, 1605, 1605),            # Flashing Elbow attack
+        (114, 1606, 1606),            # Flashing Elbow recovery
+    ])
+    _clark.setdefault("hitdef_override", {})
+    # MAX Ultra Argentine: reuse the already-ported 3010-3016 Ultra
+    # Argentine chain instead of adding the eight-state 3060-3067 copy.
+    _clark["hitdef_override"][87] = {"p1mugen": 3010}
+    # MAX Running Three: 3155's grab redirects to the same 3110 throw used
+    # by the weak/strong versions, avoiding the 3160-3163 duplicate chain.
+    _clark["hitdef_override"][64] = {"p1mugen": 3110}
+    # The source's strong Running Three command points at the throw
+    # animation 3110 (no HitDef).  Route it through the 3105 grab attempt.
+    _clark["cmd_remap"] = {3110: 3105}
+    # The source's SUPER_X (double-HCB + x) is identical to the Ultra
+    # Argentine weak command.  Give the Running Three MAX its own input
+    # (double-HCF + C) so both supers remain selectable.
+    _clark["cmd_disable"] = {"SUPER_X"}
+    _clark["cmd_extra"] = [{
+        "name": "MAX_RUN3",
+        "label": "RUNNING THREE MAX",
+        "state": 3150,
+        "posture": 3,
+        "time": 25,
+        "elems": [(8, 0), (10, 0), (2, 0), (6, 0), (4, 0),
+                  (8, 0), (10, 0), (2, 0), (6, 0), (4, 0), (0, 16)],
+    }, {
+        # The source only reaches 1600 as an optional follow-up, which
+        # whiffs after a knockdown (the 1605 HitDef refuses a lying victim).
+        # Give it a direct QCF+C input so the elbow is usable and testable.
+        "name": "FLASH_ELBOW",
+        "label": "FLASHING ELBOW",
+        "state": 1600,
+        "posture": 3,
+        "time": 18,
+        "elems": [(2, 0), (6, 0), (4, 0), (0, 16)],
+    }]
+    # 3110 exits on `Vel Y > 0 && Pos Y >= 0`, which the landing parser
+    # does not represent; hand the throw to the 3111 finisher on anim end.
+    # 1420 (Frankensteiner) and 1510 (Napalm Stretch) lead into the source's
+    # Flashing Elbow follow-up; 1512 is not wired, so start it on 1510 end.
+    _clark.setdefault("extra_trans", []).extend([
+        (66, 60, 0, 0), (107, 112, 0, 0), (108, 112, 0, 0)])
 
 # Runtime SFX ids -- kept in sync with the SAMPLES order in
 # tools/build_audio.py (spc_ids.inc is generated from that list).
@@ -8016,6 +8079,14 @@ def build_char(name, cfg, global_pal=None):
             if cname.upper().startswith(prefix.upper()):
                 cmddefs[cname] = (held, elems, frames)
                 break
+    # Port-side extra commands for source inputs that collide or are
+    # missing (Clark's Running Three MAX shares SUPER_X with the Ultra
+    # Argentine weak).
+    for _spec in (cfg.get("cmd_extra") or ()):
+        _name = _spec["name"]
+        _elems = [(int(d), int(b)) for d, b in _spec["elems"]]
+        cmddefs[_name] = (int(_spec.get("held", 0)), _elems,
+                          int(_spec.get("time", 18)))
     wired = {}
     for _sid, _mu in move_ids.items():
         wired.setdefault(_mu, _sid)            # first slice sid wins
@@ -8025,6 +8096,22 @@ def build_char(name, cfg, global_pal=None):
     apply_half_circle_shortcuts(cmddefs)
     rules = cmd_rules(asset_path(cfg["cmd"]), cmddefs, wired)
     rules = add_shortcut_rules(rules, cmddefs)
+    _disabled = set(cfg.get("cmd_disable") or ())
+    if _disabled:
+        rules = [r for r in rules
+                 if r["motion"].split("#", 1)[0] not in _disabled]
+    for _spec in (cfg.get("cmd_extra") or ()):
+        _sid = next((s for s, m in move_ids.items()
+                     if m == _spec["state"]), None)
+        if _sid is None:
+            continue
+        rules.append({"motion": _spec["name"],
+                      "held": int(_spec.get("held", 0)),
+                      "nheld": 0,
+                      "posture": int(_spec.get("posture", 3)),
+                      "dist": 0, "nstate": 0, "state": _sid,
+                      "mstate": _spec["state"],
+                      "label": _spec.get("label", "")})
     # A few source packages have a throw state but no [State -1, Throw]
     # command (Billy) or point it at a non-throw state (Chin 900).  Give
     # every fighter a standard close-range x+y throw when sid 74 exists.
@@ -8036,6 +8123,18 @@ def build_char(name, cfg, global_pal=None):
             rules.append({"motion": "x+y", "held": 0, "nheld": 0,
                           "posture": 1, "dist": 0x80 | 40,
                           "nstate": 0, "state": 74})
+    # Some source CMDs point a strong variant at the throw animation rather
+    # than its grab attempt (Clark's Running Three strong -> 3110).  Remap
+    # such command targets after the reactivated states are wired.
+    for _old_state, _new_state in (cfg.get("cmd_remap") or {}).items():
+        _new_sid = next((s for s, m in move_ids.items()
+                         if m == _new_state), None)
+        if _new_sid is None:
+            continue
+        for _rule in rules:
+            if _rule.get("mstate") == _old_state:
+                _rule["state"] = _new_sid
+                _rule["mstate"] = _new_state
     rules.sort(key=lambda rule: motion_rank(rule, cmddefs), reverse=True)
     # Explicit priority for commands whose motion is a subset of another
     # rule's tail (Lucky's SHOOT = DP+kick also completes the DP special).
