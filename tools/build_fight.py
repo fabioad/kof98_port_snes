@@ -1967,6 +1967,30 @@ if _chizuru is not None:
     # build's wired map needs that pair to emit the DP command.  Replace
     # only the animation/velocity/HitDef data with the clone's rising move.
     _chizuru["anims"][52] = 13000
+    # The QCB clone rise (states 1100/1102) is the other anti-air.  It used
+    # to keep the source helper's 30/15-tick holds and a VelSet expression
+    # the extractor could not evaluate (0), so it stayed grounded for 216
+    # ticks.  Share the fast 13000 rise/fall clip and make weak/strong rise
+    # to different heights, like Ryu's Shoryuken pair.
+    _chizuru["anims"][50] = 13000
+    _chizuru["anims"][51] = 13000
+    # Raise on the source's element 7 (after the frame-6 hitbox), so the
+    # grounded hit still connects before the body leaves the floor.
+    _chizuru.setdefault("act_override", {})[1100] = [
+        (7, 5, 3, 0),                  # forward step
+        (7, 15, -22 & 0xFF, 0),        # vy = -5.5 px/tick (weak rise)
+        (21, 5, 0, 0),                 # stop before the landing frames
+    ]
+    _chizuru.setdefault("act_override", {})[1102] = [
+        (7, 5, 4, 0),
+        (7, 15, -34 & 0xFF, 0),        # vy = -8.5 px/tick (strong rise)
+        (21, 5, 0, 0),
+    ]
+    # The source clone rise arms PosFreeze at entry (Time=0 op13), which
+    # zeroes VY/VX every tick and killed the launch; drop it for both
+    # buttons.
+    _chizuru.setdefault("act_drop", {})[1100] = [13]
+    _chizuru.setdefault("act_drop", {})[1102] = [13]
     _chizuru.setdefault("hitdef_override", {})[52] = {
         "active": 7, "gvx": 5 << 8, "gvy": -(10 << 8), "fall": 1,
     }
@@ -1975,6 +1999,32 @@ if _chizuru is not None:
         (7, 5, 3, 0),                  # forward step at the start of the rise
         (7, 15, -38 & 0xFF, 0),        # vy = -9.5 px/tick (source helper)
     ]
+    # Super 2000 (clone dance): walk forward slowly through the whole clip.
+    # The source VelSet was conditional on AnimElem and normalised to 0, so
+    # the port stayed in place; op5 also flips FlagsTab bit12, which keeps
+    # PinVXUnlessVelSet from cancelling the walk.
+    _chizuru.setdefault("act_override", {})[2000] = [
+        (8, 5, 1, 0),
+    ]
+    # The dance has a live Clsn1 from frame 8 to 47; re-arm the HitDef
+    # across that window so every phase of the dance connects.
+    _chizuru.setdefault("hit_resets", {})[2000] = [
+        12, 16, 20, 24, 28, 32, 36, 40, 44, 48]
+    # 2100 (crouched one-hand rush) advances about half a screen: 20 px
+    # pre-step, 5 ticks at 12 px/tick and a final 48 px step.
+    _chizuru.setdefault("act_override", {})[2100] = [
+        (12, 1, 24, 0),
+        (14, 1, 32, 0),
+        (16, 1, 36, 0),
+        (18, 1, 36, 0),
+    ]
+    # The source PosAdd rows add another ~32 px on top; keep the half-screen
+    # budget from the rows above.
+    _chizuru.setdefault("posadd_override", {})[2100] = []
+    # The dance's first contact used to knock the victim down, so the later
+    # re-armed contacts had nothing to hit.  Keep the victim in hitstun for
+    # the whole dance.
+    _chizuru.setdefault("slice_no_fall", []).append(85)
     # Drop the source's early var(5)/animelem exit rows; the custom clip
     # ends on its own and the engine falls back to stand.
     _chizuru.setdefault("trans_drop", []).append((52, 0))
@@ -1989,9 +2039,7 @@ if _chizuru is not None:
     # command on sid 88 shares the same state/animation.
     _chizuru["anims"][85] = 13001
     _chizuru["anims"][88] = 13001
-    # 2000 is a multi-hit clone rush; one HitDef row otherwise latches after
-    # the first contact.  Re-arm at the source's later strike elements.
-    _chizuru.setdefault("hit_soft_resets", {})[2000] = [12, 18, 30]
+    # (2000's re-arm list is set above, over the whole attack window.)
     # 2200 has two source HitDefs (elements 22/23); the first knocks down in
     # the port, so the second never connects.  Make the single contact a
     # proper MAX-super hit instead.
@@ -2000,6 +2048,9 @@ if _chizuru is not None:
     # so 48 is the final HUD damage (a hitdef_override value would be scaled
     # by the 0.12 Chizuru factor).
     _chizuru.setdefault("slice_damage", {})[87] = 48
+    # 10 re-armed contacts: 7 HUD points each keeps the whole dance in the
+    # normal super budget (~70 HP) instead of 10 x 18.
+    _chizuru.setdefault("slice_damage", {})[85] = 7
 
 # --- restored projectile moves --------------------------------------------
 # A few imported fighters keep their travelling shot in a helper state that

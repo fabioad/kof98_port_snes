@@ -44,6 +44,16 @@ command = ~B, D, DB, x
 time = 18
 
 [Command]
+name = "DP_Y"
+command = ~F, D, DF, y
+time = 18
+
+[Command]
+name = "RDP_Y"
+command = ~B, D, DB, y
+time = 18
+
+[Command]
 name = "SUP1"
 command = ~D, DF, F, D, DF, F, x
 time = 18
@@ -61,6 +71,16 @@ time = 18
 [Command]
 name = "MDFDF_a+df"
 command = ~D, DF, F, D, DF, F, a
+time = 18
+
+[Command]
+name = "MDFDF_b+df"
+command = ~D, DF, F, D, DF, F, b
+time = 18
+
+[Command]
+name = "SUP3_Y"
+command = ~D, B, D, B, y
 time = 18
 
 [Command]
@@ -226,6 +246,13 @@ triggerall = command = "DP_X"
 triggerall = statetype != A
 trigger1 = ctrl
 
+[State -1, special_53]
+type = ChangeState
+value = 1200
+triggerall = command = "DP_Y"
+triggerall = statetype != A
+trigger1 = ctrl
+
 [State -1, special_54]
 type = ChangeState
 value = 1300
@@ -244,6 +271,13 @@ trigger1 = ctrl
 type = ChangeState
 value = 1500
 triggerall = command = "RDP_X"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_57]
+type = ChangeState
+value = 1500
+triggerall = command = "RDP_Y"
 triggerall = statetype != A
 trigger1 = ctrl
 
@@ -268,10 +302,24 @@ triggerall = command = "SUP3"
 triggerall = statetype != A
 trigger1 = ctrl
 
+[State -1, special_89]
+type = ChangeState
+value = 2200
+triggerall = command = "SUP3_Y"
+triggerall = statetype != A
+trigger1 = ctrl
+
 [State -1, special_88]
 type = ChangeState
 value = 2000
 triggerall = command = "MDFDF_a+df"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_90]
+type = ChangeState
+value = 2100
+triggerall = command = "MDFDF_b+df"
 triggerall = statetype != A
 trigger1 = ctrl
 

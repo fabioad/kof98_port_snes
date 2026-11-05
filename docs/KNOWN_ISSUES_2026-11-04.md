@@ -545,13 +545,50 @@ segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
 - `FaceEachOther` saiu do banco Fight para `SakuraCinema` (chamada `jsl`)
   para abrir espaço para a regra.
 
+## Chizuru — antiaéreo, supers e botões (05/11)
+
+- **QCB anti-aéreo (estados 1100/1102):** a subida do clone mantinha os
+  holds de 30/15 ticks da origem, o `VelSet` condicional era extraído como
+  zero e um `PosFreeze` (op13, Time=0) zerava VX/VY todo tick. O corpo
+  ficava no chão por **216 ticks**. Agora usa o clipe rápido **13000** (o
+  mesmo do DP), o op13 é descartado e a subida é fraca/forte:
+  - fraco: `vy = -5.5` px/tick, pico ~32 px;
+  - forte: `vy = -8.5` px/tick, pico ~78 px;
+  - os dois terminam em ~60 ticks, como o Shoryuken fraco/forte do Ryu
+    (~32/~87 px de pico).
+- **DP (estado 1200):** `DP_Y` foi ligado ao mesmo estado; fraco (x) e
+  forte (y) sobem/descem e recuperam. O `DP_X` continua igual.
+- **Dance super (estado 2000):** o `VelSet` da origem virava zero e o
+  `PinVXUnlessVelSet` anulava a caminhada. O ActTab agora aplica
+  `vx = 1` px/tick (FlagsTab bit12), então ela **anda devagar** para a
+  frente (~132 px no movimento). Os contatos usam `hit_resets` (reset
+  duro do latch, sem o knockdown de 5º hit): **9 contatos / 60 HP** ao
+  longo da janela de Clsn1 (frames 8–47), até o clipe terminar.
+- **Crouched one-hand super (estado 2100):** quatro PosAdds
+  (24+32+36+36) dão **~131 px** (~meia tela) e o golpe mantém 48 HP de
+  dano. As PosAdds antigas da origem foram removidas para o orçamento
+  bater.
+- **Botões:** `DP_Y`, `RDP_Y`, `SUP3_Y` e o QCFx2+b foram adicionados.
+  Ficou assim:
+  - DP/RDP: x **e** y;
+  - QCFx2 + x/a → dance (2000); QCFx2 + y/b → crouched (2100);
+  - QCBx2 + x **e** y → MAX (2200).
+  - QCF/QCB/HCB já tinham os dois botões.
+- **Calibração:** `assets/calibration/chizuru.json` não tem correções
+  (lista vazia); só os hashes de configuração e do `Chizuru_SNES.cmd`
+  foram atualizados para o build não pular o personagem.
+- Regressão: `tools/test_chizuru_fixes_headless.py` (QCB fraco/forte,
+  DP/RDP x/y, dance com 9 hits e avanço, crouched ~128 px, supers com
+  x/y/a/b), além dos testes `test_chizuru_dp_headless` e
+  `test_chizuru_clones_headless`.
+
 ## Build de referência
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$6F1B`**
+- checksum **`$5F50`**
 - layout MSU **`0x514F`**
-- `.sfc` SHA-256 `bb47a396…750156d6`
+- `.sfc` SHA-256 `41710207…e649fbc4`
 - `.msu` SHA-256 `3be2fcd0…c0f4e154`
 - `.msu` 51.396.096 bytes
 
