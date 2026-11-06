@@ -23946,11 +23946,12 @@ ProjPinIfMultiFar:
     cpx #SPK_SIZE
     bcs PPM_slot1
     lda.w RT_PROJHITS
-    beq PPM_out
-    bra PPM_go
+    bne PPM_go
+    jmp PPM_out
 PPM_slot1:
     lda.w RT_PROJHITS+1
-    beq PPM_out
+    bne PPM_go
+    jmp PPM_out
 PPM_go:
     ; Terry's geyser uses the alternate pillar clip for all three strengths.
     ; Keep the pillar in front of Terry and stop the victim's horizontal
@@ -23979,7 +23980,10 @@ PPM_go:
     sta FP+F_HITVX,y
     sep #$20
     .ACCU 8
-    bra PPM_out
+    lda.w SPARKS+SPK_GRD,x             ; tall pillar: cover the whole jump arc
+    ora #$01.b
+    sta.w SPARKS+SPK_GRD,x
+    jmp PPM_out
 PPM_pin:
     lda.w SPARKS+SPK_ATTR,x
     and #$40.b                        ; bit6 = owner is P2

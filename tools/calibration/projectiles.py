@@ -82,12 +82,15 @@ PROJECTILE_ACTION_SEQUENCES = {
 # engine's default third-frame launch (0-based AnimElem 7 = frame 6).
 PROJECTILE_ALT_EFFECTS = {
     "terry": {
+        # Largest stable geyser pillar that fits the SNES effect page.  A
+        # 3x-stretched Power Wave (174 px) exceeds the 8-bit signed cell
+        # offset (-128) and wraps its top tiles to the bottom of the screen;
+        # clipping it leaves only a thin line.  Keep the geyser art at the
+        # stable maximum: 32 px wide x 127 px tall (13 cells).
         "action": 3020,
-        # A compact flash plus the mid-rise pillar.  At 1/2 scale the peak
-        # pose still fits the 16-cell OBJ page (11 cells); the old 1/3 scale
-        # made the geyser read as a tiny spark next to Terry.
-        "frames": ((0, 4), (3, 16)),
-        "pre_scale": 2,
+        "frames": ((3, 20),),
+        "pre_scale": 1,
+        "squeeze_w": 32,
         "zoom": 1,
         "sids": (85, 86, 87),
         "release": 6,

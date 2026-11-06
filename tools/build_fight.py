@@ -11686,8 +11686,55 @@ def projectile_effect_alt(name, sff, air, spec):
         if pre_scale != 1:
             source = spark_sprite(source, pre_scale)
         spr = crop_projectile_sprite(source)
+        # Optional central slice / horizontal squeeze: tall pillars are much
+        # wider than the 16-cell OBJ page allows, so trade width for height
+        # (Terry's Power Geyser).  Squeezing keeps the full flame silhouette
+        # and its orange edges; a hard central crop leaves only the white
+        # core, which reads as a glitchy solid block.
+        crop_w = int(spec.get("crop_w", 0))
+        squeeze_w = int(spec.get("squeeze_w", 0))
+        if spr is not None and squeeze_w and spr.w > squeeze_w:
+            orig_w = spr.w
+            resized = Sprite()
+            resized.group, resized.number = spr.group, spr.number
+            resized.w, resized.h = squeeze_w, spr.h
+            resized.ax = int(round(spr.ax * squeeze_w / orig_w))
+            resized.ay = spr.ay
+            resized.palidx, resized.link = spr.palidx, spr.link
+            resized.pix = bytes(
+                spr.pix[y * orig_w + min(orig_w - 1, x * orig_w // squeeze_w)]
+                for y in range(spr.h) for x in range(squeeze_w))
+            xoff = int(round(xoff * squeeze_w / orig_w))
+            spr = resized
+        elif spr is not None and crop_w and spr.w > crop_w:
+            left = (spr.w - crop_w) // 2
+            sliced = Sprite()
+            sliced.group, sliced.number = spr.group, spr.number
+            sliced.w, sliced.h = crop_w, spr.h
+            sliced.ax, sliced.ay = spr.ax - left, spr.ay
+            sliced.palidx, sliced.link = spr.palidx, spr.link
+            sliced.pix = bytes(
+                spr.pix[y * spr.w + left + x]
+                for y in range(spr.h) for x in range(crop_w))
+            spr = sliced
+        # Optional vertical stretch for a ground wave reused as a stationary
+        # pillar (Terry's Power Geyser): keep the source's horizontal frame
+        # count, but stretch Y and squeeze X so the 16-cell page still fits.
+        stretch_y = max(1, int(spec.get("stretch_y", 1)))
+        if spr is not None and stretch_y > 1:
+            orig_w, orig_h = spr.w, spr.h
+            stretched = Sprite()
+            stretched.group, stretched.number = spr.group, spr.number
+            stretched.w, stretched.h = orig_w, orig_h * stretch_y
+            stretched.ax, stretched.ay = spr.ax, spr.ay * stretch_y
+            stretched.palidx, stretched.link = spr.palidx, spr.link
+            stretched.pix = bytes(
+                spr.pix[(y // stretch_y) * orig_w + x]
+                for y in range(stretched.h) for x in range(orig_w))
+            yoff = int(round(yoff * stretch_y))
+            spr = stretched
         if (spr is None or spr.w <= 0 or spr.h <= 0
-                or spr.w > 192 or spr.h > 128 or not any(spr.pix)):
+                or spr.w > 192 or not any(spr.pix)):
             continue
         originals.append((spr, xoff, yoff,
                           max(1, min(255, int(ticks)))))
@@ -11769,6 +11816,10 @@ def projectile_effect_alt(name, sff, air, spec):
         if len(atlas) > len(SPARK_SLOTS):
             raise ValueError(f"{name}: alternate projectile frame exceeds "
                              f"its {len(SPARK_SLOTS)}-cell VRAM page")
+        # Cell Y offsets are signed bytes.  A stretched pillar taller than
+        # 128 px would wrap its top cells to the bottom of the screen; drop
+        # those tips instead of letting them glitch.
+        cells = [cell for cell in cells if cell[1] >= -128]
         page = bytearray(2048)
         for quad, idx in atlas.items():
             offset = (SPARK_SLOTS[idx] - 192) * 32
