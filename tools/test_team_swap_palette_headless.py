@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 from calibration.headless import Core
 from capture_pair_headless import tap, wait
+from test_midfight_join_headless import wait_team_fight
 
 GS = 0x1020
 SEL1, SEL2 = 0x1085, 0x1086
@@ -53,7 +54,7 @@ def main():
             core.step(3)
             core.buttons[0] = set()
             core.step(8)
-        wait(core, lambda: core.ram[GS] == 1, "battle 1", 6000)
+        wait_team_fight(core, "battle 1", 6000)
 
         stage0 = core.ram[STAGEIDX]
         cpu_sel_before = core.ram[SEL2]

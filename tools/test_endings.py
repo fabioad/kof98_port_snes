@@ -1,84 +1,77 @@
 #!/usr/bin/env python3
-"""Exercise every ending screen in the real SNES renderer.
+"""Defeat Omega in each campaign and verify every rendered ending card.
 
-The old ExHiROM placement rendered the same two-color stripe pattern on all
-screens because the CPU read from the unmapped lower half of banks $32-$3D.
+Use the actual KO/ending transition, not a forced gamestate. Check pixels,
+clock progress, automatic card transitions and the eventual return to title.
 """
 import argparse
-import ctypes as C
 import hashlib
 from pathlib import Path
 
+import test_boss_intro_headless as boss
+import test_survivor_practice_headless as survivor
 from calibration.headless import Core
-from test_start_transition import GS, START, tap, wait_for
+from capture_pair_headless import save_frame, wait
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def run(core_path, rom):
-    core = Core(core_path, rom)
-    frames = []
+def verify_cards(core, mode, output):
+    state = 10 if mode == "survivor" else 8
+    count = 13 if state == 10 else 23
+    hashes = set()
+    for screen in range(count):
+        wait(core, lambda: core.ram[boss.E_SCR] == screen and core.word(0xF079) > 0,
+             f"{mode} ending {screen}", 1500)
+        assert core.ram[boss.GS] == state, f"{mode}: ending state corrupted"
+        initial_timer = core.word(0xF079)
+        # Normal cards fade over ~124 frames, montage cards in ~16 frames.
+        core.step(40 if state == 10 else (30 if 6 <= screen <= 20 else 140))
+        assert core.ram[boss.GS] == state, f"{mode}: renderer crashed"
+        assert core.ram[boss.E_SCR] == screen, f"{mode}: unexpected card skip"
+        assert core.word(0xF079) < initial_timer, f"{mode}: ending clock froze"
+        assert core.last_frame, "no video output"
+        w, h, pitch, raw, fmt = core.last_frame
+        size = 4 if fmt == 1 else 2
+        pixels = b"".join(raw[y * pitch:y * pitch + w * size] for y in range(h))
+        colors = {pixels[i:i + size] for i in range(0, len(pixels), size)}
+        minimum = 8 if state == 10 or 6 <= screen <= 20 else 16
+        assert len(colors) > minimum, (
+            f"{mode} card {screen}: only {len(colors)} colors (black/flat frame)")
+        digest = hashlib.sha256(pixels).digest()
+        assert digest not in hashes, f"{mode} card {screen}: repeated art"
+        hashes.add(digest)
+        output.mkdir(parents=True, exist_ok=True)
+        save_frame(core.last_frame, output / f"{mode}_{screen:02}.png")
+        print(f"PASS {mode} ending {screen:02}: {len(colors)} colors", flush=True)
+        # Let the game advance itself, including the final return to title.
+        wait(core, lambda: core.ram[boss.E_SCR] != screen or core.ram[boss.GS] == 0,
+             f"{mode} automatic transition {screen}", 1500)
+    assert core.ram[boss.GS] == 0, f"{mode}: did not return to title"
+    print(f"PASS {mode}: all {count} cards and return to title", flush=True)
 
-    @C.CFUNCTYPE(None, C.c_void_p, C.c_uint, C.c_uint, C.c_size_t)
-    def video(data, width, height, pitch):
-        if data:
-            frame = C.string_at(data, pitch * height)
-            frames[:] = [b"".join(frame[y * pitch:y * pitch + width * 2]
-                                 for y in range(height))]
 
-    core.lib.retro_set_video_refresh(video)
+def run(core_path, rom, output):
+    def factory(*_args):
+        core = Core(core_path, rom)
+        core.capture_video = True
+        return core
+
+    original_boss, original_survivor = boss.Core, survivor.Core
+    boss.Core = survivor.Core = factory
     try:
-        wait_for(core, lambda: core.word(GS) == 7, "opening")
-        tap(core, START)
-        wait_for(core, lambda: core.word(GS) == 0, "title")
-        tap(core, START)
-        wait_for(core, lambda: core.word(GS) == 6, "menu")
-        tap(core, START)
-        wait_for(core, lambda: core.word(GS) == 5, "select")
-        tap(core, START)
-        tap(core, START)
-        wait_for(core, lambda: core.word(GS) == 1, "fight")
-
-        # Resolve the final campaign match through the normal game loop.
-        core.ram[0xF040] = 1     # single play
-        core.ram[0xF041] = 6     # Rugal confrontation
-        core.ram[0x1080] = 2     # wins1
-        core.ram[0x1081] = 0     # wins2
-        core.ram[0x1084] = 2     # match-over banner
-        core.ram[0x1024] = 59    # next tick resolves the result
-        core.ram[GS] = 0
-        wait_for(core, lambda: core.word(GS) == 8, "ending")
-
-        hashes = set()
-        for screen in range(23):
-            wait_for(core, lambda: core.ram[0xF078] == screen,
-                     f"ending screen {screen}")
-            # sample mid-hold: normal screens finish the white fade-in
-            # around frame 124, montage cards (6-20) around frame 16
-            core.step(30 if 6 <= screen <= 20 else 140)
-            assert frames, "no video output"
-            colors = set(memoryview(frames[0]).cast("H"))
-            # sepia pair cards quantize down to ~11-17 colors; normal
-            # screens carry 24+.  the assertion only needs to catch the
-            # old flat-stripe failure mode
-            want = 8 if 6 <= screen <= 20 else 16
-            assert len(colors) > want, (
-                f"ending screen {screen} has only {len(colors)} colors")
-            digest = hashlib.sha256(frames[0]).digest()
-            assert digest not in hashes, f"ending screen {screen} repeats art"
-            hashes.add(digest)
-            print(f"PASS ending {screen:02d}: {len(colors)} colors", flush=True)
-            if screen < 22:
-                tap(core, START)
-        tap(core, START)
-        wait_for(core, lambda: core.word(GS) == 0, "return to title")
+        for mode, scenario in (("single", boss.single_boss_intro),
+                               ("team", boss.team_boss_intro),
+                               ("survivor", boss.survivor_boss_intro)):
+            scenario(lambda core: verify_cards(core, mode, output))
     finally:
-        core.close()
+        boss.Core, survivor.Core = original_boss, original_survivor
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--core", default="/usr/lib/x86_64-linux-gnu/libretro/snes9x_libretro.so")
+    parser.add_argument("--core", default=boss.CORE)
     parser.add_argument("--rom", type=Path, default=ROOT / "kof98-snes.sfc")
+    parser.add_argument("--output", type=Path, default=ROOT / "build/ending_regression")
     args = parser.parse_args()
-    run(args.core, args.rom)
+    run(args.core, args.rom, args.output)

@@ -20,6 +20,11 @@ FightRam dsb $0F00
 MenuVarsRam dsb $180
 .ENDS
 
+; Private state for TEAM PLAY order selection; no campaign/input aliasing.
+.RAMSECTION ".team_order_vars" BANK $7E SLOT 2 ORGA $F180 FORCE
+TeamOrderVars dsb $40
+.ENDS
+
 ; SURVIVOR opponent order + carried HP live in the menu-vars window above.
 ; PRACTICE command-list state follows them in the same free page.
 .RAMSECTION ".fight_cmdlist" BANK $7E SLOT 2 ORGA $4F40 FORCE
@@ -99,6 +104,7 @@ MsuVideoStage dsb $1900
 .INCLUDE "engine/voice_queue.asm"       ; incremental MSU voice loader
 .INCLUDE "engine/menus.asm"
 .INCLUDE "engine/options.asm"
+.INCLUDE "engine/team_order.asm"
 .IFDEF MSU_DIAG
 .IFDEF MSU_DIAG2
 .RAMSECTION ".msu_diag_buffers" BANK $7F SLOT 3 ORGA $3000 FORCE

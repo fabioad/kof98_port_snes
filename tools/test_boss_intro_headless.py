@@ -67,7 +67,16 @@ def start_single(core):
     wait(core, lambda: core.ram[GS] == 1, "single fight", 3600)
 
 
-def single_boss_intro():
+def ending_started(core):
+    """Entering GS_END alone does not prove that the renderer survived."""
+    timer = core.word(0xF079)
+    core.step(140)
+    assert core.ram[GS] in (8, 10), "ending crashed after its first frame"
+    assert core.word(0xF079) < timer, "ending timer stopped"
+    assert any(core.ram[0xF080:0xF100]), "ending palette stayed black"
+
+
+def single_boss_intro(on_ending=ending_started):
     core = Core(CORE, ROOT / "kof98-snes.sfc")
     try:
         start_single(core)
@@ -97,6 +106,7 @@ def single_boss_intro():
         wait(core, lambda: core.ram[GS] == 8, "ending1", 3000)
         assert core.ram[E_SCR] == 0, f"ending screen {core.ram[E_SCR]} != 0"
         assert core.ram[FADELEVEL] == 0, "fade did not reach black"
+        on_ending(core)
         print("PASS single: Omega intro, one-round KO fades straight to ending1")
     finally:
         core.close()
@@ -131,7 +141,7 @@ def single_round2_no_intro():
         core.close()
 
 
-def team_boss_intro():
+def team_boss_intro(on_ending=ending_started):
     core = Core(CORE, ROOT / "kof98-snes.sfc")
     try:
         start_team(core)
@@ -158,16 +168,17 @@ def team_boss_intro():
         assert core.ram[NEXTF] != 2, "team winner banner was armed"
         wait(core, lambda: core.ram[GS] == 8, "team ending1", 3000)
         assert core.ram[E_SCR] == 0, f"ending screen {core.ram[E_SCR]} != 0"
+        on_ending(core)
         print("PASS team: Omega intro on member entrance, KO fades straight "
               "to ending1")
     finally:
         core.close()
 
 
-def survivor_boss_intro():
+def survivor_boss_intro(on_ending=ending_started):
     core = survivor_boot()
     try:
-        assert open_select(core, 4, 0) == 4
+        assert open_select(core, 4, 1) == 4
         lock_sides(core, cpu2=1)
         wait(core, lambda: core.ram[GS] == 1, "survivor fight", 3600)
 
@@ -185,6 +196,11 @@ def survivor_boss_intro():
         assert core.ram[SEL2] == 14, f"Omega not loaded: sel2={core.ram[SEL2]}"
         assert core.ram[F_STATE2] == S_INTRO, (
             f"Omega survivor entrance has no intro: state={core.ram[F_STATE2]}")
+        wait(core, lambda: core.ram[GS] == 1, "Omega survivor ready", 3000)
+        core.ram[WINS1] = 1
+        core.put(HP2, 0)
+        wait(core, lambda: core.ram[GS] == 10, "survivor ending", 4000)
+        on_ending(core)
         print("PASS survivor: Omega intro on the final fight")
     finally:
         core.close()

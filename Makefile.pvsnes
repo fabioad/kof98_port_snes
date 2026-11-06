@@ -153,7 +153,7 @@ assets: $(FIGHT_GEN)
 
 audio: $(SOUNDBANK).asm $(AUDIO_GEN) validate-snesmod
 
-src/snes/fight_bridge.obj: src/engine/fight.asm src/engine/voice_queue.asm
+src/snes/fight_bridge.obj: src/engine/fight.asm src/engine/team_order.asm src/engine/voice_queue.asm
 
 # The SDK's snes_rules recipe replaces the local soundbank recipe below, so
 # validate every module explicitly before an oversized IT can freeze spcLoad.
@@ -194,7 +194,7 @@ PROFILE_OFILES := $(filter-out src/snes/fight_bridge.obj,$(OFILES)) $(PROFILE_FI
 
 $(PROFILE_FIGHT_OBJ): src/snes/fight_bridge.asm src/engine/fight.asm \
 	src/engine/voice_queue.asm src/engine/menucore.asm src/engine/menus.asm \
-	src/engine/options.asm src/engine/msu_intro.asm src/engine/cancel_gate.asm \
+	src/engine/options.asm src/engine/team_order.asm src/engine/msu_intro.asm src/engine/cancel_gate.asm \
 	$(wildcard src/gen_menu/*) $(wildcard src/gen_menu/intro/*) \
 	$(FIGHT_GEN) $(AUDIO_GEN) $(SOUNDBANK).asm | $(GEN_DIR)
 	@mkdir -p $(dir $@)
@@ -258,7 +258,7 @@ $(SOUNDBANK).asm: $(AUDIOFILES)
 	  grep -o '^SOUNDBANK__[0-9]*:' $@ | tr -d ':' | sed 's/^/	.DL /'; } > build/gen_audio/sbkeep.inc
 
 src/snes/fight_bridge.obj: src/snes/fight_bridge.asm src/engine/fight.asm \
-	src/engine/menucore.asm src/engine/menus.asm src/engine/options.asm \
+	src/engine/menucore.asm src/engine/menus.asm src/engine/options.asm src/engine/team_order.asm \
 	src/engine/msu_intro.asm src/engine/cancel_gate.asm \
 	$(wildcard src/gen_menu/*) $(wildcard src/gen_menu/intro/*) \
 	$(FIGHT_GEN) $(AUDIO_GEN) $(SOUNDBANK).asm

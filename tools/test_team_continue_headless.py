@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 from calibration.headless import Core
 from capture_pair_headless import tap, wait
+from test_midfight_join_headless import wait_team_fight
 
 GS = 0x1020
 SEL1, SEL2 = 0x1085, 0x1086
@@ -52,7 +53,7 @@ def boot_team(core):
     tap(core, 3)
     wait(core, lambda: core.ram[GS] == 5, "team select")
     pick_trio(core)
-    wait(core, lambda: core.ram[GS] == 1, "battle 1", 6000)
+    wait_team_fight(core, "battle 1", 6000)
 
 
 def next_round(core, ko_p1, final=False):
@@ -95,7 +96,7 @@ def run(mode):
             assert core.ram[0x4FBD] == 1, "YL_REPICK not armed"
             pick_trio(core)
 
-        wait(core, lambda: core.ram[GS] == 1, f"{mode} fight", 6000)
+        wait_team_fight(core, f"{mode} fight", 6000)
         assert core.ram[TI1] == 0, \
             f"{mode}: human member={core.ram[TI1]}, want 0"
         assert core.ram[TI2] == 0, \

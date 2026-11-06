@@ -76,6 +76,21 @@ def start_single(core):
     core.step(30)
 
 
+def wait_team_fight(core, label, limit=9000):
+    """Legacy flow checks keep the current order; dedicated tests reorder it."""
+    for _ in range(limit):
+        if core.ram[GS] == 1:
+            return
+        if core.ram[GS] == 15:
+            assert core.ram[G_MODE] == 2, "ORDER SELECT outside TEAM PLAY"
+            if core.ram[0xF180] == 1:
+                for side in (0, 1):
+                    if core.ram[CPU1 + side] == 0 and core.ram[0xF184 + side] < 3:
+                        press(core, side, 3)
+        core.step()
+    raise AssertionError(f"{label}: gs={core.ram[GS]}")
+
+
 def start_team(core):
     enter_mode(core, 2)
     core.ram[T_TEAM1] = 0
@@ -85,7 +100,7 @@ def start_team(core):
     core.ram[SCUR1] = SEL_CHR_CELL[2]
     core.ram[CPU1] = 0
     press(core, 0, 8)
-    wait(core, lambda: core.ram[GS] == 1, "team fight", 3600)
+    wait_team_fight(core, "team fight", 3600)
     core.buttons = [set(), set()]
     core.step(30)
 
@@ -138,7 +153,7 @@ def test_team(core, side):
         core.ram[SCUR1 if side == 0 else SCUR2] = SEL_CHR_CELL[char]
         press(core, side, 8)
         core.step(4)
-    wait(core, lambda: core.ram[GS] == 1, "joined team fight", 3600)
+    wait_team_fight(core, "joined team fight", 3600)
     core.step(20)
 
     assert core.ram[JOIN_ACTIVE] == 0

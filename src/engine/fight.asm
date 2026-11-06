@@ -439,6 +439,7 @@
                                         ;   tick, and reusing 6 left YouLoseTick
                                         ;   unreachable (frozen cursor).
 .DEFINE GS_BOSS_FADE 13                ; final KO -> black -> ending1
+.DEFINE GS_TEAM_ORDER 15               ; TEAM PLAY pre-stage fighter order
 .DEFINE GS_INTRO_MSU 14                ; MSU-1 full-screen opening video
 .DEFINE nmiflag     $22
 .DEFINE framecnt    $24
@@ -1125,6 +1126,13 @@ ML_sp_ok:
     sep #$20
     lda gamestate
 ML_sp_next:
+.IFDEF PVSNESLIB
+    cmp #GS_TEAM_ORDER.b
+    bne +
+    jsl TeamOrderTick
+    jmp MainLoop
++
+.ENDIF
     cmp #1
     beq +
     cmp #2
@@ -4089,6 +4097,12 @@ TT_out:
 
 ; ---------------------------------------------------------------------------
 StartFight:
+.IFDEF PVSNESLIB
+    jsl TeamOrderGate                    ; only fresh TEAM PLAY confrontations
+    bcc +
+    rts
++
+.ENDIF
     jsr VoiceQueueDrop                   ; no queued quote may follow us;
     stz.b winvoice                       ; and no deferred winner voice either
     lda #0
@@ -15529,6 +15543,11 @@ FP_present_vis_done:
 FP_present_opn:
     jsr OpnApply                          ;   (IN_FX==6 -> OpnFade flush)
 FP_present_on:
+    ; OpnApply returns with a 16-bit accumulator.  Restore byte writes before
+    ; the immediate INIDISP value below, or the CPU consumes the STA opcode
+    ; as its high byte and runs into unrelated code after the ending loads.
+    sep #$20
+    .ACCU 8
     lda #$8F.b                          ; CGRAM/TM writes need forced blank
     sta.l INIDISP
     jsl CineAdvance
@@ -17602,6 +17621,11 @@ CIH_prac:
 BitMask3: .db 1, 2, 4                     ; sel -> C_USED bit
 
 CampReset:
+.IFDEF PVSNESLIB
+    sep #$20
+    stz.w OR_READY
+    stz.w OR_ACTIVE
+.ENDIF
     sep #$20
     .ACCU 8
     stz.w G_MODE
@@ -18913,7 +18937,9 @@ TTS_lock_go:
     sep #$20
     .ACCU 8
     lda.l SelCellChr,x
-    bmi TTS_deny                          ; empty cell
+    bpl TTS_cell_valid
+    jmp TTS_deny
+TTS_cell_valid:
     sta.b scr0                            ; candidate char
     ; Omega Rugal: L+R held on P1 swaps the Rugal-cell pick to the
     ; ROM-resident omega form (id 14) -- works with or without MSU
@@ -18935,7 +18961,9 @@ TTS_lock_go:
     lda.b scr0
     jsr CharFlags
     and #$01.b
-    bne TTS_deny                          ; external chr + no MSU -> deny
+    beq TTS_msu_valid
+    jmp TTS_deny
+TTS_msu_valid:
 +   lda.w T_STEP
     sta.b scr6                            ; stage T_STEP as a 16-bit operand
     stz.b scr6+1                          ;   (cpy is index-width: cpy.w T_STEP
@@ -18948,7 +18976,9 @@ TTS_lock_go:
     .ACCU 8
     lda.w T_TEAM1,y
     cmp.b scr0
-    beq TTS_deny
+    bne TTS_member_unique
+    jmp TTS_deny
+TTS_member_unique:
     rep #$20
     .ACCU 16
     iny
@@ -18969,7 +18999,10 @@ TTS_lock_go:
     bne TTS_hm_join
     lda.w YL_REPICK
     bne TTS_hm_repick
-    jsr CampStart                         ; trio locked -> fight 1
+    lda.b cpu2
+    bne +
+    jmp TTS_p2_join
++   jsr CampStart                         ; trio locked -> fight 1
     jmp StartFight
 TTS_hm_join:
     jsr JoinFinish                        ; newcomer trio done: restart

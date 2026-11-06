@@ -84,6 +84,28 @@
 .DEFINE CPU_USED_COUNT $10E9               ; number of entries in CPU_USED
 .DEFINE C_HUMAN_SIDE $10EA                 ; 0 = P1 carries campaign, 1 = P2
 
+; ORDER SELECT private state, reserved at $7E:F180 by fight_bridge.asm.
+.DEFINE OR_ACTIVE   $F180
+.DEFINE OR_READY    $F181
+.DEFINE OR_WAIT     $F182
+.DEFINE OR_SIDE     $F183
+.DEFINE OR_COUNT    $F184                 ; two bytes, selected per human
+.DEFINE OR_CURSOR   $F186                 ; two bytes, source card index
+.DEFINE OR_MASK     $F188                 ; two bytes, chosen-card bitmask
+.DEFINE OR_HUMAN    $F18A                 ; two bytes
+.DEFINE OR_SIZE     $F18C                 ; two bytes (boss CPU may have two)
+.DEFINE OR_TEAM     $F190                 ; six original character IDs
+.DEFINE OR_SEQUENCE $F196                 ; six source-card indices
+.DEFINE OR_KEYS     $F19C                 ; word, pad edges
+.DEFINE OR_CARD     $F19E                 ; byte, rendering/input card
+.DEFINE OR_INDEX    $F19F                 ; byte, combined side*3 + card
+.DEFINE OR_POS      $F1A0                 ; word, HUD byte offset
+.DEFINE OR_ATTR     $F1A2                 ; word, tile palette/priority
+.DEFINE OR_LIMIT    $F1A4                 ; text clipping length
+.DEFINE OR_PALETTE  $F1A5                 ; portrait slot
+.DEFINE OR_TILE     $F1A6                 ; word, portrait tile
+.DEFINE OR_ROWPOS   $F1A8                 ; word, card HUD offset
+
 ; ---- SURVIVOR route -------------------------------------------------------
 ; The shuffled opponent list needs 48 bytes, so it lives outside the DP
 ; window.  In the PVSnesLib build DBR is $7E and $8000 is WRAM; the linker
@@ -1067,6 +1089,7 @@ MSB_loop:
     rts
 
 ; 8x8 OBJ glyphs with a six-pixel horizontal advance for the status line.
+.IFNDEF PVSNESLIB
 MtStrDense:
     rep #$20
     .ACCU 16
@@ -1100,6 +1123,8 @@ MtStrDense:
     .ACCU 16
     stx.b oamtop
     rts
+
+.ENDIF
 
 ; The hybrid build keeps these 31 bytes in bank 126 (fight_bridge.asm) so the
 ; full Fight section has room for the MSU-intro branch.  The standalone build
@@ -2995,28 +3020,6 @@ MsuTitleEnterBridge:
     jsr TitleEnter
     jmp MainLoop
 
-; MainLoop's per-vblank presentation entry.  Gamestate 14 owns the PPU setup
-; and streams the opening video; every other state keeps the fight path.
-FightPresentDispatch:
-    sep #$20
-    .ACCU 8
-    lda gamestate
-    cmp #GS_INTRO_MSU.b
-    bne +
-    ; MsuVideoVblank runs from IntroNmiHandler at the top of the NMI, so the
-    ; VRAM DMA gets the whole vblank window.  Only the frame counter is left.
-    sep #$20
-    .ACCU 8
-    lda #$0F.b
-    sta.l INIDISP
-    inc.w framecnt
-    rts
-+   lda gamestate
-    cmp #0.b
-    bne +
-    jsl TitlePaletteFar                   ; rewrite CGRAM inside vblank
-+   jsr FightPresent
-    rts
 
 
 .ENDIF

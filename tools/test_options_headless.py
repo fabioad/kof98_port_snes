@@ -45,7 +45,7 @@ def cursor(core):
 def run(library, rom):
     core = Core(library, rom)
     try:
-        wait_for(core, lambda: core.word(GS) == 7, "opening")
+        wait_for(core, lambda: core.word(GS) in (7, 14), "opening")
         tap(core, START)
         wait_for(core, lambda: core.word(GS) == 0, "title")
         core.step(4)

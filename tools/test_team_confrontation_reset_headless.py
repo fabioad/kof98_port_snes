@@ -20,7 +20,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 from calibration.headless import Core                    # noqa: E402
 from capture_pair_headless import wait                    # noqa: E402
-from test_midfight_join_headless import (start_team, GS, CPU1, CPU2)  # noqa: E402
+from test_midfight_join_headless import (start_team, wait_team_fight, GS, CPU1, CPU2)  # noqa: E402
 
 CORE = "/usr/lib/x86_64-linux-gnu/libretro/snes9x_libretro.so"
 F_HP, F_POWER, F_X = 0x4010, 0x4030, 0x4000
@@ -43,7 +43,7 @@ def main(core_path, rom):
         for member in range(3):
             core.put(F_HP + FP2, 0)
             wait(core, lambda: core.word(GS) == 2, "ko", 600)
-            wait(core, lambda: core.word(GS) == 1, "next fight", 8000)
+            wait_team_fight(core, "next fight", 8000)
             core.step(30)
             if member < 2:
                 # Member swaps keep the survivor's HP (with TeamRecover).
