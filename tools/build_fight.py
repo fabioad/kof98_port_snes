@@ -2491,14 +2491,6 @@ if "chunli" in CHARS:
         "gvx": 0, "gvy": 0, "avx": 0, "avy": 0,
         "damage": 22, "gdamage": 3,
     }
-    # The source Spinning Bird Kick slides forward through PosAdd rows on
-    # elements 3/4/6/7/8/9/10/12; the native state header velset=0,0 made it
-    # kick in place.  Keep the source travel.
-    _chunli["posadd_extra"] = dict(_chunli.get("posadd_extra", {}))
-    _chunli["posadd_extra"][1200] = [
-        (3, 12), (4, 12), (6, 6), (7, 14), (8, 16),
-        (9, 8), (10, 16), (12, 2),
-    ]
 
 # Andy's Kuuha Dan (weak 1300 / strong 1310) is a close-range leaping
 # attack.  The source Clsn1 boxes only cover the outstretched arm, so a
@@ -4507,6 +4499,18 @@ if "chunli" in CHARS:
     _chun.setdefault("hit_soft_resets", {})[3302] = [
         10, 13, 16, 19, 22, 25, 28, 31, 34, 37, 40, 43, 46, 49, 52, 55, 58, 61]
     _chun.setdefault("slice_no_fall", []).append(60)
+
+# M. Bison: the down-up charge specials (1200/1300) inherited Loopstart=0, so
+# their four-frame startup looped forever and the 1201/1301 air follow-up was
+# never reached.  Force the startup clip one-shot.  The QCF/QCB teleports
+# only stepped back 8/16 px; restore a meaningful forward/back displacement.
+if "vega" in CHARS:
+    _vega = CHARS["vega"]
+    _vega.setdefault("loop_off", []).extend([52, 53, 54, 55])
+    _vega.setdefault("posadd_extra", {}).update({
+        1400: [(10, 64)], 1410: [(10, 64)],    # QCF : forward teleport
+        1420: [(10, -64)], 1430: [(10, -64)],  # QCB : backward teleport
+    })
 
 if "sakura" in CHARS:
     POST_CAL_REACTIVATED.setdefault("sakura", []).extend([

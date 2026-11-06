@@ -104,6 +104,36 @@ command = ~40B, F, B, F+a+b
 time = 18
 
 [Command]
+name = "SUPER_4646_Y"
+command = ~40B, F, B, F, y
+time = 18
+
+[Command]
+name = "SUPER_4646_B"
+command = ~40B, F, B, F, b
+time = 18
+
+[Command]
+name = "SUPER_4646_Y2"
+command = ~40B, F, B, F+y
+time = 18
+
+[Command]
+name = "SUPER_4646_B2"
+command = ~40B, F, B, F+b
+time = 18
+
+[Command]
+name = "MAX_4646_YB"
+command = ~40B, F, B, F, y+b
+time = 18
+
+[Command]
+name = "MAX_4646_YB2"
+command = ~40B, F, B, F+y+b
+time = 18
+
+[Command]
 name = "QCF_XY"
 command = ~D, DF, F, x+y
 time = 18
@@ -468,6 +498,59 @@ value = 3150
 triggerall = command = "MAX_4646_AB2"
 triggerall = statetype != A
 trigger1 = ctrl
+
+; Strong-button supers: the move list advertises Y/B but the generated
+; table only carried the X/A variants.  The CPU entered the state directly,
+; so the player's Y/B command looked disabled.
+[State -1, special_85_y]
+type = ChangeState
+value = 3000
+triggerall = command = "SUPER_4646_Y" || command = "SUPER_4646_Y2"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_86_b]
+type = ChangeState
+value = 3100
+triggerall = command = "SUPER_4646_B" || command = "SUPER_4646_B2"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_87_yb]
+type = ChangeState
+value = 3050
+triggerall = command = "MAX_4646_YB" || command = "MAX_4646_YB2"
+triggerall = statetype != A
+trigger1 = ctrl
+
+; Air button complement for the down-up charge specials.
+[State -1, air_du_x]
+type = ChangeState
+value = 1205
+triggerall = statetype = A
+triggerall = command = "CHARGE_DU_X" || command = "CHARGE_DU_X2"
+trigger1 = 1
+
+[State -1, air_du_y]
+type = ChangeState
+value = 1205
+triggerall = statetype = A
+triggerall = command = "CHARGE_DU_Y" || command = "CHARGE_DU_Y2"
+trigger1 = 1
+
+[State -1, air_du_a]
+type = ChangeState
+value = 1301
+triggerall = statetype = A
+triggerall = command = "CHARGE_DU_A" || command = "CHARGE_DU_A2"
+trigger1 = 1
+
+[State -1, air_du_b]
+type = ChangeState
+value = 1301
+triggerall = statetype = A
+triggerall = command = "CHARGE_DU_B" || command = "CHARGE_DU_B2"
+trigger1 = 1
 
 [State -1, sys_45]
 type = ChangeState
