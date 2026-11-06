@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Fail the build if any IT module exceeds SNESMOD's ARAM budget."""
+"""Fail the build if an IT module exceeds SNESMOD's pattern or ARAM limits."""
 import re
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from it_pattern_limit import layout, MAX_PATTERNS
 
 MAX_MODULE_BYTES = 44500  # ARAM budget with the combat effects + stream buffer
 # SNESMOD data starts at $1A00; spcAllocateSoundRegion(18) reserves the top
@@ -20,6 +21,10 @@ def main(tool, paths):
         raise SystemExit("validate_snesmod: no modules supplied")
     failures = []
     for path in paths:
+        pattern_count = len(layout(Path(path).read_bytes())[3])
+        if pattern_count > MAX_PATTERNS:
+            failures.append(f"{path}: {pattern_count} patterns exceeds the {MAX_PATTERNS}-pattern driver table")
+            continue
         # smconv also exports an SPC by default, even in verbose validation.
         # Keep that scratch export away from source/approved preview files.
         with tempfile.TemporaryDirectory(prefix='validate-snesmod-') as directory:

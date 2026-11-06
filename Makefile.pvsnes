@@ -119,7 +119,7 @@ AUDIO_GEN := build/gen_audio/spc_ids.inc build/gen_audio/spc_sfxmap.inc
 FFG_MUSIC := assets/audio/ffg/manifest.json $(wildcard assets/audio/ffg/*.it)
 
 # Keep all seven frontend modules identical to the reviewed source pack.
-$(MENU_ITS) &: $(FFG_MUSIC) tools/approved_music.py \
+$(MENU_ITS) &: $(FFG_MUSIC) tools/approved_music.py tools/it_pattern_limit.py \
         music/The_King_of_Fighters.mid assets/survival_ending/kof00_crystal.mid
 	python3 tools/approved_music.py --frontend
 
@@ -157,7 +157,7 @@ src/snes/fight_bridge.obj: src/engine/fight.asm src/engine/team_order.asm src/en
 
 # The SDK's snes_rules recipe replaces the local soundbank recipe below, so
 # validate every module explicitly before an oversized IT can freeze spcLoad.
-validate-snesmod: $(AUDIOFILES) tools/validate_snesmod.py
+validate-snesmod: $(AUDIOFILES) tools/validate_snesmod.py tools/it_pattern_limit.py
 	python3 tools/validate_snesmod.py $(SMCONV) $(AUDIOFILES)
 
 $(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json assets/characters/*/*_SNES.cns assets/characters/*/*_SNES.cmd assets/characters/*/*.air assets/data/quotes/*.json) \
@@ -235,7 +235,7 @@ assets/audio/esaka/sfx.it: tools/build_sfx_it.py tools/build_spc_neogeo.py \
 	python3 tools/build_sfx_it.py
 
 $(STG_ITS) build/gen_audio/stage_music.stamp &: tools/build_stage_music.py \
-		tools/approved_music.py $(FFG_MUSIC) \
+		tools/approved_music.py tools/it_pattern_limit.py $(FFG_MUSIC) \
 		tools/build_stages.py tools/it_reduce.py \
 		tools/mid2it.py assets/audio/menu/cipher_beta.it \
 		$(filter-out %\ %,$(wildcard music/*.mid)) \

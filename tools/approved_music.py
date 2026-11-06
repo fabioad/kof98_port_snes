@@ -1,13 +1,16 @@
-"""Install the exact reviewed FFG modules, including on clean/repeated builds.
+"""Install the reviewed FFG arrangements, including on clean/repeated builds.
 
 assets/audio/ffg is the production source. Previews and the reference ROM are
 not build inputs. Fail on stale MIDI or a modified approved payload so changes
 cannot silently ship with an old arrangement or the legacy 909 instrument bank.
+Long linear songs are losslessly repacked for SNESMOD's 64-pattern table;
+the reviewed source bytes, musical events, instruments and samples stay intact.
 """
 import argparse
 import hashlib
 import json
 from pathlib import Path
+from it_pattern_limit import fit_snesmod
 
 ROOT = Path(__file__).resolve().parents[1]
 PACK = ROOT / 'assets/audio/ffg'
@@ -33,8 +36,9 @@ def install(row, destination):
         raise ApprovedMusicError(f"MIDI changed: {row['midi']}; regenerate/review its FFG arrangement")
     destination = Path(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    if not destination.exists() or digest(destination) != row['sha256']:
-        destination.write_bytes(source.read_bytes())
+    payload = fit_snesmod(source.read_bytes())
+    if not destination.exists() or destination.read_bytes() != payload:
+        destination.write_bytes(payload)
 
 
 def install_for_midi(midi, destination):
