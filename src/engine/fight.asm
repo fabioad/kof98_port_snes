@@ -108,6 +108,7 @@
 .DEFINE HIGHJUMPVXF $03C0               ; 1.5 * jump.fwd
 .DEFINE HIGHJUMPVXB $03D4               ; 1.5 * jump.back (rounded)
 .DEFINE GRAV        $0071               ;  0.44 px/tick^2 (kfm yaccel)
+.DEFINE MAX_AIR_Y   112                 ; keep sprites inside the 224-line field
 .DEFINE VBOUNCEGRAV $005A               ;  0.35 px/tick^2 (state 1028)
 .DEFINE KOVY        $FB00               ; -5.0 px/tick: minimum KO upward launch
 .DEFINE KOVXMAX     $0400               ;  4.0 px/tick: cap on KO pushback
@@ -8659,6 +8660,9 @@ StVictimThrow:                          ; 821: thrown flight, VelAdd y=0.4
     sbc FP+F_VY,x
     bpl +
     lda #0
++   cmp #MAX_AIR_Y.w
+    bcc +
+    lda #MAX_AIR_Y.w
 +   sta FP+F_Y,x
     lda FP+F_VX,x
     jsr AddXClamped

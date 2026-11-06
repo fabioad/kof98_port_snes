@@ -1252,6 +1252,15 @@ CHARS = {
                  "gdamage": 1},
             49: {"damage": 4, "gvx": 0, "gvy": 0, "fall": 0,
                  "gdamage": 1},
+            # Keep the victim inside the 224-line field.  The source
+            # Galactica/ranbu finishers launch at -16/-18 px per tick,
+            # which wraps the OAM Y (the "goes up, appears below" effect).
+            85: {"avy": -7 << 8, "gvy": -7 << 8},
+            86: {"avy": -7 << 8, "gvy": -7 << 8},
+            89: {"avy": -7 << 8, "gvy": -7 << 8},
+            58: {"avy": -7 << 8, "gvy": -7 << 8},
+            59: {"avy": -7 << 8, "gvy": -7 << 8},
+            60: {"avy": -7 << 8, "gvy": -7 << 8},
         },
         # One point per mount strike (12 strikes + finish = 13).
         "target_life_fix": {515: -2},
@@ -5329,6 +5338,17 @@ if "clark" in CHARS:
     # Flashing Elbow follow-up; 1512 is not wired, so start it on 1510 end.
     _clark.setdefault("extra_trans", []).extend([
         (66, 60, 0, 0), (107, 112, 0, 0), (108, 112, 0, 0)])
+    # Running Three lifts the bound victim with Clark's own -8 px/tick
+    # jump; the victim then rides the TargetBind above the 224-line field
+    # and its OAM Y wraps.  Keep a small hop but cap it at -2 px/tick.
+    _clark.setdefault("act_override", {}).update({
+        3110: [(18, 5, 7, 0), (18, 15, (-8) & 0xFF, 0)],
+        3160: [(18, 5, 7, 0), (18, 15, (-8) & 0xFF, 0)],
+        # The finisher 3111/3161 repeats the -8 px/tick launch at element
+        # 24; only the vertical row is replaced so the source x dashes stay.
+        3111: [(23, 15, (-8) & 0xFF, 0)],
+        3161: [(23, 15, (-8) & 0xFF, 0)],
+    })
 
 # ---------------------------------------------------------------------------
 # Remaining incomplete specials/supers (live check 2026-11-06)
