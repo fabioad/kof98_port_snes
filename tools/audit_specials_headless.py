@@ -70,6 +70,10 @@ def character(name, tables):
         moves.setdefault(sid, state)
     for sid, state, _anim in bf.POST_CAL_REACTIVATED.get(name, ()):
         moves[sid] = state
+    compiled_map = tables / f"{name}_remaining_specials.json"
+    if compiled_map.exists():
+        moves = {int(sid): int(state) for sid, state in
+                 json.loads(compiled_map.read_text())["moves"].items()}
     labels = bf._state_labels(bf.asset_path(cfg["cmd"]))
     for sid in {r["sid"] for r in rules}:
         state = moves.get(sid)

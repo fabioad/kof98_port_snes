@@ -1,4 +1,5 @@
 import os
+import json
 import re
 import unittest
 
@@ -227,9 +228,15 @@ class DaimonWinPoseTests(unittest.TestCase):
             meta_text = source.read()
         cls.data = db_bytes(meta_text, "daimonSprData:")
 
-    def test_win_pose_is_anim_181_sprites_49_to_54(self):
-        # S_WPOSE = 90 -> AnimTab[90] = real win pose anim 181.
-        self.assertEqual([49, 50, 51, 52, 53, 54], self.win_sprites)
+    def test_win_pose_uses_the_six_source_181_cels(self):
+        # Numeric packing IDs move when a restored special adds a cel.
+        # Validate source identities instead of pinning their old offsets.
+        mapping_path = os.path.join(ROOT, "build", "gen_fight",
+                                    "daimon_sprite_ids.json")
+        with open(mapping_path) as source:
+            mapping = json.load(source)
+        expected = [mapping[f"181,{frame}"] for frame in range(6)]
+        self.assertEqual(expected, self.win_sprites)
 
     def test_win_pose_chunks_would_cross_without_the_clamp(self):
         metas = sprite_metas(self.data, self.offsets)

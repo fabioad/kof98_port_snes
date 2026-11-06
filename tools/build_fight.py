@@ -5635,6 +5635,14 @@ _tweak("eiji", "air_box_patch_frames", {
 _wire_followups("chunli", [(103, 1505, 1505)])
 _late_act("chunli", {1505: [(5, 3, -20, 0)]})
 
+# The later Geese startup/air wiring intentionally replaces these old rows.
+# Deduplicate by sid with the same last-wins semantics used by build_char.
+if "geese" in POST_CAL_REACTIVATED:
+    POST_CAL_REACTIVATED["geese"] = list({
+        row[0]: row for row in POST_CAL_REACTIVATED["geese"]}.values())
+    POST_CAL_REACTIVATED_OVERWRITE.setdefault("geese", set()).update(
+        (55, 56, 61, 63))
+
 # Runtime SFX ids -- kept in sync with the SAMPLES order in
 # tools/build_audio.py (spc_ids.inc is generated from that list).
 CHAR_VOICES = {}                        # name -> {(snd group,item): voice id}
@@ -9451,6 +9459,13 @@ def build_char(name, cfg, global_pal=None):
             frames[idx] = (g, n, x, y, t, flip, list(boxes), hurt)
         air[anum] = (frames, loopstart)
 
+    from remaining_specials import repair as repair_remaining_specials
+    _remaining = repair_remaining_specials(
+        name, cfg, anims, air, cns_moves, cns_headers, cns_statedefs,
+        cns_binds, cns_acts, cns_posadds)
+    if _remaining:
+        print(f"{name}: restored special phase timelines {_remaining}")
+
     # Which super slots are MAX/SDM versions?  Stored in a descriptor byte
     # (CH_MAXMASK) so the matcher no longer guesses from the sid number.
     if "max_sids" in cfg:
@@ -10785,6 +10800,11 @@ def build_char(name, cfg, global_pal=None):
     # Cap normal pushback after the source/calibration values are final so
     # every fighter -- Yuri included -- stays within the same screen budget.
     limit_normal_pushback(move_rows)
+    with open(os.path.join(OUT, f"{name}_sprite_ids.json"), "w") as _mapfile:
+        json.dump({f"{g},{n}": sid for (g, n), sid in spr_ids.items()},
+                  _mapfile, sort_keys=True)
+        _mapfile.write("\n")
+
     # Explicit per-slice damage (e.g. a source state whose HitDefs are split
     # across several runtime sids).  Applied after normalization so the
     # requested total is exact and the source CNS stays untouched.
