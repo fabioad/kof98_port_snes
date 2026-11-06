@@ -4569,6 +4569,32 @@ if "vega" in CHARS:
         62: (4, -12),    # 1301 Head Press
         68: (3, -6),     # 1205 Devil Reverse dive
     })
+    # The rise velocities above put the sprite's top a few pixels above the
+    # 224-line screen; the OAM Y wraps and the character appears at the
+    # bottom.  Keep the jump inside the visible field and cap the rise.
+    _vega_tw = POST_CAL_TWEAKS.setdefault("vega", {})
+    _vega_tw.setdefault("state_vel", {}).update({
+        60: (2, -7), 62: (4, -7), 68: (3, -4)})
+    _vega_tw.setdefault("frame_cap", {})[62] = 2
+    # Head Press needs its descending attack phase; 1305 is a StAirSpec
+    # state (gravity + floor clamp) whereas 1301 is a plain StSpecial.
+    POST_CAL_REACTIVATED.setdefault("vega", []).append((65, 1305, 1305))
+    # 1301's source anim-end row goes straight to the 1202 landing pose,
+    # shadowing the new 1305 attack phase; drop it and chain to 1305.
+    _vega_tw.setdefault("trans_drop", []).append((62, 0))
+    _vega_tw.setdefault("extra_trans", []).append((62, 65, 0, 0))
+    # 1305 is the Head Press descending attack.  Its source box only covers
+    # the outstretched leg and often misses a standing victim; widen it and
+    # arm the first frame so the move lands once during the descent.
+    _vega_tw.setdefault("hitdef_override", {})[65] = {
+        "active": 1, "damage": 15, "gdamage": 1, "fall": 1,
+        "gvx": 0, "gvy": 0}
+    _vega_tw.setdefault("air_box_patch_frames", {})[1305] = {
+        f: [(-40, -110, 80, 10)] for f in range(0, 13)}
+    # The source's air complement rules re-enter 1205/1301 while the same
+    # charge command is still buffered, which made the move come out twice.
+    # Drop those two command rules; the rise->dive transitions stay.
+    _vega_tw["cmd_drop_states"] = {1205, 1301}
     _vega.setdefault("act_override", {}).update({
         1201: [(0, 5, 2, 0)],
         1301: [(0, 5, 4, 0)],
@@ -10967,6 +10993,10 @@ def build_char(name, cfg, global_pal=None):
     if _disabled:
         rules = [r for r in rules
                  if r["motion"].split("#", 1)[0] not in _disabled]
+    _drop_states = set(cfg.get("cmd_drop_states") or ())
+    if _drop_states:
+        rules = [r for r in rules
+                 if r.get("mstate") not in _drop_states]
     for _spec in (cfg.get("cmd_extra") or ()):
         _sid = next((s for s, m in move_ids.items()
                      if m == _spec["state"]), None)
