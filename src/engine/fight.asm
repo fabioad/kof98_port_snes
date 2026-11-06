@@ -253,6 +253,11 @@
                                         ; bit1: state entered this tick
                                         ; bit2: afterimage trail on
                                         ; bit3: PosFreeze latch
+                                        ; bit4: air-blowback latch
+                                        ; bit5: throw entered via holdback
+                                        ;   (SF2-style back throw: both
+                                        ;   fighters turn, victim crosses
+                                        ;   to the opposite side)
 .DEFINE F_HITVX     54                  ; HitVelSet velocity saved at impact
 .DEFINE F_HITVY     56
 .DEFINE F_HOT       58                  ; ticks of live command input: PushHist
@@ -5870,17 +5875,10 @@ AO_sfx:                                 ; PlaySnd: arg = generated SFX id
     jmp VoicePlay
 +   jsr SfxPlay
     rts
-AO_turn:                                ; Turn: flip own facing
-    rep #$20
-    .ACCU 16
-    ldx fofs
-    lda FP+F_FACING,x
-    eor #$FFFF.w                          ; facing is +-1, so negate with
-    inc a                               ;   two's complement (xor alone
-    sta FP+F_FACING,x                     ;   would yield $FFFE, not -1)
-    sep #$20
-    .ACCU 8
-    rts
+AO_turn:                                ; Turn: flip own facing, unless this
+    jsl SelfTurnFar                     ;   is the SF2-style back throw (the
+    rts                                 ;   pre-flip must survive the source's
+                                        ;   own turn elements)
 AO_padd:                                ; PosAdd x, facing-relative
     rep #$20
     .ACCU 16
@@ -7753,6 +7751,8 @@ TickFighter:
     asl a
     tax
     jsr (StateTab,x)
+    jsl BackThrowLatchFar
+    ldx fofs
     jsr ApplyVelMul
     sep #$20
     .ACCU 8
@@ -8389,6 +8389,9 @@ RollRecover:                            ; tail call: fofs = victim, acc16
 ; elem-gated ActTab rows (turn/posadd/target facing+life+state) fire
 ; inside AnimSetFrame alongside the PosTab timeline.
 .DEFINE THROWGRAV   $0066               ;  0.4 px/tick^2 (state 821 VelAdd)
+.DEFINE THROWPUSH   $0300               ; back throw: victim keeps 3 px/tick
+                                        ;   horizontally away from the thrower
+.DEFINE MINTHROWSEP 24                  ; wrong-side re-seat distance (px)
 .DEFINE ESCWIN      12                  ; throw-tech window: ticks since grab
 .DEFINE ESPUSH      $0300               ; escape pushback: 3 px/tick
 .DEFINE ESSTUN      16                  ; escape flinch length
@@ -8600,8 +8603,11 @@ VH_free:                                ; bind lost mid-throw (attacker hit):
     ldx fofs
     lda #$FF.w                          ; hitstun outlasts any fall: a
     sta FP+F_HTIMER,x                   ;   release never recovers mid-air
+    jsl BackThrowReleaseFar             ; holdback throw: horizontal flight
     jmp StateRet
-+   jmp VictimSelfDown
++   jsr VictimSelfDown                  ; EnterState clears F_LASTSCAN...
+    jsl BackThrowReleaseFar             ; ...so store the deferred seat now
+    rts
 
 StVictimThrow:                          ; 821: thrown flight, VelAdd y=0.4
     rep #$20
@@ -11222,12 +11228,8 @@ HO_vface:
     beq HO_vdone
     ldx aofs
     stx fofs
-    jsr JoyRelDir                         ; acc8: holdfwd at grab -> var(2)
-    ldx fofs
-    and #$04.b
-    lsr a
-    lsr a
-    sta FP+F_TFLAGS,x
+    jsr JoyRelDir                         ; acc8: holdfwd/holdback at grab
+    jsl SetThrowDirFar                    ; bit0 fwd / bit5 back + side swap
     rep #$20
     .ACCU 16
     lda ct_ei
@@ -23103,6 +23105,174 @@ CounterClear:
 .BANK 126 SLOT 0
 .ORGA $E900
 .SECTION "SakuraCinema" FORCE
+; A(8) = JoyRelDir mask captured when a throw connects.  Record the throw
+; direction in F_TFLAGS and, for holdback, turn both fighters around so the
+; same throw animation carries the victim across to the opposite side (the
+; Street Fighter II back throw).  Kept in this far bank because the Fight
+; window is full.
+SetThrowDirFar:
+    sep #$20
+    .ACCU 8
+    sta scr6+1
+    ldx fofs
+    and #$04.b                            ; holdfwd -> F_TFLAGS bit0
+    lsr a
+    lsr a
+    sta FP+F_TFLAGS,x
+    lda scr6+1
+    and #$08.b                            ; holdback -> back throw
+    beq STD_done
+    lda FP+F_TFLAGS,x
+    ora #$20.b
+    sta FP+F_TFLAGS,x
+    rep #$20
+    .ACCU 16
+    ldx fofs                              ; attacker turns around...
+    lda FP+F_FACING,x
+    eor #$FFFF.w
+    inc a
+    sta FP+F_FACING,x
+    ldx vofs                              ; ...and so does the victim
+    lda FP+F_FACING,x
+    eor #$FFFF.w
+    inc a
+    sta FP+F_FACING,x
+    sep #$20
+    .ACCU 8
+STD_done:
+    rtl
+
+; Release helper for the holdback throw.  The victim leaves S_VHELD through
+; VH_free; give it a horizontal push opposite its facing (which points at the
+; thrower) so it visibly travels to the opposite side instead of collapsing
+; in place.  The owner's F_TFLAGS bit5 is cleared here so it cannot leak into
+; a later move.
+BackThrowReleaseFar:
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    txa
+    eor #FP2OFS.w                       ; owner offset
+    tay
+    sep #$20
+    .ACCU 8
+    lda FP+F_TFLAGS,y
+    and #$20.b
+    beq BTR_done
+    lda FP+F_TFLAGS,y
+    and #$DF.b
+    sta FP+F_TFLAGS,y
+    ; Some command grabs use a zero TargetBind and move the attacker
+    ; through the victim instead.  If that left the victim on the back
+    ; side, record the in-front position; TickFighter applies it two ticks
+    ; later, after the attacker's same-tick bind can no longer overwrite it.
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    lda FP+F_X,x
+    sec
+    sbc FP+F_X,y
+    sta scr0                            ; victim - attacker
+    lda FP+F_FACING,y
+    bmi BTR_left
+    lda scr0
+    bmi BTR_reseat
+    bra BTR_launch
+BTR_left:
+    lda scr0
+    bpl BTR_reseat
+    bra BTR_launch
+BTR_reseat:
+    lda FP+F_FACING,y
+    bmi +
+    lda FP+F_X,y
+    clc
+    adc #(MINTHROWSEP*256).w
+    bra ++
++   lda FP+F_X,y
+    sec
+    sbc #(MINTHROWSEP*256).w
+++  cmp #(STAGE_L<<8).w
+    bcs +
+    lda #(STAGE_L<<8).w
++   cmp #(STAGE_R<<8).w
+    bcc ++
+    lda #(STAGE_R<<8).w
+++  sta FP+F_LASTSCAN,x                 ; deferred target x
+    sep #$20
+    .ACCU 8
+    lda FP+F_TFLAGS,x
+    ora #$40.b                          ; bit6: apply target x later
+    sta FP+F_TFLAGS,x
+    rep #$20
+    .ACCU 16
+BTR_launch:
+    ldx fofs
+    lda FP+F_FACING,x
+    bmi +
+    lda #-THROWPUSH.w                   ; facing right -> pushed left
+    bra ++
++   lda #THROWPUSH.w                    ; facing left -> pushed right
+++  sta FP+F_VX,x
+    sep #$20
+    .ACCU 8
+BTR_done:
+    rtl
+
+; Deferred wrong-side correction.  Called from TickFighter after the state
+; handler, once F_STIME >= 2 (the attacker has left the bind state, so its
+; ThrowBind cannot overwrite the position again).
+BackThrowLatchFar:
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    sep #$20
+    .ACCU 8
+    lda FP+F_TFLAGS,x
+    and #$40.b
+    beq BTL_done
+    rep #$20
+    .ACCU 16
+    lda FP+F_STIME,x
+    cmp #2.w
+    bcc BTL_done16
+    lda FP+F_LASTSCAN,x
+    sta FP+F_X,x
+    sep #$20
+    .ACCU 8
+    lda FP+F_TFLAGS,x
+    and #$BF.b
+    sta FP+F_TFLAGS,x
+BTL_done16:
+    rep #$20
+    .ACCU 16
+BTL_done:
+    rtl
+
+; ActOp op0 (source Turn): flip this fighter's facing.  A holdback throw has
+; already flipped both fighters at grab time; letting an authored Turn row
+; run would spin the attacker back and undo the side switch (Chizuru's throw
+; has one at element 8).  Kept far because the Fight window is full.
+SelfTurnFar:
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    sep #$20
+    .ACCU 8
+    lda FP+F_TFLAGS,x
+    and #$20.b
+    bne STF_skip
+    rep #$20
+    .ACCU 16
+    lda FP+F_FACING,x
+    eor #$FFFF.w                          ; facing is +-1, so negate with
+    inc a                                 ;   two's complement
+    sta FP+F_FACING,x
+    sep #$20
+    .ACCU 8
+STF_skip:
+    rtl
+
 ; Facing auto-turn.  Moved out of the full Fight bank; the only caller
 ; uses the long form.
 FaceEachOtherFar:

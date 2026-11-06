@@ -10418,6 +10418,44 @@ def build_char(name, cfg, global_pal=None):
             if _rule.get("mstate") == _old_state:
                 _rule["state"] = _new_sid
                 _rule["mstate"] = _new_state
+    # SF2-style back throw: every normal throw must also accept holdback +
+    # the same button.  Some source CMDs only list holdfwd for their throw
+    # (Yuri), which made back+strong whiff into a normal.  Clone those rules
+    # with B instead of F; the runtime records which direction was held at
+    # grab time and turns both fighters around.
+    def _eff_held(_rule):
+        # The command definition itself may carry /F or /B; the emitted
+        # CmdTab row ORs that into rule["held"], so inspect both.
+        _base = cmddefs.get(_rule["motion"], (0, None, 15))
+        return _rule.get("held", 0) | _base[0]
+
+    _back_motions = {r["motion"] for r in rules
+                     if r.get("state") == 74 and (_eff_held(r) & 8)}
+    _with_back_throws = []
+    for _rule in rules:
+        _with_back_throws.append(_rule)
+        if _rule.get("state") != 74 or not (_eff_held(_rule) & 4):
+            continue
+        if _rule["motion"] in _back_motions:
+            continue
+        # Keep the clone adjacent so it inherits the forward throw's priority
+        # over the ordinary strong attack using the same button.  A separate
+        # command definition is needed when the forward hold lives in the
+        # command itself (Yuri's THROW_Y = "/F, y"); simply setting held=8 on
+        # the rule would OR with the old /F and never match.
+        _base = cmddefs[_rule["motion"]]
+        _cname = _rule["motion"] + "#B"
+        _n = 2
+        while _cname in cmddefs:
+            _cname = f"{_rule['motion']}#B{_n}"
+            _n += 1
+        cmddefs[_cname] = ((_base[0] & ~4) | 8, _base[1], _base[2])
+        _clone = dict(_rule)
+        _clone["motion"] = _cname
+        _clone["held"] = _rule.get("held", 0) & ~4
+        _clone["nheld"] = _rule.get("nheld", 0) & ~(4 | 8)
+        _with_back_throws.append(_clone)
+    rules = _with_back_throws
     rules.sort(key=lambda rule: motion_rank(rule, cmddefs), reverse=True)
     # Explicit priority for commands whose motion is a subset of another
     # rule's tail (Lucky's SHOOT = DP+kick also completes the DP special).

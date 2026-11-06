@@ -553,6 +553,35 @@ segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
 - `FaceEachOther` saiu do banco Fight para `SakuraCinema` (chamada `jsl`)
   para abrir espaço para a regra.
 
+## Arremesso para trás estilo Street Fighter II (05/11)
+
+- **Entrada:** segurar **para trás** + o botão de arremesso do personagem
+  (soquinho forte; Ryu/Terry/Robert usam o x+y da origem). O motor registra
+  a direção no grab (`F_TFLAGS` bit5) e vira os dois lutadores no mesmo
+  instante: o atacante passa a encarar o lado oposto e a vítima é levada
+  para trás dele.
+- **Mesmo arremesso, espelhado:** os `TargetBind` são relativos à direção
+  do atacante, então os offsets positivos da origem continuam valendo e a
+  animação (e o dano) é a mesma, só que espelhada. No release a vítima
+  recebe **3 px/tick** horizontais para longe do arremessador
+  (`BackThrowReleaseFar`), em vez de cair no lugar.
+- **Golpes de comando com bind zero:** alguns grabs (Chizuru) usam
+  `TargetBind` dx=0 e movem o atacante. Se a vítima terminar no lado
+  errado, `BackThrowReleaseFar` agenda a posição corrigida em
+  `F_LASTSCAN` e `TickFighter` aplica dois ticks depois, quando o
+  `ThrowBind` do atacante já não pode sobrescrever. O resultado é a vítima
+  atrás do atacante, como nos demais.
+- **Comandos fonte só com /F:** Yuri declara `THROW_Y = /F, y`; o gerador
+  clona a regra com um comando `/B` equivalente (`#B`) para que
+  para-trás + soco forte também entre no arremesso. Personagens com
+  arremesso x+y continuam aceitando para-trás + x+y.
+- **Turn autoral:** durante um back throw, `SelfTurnFar` ignora as linhas
+  `Turn` do ActTab (a Chizuru tem uma no elemento 8), pois elas desfariam
+  a virada feita no grab.
+- Regressão: `tools/test_back_throw_headless.py` cobre Yuri, Iori, King,
+  Benimaru, Ryu e Chizuru, nas duas direções e no espelho, conferindo
+  lado, deslizamento, dano igual e limpeza do flag.
+
 ## Chizuru — antiaéreo, supers e botões (05/11)
 
 - **QCB anti-aéreo (estados 1100/1102):** a subida do clone mantinha os
@@ -621,9 +650,9 @@ segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$FAE3`**
+- checksum **`$614A`**
 - layout MSU **`0x514F`**
-- `.sfc` SHA-256 `3de78cb7…ff971961`
+- `.sfc` SHA-256 `4870a7c9…b3048652`
 - `.msu` SHA-256 `3be2fcd0…c0f4e154`
 - `.msu` 51.396.096 bytes
 
