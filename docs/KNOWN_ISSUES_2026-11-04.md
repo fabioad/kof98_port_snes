@@ -646,14 +646,39 @@ segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
   do HCB fraco, o pulo do forte, a cadência lenta do QCFx2 e o fallback
   do QCF simples.
 
+## Chin — DP, super e blowback (05/11)
+
+- **DP fraco (estado 1450, sid 66):** o `ChangeState` de pouso para 1402
+  não estava ligado porque 1402 não tinha slot. Agora 1402 usa o sid 53 e
+  a transição `(66, 53, kind 1)` é emitida; o DP fraco pousa e volta ao
+  neutro em ~51 ticks (antes ficava 283+ ticks na pose aérea).
+- **DP forte (1400 -> 1401 -> 1402):** os três estados foram ligados aos
+  sids 54/57/53. O comando `UPPER_S` usa o mesmo motion do DP fraco com o
+  soco forte (`y`): F, D, DF + soco forte. O chain termina no pouso 1402.
+- **Super Zake FireBall:** 1900/1910/1920 foram remapeados para os slots
+  85/86/87, então entram no sequencial multi-hit de 5 contatos do motor;
+  o dano por contato ficou 9/9/12 (45/45/60 HP no total) e o custo é
+  1000 de power. O port desenha **um** projétil multi-hit porque o pool
+  de sparks tem dois slots; o barrage de 14 projéteis da origem não cabe
+  como 14 objetos, mas o número de golpes e o dano total estão completos.
+- **Blowback (estado 900):** o bloco de guard-cancel
+  (`prevstateno = [150,153]`: PalFX, PowerAdd -1000, EnvColor, Pause,
+  AfterImage, Explod) era executado em todo CD porque o port não modela
+  `prevstateno`. Ele foi removido da cópia SNES: o blowback não gasta
+  mais 1000 de power nem escurece a tela como um super.
+- O `UPPER STRONG` e os supers aparecem na lista de comandos do PRACTICE
+  (sids 54, 85, 86 e 87).
+- Regressão: `tools/test_chin_fixes_headless.py` cobre DP fraco/forte,
+  supers fraco/forte e o CD sem flash/power.
+
 ## Build de referência
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$614A`**
-- layout MSU **`0x514F`**
-- `.sfc` SHA-256 `4870a7c9…b3048652`
-- `.msu` SHA-256 `3be2fcd0…c0f4e154`
+- checksum **`$E5E0`**
+- layout MSU **`0x6F94`**
+- `.sfc` SHA-256 `11a87531…16bbe5eb`
+- `.msu` SHA-256 `3afe26e2…77ba4726`
 - `.msu` 51.396.096 bytes
 
 ## Referências
