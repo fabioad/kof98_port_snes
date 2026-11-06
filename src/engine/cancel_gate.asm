@@ -159,7 +159,15 @@ PMT_last:
     phx
     jsr EnterState
     plx                                 ; restore spark slot
-    lda.w SPARKS+SPK_VX,x
+    ; A stationary tall pillar (Terry's Power Geyser / Geese's Raging
+    ; Storm) must not launch the victim sideways on the final contact:
+    ; that slid them to the wall and panned the camera onto the stage edge.
+    lda.w SPARKS+SPK_GRD,x
+    and #$01.b
+    beq +
+    lda #0
+    bra ++
++   lda.w SPARKS+SPK_VX,x
     bmi +
     lda #$0400.w
     bra ++

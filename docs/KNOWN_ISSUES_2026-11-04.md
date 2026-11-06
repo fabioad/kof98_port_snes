@@ -18,6 +18,16 @@
 > guarda e coluna alta, mas o clipe alternativo tem zero células e não é
 > desenhado. Teste: `tools/test_terry_geyser_headless.py`.
 
+> **06/11 — Geyser e câmera/stage:** o pilar estacionário não empurra mais a
+> vítima até a parede (o `ProjPushFar` ignora o pushback quando
+> `SPK_GRD` tem a marca de pilar alto, e o `PMT_last` não aplica o slide
+> lateral). Com isso o `camx` fica em ~123–125 em vez de correr para a borda,
+> e a vítima permanece em ~147–150 depois do golpe. O scroll também ganhou
+> validação defensiva (`camx` fora de 0..256 é recalculado) e o `shakeamp`
+> impossível (>= 8) é ignorado. Verificado no headless: cenário Terry vs
+> Blue Mary (stage 8) sem perda de tiles e `pytest -q tools/tests`
+> **301 passed**.
+
 > **Critério de release (autor, 06/11):** preservar as adaptações do port
 > e o orçamento atual de recursos. Priorizar glitches, travamentos, dano
 > indevido e falhas de captura/soltura/recuperação. Diferenças intencionais
@@ -728,11 +738,11 @@ segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$1368`**
-- layout MSU **`0x10F7`**
-- `.sfc` SHA-256 `9e1e885a…5771a457d`
-- `.msu` SHA-256 `3eb92597…ade80bb`
-- `.msu` 51.396.096 bytes
+- checksum **`$65A7`**
+- layout MSU **`0xD14F`**
+- `.sfc` SHA-256 `1a27d89b…081b4943d`
+- `.msu` SHA-256 `b7054f51…348e857fb4`
+- `.msu` 52.149.760 bytes
 
 ## Referências
 

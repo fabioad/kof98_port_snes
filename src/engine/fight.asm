@@ -13685,12 +13685,8 @@ PH_hit:
     lda #0
 +   sta FP+F_HP,y
 PH_dmg_done:
-    lda #6<<8.w                       ; pushback like a light hit, away
-    bit.w SPARKS+SPK_VX,x             ;   along the projectile's heading
-    bpl +
-    eor #$FFFF.w
-    inc a
-+   sta FP+F_VX,y
+    jsr ProjPushFar                   ; normal 6 px pushback, except for a
+                                        ;   stationary tall pillar (geyser)
     lda FP+F_HP,y                     ; a killing shot must knock the victim
     beq PH_ko                         ;   down, not leave it on its feet
     sep #$20
@@ -19595,6 +19591,32 @@ StAirSpecTail:
     jmp ClampX
 .ENDS
 
+; Projectile hit pushback.  A tall/stationary pillar (Terry's Power
+; Geyser, Geese's Raging Storm) holds the victim in place; the ordinary
+; shot pushes 6 px/tick along its heading.  X = spark slot, Y = victim
+; offset.  Lives in the free low-bank gap.
+.BANK 50 SLOT 0
+.ORGA $0E5A
+.SECTION "ProjPush" FORCE
+ProjPushFar:
+    rep #$20
+    .ACCU 16
+    lda.w SPARKS+SPK_GRD,x
+    and #$0001.w
+    bne PPH_zero
+    lda #6<<8.w
+    bit.w SPARKS+SPK_VX,x
+    bpl +
+    eor #$FFFF.w
+    inc a
++   sta FP+F_VX,y
+    rts
+PPH_zero:
+    lda #0
+    sta FP+F_VX,y
+    rts
+.ENDS
+
 ; Ralf's Air Blitz (sid 54): the source does VelSet x=10, y=15 on the dive
 ; element (AnimElem 4, frame index 3).  The generic ActTab element row did
 ; not survive into the runtime table, so the dive fell under gravity alone
@@ -23389,10 +23411,25 @@ SS_calc:
 +   sta camx
     sta scr5                            ; bg scroll = camx + shake
 SS_shake:
+    ; Defensive: camx is the only source of the BG scroll.  If a transition
+    ; or malformed state ever leaves it outside the 0..256 stage window,
+    ; using it would show unrelated tilemap columns (missing stage tiles).
+    ; Recompute from the live fighter positions instead.
+    lda camx
+    cmp #257.w
+    bcc SS_shake_ok
+    bra SS_calc
+SS_shake_ok:
     sep #$20
     .ACCU 8
     stz scr3
     stz scr3+1                            ; signed hi byte of the offset
+    ; EnvShake amplitude is 0..7 by construction.  Clamp impossible values
+    ; so a stray byte can never shift the whole background by hundreds of
+    ; pixels (which looks like the stage tiles vanished).
+    lda shakeamp
+    cmp #8.b
+    bcs SS_wr
     lda shaketmr
     beq SS_wr                             ; inactive: keep shake at 0
     lda framecnt

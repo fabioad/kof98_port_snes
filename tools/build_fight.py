@@ -1856,6 +1856,12 @@ POST_CAL_PROJS = {}
 # commands enter the held state otherwise).
 POST_CAL_REACTIVATED_OVERWRITE = {
     "clark": {53, 55, 58},
+    # Iori's 54/55 used to point at the 1502 explosion clip (no Clsn1) and
+    # 88/89 reused the 1102/1502 clips.  The late live-check wiring moves
+    # those slots to the real attack states (1501/1511, 3210/3200); declare
+    # the replacement so the first-wins state_to_sid table cannot keep the
+    # old, hitless rows.
+    "iori": {54, 55, 88, 89},
 }
 # Existing low special slots that must stop shadowing a reactivated
 # grab-window follow-up.  state_to_sid is first-wins, so leaving the old
@@ -5045,14 +5051,18 @@ _CATEGORY_A_FOLLOWUPS = {
     # Mai 2070 (air QCFx2+z): root grab -> 2071 attack/life-add.
     "mai":      [(103, 2071, 2071)],
     # Yamazaki MAX Drill: 3150 grab -> 3151 drill hits.
-    "yamazaki": [(104, 3151, 3151)],
+    # 103-105 are the Snake Arms follow-ups and 106 must stay free for
+    # the reversal counter slot, so keep the MAX Drill grab on 111.
+    "yamazaki": [(111, 3151, 3151)],
     # Mary: 3060 launcher -> 3065 multi-hit throw; 4000 air grab -> 4011
     # slam (4010 is already wired at sid 111 by the reversal slots).
     "mary":     [(104, 3065, 3061), (105, 4011, 4011)],
     # Geese MAX Rashomon: 3250 grab -> 3260 -> 3261 finisher.
     "geese":    [(103, 3260, 3260), (104, 3261, 3261)],
     # Krauser MAX Gigantic Cyclone: 3220 grab -> 3221 -> 3222.
-    "krauser":  [(103, 3221, 3201), (104, 3222, 3202)],
+    # 103/104 now carry the Kaiser Wave strike follow-ups; move the MAX
+    # Gigantic Cyclone grab chain to the free 105/106 slots.
+    "krauser":  [(105, 3221, 3201), (106, 3222, 3202)],
 }
 for _c, _rows in _CATEGORY_A_FOLLOWUPS.items():
     if _c in CHARS:
@@ -5260,6 +5270,370 @@ if "clark" in CHARS:
     # Flashing Elbow follow-up; 1512 is not wired, so start it on 1510 end.
     _clark.setdefault("extra_trans", []).extend([
         (66, 60, 0, 0), (107, 112, 0, 0), (108, 112, 0, 0)])
+
+# ---------------------------------------------------------------------------
+# Remaining incomplete specials/supers (live check 2026-11-06)
+# ---------------------------------------------------------------------------
+# The functional audit found command targets whose root enters but never
+# reaches the phase that owns the HitDef/damage.  Two causes dominate:
+#
+#   1. the source changes to a follow-up state that had no runtime sid, so
+#      trans_rules could not emit the chain and the fighter recovered from
+#      the startup pose;
+#   2. a command grab's HitDef p1stateno (attacker follow-up) was not wired,
+#      leaving only the 0/1-point capture hit.
+#
+# Capture follow-ups must stay in the 103..111 grab window so StVictimHeld
+# keeps the victim bound while the TargetLifeAdd/TargetBind rows run.  Plain
+# strike follow-ups use the same range here; HitOne accepts it and no victim
+# state is created unless the row sets p2state/throw.
+#
+# Every change below goes through POST_CAL_REACTIVATED / POST_CAL_TWEAKS /
+# POST_CAL_PROJS_FULL.  They run after calibration.native.apply_profile, so
+# adding a follow-up cannot invalidate an existing profile hash.
+POST_CAL_PROJS_FULL = {}
+# target_life_fix and act_override are consumed before POST_CAL_TWEAKS is
+# merged, so late additions use these dedicated tables and are applied again
+# right after the merge.
+POST_CAL_TARGET_LIFE = {}
+POST_CAL_ACT_OVERRIDE = {}
+
+
+def _wire_followups(name, rows, trans=()):
+    cfg = CHARS.get(name)
+    if cfg is None:
+        return
+    POST_CAL_REACTIVATED.setdefault(name, []).extend(rows)
+    if trans:
+        POST_CAL_TWEAKS.setdefault(name, {}).setdefault(
+            "extra_trans", []).extend(trans)
+
+
+def _tweak(name, key, value):
+    """Late config merge that does not touch the calibration hash."""
+    if name not in CHARS:
+        return
+    POST_CAL_TWEAKS.setdefault(name, {}).setdefault(key, {}).update(value)
+
+
+def _late_life(name, values):
+    if name in CHARS:
+        POST_CAL_TARGET_LIFE.setdefault(name, {}).update(values)
+
+
+def _late_act(name, values):
+    if name in CHARS:
+        POST_CAL_ACT_OVERRIDE.setdefault(name, {}).update(values)
+
+
+# Iori: Tsumakushi was drawing the 1502 explosion clip (no Clsn1) on the
+# 1501/1511 states, and the Saku Tsumakushi supers reused 1102/1502.  Point
+# each state at its own source attack clip; the HitDefs were already parsed.
+_wire_followups("iori", [
+    (54, 1501, 1501), (55, 1511, 1511),
+    (88, 3210, 3210), (89, 3200, 3200),
+])
+
+# Shingo: Kakehourin's startup states have no HitDef; 3001/3011/3051 carry
+# the actual uppercut.  The source exits on Time=54, a trigger the generic
+# trans parser cannot express, so chain at the end of the startup clip.
+_wire_followups("shingo", [
+    (103, 3001, 3001), (104, 3011, 3011), (105, 3051, 3011),
+], [(85, 103, 0, 0), (86, 104, 0, 0), (87, 105, 0, 0)])
+
+# Rugal: Dead End Screamer redirects the attacker to 3102 (weak/strong) or
+# 3152 (MAX).  Those states own the TargetBind/TargetLifeAdd sequence.  The
+# package does not ship their AIR actions; clone the existing 3100/3150
+# clips into those slots so the chain has a visible body.
+_wire_followups("rugal", [
+    (103, 3102, 3103), (104, 3103, 3104),
+    (105, 3104, 3105), (106, 3105, 3106),
+    (107, 3152, 3153), (108, 3153, 3154), (109, 3154, 3105),
+], [(103, 104, 0, 0), (104, 105, 0, 0), (105, 106, 0, 0),
+    (107, 108, 0, 0), (108, 109, 0, 0), (109, 106, 0, 0)])
+_tweak("rugal", "air_synth", {
+    3102: 3100, 3103: 3100, 3104: 3100,
+    3105: 3100, 3106: 3100,
+    3152: 3150, 3153: 3150, 3154: 3150,
+})
+# The source attack box only appears on the last pose, after the dash has
+# already crossed a point-blank victim.  Arm the whole clip and add a
+# body-sized box so the grab connects before the dash carries Rugal past.
+_tweak("rugal", "hitdef_override", {
+    88: {"active": 1}, 89: {"active": 1}, 78: {"active": 1}})
+_tweak("rugal", "air_box_patch_frames", {
+    3100: {f: [(0, -105, 70, 0)] for f in range(6)},
+    3110: {f: [(0, -105, 70, 0)] for f in range(6)},
+    3150: {f: [(0, -105, 70, 0)] for f in range(6)},
+})
+
+# Omega Rugal: state 1020 is only the charge pose; 1021 has the HitDef.
+# Its AIR action starts on an invisible sprite (-1,0), which the SNES meta
+# packer cannot emit, so use the visible close-punch clip and add the same
+# forward attack box on its first frame.
+_wire_followups("omegarugal", [(103, 1021, 1010)])
+_tweak("omegarugal", "air_box_patch_frames", {
+    1010: {0: [(-20, -110, 60, 0)]}})
+
+# Saisyu: Orochinagi's charge states (3000/3010) lead to 3001/3011 and then
+# to the release state 3005.  The flame itself lives in a projectile helper
+# the native engine cannot follow, so give the release a real stationary
+# projectile row (the same fireball art Saisyu already streams).
+_wire_followups("saisyu", [(103, 3001, 3001), (104, 3005, 3005)],
+                [(85, 103, 0, 0), (103, 104, 0, 0)])
+POST_CAL_PROJS_FULL.setdefault("saisyu", {}).update({
+    85: (0x0000, 14, 4, 0x0A),
+    86: (0x0000, 18, 4, 0x0A),
+    87: (0x0000, 24, 4, 0x0A),
+})
+PROJECTILE_RELEASE.setdefault("saisyu", {}).update({85: 6, 86: 6, 87: 6})
+
+# Heidern: Final Bringer's root (3000) enters 3001, whose MoveHit opens the
+# 3020->3023 bind/life-add chain.  3022/3023 use damage expressions the
+# extractor cannot evaluate, so pin port-scale values.
+_wire_followups("heidern", [
+    (103, 3001, 1201), (104, 3020, 3020), (105, 3021, 3021),
+    (106, 3022, 1311), (107, 3023, 3023),
+], [(103, 104, 3, 0), (106, 107, 0, 0)])
+_tweak("heidern", "hitdef_override", {
+    103: {"damage": 35, "gdamage": 2, "fall": 1}})
+_tweak("heidern", "slice_damage", {103: 35})
+# 1201 is the source's throw-hold animation and has no Clsn1 of its own.
+# Without a body box the 3001 HitDef never contacts, so the 3020 bind chain
+# never opens.
+_tweak("heidern", "air_box_patch_frames", {
+    1201: {0: [(-20, -110, 60, 0)], 1: [(-20, -110, 60, 0)]}})
+# 3022's two life-add controllers use a ceil(Target,LifeMax) expression the
+# extractor drops entirely, so schedule the hold's ticks explicitly.
+_late_act("heidern", {3022: [
+    (0x80 | t, 3, -4, 0) for t in (8, 20, 32, 44, 56)]})
+_late_life("heidern", {3023: -20})
+
+# Clark: the strong command points straight at 1110, which is the follow-up
+# pose of the weak grab (no HitDef).  Route the command through the real
+# grab root 1100 and wire the 1111/1112 damage/landing states.
+# Use the free knee-family slots 61/63, not 103/104: those already carry the
+# Ultra Argentine lift/slam chain and the first-wins state table would lose
+# it.  60-69 is also inside StVictimHeld's owner window, so the victim stays
+# bound through the Gatling damage phase.
+_tweak("clark", "cmd_remap", {1110: 1100})
+_wire_followups("clark", [(61, 1111, 1111), (63, 1112, 1112)])
+_late_life("clark", {1111: -24})
+# The gatling grab leaps forward and is past a point-blank victim by its
+# source element 5.  Arm the opening pose and redirect the hit straight to
+# the 1111 life-add phase (1110 is only a bind pose and sits outside the
+# 103..111 held window).
+_tweak("clark", "hitdef_override", {
+    50: {"active": 1, "p2state": 76, "throw": 1, "p1mugen": 1111}})
+_tweak("clark", "air_box_patch_frames", {
+    1100: {f: [(0, -112, 70, 0)] for f in range(5)}})
+
+# Leona: Rebel Spark's 3100 only poses; 3102 has the hit and redirects to
+# the 3105 drill.  Grateful Dead's 3305 hands over to 3306 for its hits.
+_wire_followups("leona", [
+    (103, 3102, 3102), (104, 3105, 3105),
+    (105, 3305, 3305), (106, 3306, 3306),
+], [(87, 103, 0, 0)])
+_late_life("leona", {3105: -48, 3306: -5})
+# Rebel Spark's startup dash crosses the victim before its element-10
+# distance gate.  Keep only two frames and hand over to the 3102 strike.
+_tweak("leona", "frame_cap", {87: 2})
+# 3102's source HitDef has damage 0 and relies on the p1stateno redirect to
+# 3105.  That redirect only runs for custom victim states in the native
+# engine, so give the contact its own super-sized hit as well.
+_tweak("leona", "hitdef_override", {
+    103: {"damage": 30, "gdamage": 2, "fall": 1}})
+_tweak("leona", "slice_damage", {103: 20})
+
+# Mature: Despair's root 1300 is a dash with no hit; 1310 owns the strike.
+# The source values are on a ~1000 life scale, so pin a normal special hit.
+# Use the free 108 slot: 103 already owns the Decide grab follow-up.
+_wire_followups("mature", [(108, 1310, 1310)])
+_tweak("mature", "hitdef_override", {
+    108: {"damage": 30, "gdamage": 2, "fall": 0}})
+_tweak("mature", "slice_damage", {108: 20})
+
+# Vice: Withering Surface's 3000/3010 are startup/air poses; 3020 owns the
+# only HitDef, whose source damage extracted as zero.
+_wire_followups("vice", [(103, 3020, 3020)])
+_tweak("vice", "hitdef_override", {
+    103: {"damage": 30, "gdamage": 2, "fall": 1}})
+_tweak("vice", "slice_damage", {103: 18})
+
+# Daimon: several command grabs were missing their p1 attack phases.  The
+# 3110/3111 pair is Arashi no Yama (the reported case); the others are the
+# same pattern (Jigoku Gokuraku 3010, MAX 3060 and Tenchi Gaeshi 1610).
+_wire_followups("daimon", [
+    (103, 3110, 3110), (104, 3111, 3111),
+    (105, 3010, 3010), (106, 3060, 3060), (107, 1610, 1610),
+])
+
+# Athena: Psychic Grasp's root only binds; 1071 holds the victim through
+# the telekinetic slam but has no damage row of its own.
+_wire_followups("athena", [(103, 1071, 1071)])
+_late_act("athena", {1071: [(8, 3, -12, 0)]})
+
+# Chin: the drink-grab root redirects to 1951, which owns the two HitDefs.
+# A held victim cannot be hit by a second HitDef in the native engine, so
+# convert the follow-up into the target-life-add rows the grab can run.
+_wire_followups("chin", [(103, 1951, 1951)])
+_late_act("chin", {1951: [
+    (f, 3, -4, 0) for f in (3, 5, 7, 9, 11, 13)]})
+
+# King: Trap Shot's 1400 is the capture; 1410 is the multi-hit shot.  The
+# source p2stateno 77 is the flight pose, which drops the held flag before
+# 1410's TargetLifeAdd rows run; use the held slot instead.
+_wire_followups("king", [(103, 1410, 1420)])
+_tweak("king", "hitdef_override", {
+    56: {"p2state": 76, "throw": 1},
+    57: {"p2state": 76, "throw": 1},
+})
+_late_life("king", {1410: -4})
+
+# Mai: the fan tosses are helper HitDefs (1000/1001/1010), which the native
+# engine cannot run.  Fire the same fan art as a pooled projectile instead.
+POST_CAL_PROJS_FULL.setdefault("mai", {}).update({
+    64: (0x0400, 12, 4, 0x0A),
+    65: (0x0400, 12, 4, 0x0A),
+    58: (0x0500, 16, 4, 0x0A),
+})
+PROJECTILE_RELEASE.setdefault("mai", {}).update({64: 4, 65: 4, 58: 5})
+
+# Kim: the 1200 HitDef's damage expression extracted as zero; the move has
+# a real attack box and should be a normal jump-in special.
+_tweak("kim", "hitdef_override", {
+    60: {"damage": 14, "gdamage": 2, "fall": 1}})
+
+# Chang: the 1300 capture redirects to 1310, whose TargetLifeAdd holds the
+# victim for a single 21-point source hit.  Restore a port-scale value.
+_wire_followups("chang", [(103, 1310, 1310)], [(103, 0, 0, 0)])
+_late_life("chang", {1310: -24})
+
+# Choi: 1300/1310 are only the stance; 1301/1311 are the actual kicks.
+_wire_followups("choi", [(103, 1301, 1301), (104, 1311, 1301)],
+                [(103, 0, 0, 0), (104, 0, 0, 0), (51, 104, 0, 0)])
+_tweak("choi", "hitdef_override", {
+    103: {"damage": 18, "gdamage": 2, "fall": 1},
+    104: {"damage": 18, "gdamage": 2, "fall": 1}})
+_tweak("choi", "slice_damage", {103: 15, 104: 15})
+
+# Yashiro: 1200/1210 are startup; 1201/1211 are the flying strikes.
+_wire_followups("yashiro", [(103, 1201, 1201), (104, 1211, 1211)],
+                [(103, 0, 0, 0), (104, 0, 0, 0), (51, 104, 0, 0)])
+_tweak("yashiro", "hitdef_override", {
+    103: {"damage": 24, "gdamage": 2, "fall": 1},
+    104: {"damage": 24, "gdamage": 2, "fall": 1}})
+
+# Shermie: Flash/Carnival captures redirect to 2210/2260; the 2150 move
+# redirects to 2160.  Their source life adds are on the 1000 scale.
+_wire_followups("shermie", [
+    (103, 2160, 2160), (104, 2210, 2210), (105, 2260, 2260),
+], [(103, 0, 0, 0)])
+_late_life("shermie", {
+    2160: -10, 2210: -48, 2260: -5})
+
+# Chris: Hunting Air's 1100/1150 are wind-ups; 1110/1160 carry the hits.
+_wire_followups("chris", [(103, 1110, 1110), (104, 1160, 1160)],
+                [(103, 0, 0, 0), (104, 0, 0, 0), (51, 104, 0, 0)])
+_tweak("chris", "hitdef_override", {
+    103: {"damage": 30, "gdamage": 2, "fall": 0},
+    104: {"damage": 24, "gdamage": 2, "fall": 0}})
+_tweak("chris", "slice_damage", {103: 18, 104: 18})
+
+# Yamazaki: Snake Arms 1000/1010/1020 is a stance; 1001/1011/1021 are the
+# three arm strikes selected by the source's command/distance branches.
+_wire_followups("yamazaki",
+                [(103, 1001, 1001), (104, 1011, 1011),
+                 (105, 1021, 1021)],
+                [(52, 103, 0, 0), (54, 104, 0, 0), (57, 105, 0, 0)])
+_tweak("yamazaki", "hitdef_override", {
+    103: {"damage": 18, "gdamage": 2, "fall": 1},
+    104: {"damage": 18, "gdamage": 2, "fall": 1},
+    105: {"damage": 18, "gdamage": 2, "fall": 1}})
+
+# Blue Mary: Spider's 1205 capture redirects to 1220, which owns the slam.
+_wire_followups("mary", [(103, 1220, 1220)])
+_late_life("mary", {1220: -20})
+
+# Lucky: Death Bound's attack is a helper projectile at element 5.  Spawn
+# the existing basketball art as a pooled shot from both variants.
+POST_CAL_PROJS_FULL.setdefault("lucky", {}).update({
+    88: (0x0400, 22, 4, 0x0A),
+    89: (0x0400, 22, 4, 0x0A),
+})
+PROJECTILE_RELEASE.setdefault("lucky", {}).update({88: 4, 89: 4})
+# The helper shot is not always reached in the native projectile pool (the
+# source spawns it from a helper at element 5).  Give the body a short,
+# wide contact on the throw frame as a guaranteed melee fallback.
+_tweak("lucky", "hitdef_from_state", {
+    88: (2602, {"active": 5, "damage": 22, "gdamage": 2, "fall": 1,
+                "gvx": 0, "gvy": 0}),
+    89: (2602, {"active": 5, "damage": 22, "gdamage": 2, "fall": 1,
+                "gvx": 0, "gvy": 0}),
+})
+_tweak("lucky", "air_box_patch_frames", {
+    2900: {f: [(-10, -90, 80, 0)] for f in range(3, 8)}})
+_tweak("lucky", "slice_damage", {88: 22, 89: 22})
+
+# Brian: American Supernova redirects to 3010, then 3020/3030/3040 each
+# apply a TargetLifeAdd.  The source values are large 1000-scale numbers.
+# Keep 106 free for the reversal counter slot; the last life-add phase
+# moves to the next free grab-window slot.
+_wire_followups("brian", [
+    (103, 3010, 3010), (104, 3020, 3020),
+    (105, 3030, 3030), (111, 3040, 3040),
+], [(103, 104, 0, 0), (105, 111, 0, 0)])
+_late_life("brian", {3020: -20, 3040: -20})
+
+# Krauser: 1210 is the Kaiser Wave startup; 1211 owns both hit windows.
+# The dash carries him past a point-blank victim before element 3, so arm
+# the first frames and add a wide forward box.
+_wire_followups("krauser", [(103, 1211, 1211)])
+_tweak("krauser", "hitdef_override", {
+    103: {"active": 1, "damage": 20, "gdamage": 2, "fall": 1}})
+_tweak("krauser", "air_box_patch_frames", {
+    1211: {f: [(-20, -110, 85, 0)] for f in range(4)}})
+# Kaiser Wave is a travelling shot in the source; the helper body carries
+# the HitDef the native helper path cannot reach.  Spawn the compiled wave
+# so the move has a real projectile even if the dash whiffs point-blank.
+POST_CAL_PROJS_FULL.setdefault("krauser", {}).update({
+    51: (0x0500, 20, 4, 0x0A)})
+PROJECTILE_RELEASE.setdefault("krauser", {}).update({51: 2})
+
+# Mr. Big: Blaster Wave's real shot lives in helper 3005 -> 3006.  Use the
+# already-compiled Ground Blaster projectile for the two root states.
+POST_CAL_PROJS_FULL.setdefault("mrbig", {}).update({
+    87: (0x0500, 12, 4, 0x0A),
+    88: (0x0500, 16, 4, 0x0A),
+})
+PROJECTILE_RELEASE.setdefault("mrbig", {}).update({87: 5, 88: 5})
+
+# Eiji: Tenmakyaku's 1400/1410 are startup; 1401/1402 (weak) and
+# 1411/1412 (strong) carry the hits, with 1405 as the shared landing.  The
+# source exits on MoveContact (not MoveHit), which trans_rules does not
+# encode, so add those rows explicitly.
+_wire_followups("eiji", [
+    (103, 1401, 1401), (104, 1402, 1403), (105, 1405, 1405),
+    (106, 1411, 1411), (112, 1412, 1413),
+], [(103, 104, 3, 0), (106, 112, 3, 0)])
+_tweak("eiji", "hitdef_override", {
+    103: {"damage": 12, "gdamage": 1, "fall": 0},
+    104: {"damage": 10, "gdamage": 1, "fall": 1},
+    106: {"damage": 12, "gdamage": 1, "fall": 0},
+    112: {"damage": 10, "gdamage": 1, "fall": 1},
+})
+# 1401/1411 are short airborne startup cels with no Clsn1; the source puts
+# the boxes in 1403/1413.  Add a body-sized contact so the MoveContact chain
+# can reach those follow-ups.
+_tweak("eiji", "air_box_patch_frames", {
+    1401: {0: [(-20, -115, 75, 10)], 1: [(-20, -115, 75, 10)]},
+    1411: {0: [(-20, -115, 80, 10)], 1: [(-20, -115, 80, 10)]},
+})
+
+# Chun-Li: the 1500 grab's 1505 follow-up only binds; give the slam a real
+# TargetLifeAdd on the release element.
+_wire_followups("chunli", [(103, 1505, 1505)])
+_late_act("chunli", {1505: [(5, 3, -20, 0)]})
 
 # Runtime SFX ids -- kept in sync with the SAMPLES order in
 # tools/build_audio.py (spc_ids.inc is generated from that list).
@@ -9007,6 +9381,20 @@ def build_char(name, cfg, global_pal=None):
         else:
             cfg[_key] = _value
 
+    # Late grab/state tables for the follow-ups reactivated above.  The first
+    # pass ran before POST_CAL_TWEAKS, so re-apply the entries that were
+    # collected through _late_life/_late_act.
+    for _state, _life in POST_CAL_TARGET_LIFE.get(name, {}).items():
+        cns_acts[_state] = [
+            (frame, op, _life if op == 3 else arg, cond)
+            for frame, op, arg, cond in cns_acts.get(_state, ())]
+    for _state, _rows in POST_CAL_ACT_OVERRIDE.get(name, {}).items():
+        _drop_ops = {op for _f, op, _a, _c in _rows}
+        cns_acts[_state] = [r for r in cns_acts.get(_state, ())
+                            if r[1] not in _drop_ops]
+        cns_acts[_state] += [(int(f), int(op), int(a), int(c))
+                             for f, op, a, c in _rows]
+
     # Synthetic MoveHitReset rows for flurries whose source re-issues the
     # HitDef on each strike element instead of using a MoveHitReset
     # controller (Sakura's Haru Ichiban 3100).  Values are 1-based source
@@ -9218,6 +9606,11 @@ def build_char(name, cfg, global_pal=None):
         vx, dmg, guard = vals[:3]
         old = projs.get(sid, (0, 0, 0, 0x0A))
         projs[sid] = (vx, dmg, old[2], guard)
+    # Post-calibration rows that also need their own effect clip (the
+    # helper-only shots that had no source-derived ProjTab entry).  Full
+    # 4-tuples match the cfg["projs"] format.
+    for sid, vals in POST_CAL_PROJS_FULL.get(name, {}).items():
+        projs[sid] = tuple(vals)
 
     repair_invisible_move_anims(name, cfg, anims, air)
     # Team member entrance: state 43 is not otherwise dispatched, so reuse
