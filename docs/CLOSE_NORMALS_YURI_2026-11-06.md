@@ -6,10 +6,12 @@ O cel defeituoso 40,5 foi substituído pelo cel limpo 40,4 em **todas as 19
 ações** que o usavam, não apenas nos três saltos. Tempos, loop, offsets AIR,
 colisões e física do salto permanecem iguais.
 
-O dash para trás (AIR 105) tinha um tween sintético que caía em um cel
-inválido e aparecia como ruído azul no fim do movimento. O tween foi
-desativado para o sid 46 (`tween_skip_sids`); o clip volta às quatro poses
-de origem e o dash termina limpo.
+Os tweens sintéticos da Yuri apareciam como ruído azul em alguns quadros
+(landing, get-up, dash para trás e fatias de especiais). Todos os sids que
+recebiam dissolve foram desligados em `tween_skip_sids` (17, 18, 46, 61, 62,
+além dos 6/20 já existentes). O build não gera mais nenhum tween cel para ela;
+os clips usam diretamente as poses de origem. O dash para trás voltou às
+quatro poses e termina limpo.
 
 Uma varredura nos cels de corpo (grupos < 1000) encontrou 123 pixels
 isolados em 101 sprites — inclusive o último quadro do dash (105,2). Esses

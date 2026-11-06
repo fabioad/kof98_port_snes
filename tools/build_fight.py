@@ -3881,9 +3881,10 @@ if "yuri" in CHARS:
               "gvx": 0, "gvy": 0},
     })
     _yuri.setdefault("extra_trans", []).append((108, 109, 0, 0))
-    # The backdash's synthetic dissolve lands on a bad/blank cel and was
-    # visible as a corrupted final frame.  Keep the source 4-frame timing.
-    _yuri.setdefault("tween_skip_sids", []).append(46)
+    # Yuri's synthetic dissolve cels (landing/get-up/backdash/special
+    # slices) render as blue tile noise in-game.  Keep the source animation
+    # frames for every slot that would get one.
+    _yuri.setdefault("tween_skip_sids", []).extend([17, 18, 46, 61, 62])
     _yuri.setdefault("cmd_extra", []).extend([
         {"name": "HAOH_MAX", "label": "MAX HAOH SHIKOU KEN",
          "state": 550, "posture": 3, "time": 30,
