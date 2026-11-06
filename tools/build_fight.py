@@ -3090,6 +3090,10 @@ if "terry" in CHARS:
             (89, 104, 0, 0),
         ],
         "cmd_priority": [
+            # QCBx2 + punch is the extra Power Geyser input; the MAX form
+            # with both punches must be tested before the single-button
+            # variants (the matcher's button test is a superset check).
+            "GEYSER_SC_XY", "GEYSER_SC_X", "GEYSER_SC_Y",
             "BUSTER_WOLF_MAX", "BUSTER_WOLF", "HIGH_ANGLE_GEYSER",
             "POWER_CHARGE_MOW_W", "POWER_CHARGE_MOW_S",
             "POWER_DUNK_MOW", "FIRE_KICK", "DOUBLE_KONG",
@@ -3133,6 +3137,23 @@ if "terry" in CHARS:
             "name": "BUSTER_WOLF_MAX", "label": "BUSTER WOLF MAX",
             "state": 3250, "posture": 3, "time": 30,
             "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0),
+                      (0, 3)],
+        }, {
+            # Extra Power Geyser inputs: QCBx2 + punch.  The original
+            # DBF (down/back/forward) commands are preserved.
+            "name": "GEYSER_SC_X", "label": "POWER GEYSER SC",
+            "state": 3000, "posture": 3, "time": 30,
+            "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
+                      (0, 1)],
+        }, {
+            "name": "GEYSER_SC_Y", "label": "POWER GEYSER SC S",
+            "state": 3010, "posture": 3, "time": 30,
+            "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
+                      (0, 2)],
+        }, {
+            "name": "GEYSER_SC_XY", "label": "POWER GEYSER SC MAX",
+            "state": 3050, "posture": 3, "time": 30,
+            "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
                       (0, 3)],
         }],
     })
@@ -3866,7 +3887,33 @@ if "yuri" in CHARS:
         {"name": "RYUUKO_MAX", "label": "MAX RYUUKO RANBU",
          "state": 560, "posture": 3, "time": 30,
          "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 12)]},
+        # KOF-style alternative inputs for the two pretzel supers.  The
+        # original CMD entries stay untouched; these are additional rules.
+        # Haoh Shikou: QCBx2 + punch.
+        {"name": "HAOH_SC_X", "label": "HAOH SHIKOU SC",
+         "state": 500, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
+                   (0, 1)]},
+        {"name": "HAOH_SC_Y", "label": "HAOH SHIKOU SC S",
+         "state": 501, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
+                   (0, 2)]},
+        # Hien Hou'ou Kyaku: QCFx2 + kick.
+        {"name": "HIEN_SC_A", "label": "HIEN HOU'OU SC",
+         "state": 510, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0),
+                   (0, 4)]},
+        {"name": "HIEN_SC_B", "label": "HIEN HOU'OU SC S",
+         "state": 511, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0),
+                   (0, 8)]},
     ])
+    # MAX Ryuuko uses QCFx2 + both kicks; keep it ahead of the single-kick
+    # Hien shortcut so a+b still selects the MAX super.
+    _yuri["cmd_priority"] = [
+        "RYUUKO_MAX", "HAOH_MAX", "HIEN_SC_A", "HIEN_SC_B",
+        "HAOH_SC_X", "HAOH_SC_Y",
+    ]
 
 if "mrbig" in CHARS:
     POST_CAL_REACTIVATED.setdefault("mrbig", []).extend([
@@ -4454,7 +4501,23 @@ if "geese" in CHARS:
          "state": 1600, "posture": 3, "time": 30,
          "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0),
                    (4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
+        # KOF-style extra inputs.  The original QCFx2 Raging Storm and the
+        # long MAX Rashomon command remain available.
+        {"name": "RAGING_SC_X", "label": "RAGING STORM SC",
+         "state": 3000, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
+                   (0, 1)]},
+        {"name": "RAGING_SC_Y", "label": "RAGING STORM SC S",
+         "state": 3010, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0),
+                   (0, 2)]},
+        {"name": "RASHOMON_SC", "label": "RASHOMON MAX SC",
+         "state": 3250, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0),
+                   (0, 12)]},
     ])
+    _gee["cmd_priority"] = [
+        "RASHOMON_SC", "RAGING_SC_X", "RAGING_SC_Y"]
 
 if "krauser" in CHARS:
     POST_CAL_REACTIVATED.setdefault("krauser", []).extend([
