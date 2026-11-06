@@ -9713,8 +9713,8 @@ def build_char(name, cfg, global_pal=None):
     # placeholder instead of spending a bank window on nothing.
     if proj_fx is not None and not any(cells for _ticks, cells in proj_fx[1]):
         proj_fx = None
-    if proj_fx_alt is not None and not any(cells for _ticks, cells
-                                           in proj_fx_alt[1]):
+    if (proj_fx_alt is not None and not alt_spec.get("invisible")
+            and not any(cells for _ticks, cells in proj_fx_alt[1])):
         proj_fx_alt = None
 
     tiles = bytearray()
@@ -11740,7 +11740,9 @@ def projectile_effect_alt(name, sff, air, spec):
         # empty-cell frame so DrawSparks skips the art entirely.  The
         # ProjTab damage/guard row and the tall SPK_GRD hitbox are still
         # active, so the move hits exactly as before.
-        return action, [(1, [])], b""
+        # Keep a one-byte CHR payload: the emitter cannot encode
+        # .INCBIN ... READ 0, and the empty frame never reads it anyway.
+        return action, [(1, [])], b"\x00"
     pre_scale = max(1, int(spec.get("pre_scale", 1)))
     zoom = max(1, int(spec.get("zoom", 1)))
     max_cells = int(spec.get("max_cells", len(SPARK_SLOTS)))
