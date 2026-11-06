@@ -550,68 +550,12 @@ anim     = 300
 sprpriority = 3
 
 ;---------------------------------------------------
-[State 700, PalFX];ﾉ�ﾉﾏｰﾗｹ�
-type = PalFX
-triggerall = (Time = 0 || Time = 3 || Time = 6)
-trigger1 = prevstateno = [150,153]
-time = 1
-add = 0,0,255
-
-[State 701, PowerAdd];ﾄﾜﾁｿ
-type = PowerAdd
-trigger1 = prevstateno = [150,153]
-trigger1 = time = 0
-value = -1000   
-
-[State 700, NotHitBy];ﾎﾞｵﾐ
-type = NotHitBy
-trigger1 = prevstateno = [150,153]
-trigger1 = 1
-value = SCA
-
-[State 700, EnvColor];ﾉﾁｰﾗ
-type = EnvColor
-triggerall = time = 0
-trigger1 = prevstateno = [150,153]
-value = 255,255,255
-time = 1
-under = 1
-
-[State 700, Explod];ﾉﾁｹ�
-type = Explod
-trigger1 = prevstateno = [150,153]
-trigger1 = time = 0
-anim = f700
-ID = 700
-pos = 0,-65
-ontop = 1
-ownpal = 1
-persistent = 0
-pausemovetime = 999999
-supermovetime = 999999
-supermove = 1
-
-[State 700, Pause];ｾｲﾖｹ
-type = Pause
-trigger1 = prevstateno = [150,153]
-trigger1 = time = 0
-time = 6
-movetime = 6
-ignorehitpause = 1
-
-[State 700, AfterImage];ｲﾐﾓｰ
-type = AfterImage
-triggerall = time = 0
-trigger1 = prevstateno = [150,153]
-time = 15
-length = 3
-frameGap = 1
-timeGap = 4
-PalAdd = 0, 0, 0
-PalMul = 1, 1, 1
-PalBright = 0, 0, 0
-PalContrast = 128, 128, 128
-Trans = add1
+; The source guard-cancel block (PalFX, PowerAdd -1000, NotHitBy,
+; EnvColor, Explod, Pause, AfterImage) only fires when the blowback starts
+; from a guard state (prevstateno 150-153).  The port does not model that
+; condition, so those controllers ran on every CD blowback, spent a stock
+; and flashed/darkened the screen as if it were a super.  Removed here;
+; the blowback keeps its normal HitDef, animation and recovery.
 ;---------------------------------------------------
 
 [state 300,]

@@ -2405,11 +2405,22 @@ if "billy" in CHARS:
 if "chin" in CHARS:
     _chin = CHARS["chin"]
     _chin["moves"].update({62: 1000, 65: 1100,
-                           74: 850, 75: 860, 59: 865, 61: 866, 88: 900})
+                           74: 850, 75: 860, 59: 865, 61: 866, 88: 900,
+                           # DP strong chain: 1400 -> 1401 -> 1402.
+                           54: 1400, 57: 1401, 53: 1402,
+                           # Super slots: the engine's 85-89 path gives
+                           # them the sequential multi-contact sequence.
+                           85: 1900, 86: 1910, 87: 1920})
+    _chin["moves"].pop(55, None)
+    _chin["moves"].pop(56, None)
     # The package's AIR has no action 900; the CD blowback reuses the
     # existing knockdown/throw pose.
     _chin["anims"].update({62: 1000, 65: 1100,
-                           74: 850, 75: 860, 59: 865, 61: 866, 88: 300})
+                           74: 850, 75: 860, 59: 865, 61: 866, 88: 300,
+                           54: 1400, 57: 1401, 53: 1402,
+                           85: 1900, 86: 1910, 87: 1920})
+    _chin["anims"].pop(55, None)
+    _chin["anims"].pop(56, None)
     _chin["target_life_fix"] = dict(_chin.get("target_life_fix", {}))
     _chin["target_life_fix"][860] = -8       # eight sips, not the source -120
     _chin["tail_ticks"] = dict(_chin.get("tail_ticks", {}))
@@ -2421,6 +2432,10 @@ if "chin" in CHARS:
         (59, 61, 1, 0),                     # 865 falls -> 866 air
         (61, 0, 1, 0),                      # 866 lands -> stand
         (61, 0, 0, 0),
+        (66, 53, 1, 0),                     # DP weak lands -> 1402
+        (54, 57, 0, 0),                     # DP strong 1400 -> 1401
+        (57, 53, 0, 0),                     # DP strong 1401 -> 1402
+        (53, 0, 0, 0),                      # 1402 anim end -> stand
     ])
 
 # ---------------------------------------------------------------------------
@@ -3908,6 +3923,12 @@ if "chin" in CHARS:
     ])
     PROJECTILE_RELEASE.setdefault("chin", {}).update({107: 7, 108: 2})
     POST_CAL_PROJS.setdefault("chin", {}).update({
+        # Zake FireBall X/Y and the MAX double barrage: the engine's
+        # 85-89 super path gives five sequential contacts, so keep the
+        # per-contact damage low enough for a ~45-60 HP super.
+        85: (0x0300, 9, 2),
+        86: (0x0200, 9, 2),
+        87: (0x0300, 12, 2),
         107: (0x0500, 20, 0x0A),
         108: (0x0500, 20, 0x0A),
     })
@@ -3928,7 +3949,7 @@ if "chin" in CHARS:
          "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 8)]},
         {"name": "UPPER_S", "label": "UPPER STRONG",
          "state": 1400, "posture": 3, "time": 22,
-         "elems": [(4, 0), (2, 0), (6, 0), (0, 4)]},
+         "elems": [(68, 0), (2, 0), (6, 0), (0, 2)]},
         {"name": "LONG_WALK", "label": "SUPER LONG WALK HELL",
          "state": 1750, "posture": 3, "time": 30,
          "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 4)]},
@@ -9063,6 +9084,12 @@ def build_char(name, cfg, global_pal=None):
     # it for the jump-in and point it at the character's forward-jump clip.
     # The sprites are already present (sid 15), so this adds no new CHR.
     anims[43] = anims.get(15, anims.get(4, 42))
+
+    # Some imports remove a move slot (Chin 55/56), leaving a hole in the
+    # sid -> anim map.  AnimTab is indexed directly by sid, so fill every
+    # gap with the stand clip; the removed states can never be entered.
+    for _sid in range(max(anims) + 1):
+        anims.setdefault(_sid, anims.get(0, 0))
 
     wanted = set()
     anim_tables = {}
