@@ -445,6 +445,10 @@ PalFX/AfterImage (Categoria E).
   Padrões, ordem e `patternSha256` permanecem idênticos; só o `sha256` do
   `stg9.it` mudou. O render standalone com `smconv` confirma a redução a
   partir do trecho em que a guitarra entra.
+- **RUMBLING (06/11)**: a guitarra `sawstab` do instrumento 0 também foi
+  reduzida de 128 para 35 (−11,3 dB), o mesmo volume global da guitarra da
+  SA YARD. Padrões, ordem e `patternSha256` do `stg4.it` continuam iguais;
+  só o `sha256` do módulo mudou.
 
 ## Mature / Vice — agarrões especiais e supers (05/11)
 

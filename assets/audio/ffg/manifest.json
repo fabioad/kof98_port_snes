@@ -42,7 +42,7 @@
       "target": "build/gen_audio/it/stg4.it",
       "midi": "music/Rumbling.mid",
       "midiSha256": "1caaef08dc86d3fe28d5ab95544f9a14b08ab1269a607494995e34a9fcbc5518",
-      "sha256": "298a3892f2c70b41f547c50c396beee432643a272d00a816c2a6fa0a3d434dfc",
+      "sha256": "e28acd5c9e3979a2f459bb8f529211cc243d951515de11963eb3c8717e19d9c9",
       "patternSha256": "55b6c91c0440ddab97b24634824ff75a127e10582989e8525005feb7764d734b",
       "aramBytes": 21158
     },
