@@ -82,11 +82,9 @@
 .DEFINE SPK2CHR     $7C00               ; 64 OBJ tiles for live effect slot 1
 .INCLUDE "gen_fight/runtime_abi.inc"
                                         ; DMACHUNK is shared with Python probes.
-                                        ; 1536-byte bursts wipe VRAM during
-                                        ; large super frames (the transfer
-                                        ; outruns the forced-blank window by
-                                        ; a scanline on some cores); 1280
-                                        ; keeps the last chunk in the window.
+                                        ; 1536 bytes fit the aligned MSU buffer.
+                                        ; The presenter checks the remaining
+                                        ; vblank including both DMAs/prefix.
 
 .DEFINE GROUND_Y    190
 .DEFINE STAGE_L     24
@@ -754,12 +752,26 @@
 .DEFINE SP_SIDE     $5220               ; current SprPrepOne side (0/2)
 .DEFINE SP_MSUSTAGED $5222             ; one side already owns the MSU stream
 .DEFINE SP_MSUOWN   $5224               ; side whose seek is staged ($FF = none)
+.DEFINE RT_PRESENT_READY $5226         ; MainLoop is waiting for presentation
+.DEFINE RT_PRESENT_LINES $5228        ; remaining-vblank budget scratch
+.DEFINE RT_PRESENT_SCAN  $522A
 ; Team member entrance: the incoming fighter starts above/at the screen edge
 ; and jumps to the intro gap.  T_ENTERX keeps the target (8.8 fixed point);
 ; T_ENTERFLAG freezes the camera while a side is still in the air.
 .DEFINE T_ENTERX    $5230               ; P1 target x (8.8)
 .DEFINE T_ENTERX2   $5232               ; P2 target x (8.8)
 .DEFINE T_ENTERFLAG $5234               ; bit0 = P1 jumping, bit1 = P2 jumping
+.DEFINE MS_SEEK_STATE $5240            ; 0 idle, 1 pending SD seek, 2 ready
+.DEFINE MS_SEEK_SIDE $5242             ; owner: 0 P1, 2 P2
+.DEFINE MS_SEEK_SOURCE $5244           ; 32-bit aligned MSU file offset
+.DEFINE MS_SEEK_COUNT $5248
+.DEFINE MS_SEEK_PREFIX $524A
+.DEFINE MS_SEEK_WAITS $524C
+.DEFINE MS_SEEK_NEXT $524E             ; rotate after a completed pose or aborted seek
+.DEFINE MS_SEEK_READ_PREFIX $5250      ; 0 for contiguous reads, else sector prefix
+.DEFINE MS_PORT_VALID $5252
+.DEFINE MS_PORT_NEXT $5254             ; next unread byte in the physical MSU port
+.DEFINE MS_SEEK_GOAL $5258             ; requested payload's 32-bit start
 ; HUD dirty bands (huddirty is a bitmask during live play).  FlushHud sends
 ; at most one band per presentation: life first, then power/combo/timer.
 .DEFINE HUD_TOP1    $01                 ; row 1: names / team pips
@@ -880,6 +892,10 @@ FightMain:
     stz.w SP_DST+2
     lda #$00FF.w
     sta.w SP_MSUOWN                       ; no staged MSU seek at boot
+    stz.w RT_PRESENT_READY
+    stz.w MS_SEEK_STATE
+    stz.w MS_SEEK_NEXT
+    stz.w MS_PORT_VALID
     stz.w T_ENTERFLAG                     ; no jump-in camera freeze at boot
     stz.b msuok                           ;   MSU-1 presence, set by MsuDetect
 .IFDEF PVSNESLIB
@@ -1048,21 +1064,7 @@ ML_prep_fight:
     jsr SprPrepBoth
 ML_prep_done:
 .IFDEF PVSNESLIB
-    jsl WaitForVBlank
-    rep #$20
-    .ACCU 16
-    lda #ENGINE_DP.w
-    tcd
-    sep #$20
-    .ACCU 8
-    lda #ENGINE_DB.b
-    pha
-    plb
-    rep #$20
-    .ACCU 16
-    jsr FightPresentDispatch
-    sep #$20
-    .ACCU 8
+    jsr WaitFightPresent
     rep #$20
     .ACCU 16
     .ELSE
@@ -1209,6 +1211,8 @@ ML_intromsu:
 ; ---------------------------------------------------------------------------
 PpuInit:
     .ACCU 8
+    lda #$80.b                          ; enable software beam-counter latching
+    sta.l $4201                         ; used by the bounded vblank scheduler
     lda #0.b                            ; no NMI while reloading VRAM/CGRAM
     sta.l NMITIMEN
     lda #$8F.b
@@ -15486,8 +15490,8 @@ DF_done:
     rts
 
 ; ---------------------------------------------------------------------------
-; PVSnesLib owns the NMI.  Immediately after WaitForVBlank returns, present
-; the engine's shadow buffers while forced blank is active.
+; PVSnesLib owns the NMI. An armed MainLoop wait presents from the early
+; NMI hook; other screen/video paths retain their dispatch fallback.
 ; ---------------------------------------------------------------------------
 .IFDEF PVSNESLIB
     sep #$20
@@ -15499,43 +15503,24 @@ FightPresent:
     lda #$8F.b
     sta.l INIDISP
     jsr FxPrepareBoth
-    ; The library ISR may have already sent this same shadow buffer, but
-    ; doing it under forced blank makes this path valid even when the
-    ; library skips a lag frame.
-    jsl PushOamShadowFar
-    ; Both sides are uploaded every frame.  Alternating sides made a pose
-    ; stay in flight long enough for the next animation request to arrive;
-    ; the staging state then mixed with the new pose and produced more
-    ; mixed/invisible tiles on hardware.  Keep the original two-sided
-    ; uploader; the FX page still uses its own 2 KiB window.
-    ldx #0
-    lda #<P1CHR
-    sta scr5
-    lda #>P1CHR
-    sta scr5+1
-    jsl SprDmaFar
-    sep #$20
-    .ACCU 8
-    ldx #FP2OFS
-    lda #<P2CHR
-    sta scr5
-    lda #>P2CHR
-    sta scr5+1
-    jsl SprDmaFar
+    ; The library already sent our stable OAM copy at the start of NMI.
+    ; Upload as many complete chunks as fit, preserving deferred cursors.
+    jsl PresentFightersFar
     sep #$20
     .ACCU 8
 .IFDEF MSU_DIAG
     jsl MsuDiagOverlay
 .ENDIF
-    ; The MSU poll above runs with the display on and may have used the whole
-    ; vblank.  Only re-blank for the visible HUD/stage writes while HVBJOY
-    ; still reports vblank; otherwise leave the screen on and retry the dirty
-    ; bands next frame.  No loop here, so this cannot stall the fight.
-    lda.l $4212
-    and #$80.b
-    beq FP_present_on
+    ; A vblank flag alone cannot tell whether a HUD upload will finish in
+    ; time. Check the remaining scanlines; keep declined bands dirty.
+    jsl HudRoomFar
+    bcc FP_present_on
     lda #$8F.b
     sta.l INIDISP
+    lda.w PZ_ON
+    ora.w CL_OPEN
+    ora.w RT_HUDFULL
+    bne FP_hud_room                      ; overlays own a full-map budget
     lda FP+F_DMAREQ                     ; a fighter upload is still in flight:
     ora FP+F_DMAREQ+FP2OFS              ;   defer a full 2 KiB HUD repaint,
     beq FP_hud_room                     ;   but still send one small dirty
@@ -15552,7 +15537,7 @@ FP_hud_room:
 FP_present_top:
     jsr FlushHudTop
 FP_present_vis_done:
-    jsl StageAnimTickFar                  ; crowd pose commits (map only)
+    jsl StageAnimPresentFar               ; crowd patches only with time left
     jsl ShakeScrollFar                    ; EnvShake on BG1 (stage)
     lda gamestate                         ; intro/ending screens take over
     cmp #7.b                              ;   mode/M7 regs + palette fades;
@@ -15627,7 +15612,7 @@ FightVblank:
 
     ; OAM shadow -> hardware OAM via GPDMA ch6
     jsl PushOamShadowFar
-    ; sprite tile uploads (chunked, hidden ping-pong page).  Two 1280-byte
+    ; sprite tile uploads (chunked, hidden ping-pong page).  Two 1536-byte
     ; sprite DMAs in one vblank overrun it and leave forced blank on during
     ; the first visible lines (dark flicker at the top), so when both sides
     ; stream in the same frame give the slot to one side, alternating.
@@ -15904,8 +15889,12 @@ RoundVoice:
     rep #$20
     .ACCU 16
     lda #0
-    sta.l NMITIMEN
     tcd                                 ; snesmod uses direct page zero
+    sep #$20                            ; do not clear WRIO/counter enable too
+    .ACCU 8
+    sta.l NMITIMEN
+    rep #$20
+    .ACCU 16
     jsl SpcFlushSafe                        ; retire queued music/effects first
     lda.l $00015A                       ; still streaming?  spcLoadEffect would
     and #$00FF.w                        ;   spin forever on a missed APU ack,
@@ -16374,9 +16363,9 @@ MusPlaySong:
 ; presentation used to duplicate a displayed frame (the old pose stayed on
 ; screen while positions/anim clocks advanced) -- the "one-frame freeze"
 ; that showed up more often on the animated-crowd stages.  SprPrepBoth runs
-; with the display on: it fetches the next 1280-byte MSU chunk into WRAM and
-; records the chunk geometry.  SprDmaFar (bank $3E) then only copies that
-; chunk into the hidden OBJ page during vblank.
+; with the display on: seek/poll and record geometry, retaining a cold seek
+; across frames. SprDmaFar performs both safe MSU->WRAM and WRAM->VRAM DMAs
+; during vblank; a voice must not reposition the port before consumption.
 SprPrepBoth:
     rep #$30
     .ACCU 16
@@ -16384,18 +16373,22 @@ SprPrepBoth:
     stz.w SP_MSUSTAGED
     lda #$00FF.w
     sta.w SP_MSUOWN                     ; no side owns the MSU seek yet
-    ; A staged chunk is only valid between SprPrepOne and the vblank DMA of
-    ; the same frame.  Drop anything the previous vblank did not consume
-    ; instead of letting the other side's seek stand in for it.
+    ; Rebuild transient descriptors each frame. An unconsumed MSU seek keeps
+    ; its owner/offset in MS_SEEK_*, so re-preparing it never restarts the SD.
     stz.w SP_KIND
     stz.w SP_KIND+2
-    ; Only one MSU stream can be positioned per frame.  Rotate which side
-    ; stages first so a multi-chunk sprite on P1 cannot starve P2 (and vice
-    ; versa); the vblank below then consumes the side that actually owns the
-    ; fresh seek.  ROM-resident CHR is unaffected by the rotation.
-    lda framecnt
-    and #$0001.w
+    ; A pending seek goes first. Otherwise rotate after each completed pose,
+    ; rather than using frame parity (SD latency can keep completing on the
+    ; same parity and starve the other fighter). ROM CHR still preps both.
+    lda.w MS_SEEK_STATE
+    beq SP_rotate
+    lda.w MS_SEEK_SIDE
     beq SP_p1_first
+    bra SP_p2_first
+SP_rotate:
+    lda.w MS_SEEK_NEXT
+    beq SP_p1_first
+SP_p2_first:
     ldx #FP2OFS.w
     jsr SprPrepOne
     ldx #0
@@ -18677,6 +18670,8 @@ TeamMemberIn:
     stz.w SP_DST,x
     stz.w SP_PREFIX,x
     stz.w SP_META,x
+    stz.w MS_SEEK_STATE                 ; the outgoing member's seek is stale
+    stz.w MS_PORT_VALID
     sep #$20
     .ACCU 8
     plx
@@ -19174,6 +19169,47 @@ TTS_p2_deny:
 ; free low window just below OamCache so the Fight bank stays under 32 KiB.
 .BASE $C0
 .BANK 50 SLOT 0
+.ORGA $0972
+.SECTION "FramePresentNear" FORCE
+; Cancel helpers end at $0971; this stays below HudTopCode at $09C0.
+; Arm only the MainLoop wait. Other library waits during screen/CHR loads
+; must never run a presentation against partially initialized buffers.
+WaitFightPresent:
+    ; vblank_flag is still clear here, so the library cannot DMA a partial
+    ; copy if an NMI interrupts this loop. It sends this buffer after WAI.
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    lda #543.w
+    ldx #OAMBUF.w
+    ldy #oamMemory.w
+    mvn ENGINE_DB,ENGINE_DB
+    sep #$20
+    .ACCU 8
+    lda #1
+    sta.w RT_PRESENT_READY
+    jsl WaitForVBlank
+    rep #$20
+    .ACCU 16
+    lda #ENGINE_DP.w
+    tcd
+    sep #$20
+    .ACCU 8
+    lda #ENGINE_DB.b
+    pha
+    plb
+    lda.w RT_PRESENT_READY
+    beq WFP_done
+    stz.w RT_PRESENT_READY
+    jsr FightPresentDispatch             ; video/fallback keeps its old path
+WFP_done:
+    rep #$20
+    .ACCU 16
+    rts
+FightPresentFar:
+    jsr FightPresentDispatch
+    rtl
+.ENDS
 .ORGA $09C0
 .SECTION "HudTopCode" FORCE
 FlushHudTop:

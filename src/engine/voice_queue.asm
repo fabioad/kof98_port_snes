@@ -35,6 +35,10 @@ VoiceQueueTickFar:
     rep #$30
     .ACCU 16
     .INDEX 16
+    lda.w MS_SEEK_STATE
+    beq +
+    jmp VQTF_ret                        ; a cold CHR seek owns the shared MSU port
++
     lda.l $00015A                       ; snesmod digi_active: a direct/streamed
     and #$00FF.w                        ;   voice is still on the wire.  Starting
     beq +                               ;   a second stream corrupts the SPC.
@@ -250,6 +254,8 @@ VoiceQueueDropFar:
     rep #$30
     .ACCU 16
     .INDEX 16
+    stz.w MS_SEEK_STATE
+    stz.w MS_PORT_VALID
     stz.w VQ_HEAD
     stz.w VQ_TAIL
     stz.w VQ_BUSY
@@ -276,6 +282,8 @@ VoiceQueueClearFar:
     rep #$30
     .ACCU 16
     .INDEX 16
+    stz.w MS_SEEK_STATE
+    stz.w MS_PORT_VALID
     stz.w VQ_HEAD
     stz.w VQ_TAIL
     stz.w VQ_BUSY

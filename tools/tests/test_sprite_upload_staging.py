@@ -6,6 +6,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
 FIGHT = open(os.path.join(ROOT, "src", "engine", "fight.asm")).read()
 BRIDGE = open(os.path.join(ROOT, "src", "snes", "fight_bridge.asm")).read()
+SEEK = open(os.path.join(ROOT, "src", "engine", "msu_seek.asm")).read()
 
 
 def block(text, start, end):
@@ -43,6 +44,8 @@ class SpriteUploadStagingTests(unittest.TestCase):
 
     def test_seek_wait_runs_with_the_display_on(self):
         stage = block(BRIDGE, "MsuStagePrepareFar:\n", "\n; SprDmaFar:")
+        self.assertIn("jml MsuSeekPrepareFar", stage)
+        stage = SEEK
         self.assertIn("jsl MsuChrPageClamp", stage)
         self.assertNotIn("INIDISP", stage)
         self.assertNotIn("MDMAEN", stage)
@@ -58,8 +61,8 @@ class SpriteUploadStagingTests(unittest.TestCase):
 
     def test_both_sides_prep_but_only_one_msu_stream(self):
         prep = block(FIGHT, "SprPrepBoth:", "\n; X = fighter offset")
-        # The staging order rotates with framecnt so a multi-chunk sprite on
-        # one side cannot starve the other.
+        # A pending seek keeps its owner first; completed poses rotate priority
+        # independently of frame parity, so SD latency cannot starve a side.
         self.assertEqual(prep.count("jsr SprPrepOne"), 4)
         self.assertIn("SP_MSUSTAGED", prep)
         self.assertIn("SP_MSUOWN", prep)

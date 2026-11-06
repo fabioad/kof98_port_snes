@@ -105,6 +105,8 @@ MsuVideoStage dsb $1900
 .INCLUDE "engine/menus.asm"
 .INCLUDE "engine/options.asm"
 .INCLUDE "engine/team_order.asm"
+.INCLUDE "engine/frame_present.asm"
+.INCLUDE "engine/msu_seek.asm"
 .IFDEF MSU_DIAG
 .IFDEF MSU_DIAG2
 .RAMSECTION ".msu_diag_buffers" BANK $7F SLOT 3 ORGA $3000 FORCE
@@ -167,59 +169,28 @@ MsuStageDmaFar:
     .ACCU 16
     .INDEX 16
     ply
+    jsl MsuSeekConsumedFar
     rtl
 
 .ENDS
 
 ; ---------------------------------------------------------------------------
 ; Sprite CHR upload, far half.  Kept out of the full Fight bank.
-; MsuStagePrepareFar fetches one chunk into a WRAM staging buffer during the
-; logic phase (display on, no vblank cost).
+; MsuStagePrepareFar positions/polls the shared MSU port during logic.
+; The actual MSU -> WRAM -> VRAM transfers stay in forced-blank vblank.
 ;   In:  scr0 = sector-aligned .msu offset low word
 ;        scr4 = .msu offset high word
 ;        MSU_PREFIX = in-sector prefix
 ;        scr3 = requested payload bytes
 ;        scr1 = staging buffer word address (bank $7F)
-;   Out: C=1 and scr3 = clamped payload bytes when staged; C=0 on timeout.
+;   Out: C=1 and scr3 = clamped payload bytes when ready; C=0 while waiting.
 ; Fixed window between YouLoseCode ($CA6D) and SelMoveCode ($CC00); the
 ; Fight bank is full, so the upload helpers live in the bank-126 hole.
 .BANK 126 SLOT 0
 .ORGA $CA6D
 .SECTION "SprUploadFar" FORCE
 MsuStagePrepareFar:
-    rep #$30
-    .ACCU 16
-    .INDEX 16
-    jsl MsuChrPageClamp                 ; keep prefix+payload in one 8 KiB page
-    ; Only MSU_STAT/MSU_DATA are polled here; the display stays on and the
-    ; WRAM DMA below does not touch the PPU.
-    sep #$20
-    .ACCU 8
-    lda scr0
-    sta.l MSU_STAT
-    lda scr0+1
-    sta.l MSU_DATA
-    lda scr4
-    sta.l $2002
-    lda scr4+1
-    sta.l $2003                         ; starts the seek
-    ldx #MSU_POLL_LIMIT.w
-MSP_poll:
-    lda.l MSU_STAT
-    bpl MSP_ready
-    dex
-    bne MSP_poll
-    rep #$20
-    .ACCU 16
-    inc.w RT_MSUFAIL
-    clc
-    rtl
-MSP_ready:
-    rep #$30
-    .ACCU 16
-    .INDEX 16
-    sec
-    rtl
+    jml MsuSeekPrepareFar
 
 ; SprDmaFar: vblank half.  X = fighter offset, scr5 = base page VRAM word.
 ; Copies the chunk staged by SprPrepOne into the hidden ping-pong page.
@@ -377,6 +348,17 @@ SDF_count:
 SDF_commit:
     sep #$20
     .ACCU 8
+    lda.w SP_KIND,y
+    cmp #2.b
+    bne SDF_flip
+    rep #$20
+    .ACCU 16
+    tya
+    eor #2.w
+    sta.w MS_SEEK_NEXT                  ; finish a pose before serving the other
+    sep #$20
+    .ACCU 8
+SDF_flip:
     lda FP+F_TILEPG,x
     eor #$60.b
     sta FP+F_TILEPG,x                   ; newly-uploaded page becomes visible
@@ -420,6 +402,9 @@ SDF_ret:
 .ORGA $CF80
 .SECTION "MsuAlignedRead" FORCE
 MsuReadAlignedFar:
+    rep #$20
+    .ACCU 16
+    stz.w MS_PORT_VALID                  ; voice reads reposition the shared port
     rep #$30
     .ACCU 16
     .INDEX 16

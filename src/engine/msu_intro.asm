@@ -1009,6 +1009,16 @@ IntroNmiHandler:
     lda gamestate
     cmp #GS_INTRO_MSU.b
     beq IntroNmi_video
+    ; Present before the library waits for autojoy and scans controllers.
+    ; Only an armed MainLoop wait may enter: its DP scratch is idle, unlike
+    ; other NMIs that can interrupt a seek, audio load or screen setup.
+    lda.w RT_PRESENT_READY
+    beq IntroNmi_console
+    lda.l vblank_flag
+    beq IntroNmi_console
+    stz.w RT_PRESENT_READY
+    jsl FightPresentFar
+IntroNmi_console:
     rep #$30
     .ACCU 16
     plb
