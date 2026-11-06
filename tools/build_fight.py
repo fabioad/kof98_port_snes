@@ -1851,6 +1851,12 @@ POST_CAL_TWEAKS = {}
 # Projectile rows that only exist for post-calibration moves.  sid ->
 # (vx, damage, guard mask).
 POST_CAL_PROJS = {}
+# Full ProjTab rows and late ActTab/target-life tables.  target_life_fix and
+# act_override are consumed before POST_CAL_TWEAKS is merged, so these are
+# applied again right after that merge.
+POST_CAL_PROJS_FULL = {}
+POST_CAL_TARGET_LIFE = {}
+POST_CAL_ACT_OVERRIDE = {}
 # Existing low special slots that are intentionally retargeted from a held
 # follow-up to the close-range grab attempt (the source CMD's "strong"
 # commands enter the held state otherwise).
@@ -4404,6 +4410,33 @@ if "geese" in CHARS:
         (54, 55, 0, 0), (57, 56, 0, 0),
         (55, 0, 0, 0), (56, 0, 0, 0),
     ])
+    # 1301/1311 are only the short startup pose; the jump and the real hit
+    # live in 1302/1312 (anim 1303/1313, VelSet 2,-10 / 3,-12).  The old
+    # mapping put the 258-tick 1302 pose on the startup slot, which is why
+    # Geese never left the ground and the weak version recovered slowly.
+    POST_CAL_REACTIVATED.setdefault("geese", []).extend([
+        (55, 1301, 1301), (56, 1311, 1311),
+        (61, 1302, 1303), (63, 1312, 1313),
+    ])
+    _gee.setdefault("hitdef_override", {}).update({
+        # The startup's early HitDef would hit before the jump; keep the
+        # damage on the descending attack instead.
+        55: {"active": 0}, 56: {"active": 0},
+    })
+    _gee.setdefault("state_vel", {}).update({
+        61: (2, -9), 63: (3, -8)})
+    # The source's own VelSet rows (2,-10 / 3,-12) override the entry
+    # velocity on frame 0 and are what actually launch the jump.  Retune
+    # them so the sprite stays inside the 224-line screen.
+    POST_CAL_ACT_OVERRIDE.setdefault("geese", {}).update({
+        # op15 takes quarter-px/frame: -7 px = -28, -6 px = -24.
+        1302: [(0, 5, 2, 0), (0, 15, (-28) & 0xFF, 0)],
+        1312: [(0, 5, 3, 0), (0, 15, (-24) & 0xFF, 0)],
+    })
+    _gee.setdefault("extra_trans", []).extend([
+        (55, 61, 0, 0), (56, 63, 0, 0),
+        (61, 17, 1, 0), (63, 17, 1, 0),
+    ])
     _gee.setdefault("cmd_extra", []).extend([
         {"name": "RAIMEI", "label": "RAIMEI GOUHA NAGE",
          "state": 1500, "posture": 3, "time": 22,
@@ -5317,12 +5350,6 @@ if "clark" in CHARS:
 # Every change below goes through POST_CAL_REACTIVATED / POST_CAL_TWEAKS /
 # POST_CAL_PROJS_FULL.  They run after calibration.native.apply_profile, so
 # adding a follow-up cannot invalidate an existing profile hash.
-POST_CAL_PROJS_FULL = {}
-# target_life_fix and act_override are consumed before POST_CAL_TWEAKS is
-# merged, so late additions use these dedicated tables and are applied again
-# right after the merge.
-POST_CAL_TARGET_LIFE = {}
-POST_CAL_ACT_OVERRIDE = {}
 
 
 def _wire_followups(name, rows, trans=()):
