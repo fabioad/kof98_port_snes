@@ -14492,7 +14492,7 @@ TS_no_gravity:
     ; projectile (Terry's geyser, Athena's Phoenix Fang).
     and #$06.b                          ; bouncing ball: hitbox already spent
     bne TS_nohit
-    jsr ProjPinIfMulti                  ; super projectile follows its victim
+    jsl ProjPinIfMultiFar               ; travelling supers follow the victim
     jsr ProjReflect                    ; opponent shield: bounce it back
     bcc +
     jmp TS_next8                       ; reflected this tick
@@ -23925,4 +23925,96 @@ SelPauseCell:
     stx.b oamtop
     rts
 
+.ENDS
+
+; ---------------------------------------------------------------------------
+; Multi-hit projectile pinning.  Kept in the free tail of bank 126 because
+; the CancelData window in bank 50 is full.  TickSpark calls this with JSL
+; before ProjHit so pushback cannot move the victim out of a travelling
+; super between contacts.  Terry's Power Geyser is a stationary on-the-spot
+; pillar: pinning the shot to the victim dragged the effect to the
+; opponent's chest and made it chase them, so the pillar keeps its spawn
+; position and the victim's horizontal pushback is suppressed instead.
+; X = spark slot on entry and exit; A returns 8-bit.
+; ---------------------------------------------------------------------------
+.BANK 126 SLOT 0
+.ORGA $EF00
+.SECTION "ProjPinFar" FORCE
+ProjPinIfMultiFar:
+    sep #$20
+    .ACCU 8
+    cpx #SPK_SIZE
+    bcs PPM_slot1
+    lda.w RT_PROJHITS
+    beq PPM_out
+    bra PPM_go
+PPM_slot1:
+    lda.w RT_PROJHITS+1
+    beq PPM_out
+PPM_go:
+    ; Terry's geyser uses the alternate pillar clip for all three strengths.
+    ; Keep the pillar in front of Terry and stop the victim's horizontal
+    ; pushback so they stay inside the 40 px hitbox for all five contacts.
+    rep #$20
+    .ACCU 16
+    lda.w SPARKS+SPK_ANIM,x
+    cmp #terryProjFx2Anim.w
+    sep #$20
+    .ACCU 8
+    bne PPM_pin
+    lda.w SPARKS+SPK_ATTR,x
+    and #$40.b                        ; bit6 = owner is P2
+    beq +
+    lda #0                            ; owner P2 -> victim P1
+    bra ++
++   lda #FP2OFS.b                     ; owner P1 -> victim P2
+++  sta scr3
+    rep #$20
+    .ACCU 16
+    lda scr3
+    and #$00FF.w
+    tay
+    lda #0
+    sta FP+F_VX,y                     ; no horizontal slide out of the pillar
+    sta FP+F_HITVX,y
+    sep #$20
+    .ACCU 8
+    bra PPM_out
+PPM_pin:
+    lda.w SPARKS+SPK_ATTR,x
+    and #$40.b                        ; bit6 = owner is P2
+    beq +
+    lda #0                            ; owner P2 -> victim P1
+    bra ++
++   lda #FP2OFS.b                     ; owner P1 -> victim P2
+++  sta scr3
+    rep #$20
+    .ACCU 16
+    lda scr3
+    and #$00FF.w
+    tay
+    lda FP+F_X,y
+    xba
+    and #$00FF.w
+    sta.w SPARKS,x
+    lda FP+F_Y,y
+    xba
+    and #$00FF.w
+    sta scr2
+    lda #GROUND_Y.w
+    sec
+    sbc scr2
+    sec
+    sbc #40.w
+    sta.w SPARKS+2,x
+    stz.w SPARKS+SPK_VX,x
+    stz.w SPARKS+SPK_VY,x
+    sep #$20
+    .ACCU 8
+    lda #0
+    sta.w SPARKS+SPK_GRD+1,x
+PPM_out:
+    sep #$20
+    .ACCU 8
+    rtl
 .ENDS

@@ -83,12 +83,11 @@ PROJECTILE_ACTION_SEQUENCES = {
 PROJECTILE_ALT_EFFECTS = {
     "terry": {
         "action": 3020,
-        # Three compact key poses keep the alternate atlas inside the small
-        # free ROM windows left by the roster (the full 11-cel helper clip
-        # would cost 22 KiB).  The ticks hold the peak briefly and then show
-        # the dissipating tip before the one-shot slot frees itself.
-        "frames": ((0, 4), (6, 12), (10, 13)),
-        "pre_scale": 3,
+        # A compact flash plus the mid-rise pillar.  At 1/2 scale the peak
+        # pose still fits the 16-cell OBJ page (11 cells); the old 1/3 scale
+        # made the geyser read as a tiny spark next to Terry.
+        "frames": ((0, 4), (3, 16)),
+        "pre_scale": 2,
         "zoom": 1,
         "sids": (85, 86, 87),
         "release": 6,
@@ -261,6 +260,9 @@ PROJECTILE_X_OFFSET = {
     "andy": {52: 80, 53: 80},
     # Kikouken leaves the hands ~37 px ahead of Chun-Li.
     "chunli": {48: 40},
+    # Terry's Power Geyser must erupt in front of his ground-punch sprite;
+    # the engine default (14 px) hides the short pillar behind his body.
+    "terry": {85: 48, 86: 48, 87: 48},
 }
 
 # Per-shot release frame override (0-based source animation frame).  Used

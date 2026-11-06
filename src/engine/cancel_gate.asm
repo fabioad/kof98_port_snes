@@ -379,58 +379,8 @@ VDP_out:
     plp
     rts
 
-; Pin an active super projectile to its victim while the five-hit sequence
-; is running.  TickSpark calls this before ProjHit, so pushback cannot move
-; the victim out of the shot between contacts.  X = spark slot on entry and
-; exit; A returns 8-bit.
-ProjPinIfMulti:
-    sep #$20
-    .ACCU 8
-    cpx #SPK_SIZE
-    bcs PPM_slot1
-    lda.w RT_PROJHITS
-    beq PPM_out
-    bra PPM_go
-PPM_slot1:
-    lda.w RT_PROJHITS+1
-    beq PPM_out
-PPM_go:
-    lda.w SPARKS+SPK_ATTR,x
-    and #$40.b                        ; bit6 = owner is P2
-    beq +
-    lda #0                            ; owner P2 -> victim P1
-    bra ++
-+   lda #FP2OFS.b                     ; owner P1 -> victim P2
-++  sta scr3
-    rep #$20
-    .ACCU 16
-    lda scr3
-    and #$00FF.w
-    tay
-    lda FP+F_X,y
-    xba
-    and #$00FF.w
-    sta.w SPARKS,x
-    lda FP+F_Y,y
-    xba
-    and #$00FF.w
-    sta scr2
-    lda #GROUND_Y.w
-    sec
-    sbc scr2
-    sec
-    sbc #40.w
-    sta.w SPARKS+2,x
-    stz.w SPARKS+SPK_VX,x
-    stz.w SPARKS+SPK_VY,x
-    sep #$20
-    .ACCU 8
-    lda #0
-    sta.w SPARKS+SPK_GRD+1,x
-PPM_out:
-    sep #$20
-    .ACCU 8
-    rts
+; ProjPinIfMultiFar moved to fight.asm's bank-126 tail: the CancelData
+; window in bank 50 had no room for the extra stationary-shot guard.
 
 ; Global hitstop normally skips TickFighter, which also skips PushHist.  A
 ; player who inputs the cancel motion while the hit is frozen used to lose

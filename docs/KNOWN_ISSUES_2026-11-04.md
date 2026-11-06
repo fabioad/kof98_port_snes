@@ -407,7 +407,7 @@ PalFX/AfterImage (Categoria E).
   `tools/test_chizuru_audio_headless.py`.
 - **SA YARD (05/11)**: o “piano” percebido na luta é a guitarra
   nylon/aço, mapeada no instrumento 1 (`sawstab`). O volume global desse
-  instrumento caiu de 128 para 49 (−8,3 dB no total; mais −2,0 dB em
+  instrumento caiu de 128 para 35 (−11,3 dB no total; mais −2,9 dB em
   relação ao ajuste anterior). Bateria e lead não foram alterados.
   Padrões, ordem e `patternSha256` permanecem idênticos; só o `sha256` do
   `stg9.it` mudou. O render standalone com `smconv` confirma a redução a
