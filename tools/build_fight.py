@@ -22,6 +22,7 @@ import zlib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from asset_paths import resolve as resolve_asset
 from sff import Sff, Sprite, snes_pal, tiles4bpp
+import close_normals
 from runtime_abi import ABI as RUNTIME_ABI, emit as emit_runtime_abi
 from calibration.projectiles import (PROJECTILE_ACTIONS,
                                      PROJECTILE_ACTION_SEQUENCES,
@@ -9321,6 +9322,17 @@ def build_char(name, cfg, global_pal=None):
         for sprite in sff.sprites:
             sprite.palidx = palette_bank
     air = parse_air(asset_path(cfg["air"]))
+    if name == "yuri":
+        # The final descent cel (40,5) has stray pixels beside the torso.
+        # Hold the clean adjacent fall pose (40,4), already used by all
+        # three jumps. Keep AIR timing, boxes, offsets and loop points.
+        for action in (41, 42, 43):
+            if action in air:
+                frames, loopstart = air[action]
+                air[action] = ([(g, 4 if (g, n) == (40, 5) else n,
+                                 x, y, t, flip, atk, hurt)
+                                for g, n, x, y, t, flip, atk, hurt in frames],
+                               loopstart)
     # Knockdown fall (action 5050) carries two source poses.  The second
     # pose starts a separate CHR/meta upload in the middle of the fall; on
     # streamed characters that page is blank for a few frames and the victim
@@ -10959,6 +10971,9 @@ def build_char(name, cfg, global_pal=None):
             if row.get(key, 0) < -1664:
                 row[key] = -1664
         move_rows[67] = row
+    close_normals.profiles(name, cfg, cns_moves, cns_hitdef_lists,
+                           move_rows, limit_normal_pushback,
+                           cns_headers, cns_statedefs)
     # first-wins: one mugen state mapped to several sids (slices) resolves
     # to the first slice for command/state lookups
     state_to_sid = {}
@@ -13649,6 +13664,7 @@ def _inc_size(fname):
 
 
 def emit_newchars_inc(new_keys, msu_slices):
+    close_normals.emit(OUT, CHARS)
     """Emit newchars_{tabs,desc,banks}.inc consumed by fight.asm for the
     mass MSU import.  Always runs so stale files never linger; under
     KOF_BASE4 the files carry only the BASE4-visible rows."""

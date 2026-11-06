@@ -772,6 +772,9 @@
 .DEFINE MS_PORT_VALID $5252
 .DEFINE MS_PORT_NEXT $5254             ; next unread byte in the physical MSU port
 .DEFINE MS_SEEK_GOAL $5258             ; requested payload's 32-bit start
+.DEFINE CN_PROFILE $5260               ; close-normal profile pointer per side
+.DEFINE CN_LEFT    $5264               ; extra contacts left (words, side 0/2)
+.DEFINE CN_WAIT    $5268               ; unpaused ticks before next contact
 ; HUD dirty bands (huddirty is a bitmask during live play).  FlushHud sends
 ; at most one band per presentation: life first, then power/combo/timer.
 .DEFINE HUD_TOP1    $01                 ; row 1: names / team pips
@@ -896,6 +899,9 @@ FightMain:
     stz.w MS_SEEK_STATE
     stz.w MS_SEEK_NEXT
     stz.w MS_PORT_VALID
+.IFDEF PVSNESLIB
+    jsl CloseNormalInitFar
+.ENDIF
     stz.w T_ENTERFLAG                     ; no jump-in camera freeze at boot
     stz.b msuok                           ;   MSU-1 presence, set by MsuDetect
 .IFDEF PVSNESLIB
@@ -5240,6 +5246,9 @@ EnterState:
 ES_valid:
     ldx fofs
     sta FP+F_STATE,x
+.IFDEF PVSNESLIB
+    jsl CloseNormalEnterFar
+.ENDIF
     jsr VoiceDropHuman                   ; pad side: stop previous move voice
     stz FP+F_LASTSCAN,x
     jsr CmdTrack                          ; practice command-list usage log
@@ -7750,6 +7759,9 @@ DrawTimer:
     rts
 
 TickFighter:
+.IFDEF PVSNESLIB
+    jsl CloseNormalTickFar
+.ENDIF
     rep #$20
     .ACCU 16
     ldx fofs
@@ -10622,6 +10634,8 @@ AP_noadv:
 +   sta FP+F_POWER,x
     rts
 
+
+.IFNDEF PVSNESLIB
 HitCheck:
     ldx #0
     ldy #FP2OFS
@@ -10629,6 +10643,7 @@ HitCheck:
     ldx #FP2OFS
     ldy #0
     jmp HitOne
+.ENDIF
 
 ; ---------------------------------------------------------------------------
 ; FUSION hit modifiers: counter-hit flag, juggle budget and banner.
@@ -20965,11 +20980,19 @@ DIG_c_done:
 
 ; Frequently-called Fight helpers that need no code changes when relocated:
 ; they stay in the same CPU bank ($F2), so every `jsr`/`jmp` keeps working.
-; Bank 50's low half is free from $7EA9 to $7FFF after FightMenuTail.
+; Bank 50 has a reserved gap after HudBandTable and before TransDistGate.
 .IFDEF PVSNESLIB
 .BANK 50 SLOT 0
-.ORGA $7F00
+.ORGA $0C40
 .SECTION "FightHelperTail" FORCE
+HitCheck:
+    ldx #0
+    ldy #FP2OFS
+    jsr HitOne
+    ldx #FP2OFS
+    ldy #0
+    jmp HitOne
+
 CharPtr:
     rep #$20
     .ACCU 16
@@ -20999,7 +21022,11 @@ CharPtr:
     sta 2,x
     rep #$20
     .ACCU 16
-    rts
+    lda.w CN_PROFILE
+    ora.w CN_PROFILE+2
+    beq +
+    jsl CloseNormalPtrFar
++   rts
 
 ; X = scr2, Y = CH_NAME.  Names live in the shared tables bank, so resolve
 ; the descriptor's low address then replace the bank byte returned by

@@ -75,7 +75,7 @@ export ROMBANKS := 128
 SRC := src/snes
 
 FIGHT_GEN := $(GEN_DIR)/iori.chr $(GEN_DIR)/iori_pal.bin \
-	$(GEN_DIR)/runtime_abi.inc \
+	$(GEN_DIR)/runtime_abi.inc $(GEN_DIR)/close_normals.inc \
 	$(GEN_DIR)/iori_spr.inc $(GEN_DIR)/iori_chr.inc \
 	$(GEN_DIR)/kyo.chr \
 	$(GEN_DIR)/kyo_pal.bin $(GEN_DIR)/kyo_spr.inc \
@@ -153,7 +153,7 @@ assets: $(FIGHT_GEN)
 
 audio: $(SOUNDBANK).asm $(AUDIO_GEN) validate-snesmod
 
-src/snes/fight_bridge.obj: src/engine/fight.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/msu_seek.asm src/engine/voice_queue.asm
+src/snes/fight_bridge.obj: src/engine/fight.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/msu_seek.asm src/engine/close_normals.asm src/engine/voice_queue.asm
 
 # The SDK's snes_rules recipe replaces the local soundbank recipe below, so
 # validate every module explicitly before an oversized IT can freeze spcLoad.
@@ -161,7 +161,7 @@ validate-snesmod: $(AUDIOFILES) tools/validate_snesmod.py tools/it_pattern_limit
 	python3 tools/validate_snesmod.py $(SMCONV) $(AUDIOFILES)
 
 $(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json assets/characters/*/*_SNES.cns assets/characters/*/*_SNES.cmd assets/characters/*/*.air assets/data/quotes/*.json) \
-	tools/build_fight.py tools/normal_throws.py tools/remaining_specials.py tools/runtime_abi.py assets/runtime_abi.json tools/newroster.py tools/build_spc_neogeo.py \
+	tools/build_fight.py tools/normal_throws.py tools/close_normals.py tools/remaining_specials.py tools/runtime_abi.py assets/runtime_abi.json tools/newroster.py tools/build_spc_neogeo.py \
 	Makefile.pvsnes $(wildcard Makefile.hi Makefile.old) \
 	tools/build_stages.py tools/sff.py tools/build_endings.py \
 	$(wildcard assets/survival_ending/*.png) \
@@ -194,7 +194,7 @@ PROFILE_OFILES := $(filter-out src/snes/fight_bridge.obj,$(OFILES)) $(PROFILE_FI
 
 $(PROFILE_FIGHT_OBJ): src/snes/fight_bridge.asm src/engine/fight.asm \
 	src/engine/voice_queue.asm src/engine/menucore.asm src/engine/menus.asm \
-	src/engine/options.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/msu_seek.asm src/engine/msu_intro.asm src/engine/cancel_gate.asm \
+	src/engine/options.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/msu_seek.asm src/engine/close_normals.asm src/engine/msu_intro.asm src/engine/cancel_gate.asm \
 	$(wildcard src/gen_menu/*) $(wildcard src/gen_menu/intro/*) \
 	$(FIGHT_GEN) $(AUDIO_GEN) $(SOUNDBANK).asm | $(GEN_DIR)
 	@mkdir -p $(dir $@)
@@ -258,7 +258,7 @@ $(SOUNDBANK).asm: $(AUDIOFILES)
 	  grep -o '^SOUNDBANK__[0-9]*:' $@ | tr -d ':' | sed 's/^/	.DL /'; } > build/gen_audio/sbkeep.inc
 
 src/snes/fight_bridge.obj: src/snes/fight_bridge.asm src/engine/fight.asm \
-	src/engine/menucore.asm src/engine/menus.asm src/engine/options.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/msu_seek.asm \
+	src/engine/menucore.asm src/engine/menus.asm src/engine/options.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/msu_seek.asm src/engine/close_normals.asm \
 	src/engine/msu_intro.asm src/engine/cancel_gate.asm \
 	$(wildcard src/gen_menu/*) $(wildcard src/gen_menu/intro/*) \
 	$(FIGHT_GEN) $(AUDIO_GEN) $(SOUNDBANK).asm

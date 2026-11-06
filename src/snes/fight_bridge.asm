@@ -107,6 +107,7 @@ MsuVideoStage dsb $1900
 .INCLUDE "engine/team_order.asm"
 .INCLUDE "engine/frame_present.asm"
 .INCLUDE "engine/msu_seek.asm"
+.INCLUDE "engine/close_normals.asm"
 .IFDEF MSU_DIAG
 .IFDEF MSU_DIAG2
 .RAMSECTION ".msu_diag_buffers" BANK $7F SLOT 3 ORGA $3000 FORCE
