@@ -552,14 +552,14 @@ trigger1 = ctrl
 [State -1, Run Fwd]
 type = ChangeState
 value = 100
-triggerall = command = "None"
+triggerall = command = "FF"
 trigger1 = command = "FF"
 trigger1 = statetype = S
 trigger1 = ctrl
 [State -1, Run Back]
 type = ChangeState
 value = 105
-triggerall = command = "None"
+triggerall = command = "BB"
 trigger1 = command = "BB"
 trigger1 = statetype = S
 trigger1 = ctrl
