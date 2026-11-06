@@ -3881,6 +3881,9 @@ if "yuri" in CHARS:
               "gvx": 0, "gvy": 0},
     })
     _yuri.setdefault("extra_trans", []).append((108, 109, 0, 0))
+    # The backdash's synthetic dissolve lands on a bad/blank cel and was
+    # visible as a corrupted final frame.  Keep the source 4-frame timing.
+    _yuri.setdefault("tween_skip_sids", []).append(46)
     _yuri.setdefault("cmd_extra", []).extend([
         {"name": "HAOH_MAX", "label": "MAX HAOH SHIKOU KEN",
          "state": 550, "posture": 3, "time": 30,
@@ -9309,6 +9312,46 @@ def _oam_cap_cells(name, key, cells, tiles):
     return [cells[i] for i in keep], [tiles[i] for i in keep]
 
 
+def _drop_isolated_pixels(sprite, max_area=1):
+    """Remove stray detached specks from an imported sprite.
+
+    A few SFF cels carry one-pixel artefacts separated from the body by the
+    transparent index.  They read as flickering dots over an otherwise clean
+    animation.  Only tiny components are removed; the body and any real
+    detached detail (hair strands, effects) are left alone.
+    """
+    if not sprite.pix:
+        return False
+    w, h = sprite.w, sprite.h
+    pix = bytearray(sprite.pix)
+    seen = bytearray(w * h)
+    removed = False
+    for start in range(w * h):
+        if not pix[start] or seen[start]:
+            continue
+        stack = [start]
+        seen[start] = 1
+        comp = []
+        while stack:
+            i = stack.pop()
+            comp.append(i)
+            x, y = i % w, i // w
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                xx, yy = x + dx, y + dy
+                if 0 <= xx < w and 0 <= yy < h:
+                    j = yy * w + xx
+                    if pix[j] and not seen[j]:
+                        seen[j] = 1
+                        stack.append(j)
+        if len(comp) <= max_area:
+            for i in comp:
+                pix[i] = 0
+            removed = True
+    if removed:
+        sprite.pix = bytes(pix)
+    return removed
+
+
 def build_char(name, cfg, global_pal=None):
     coord_scale = cfg.get("coord_scale", 1)
     char_scale = char_scale_for(name, cfg)
@@ -9323,16 +9366,29 @@ def build_char(name, cfg, global_pal=None):
             sprite.palidx = palette_bank
     air = parse_air(asset_path(cfg["air"]))
     if name == "yuri":
-        # The final descent cel (40,5) has stray pixels beside the torso.
-        # Hold the clean adjacent fall pose (40,4), already used by all
-        # three jumps. Keep AIR timing, boxes, offsets and loop points.
-        for action in (41, 42, 43):
-            if action in air:
-                frames, loopstart = air[action]
-                air[action] = ([(g, 4 if (g, n) == (40, 5) else n,
-                                 x, y, t, flip, atk, hurt)
-                                for g, n, x, y, t, flip, atk, hurt in frames],
-                               loopstart)
+        # A few imported cels carry one-pixel detached specks (seen on the
+        # fall/backdash cels).  Clean them once, before CHR/meta emission.
+        # Limit the pass to body cels.  Groups >= 1000 are effect sheets
+        # with intentional single-pixel sparks/details.
+        specks = sum(_drop_isolated_pixels(s) for s in sff.sprites
+                     if s.group < 1000)
+        if specks:
+            print(f"yuri: cleared isolated sprite specks in {specks} cels")
+        # The descent cel (40,5) has stray pixels beside the torso.  Replace
+        # it in every action that uses it, not only the three jumps, so the
+        # defect cannot reappear in landing/air-hit clips. Keep AIR timing,
+        # boxes, offsets and loop points.
+        replaced = 0
+        for action, (frames, loopstart) in list(air.items()):
+            if not any((g, n) == (40, 5) for g, n, *_ in frames):
+                continue
+            air[action] = ([(g, 4 if (g, n) == (40, 5) else n,
+                             x, y, t, flip, atk, hurt)
+                            for g, n, x, y, t, flip, atk, hurt in frames],
+                           loopstart)
+            replaced += 1
+        if replaced:
+            print(f"yuri: replaced descent cel 40,5 in {replaced} actions")
     # Knockdown fall (action 5050) carries two source poses.  The second
     # pose starts a separate CHR/meta upload in the middle of the fall; on
     # streamed characters that page is blank for a few frames and the victim

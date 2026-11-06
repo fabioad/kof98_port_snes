@@ -2,10 +2,19 @@
 
 ## Yuri
 
-As três animações de salto (AIR 41/42/43) deixam de usar o último cel 40,5.
-A descida segura o cel limpo 40,4, já carregado no quadro anterior. Tempos,
-loop, offsets AIR, colisões e física do salto permanecem iguais. Nenhuma
-nova arte é adicionada; o quadro defeituoso deixa de entrar nesses clips.
+O cel defeituoso 40,5 foi substituído pelo cel limpo 40,4 em **todas as 19
+ações** que o usavam, não apenas nos três saltos. Tempos, loop, offsets AIR,
+colisões e física do salto permanecem iguais.
+
+O dash para trás (AIR 105) tinha um tween sintético que caía em um cel
+inválido e aparecia como ruído azul no fim do movimento. O tween foi
+desativado para o sid 46 (`tween_skip_sids`); o clip volta às quatro poses
+de origem e o dash termina limpo.
+
+Uma varredura nos cels de corpo (grupos < 1000) encontrou 123 pixels
+isolados em 101 sprites — inclusive o último quadro do dash (105,2). Esses
+pixels são removidos antes da geração de CHR/meta. Grupos de efeito (>= 1000)
+ficam intactos para não apagar partículas intencionais.
 
 ## Normais por proximidade
 
