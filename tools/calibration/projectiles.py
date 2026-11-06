@@ -92,6 +92,10 @@ PROJECTILE_ALT_EFFECTS = {
         "pre_scale": 1,
         "squeeze_w": 32,
         "zoom": 1,
+        # The geyser is now a pure hitbox: the spark object stays alive with
+        # its tall SPK_GRD column and ProjTab damage, but the alternate clip
+        # emits a zero-cell frame so DrawSparks draws nothing.
+        "invisible": True,
         "sids": (85, 86, 87),
         "release": 6,
     },

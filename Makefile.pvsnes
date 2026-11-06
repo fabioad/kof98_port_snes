@@ -161,7 +161,7 @@ validate-snesmod: $(AUDIOFILES) tools/validate_snesmod.py
 	python3 tools/validate_snesmod.py $(SMCONV) $(AUDIOFILES)
 
 $(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json assets/characters/*/*_SNES.cns assets/characters/*/*_SNES.cmd assets/characters/*/*.air assets/data/quotes/*.json) \
-	tools/build_fight.py tools/runtime_abi.py assets/runtime_abi.json tools/newroster.py tools/build_spc_neogeo.py \
+	tools/build_fight.py tools/normal_throws.py tools/runtime_abi.py assets/runtime_abi.json tools/newroster.py tools/build_spc_neogeo.py \
 	Makefile.pvsnes $(wildcard Makefile.hi Makefile.old) \
 	tools/build_stages.py tools/sff.py tools/build_endings.py \
 	$(wildcard assets/survival_ending/*.png) \

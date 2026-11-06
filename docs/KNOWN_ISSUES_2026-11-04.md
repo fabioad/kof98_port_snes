@@ -1,5 +1,22 @@
 # Known Issues — build de 04/11/2026
 
+> **Correção em andamento:** [captura dos counters ajustada no fonte](SPECIALS_SUPERS_FIX_PROGRESS_2026-11-06.md).
+> Validação na próxima ROM pendente; continuações ofensivas ainda pendentes.
+
+> **06/11 — especiais e supers:** [auditoria funcional dos 50 personagens](SPECIALS_SUPERS_FUNCTIONAL_AUDIT_2026-11-06.md),
+> com 1.161 regras de entrada verificadas. Há preparações sem complemento
+> ofensivo e flags de captura residuais confirmadas em cinco personagens.
+> O documento distingue falhas de ações condicionais e adaptações. Sem build.
+
+> **06/11 — agarrões comuns:** correção dos 100 casos registrada no
+> [fonte e testes](NORMAL_THROWS_FIX_2026-11-06.md). Sem build nesta etapa;
+> os números da auditoria anterior ainda se referem à ROM antiga.
+
+> **Critério de release (autor, 06/11):** preservar as adaptações do port
+> e o orçamento atual de recursos. Priorizar glitches, travamentos, dano
+> indevido e falhas de captura/soltura/recuperação. Diferenças intencionais
+> em relação ao MUGEN não são bloqueadores de release.
+
 Levantamento dos golpes ainda incompletos no port. O foco é o que o jogador
 percebe em partida: comando que não sai, golpe que não sobe/acerta, super
 que não existe e efeito ausente.

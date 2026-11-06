@@ -11735,6 +11735,12 @@ def projectile_effect_alt(name, sff, air, spec):
     action = spec["action"]
     if action not in air:
         return None
+    if spec.get("invisible"):
+        # Keep the projectile object and its hitbox, but emit a single
+        # empty-cell frame so DrawSparks skips the art entirely.  The
+        # ProjTab damage/guard row and the tall SPK_GRD hitbox are still
+        # active, so the move hits exactly as before.
+        return action, [(1, [])], b""
     pre_scale = max(1, int(spec.get("pre_scale", 1)))
     zoom = max(1, int(spec.get("zoom", 1)))
     max_cells = int(spec.get("max_cells", len(SPARK_SLOTS)))
