@@ -1689,6 +1689,11 @@ PROJECTILE_EXCLUDE = {
     # heuristic turned its 3551 bind state into a travelling shot and the
     # grab chain never ran.  Kyo's real shots (1000/1010/3000) stay.
     "kyo": (87,), "kyonests": (87,), "kyoash": (87,),
+    # Ryu's QCBx2+kick super (3200) is a close-range rush that must finish
+    # with the 3201 Shoryuken; the HitDef/dash heuristic invented a
+    # stationary shot for it, which the super-projectile pin then dragged
+    # onto the victim from full screen.
+    "ryu": (87,),
     # Choi, Kim, Mary, Vega and Yashiro have no travelling projectile in
     # their wired move set.  Their follow-up HitDefs/dashes were being
     # compiled as invisible shots.
@@ -2206,6 +2211,27 @@ if "ken" in CHARS:
     }
     _ken["slice_hits"] = {53: (0, 58), 58: (1, 59), 59: (2, 60)}
     _ken["slice_damage"] = {53: 8, 58: 8, 59: 8}
+    # The double-QCF super's imported recovery runs ~35 animation frames;
+    # keep the hit sequence and cut the long settle so Ken recovers promptly.
+    _ken["frame_cap"] = {87: 26}
+
+# Ryu: the Shinkuu Hadouken (states 3000/3010 -> sids 85/86, MAX 3050 ->
+# sid 88) is a travelling beam.  The generic helper walk left vx=0, so the
+# super-projectile pin teleported it onto the victim and it connected from
+# full screen without a visible shot.  Give it the source helper's forward
+# speed; the QCBx2+kick super (3200, sid 87) is a close-range rush whose
+# invented projectile is dropped in PROJECTILE_EXCLUDE.  Its source
+# MoveHit -> 3201 Shoryuken finisher was unmapped, so wire that follow-up.
+if "ryu" in CHARS:
+    _ryu = CHARS["ryu"]
+    _ryu.setdefault("projs", {}).update({
+        85: (0x0500, 5, 14, 0x20),
+        86: (0x0500, 5, 14, 0x20),
+        88: (0x0800, 8, 14, 0x20),
+    })
+    _ryu["moves"][58] = 3201
+    _ryu["anims"][58] = 3201
+    _ryu.setdefault("extra_trans", []).append((87, 58, 3, 0))
 
 # Sakura: the strong Shou'ou Ken (MUGEN state 1110, sid 49) also carries
 # three HitDefs, and the native tables kept only the first one.  Split the
@@ -2465,6 +2491,14 @@ if "chunli" in CHARS:
         "gvx": 0, "gvy": 0, "avx": 0, "avy": 0,
         "damage": 22, "gdamage": 3,
     }
+    # The source Spinning Bird Kick slides forward through PosAdd rows on
+    # elements 3/4/6/7/8/9/10/12; the native state header velset=0,0 made it
+    # kick in place.  Keep the source travel.
+    _chunli["posadd_extra"] = dict(_chunli.get("posadd_extra", {}))
+    _chunli["posadd_extra"][1200] = [
+        (3, 12), (4, 12), (6, 6), (7, 14), (8, 16),
+        (9, 8), (10, 16), (12, 2),
+    ]
 
 # Andy's Kuuha Dan (weak 1300 / strong 1310) is a close-range leaping
 # attack.  The source Clsn1 boxes only cover the outstretched arm, so a
@@ -4458,6 +4492,21 @@ if "chunli" in CHARS:
          "state": 3200, "posture": 3, "time": 30,
          "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 4)]},
     ])
+    # HSDM (3300): the source chain is 3300 -> 3301 -> 3302.  3302 re-issues
+    # its HitDef on a long list of animation elements; the native move table
+    # only kept the first, so the cinematic stopped after the opening hit.
+    _c = CHARS["chunli"]
+    _c["moves"].update({59: 3301, 60: 3302})
+    _c["anims"].update({59: 3301, 60: 3302})
+    _c.setdefault("loop_off", []).extend([87, 59, 60])
+    _chun.setdefault("extra_trans", []).extend([
+        (87, 59, 3, 0),               # 3300 MoveHit -> 3301
+        (59, 60, 0, 0),               # 3301 anim end -> 3302
+        (60, 0, 0, 0),                # 3302 anim end -> stand
+    ])
+    _chun.setdefault("hit_soft_resets", {})[3302] = [
+        10, 13, 16, 19, 22, 25, 28, 31, 34, 37, 40, 43, 46, 49, 52, 55, 58, 61]
+    _chun.setdefault("slice_no_fall", []).append(60)
 
 if "sakura" in CHARS:
     POST_CAL_REACTIVATED.setdefault("sakura", []).extend([
@@ -9051,6 +9100,13 @@ def build_char(name, cfg, global_pal=None):
         cns_acts[state] = [row for row in cns_acts[state] if row[1] != 9]
     for state in cns_acts:
         cns_acts[state].sort()
+    # Normal throws have their own held slot. Restore missing phase/damage
+    # timelines without changing shared special/super states or CHR pages.
+    # Run after calibration/late overrides and voice extraction so the
+    # corrected slot keeps the resolved impact/voice events.
+    from normal_throws import repair as repair_normal_throw
+    repair_normal_throw(name, cfg, anims, air, cns_moves, cns_headers,
+                        cns_statedefs, cns_binds, cns_acts, cns_posadds)
     # Resolve the calibrator before parse_cmd so a per-character button
     # override reaches ButtonTab and the command-list labels too.
     calibration = resolve_input_calibration(name, cfg)
@@ -9133,6 +9189,10 @@ def build_char(name, cfg, global_pal=None):
             assert _anim == anum
             frames = frames[lo:hi if hi is None else hi + 1]
             loopstart = 0
+        if sid in cfg.get("loop_off", ()):
+            # source clips that inherit Loopstart=0 but are meant to hand
+            # over on AnimTime=0 (cinematic super follow-ups)
+            loopstart = -1
         anim_tables[sid] = (frames, loopstart)
         for g, n, *_ in frames:
             wanted.add((g, n))
@@ -10801,6 +10861,9 @@ def build_char(name, cfg, global_pal=None):
         rows = _slice_rows(cns_acts, sid)
         out = []
         for frame, op, arg, cond in (rows or ()):
+            if sid == 75 and op == 3 and not -128 <= arg <= 127:
+                raise ValueError(f"{name}: normal-throw life delta {arg} "
+                                 "does not fit the signed ActTab byte")
             if op == 4:
                 arg = VICTIM_STATE_IDS.get(arg, state_to_sid.get(arg, 0xFF))
                 if arg == 0xFF:

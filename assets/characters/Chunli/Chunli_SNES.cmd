@@ -39,6 +39,86 @@ command = ~D, B, D, B, c
 time = 18
 
 [Command]
+name = "DF_df+y"
+command = ~D,DF,F,y
+time = 18
+
+[Command]
+name = "BD_df+x"
+command = ~B, D, F, x
+time = 15
+
+[Command]
+name = "BD_df+y"
+command = ~B, D, F, y
+time = 15
+
+[Command]
+name = "MDB_b+db"
+command = ~D,DB,B,b
+time = 18
+
+[Command]
+name = "MFD_b+df"
+command = ~F, D, DF, b
+time = 18
+
+[Command]
+name = "MFDB_b"
+command = ~F, D, B, b
+time = 18
+
+[Command]
+name = "HYAKU_A"
+command = a, a, a
+time = 25
+
+[Command]
+name = "MFDB_y"
+command = ~F, D, B, y
+time = 18
+
+[Command]
+name = "KIKOU_SHOU_X"
+command = ~D, F, D, F, x
+time = 30
+
+[Command]
+name = "KIKOU_SHOU_Y"
+command = ~D, F, D, F, y
+time = 30
+
+[Command]
+name = "HOUYOKU_A"
+command = ~D, F, D, F, a
+time = 30
+
+[Command]
+name = "HOUYOKU_B"
+command = ~D, F, D, F, b
+time = 30
+
+[Command]
+name = "HAZAN_C"
+command = ~D, F, D, F, c
+time = 30
+
+[Command]
+name = "HSDM_A"
+command = ~D, B, D, B, a
+time = 30
+
+[Command]
+name = "HSDM_B"
+command = ~D, B, D, B, b
+time = 30
+
+[Command]
+name = "HSDM_AB"
+command = ~D, B, D, B, a+b
+time = 30
+
+[Command]
 name = "FF"
 command = F, F
 time = 18
@@ -166,6 +246,63 @@ command = D
 
 [Statedef -1]
 
+[State -1, special_109_x]
+type = ChangeState
+value = 3000
+triggerall = command = "KIKOU_SHOU_X"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_109_y]
+type = ChangeState
+value = 3000
+triggerall = command = "KIKOU_SHOU_Y"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_110_a]
+type = ChangeState
+value = 3100
+triggerall = command = "HOUYOKU_A"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_110_b]
+type = ChangeState
+value = 3100
+triggerall = command = "HOUYOKU_B"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_111_c]
+type = ChangeState
+value = 3200
+triggerall = command = "HAZAN_C"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_87_a]
+type = ChangeState
+value = 3300
+triggerall = command = "HSDM_A"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_87_b]
+type = ChangeState
+value = 3300
+triggerall = command = "HSDM_B"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_87_ab]
+type = ChangeState
+value = 3300
+triggerall = command = "HSDM_AB"
+triggerall = statetype != A
+trigger1 = ctrl
+
+
 [State -1, special_48]
 type = ChangeState
 value = 1000
@@ -212,6 +349,76 @@ trigger1 = ctrl
 type = ChangeState
 value = 3300
 triggerall = command = "MDBDB_c"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_48_y]
+type = ChangeState
+value = 1000
+triggerall = command = "DF_df+y"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_107_x]
+type = ChangeState
+value = 1050
+triggerall = command = "BD_df+x"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_107_y]
+type = ChangeState
+value = 1050
+triggerall = command = "BD_df+y"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_50_b]
+type = ChangeState
+value = 1200
+triggerall = command = "MDB_b+db"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_108_a]
+type = ChangeState
+value = 1250
+triggerall = command = "MDB_a+db"
+triggerall = statetype = A
+trigger1 = ctrl
+
+[State -1, special_108_b]
+type = ChangeState
+value = 1250
+triggerall = command = "MDB_b+db"
+triggerall = statetype = A
+trigger1 = ctrl
+
+[State -1, special_51_b]
+type = ChangeState
+value = 1400
+triggerall = command = "MFD_b+df"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_54_b]
+type = ChangeState
+value = 1300
+triggerall = command = "MFDB_b"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_57_a]
+type = ChangeState
+value = 1100
+triggerall = command = "HYAKU_A"
+triggerall = statetype != A
+trigger1 = ctrl
+
+[State -1, special_58_y]
+type = ChangeState
+value = 1500
+triggerall = command = "MFDB_y"
 triggerall = statetype != A
 trigger1 = ctrl
 

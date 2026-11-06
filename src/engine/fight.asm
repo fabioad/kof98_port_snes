@@ -730,6 +730,9 @@
                                         ;   projectile hits still to land
 .DEFINE RT_PROJCD   $4FC4               ; per spark slot (0/1): per-hit
                                         ;   cooldown for those supers
+.DEFINE RT_PROJHIT  $4FC6               ; per spark slot (indexed by the
+                                        ;   20-byte spark offset): shot has
+                                        ;   contacted once (pin only after)
 .DEFINE RT_OAMDROP  $5106               ; cells culled after OAM reaches 128
 .DEFINE RT_GHOSTGEN $5108               ; generation for P1a/P1b/P2a/P2b
 .DEFINE RT_FXUPLOAD $510C               ; cosmetic FX pages per presentation
@@ -4172,6 +4175,8 @@ SF_full:
     sta.w RT_PROJHITS+1
     sta.w RT_PROJCD
     sta.w RT_PROJCD+1
+    sta.w RT_PROJHIT
+    sta.w RT_PROJHIT+SPK_SIZE
     rep #$20
     .ACCU 16
     stz.w SPARKS+SPK_ANIM               ; clear both hit-spark slots
@@ -7161,7 +7166,7 @@ FightTick:
     bcc +
     rts
 + FT_live:
-    jsr PracFillPower                    ; practice: human meter stays full
+    jsl PracFillPowerFar                 ; practice: human meter stays full
     jsr BannerTick                       ; FIGHT! logo countdown -> clear
     lda.l APUIO3                         ; snesmod: music position / status
     sta sfxdone
@@ -7238,6 +7243,7 @@ FightTick:
     .ACCU 8
     jsr BodySep
     jsr HitCheck
+    jsl PracFillHPFar                    ; practice: undo any slice damage
     sep #$20
     .ACCU 8
     jsr ComboTick
@@ -8400,7 +8406,7 @@ StThrow:                                ; 810: drive the held victim
     rep #$20
     .ACCU 16
     ldx fofs
-    stz FP+F_VX,x
+    jsr PinVXUnlessVelSet                ; keep authored throw/rush movement
     jsr Physics
     jsr TransAir                        ; bind states may end on a landing
                                         ;   rule (Chris 810 -> 820) rather
@@ -10211,6 +10217,10 @@ AT_nothit:
     cmp #S_VTHROW                         ; thrown flight: fall anim cycles
     beq AT_vloop
     cmp #S_VHELD                          ; bound pose holds its last frame
+    beq AT_vstay
+    cmp #S_CGRAB_HIV                      ; counter victims share StVictimHeld:
+    beq AT_vstay                          ; the owner's release must end capture,
+    cmp #S_CGRAB_LOV                      ; not the shorter victim animation
     beq AT_vstay
     bra +
 AT_vloop:
@@ -13600,6 +13610,14 @@ PH_body_height:
     jmp PH_miss
 +
 PH_hit:
+    ; A super projectile only starts pinning after its first contact; until
+    ; then it must travel (or stay put) and can be dodged at range.
+    sep #$20
+    .ACCU 8
+    lda #1
+    sta.w RT_PROJHIT,x
+    rep #$20
+    .ACCU 16
     ; --- a defender holding back blocks a guardable shot ---
     lda scr6
     sta fofs
@@ -14144,6 +14162,7 @@ PTS_idx0:
     lda #0                               ; single-hit by default
     sta.w RT_PROJHITS,y
     sta.w RT_PROJCD,y
+    sta.w RT_PROJHIT,x                   ; no contact yet: let the shot fly
     ldy fofs
     lda FP+F_STATE,y
     cmp #S_SUPPER.b                      ; 85..89 = super projectile:
@@ -16696,22 +16715,8 @@ PB_no:
     clc
     rts
 
-; PRACTICE: keep both meters at 3000 (CPU/P2 included).
-PracFillPower:
-    sep #$20
-    .ACCU 8
-    lda.w G_MODE
-    cmp #5
-    bne PFP_out
-    rep #$20
-    .ACCU 16
-    lda #3000.w
-    sta FP+F_POWER
-    sta FP+F_POWER+FP2OFS
-    sep #$20
-    .ACCU 8
-PFP_out:
-    rts
+; PRACTICE HP/power refills live in the bank-126 tail (fight.asm end): the
+; Fight bank is full and both run every tick, so a far JSL is fine.
 
 ; ============================================================================
 ;  PRACTICE command-list submenu
@@ -23985,6 +23990,10 @@ PPM_go:
     sta.w SPARKS+SPK_GRD,x
     jmp PPM_out
 PPM_pin:
+    ; Do not teleport a super projectile onto the victim before it has hit;
+    ; otherwise every 85-89 shot connects from full screen.
+    lda.w RT_PROJHIT,x
+    beq PPM_out
     lda.w SPARKS+SPK_ATTR,x
     and #$40.b                        ; bit6 = owner is P2
     beq +
@@ -24020,5 +24029,45 @@ PPM_pin:
 PPM_out:
     sep #$20
     .ACCU 8
+    rtl
+.ENDS
+
+; ---------------------------------------------------------------------------
+; PRACTICE refills.  Kept in the bank-126 gap between the cinematic helpers
+; and ProjPinFar because the Fight bank is full.  Called with JSL every tick.
+; ---------------------------------------------------------------------------
+.BANK 126 SLOT 0
+.ORGA $EE90
+.SECTION "PracFillFar" FORCE
+PracFillHPFar:
+    sep #$20
+    .ACCU 8
+    lda.w G_MODE
+    cmp #5
+    bne PFH_out
+    rep #$20
+    .ACCU 16
+    lda #200.w
+    sta FP+F_HP
+    sta FP+F_HP+FP2OFS
+    sep #$20
+    .ACCU 8
+PFH_out:
+    rtl
+
+PracFillPowerFar:
+    sep #$20
+    .ACCU 8
+    lda.w G_MODE
+    cmp #5
+    bne PFP_out
+    rep #$20
+    .ACCU 16
+    lda #3000.w
+    sta FP+F_POWER
+    sta FP+F_POWER+FP2OFS
+    sep #$20
+    .ACCU 8
+PFP_out:
     rtl
 .ENDS
