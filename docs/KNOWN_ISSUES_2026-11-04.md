@@ -12,6 +12,12 @@
 > [fonte e testes](NORMAL_THROWS_FIX_2026-11-06.md). Sem build nesta etapa;
 > os números da auditoria anterior ainda se referem à ROM antiga.
 
+> **06/11 — build consolidado:** esta ROM inclui todas as correções
+> pendentes (agarrões, especiais/supers, áudio e vídeo). O **Power Geyser**
+> do Terry agora é apenas hitbox: o projétil continua existindo para dano,
+> guarda e coluna alta, mas o clipe alternativo tem zero células e não é
+> desenhado. Teste: `tools/test_terry_geyser_headless.py`.
+
 > **Critério de release (autor, 06/11):** preservar as adaptações do port
 > e o orçamento atual de recursos. Priorizar glitches, travamentos, dano
 > indevido e falhas de captura/soltura/recuperação. Diferenças intencionais
@@ -692,10 +698,10 @@ segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$E5E0`**
-- layout MSU **`0x6F94`**
-- `.sfc` SHA-256 `11a87531…16bbe5eb`
-- `.msu` SHA-256 `3afe26e2…77ba4726`
+- checksum **`$5313`**
+- layout MSU **`0xD270`**
+- `.sfc` SHA-256 `bd83da63…741f0245`
+- `.msu` SHA-256 `60f86de9…1542685a`
 - `.msu` 51.396.096 bytes
 
 ## Referências
