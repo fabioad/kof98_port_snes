@@ -544,7 +544,8 @@
 .DEFINE ct_ts0      $67                 ; tick of the newest matched element
 .DEFINE ct_win      $68                 ; motion window
 .DEFINE ct_cancel   $52                 ; 1 = CmdTry is a hit-cancel scan
-.DEFINE ct_rel      $6F                 ; released-dir mask for ~X elements
+.DEFINE ct_rel      $6F                 ; released-dir mask; bit7+slot marks
+                                        ;   the charged direction to consume
 .DEFINE ct_tmp      $69
 .DEFINE ct_edir     $6A                 ; ring entry dir/btn/tick under test
 .DEFINE ct_ebtn     $6B
@@ -6641,6 +6642,8 @@ CT_gatesok:
     and #$0F
     sta ct_j                          ; scan from the newest entry back
     stz ct_scan
+    stz ct_rel                        ; no charged-direction slot yet; bit7
+                                      ;   marks the spent charge when set
 MM_scan:
     lda ct_j
     sta ct_off
@@ -6748,7 +6751,10 @@ MC_first:
     lda [sptr],y
     and #$20
     beq MC_window                     ;   bit5 clear: ordinary motion
-    lda ct_ts0
+    lda ct_edir                       ; the charged direction itself was
+    bpl +                             ;   already spent by a previous move:
+    jmp MM_next                       ;   require a fresh 40-tick charge
++   lda ct_ts0
     sec
     sbc ct_ets                        ; hold duration: newest input minus B
     cmp #40.b
@@ -6757,7 +6763,11 @@ MC_first:
 +   cmp #240.b
     bcc +
     jmp MM_next                       ; stale charge prefix
-+   lda #240                           ; the hold itself spans 40..239 ticks;
++   lda ct_j                          ; remember the charged direction entry;
+    ora #$80                          ;   it must be consumed with the finisher
+    sta ct_rel                        ;   so a later button-only press cannot
+                                      ;   reuse the old back/charge prefix
+    lda #240                           ; the hold itself spans 40..239 ticks;
     sta ct_win                         ;   the short special window would
     jmp MM_match                       ;   reject every charged move
 MC_window:
@@ -6910,19 +6920,26 @@ CMC_take:
 +   lda ct_scan                       ; consume: flag the newest matched ring
                                       ;   entry (bit7 of its dir byte).  Entries
                                       ;   stay in the ring so a later press can
-    sta ct_off                        ;   still complete a command sharing the
-    asl a                             ;   prefix (FF -> run, then FF+a); only
-    clc                               ;   this press is spent -- the same trick
-    adc ct_off                        ;   an 8-bit tick diff tried and failed
-    rep #$30                          ;   to do past frame 127.  Zero-extend:
-    .ACCU 16                          ;   16-bit tay would drag B along and
-    and #$00FF.w                      ;   bury the flag in the wrong slot.
+CMC_mark:                             ;   still complete a command sharing the
+    sta ct_off                        ;   prefix (FF -> run, then FF+a); only
+    asl a                             ;   this press is spent -- the same trick
+    clc                               ;   an 8-bit tick diff tried and failed
+    adc ct_off                        ;   to do past frame 127.  Zero-extend:
+    rep #$30                          ;   16-bit tay would drag B along and
+    .ACCU 16                          ;   bury the flag in the wrong slot.
+    and #$00FF.w
     tay
     sep #$20
     .ACCU 8
     lda [histp],y
     ora #$80
     sta [histp],y
+    lda ct_rel                        ; charged command: mark the back/down
+    bpl CMC_norchg                    ;   entry too.  Clear the marker first,
+    stz ct_rel                        ;   then loop once for its ring slot.
+    and #$0F
+    bra CMC_mark
+CMC_norchg:
     ldx fofs                          ; keep the debug stamp for test dumps
     lda ct_ts0
     sta FP+F_LASTCT,x
