@@ -29,6 +29,8 @@ OAMBUF = 0x1800
 
 START, UP, DOWN = 3, 4, 5
 PAUSE_TILES = [16, 1, 21, 19, 5]          # CHARSET indices for PAUSE
+PAL_WHITE, PAL_YELLOW = 0x30, 0x32
+CURSOR_TILE = 45                         # CHARSET '>'
 
 
 def tap(core, button, frames=3):
@@ -46,9 +48,42 @@ def open_select(core):
     assert core.ram[GS] == 5, core.ram[GS]
 
 
-def pause_cells(core):
-    base = core.ram[SELPZ_OAM]
-    return [core.ram[OAMBUF + base + i * 4 + 2] for i in range(5)]
+def pause_sprite(core, i):
+    base = core.ram[SELPZ_OAM] + i * 4
+    return (core.ram[OAMBUF + base], core.ram[OAMBUF + base + 1],
+            core.ram[OAMBUF + base + 2], core.ram[OAMBUF + base + 3])
+
+
+def check_pause_layout(core, selected):
+    """Texts are horizontally/vertically centred and the selection is yellow."""
+    title = [pause_sprite(core, i) for i in range(0, 5)]
+    assert [s[2] for s in title] == PAUSE_TILES, (
+        f"pause title cells {[s[2] for s in title]}")
+    assert [(s[0], s[1]) for s in title] == [
+        (108 + i * 8, 84) for i in range(5)], "PAUSE is not centred"
+    assert all(s[3] == PAL_WHITE for s in title), "PAUSE should be white"
+
+    cont = [pause_sprite(core, i) for i in range(5, 13)]
+    assert [(s[0], s[1]) for s in cont] == [
+        (96 + i * 8, 112) for i in range(8)], "CONTINUE is not centred"
+    exit_ = [pause_sprite(core, i) for i in range(13, 17)]
+    assert [(s[0], s[1]) for s in exit_] == [
+        (112 + i * 8, 132) for i in range(4)], "EXIT is not centred"
+
+    cont_pal = PAL_YELLOW if selected == 0 else PAL_WHITE
+    exit_pal = PAL_YELLOW if selected == 1 else PAL_WHITE
+    assert all(s[3] == cont_pal for s in cont), (
+        "CONTINUE palette should be "
+        f"{'yellow' if selected == 0 else 'white'}")
+    assert all(s[3] == exit_pal for s in exit_), (
+        "EXIT palette should be "
+        f"{'yellow' if selected == 1 else 'white'}")
+
+    cur = pause_sprite(core, 17)
+    want_x = 80 if selected == 0 else 96
+    want_y = 112 if selected == 0 else 132
+    assert cur == (want_x, want_y, CURSOR_TILE, PAL_YELLOW), (
+        f"yellow selector at {cur}, want {(want_x, want_y, CURSOR_TILE, PAL_YELLOW)}")
 
 
 def main():
@@ -61,15 +96,16 @@ def main():
         assert core.ram[PZ_ON] == 1, "START did not open the select pause"
         assert core.ram[PZ_SEL] == 0, "cursor did not start on CONTINUE"
         assert core.ram[GS] == 5, "select screen left while pausing"
-        assert pause_cells(core) == PAUSE_TILES, (
-            f"pause title cells {pause_cells(core)}")
-        print("PASS select pause: START opens CONTINUE/EXIT")
+        check_pause_layout(core, selected=0)
+        print("PASS select pause: START opens a centred, yellow-selected menu")
 
         tap(core, DOWN)
         assert core.ram[PZ_ON] == 1 and core.ram[PZ_SEL] == 1, "DOWN failed"
+        check_pause_layout(core, selected=1)
         tap(core, UP)
         assert core.ram[PZ_ON] == 1 and core.ram[PZ_SEL] == 0, "UP failed"
-        print("PASS select pause: UP/DOWN moves the cursor")
+        check_pause_layout(core, selected=0)
+        print("PASS select pause: UP/DOWN moves the yellow selector")
 
         tap(core, START)
         assert core.ram[PZ_ON] == 0, "CONTINUE did not close the pause"

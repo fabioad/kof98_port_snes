@@ -322,8 +322,16 @@ PalFX/AfterImage (Categoria E).
   EXIT vai para a tela título. Em pads CPU, START continua fazendo
   join/reclaim daquele lado (preserva o fluxo de 2P e o mid-fight join).
   O menu usa o font 8x8 do select via OAM, sem trocar a tela; ao fechar,
-  o OAM é limpo e o select redesenha. Regressão:
-  `tools/test_select_pause_headless.py`.
+  o OAM é limpo e o select redesenha.
+  - **Textos centralizados (05/11):** PAUSE/CONTINUE/EXIT são posicionados
+    por `SelPauseCenter` com `x = (256 - len*8)/2` (108/96/112) e o bloco
+    fica em y=84/112/132, com centro vertical em 112 (metade de 224).
+  - **Seletor amarelo (05/11):** a opção ativa usa o atributo OAM `$32`
+    (prioridade 3, paleta OBJ 1 = amarelo do `MnObjPal`); a inativa fica
+    em `$30` (branco). O cursor `>` também é amarelo e fica um glifo à
+    esquerda da opção ativa (x=80 para CONTINUE, x=96 para EXIT).
+  - Regressão: `tools/test_select_pause_headless.py` confere as posições
+    centralizadas, a paleta amarela da opção ativa e o cursor.
 - **Cursor P1/P2 no select (05/11)** — quando o P2 iniciava Single Play
   ou Team Play, o select acendia os dois anéis (`cpu1=0` e `cpu2=0`).
   Agora o P2 iniciado mantém `cpu2=0` (humano) e coloca `cpu1=1` (CPU) +
@@ -613,9 +621,9 @@ segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$EC5B`**
+- checksum **`$FAE3`**
 - layout MSU **`0x514F`**
-- `.sfc` SHA-256 `de41180b…5f194286`
+- `.sfc` SHA-256 `3de78cb7…ff971961`
 - `.msu` SHA-256 `3be2fcd0…c0f4e154`
 - `.msu` 51.396.096 bytes
 

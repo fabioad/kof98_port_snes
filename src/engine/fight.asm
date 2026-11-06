@@ -23599,6 +23599,8 @@ SelPauseDraw:
     .ACCU 8
     lda.w SELPZ_OAM
     sta.b oamtop
+    ; Pause texts are centred as a block: the glyphs span y=84..140, whose
+    ; midpoint is 112, the centre of the 224-line screen.
     ; title
     rep #$20
     .ACCU 16
@@ -23608,14 +23610,13 @@ SelPauseDraw:
     .ACCU 8
     lda.b tblbank
     sta.b scr2+2
-    lda #96.b
-    sta.b scr0
-    lda #64.b
+    jsr SelPauseCenter
+    lda #84.b
     sta.b scr1
     lda #$30.b
     sta.b scr4
     jsr SelPauseText
-    ; CONTINUE
+    ; CONTINUE — yellow when selected
     rep #$20
     .ACCU 16
     lda #StrSelContinue.w
@@ -23624,14 +23625,17 @@ SelPauseDraw:
     .ACCU 8
     lda.b tblbank
     sta.b scr2+2
-    lda #64.b
-    sta.b scr0
-    lda #100.b
+    jsr SelPauseCenter
+    lda #112.b
     sta.b scr1
-    lda #$30.b
-    sta.b scr4
+    lda.w PZ_SEL
+    bne +
+    lda #$32.b                        ; prio3, OBJ pal1 (yellow)
+    bra ++
++   lda #$30.b                        ; prio3, OBJ pal0 (white)
+++  sta.b scr4
     jsr SelPauseText
-    ; EXIT
+    ; EXIT — yellow when selected
     rep #$20
     .ACCU 16
     lda #StrSelExit.w
@@ -23640,27 +23644,56 @@ SelPauseDraw:
     .ACCU 8
     lda.b tblbank
     sta.b scr2+2
-    lda #80.b
-    sta.b scr0
-    lda #120.b
+    jsr SelPauseCenter
+    lda #132.b
     sta.b scr1
-    lda #$30.b
-    sta.b scr4
-    jsr SelPauseText
-    ; cursor
-    lda #48.b
-    sta.b scr0
     lda.w PZ_SEL
     beq +
-    lda #120.b
+    lda #$32.b                        ; prio3, OBJ pal1 (yellow)
     bra ++
-+   lda #100.b
++   lda #$30.b                        ; prio3, OBJ pal0 (white)
+++  sta.b scr4
+    jsr SelPauseText
+    ; Yellow selector one glyph to the left of the active option.  Its x
+    ; matches SelPauseCenter (CONTINUE starts at 96, EXIT at 112).
+    sep #$20
+    .ACCU 8
+    lda.w PZ_SEL
+    beq +
+    lda #96.b
+    sta.b scr0
+    lda #132.b
+    bra ++
++   lda #80.b
+    sta.b scr0
+    lda #112.b
 ++  sta.b scr1
-    lda #45.b                           ; CHARSET '>' tile
+    lda #45.b                         ; CHARSET '>' tile
     sta.b scr3
-    lda #$30.b
+    lda #$32.b                        ; yellow selector
     sta.b scr4
     jsr SelPauseCell
+    rts
+
+; Centre the length-prefixed string at scr2: scr0 = (256 - len*8) / 2.
+; The 8-bit wrap trick computes 256-len*8 without needing a 16-bit subtract.
+SelPauseCenter:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    ldy #0
+    sep #$20
+    .ACCU 8
+    lda.b [scr2],y
+    asl a
+    asl a
+    asl a
+    sta.b scr5
+    lda #0
+    sec
+    sbc.b scr5
+    lsr a
+    sta.b scr0
     rts
 
 SelPauseText:
