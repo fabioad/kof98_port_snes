@@ -2202,6 +2202,20 @@ if "mrbig" in CHARS:
 # special value instead of tripling it.
 if "ken" in CHARS:
     _ken = CHARS["ken"]
+    _ken.setdefault("air_box_patch_frames", {}).update({
+        600: {2: [(11, -79, 48, -10)]},
+        610: {2: [(4, -68, 39, -10)]},
+        630: {1: [(4, -104, 52, -10)]},
+        640: {2: [(-4, -79, 54, -10)]},
+    })
+    # Shoryureppa (state 3050, sid 87): the source re-arms its HitDef on
+    # every rise through MoveHitReset; the native table kept only the first
+    # contact and knocked down immediately.  Keep the victim in hitstun for
+    # the rises and let MoveHitFinisher force the knockdown on the fifth.
+    _ken.setdefault("hitdef_override", {}).update({
+        87: {"active": 26, "damage": 6, "gdamage": 1, "fall": 0,
+             "gvx": 0, "gvy": 0},
+    })
     _ken["moves"].update({58: 1110, 59: 1110, 60: 1111})
     _ken["anims"].update({53: 1110, 58: 1110, 59: 1110, 60: 1111})
     _ken["slices"] = {
@@ -2224,6 +2238,15 @@ if "ken" in CHARS:
 # MoveHit -> 3201 Shoryuken finisher was unmapped, so wire that follow-up.
 if "ryu" in CHARS:
     _ryu = CHARS["ryu"]
+    # Air normals: the imported Clsn1 sits high on the fist and often misses
+    # a falling/standing victim.  Add a second, lower box on each active
+    # frame (the source box is preserved by the append pass).
+    _ryu.setdefault("air_box_patch_frames", {}).update({
+        600: {2: [(11, -79, 48, -10)]},
+        610: {2: [(4, -68, 39, -10)]},
+        630: {1: [(4, -104, 52, -10)]},
+        640: {2: [(-4, -79, 54, -10)]},
+    })
     _ryu.setdefault("projs", {}).update({
         85: (0x0500, 5, 14, 0x20),
         86: (0x0500, 5, 14, 0x20),
@@ -4363,6 +4386,18 @@ if "geese" in CHARS:
         108: {"active": 1, "damage": 30, "gdamage": 2, "p2state": 0xFF,
               "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
     })
+    # Geese's DP ("Flying Sun Wheel Slash") is a two-state move: the
+    # 1300/1310 startup changes to 1301/1311, which carries the real HitDef
+    # and the 1302/1312 attack animation.  The follow-ups were never wired,
+    # so the move showed only the startup and returned to stand.  Wire both
+    # and let them recover to stand at the end of the attack clip.
+    _gcfg = CHARS["geese"]
+    _gcfg["moves"].update({55: 1301, 56: 1311})
+    _gcfg["anims"].update({55: 1302, 56: 1312})
+    _gcfg.setdefault("extra_trans", []).extend([
+        (54, 55, 0, 0), (57, 56, 0, 0),
+        (55, 0, 0, 0), (56, 0, 0, 0),
+    ])
     _gee.setdefault("cmd_extra", []).extend([
         {"name": "RAIMEI", "label": "RAIMEI GOUHA NAGE",
          "state": 1500, "posture": 3, "time": 22,
@@ -4382,14 +4417,19 @@ if "krauser" in CHARS:
         (111, 3300, 3300),     # Unlimited Desire
         (112, 3310, 3310),     # Unlimited Desire S
         (113, 3320, 3320),     # MAX Unlimited Desire
+        (114, 1701, 1701),     # Kaiser Claw grab follow-up
     ])
     _kra = POST_CAL_TWEAKS.setdefault("krauser", {})
     _kra.setdefault("slice_damage", {}).update({
-        107: 25, 108: 30, 109: 30, 110: 40,
+        107: 25, 108: 0, 109: 30, 110: 40,
         111: 30, 112: 35, 113: 40})
     _kra.setdefault("hitdef_override", {}).update({
         107: {"active": 3, "damage": 25, "gdamage": 2, "fall": 1},
-        108: {"active": 5, "damage": 30, "gdamage": 2, "fall": 1},
+        # Kaiser Claw is a command grab: keep p1stateno 1701, the held
+        # victim and the throw flag.  The old override turned it into a
+        # normal 30-damage hit, which is why Krauser never grabbed.
+        108: {"active": 5, "damage": 0, "gdamage": 0, "throw": 1,
+              "p2state": 76, "p1mugen": 1701, "fall": 0},
     })
     _kra.setdefault("cmd_priority", []).extend(
         ["INFERNO_MAX", "INFERNO"])
@@ -4452,18 +4492,18 @@ if "chunli" in CHARS:
     POST_CAL_REACTIVATED.setdefault("chunli", []).extend([
         (107, 1050, 1000),     # Kikouken novo (reuse the fireball)
         (108, 1250, 1250),     # Spinning Bird aereo
-        (109, 3000, 3000),     # Kikou Shou
+        (85, 3000, 3000),      # Kikou Shou: super slot for 5 hits + fall
         (110, 3100, 3200),     # Houyoku Sen (reuse Hazan Tenshou)
         (111, 3200, 3200),     # Hazan Tenshou
     ])
-    PROJECTILE_RELEASE.setdefault("chunli", {}).update({107: 0, 109: 11})
+    PROJECTILE_RELEASE.setdefault("chunli", {}).update({85: 11, 107: 0})
     POST_CAL_PROJS.setdefault("chunli", {}).update({
+        85: (0x0400, 5, 0x0A),      # 5 contacts x 5 = 25 + knockdown
         107: (0x0400, 20, 0x0A),
-        109: (0x0400, 25, 0x0A),
     })
     _chun = POST_CAL_TWEAKS.setdefault("chunli", {})
     _chun.setdefault("slice_damage", {}).update({
-        107: 0, 108: 25, 109: 0, 110: 30, 111: 35})
+        85: 0, 107: 0, 108: 25, 110: 30, 111: 35})
     _chun.setdefault("hitdef_override", {})[110] = {
         "active": 3, "damage": 30, "gdamage": 2, "fall": 1}
     _chun.setdefault("cmd_priority", []).append("HOUYOKU")
@@ -4511,6 +4551,44 @@ if "vega" in CHARS:
         1400: [(10, 64)], 1410: [(10, 64)],    # QCF : forward teleport
         1420: [(10, -64)], 1430: [(10, -64)],  # QCB : backward teleport
     })
+    # Head Press / Devil Reverse: the source VelSet uses
+    # `x = p2dist X/33, y = -12`, an expression the extractor normalises to
+    # zero.  The moves rose only because the follow-up clip changed state,
+    # so they never travelled toward the opponent.  Set a forward entry
+    # velocity and an ActTab op5 row (which also sets FlagsTab bit12, so
+    # PinVXUnlessVelSet keeps it).  The state entry vy keeps the source rise;
+    # Physics supplies the fall.
+    _vega.setdefault("state_vel", {}).update({
+        60: (2, -12),    # 1201 Devil Reverse rise
+        62: (4, -12),    # 1301 Head Press
+        68: (3, -6),     # 1205 Devil Reverse dive
+    })
+    _vega.setdefault("act_override", {}).update({
+        1201: [(0, 5, 2, 0)],
+        1301: [(0, 5, 4, 0)],
+        1205: [(0, 5, 3, 0)],
+    })
+    # 1201's source has a Helper-var dive branch that the port cannot model;
+    # without it TransEnd picks the 1202 landing row before 1205.  Drop that
+    # row and go straight to the dive at animation end.
+    _vega.setdefault("trans_drop", []).append((60, 0))
+    _vega.setdefault("extra_trans", []).append((60, 68, 0, 0))
+    # The source leaves 1201 as soon as AnimElemTime(2) > 0.  The imported
+    # rise played the whole five-frame clip first, so it overshot the
+    # opponent before the dive even started.  Cap it at two frames.
+    _vega.setdefault("frame_cap", {})[60] = 2
+    # The source Turn at 1205 element 9 is conditional on the enemy being
+    # behind; the native op0 is unconditional and would flip the dive away.
+    _vega.setdefault("act_drop", {})[1205] = [0]
+    # The dive's HitDef originally lived on one source element and the
+    # imported row kept a single contact.  Keep it armed across the whole
+    # descending attack box window and widen that box so the dive connects
+    # as Bison flies through the opponent.
+    _vega.setdefault("hitdef_override", {})[68] = {
+        "active": 1, "damage": 18, "gdamage": 1, "fall": 1,
+        "gvx": 0, "gvy": 0}
+    _vega.setdefault("air_box_patch_frames", {})[1205] = {
+        f: [(-60, -120, 80, 20)] for f in range(0, 18)}
 
 if "sakura" in CHARS:
     POST_CAL_REACTIVATED.setdefault("sakura", []).extend([
@@ -4946,6 +5024,8 @@ VICTIM_STATE_IDS = {1025: 70, 1026: 71, 1027: 72, 1028: 73,
                     3120: 76, 3121: 77,
                     # Kyo's Chou Hissatsu Waza / MAX Mushiki grabs.
                     3502: 76, 3503: 77,
+                    # Krauser Kaiser Claw victim pose (1701 TargetState)
+                    1705: 76,
                     # Ralf's burn victim states: keep the victim in the
                     # throw-flight slot instead of standing up inside the
                     # attacker.
@@ -10547,6 +10627,44 @@ def build_char(name, cfg, global_pal=None):
         _clone["nheld"] = _rule.get("nheld", 0) & ~(4 | 8)
         _with_back_throws.append(_clone)
     rules = _with_back_throws
+    # Standard throw input for every fighter that has a throw: hold F or B
+    # and the strong punch (y) alone.  Imports that only list x+y or a kick
+    # otherwise require both buttons.  The proximity/posture gate keeps the
+    # normal strong punch working outside grab range.
+    if 74 in move_ids:
+        _std_f = "THROW_Y_STD_F"
+        _std_b = "THROW_Y_STD_B"
+        cmddefs.setdefault(_std_f, (4, [(0, 2)], 15))
+        cmddefs.setdefault(_std_b, (8, [(0, 2)], 15))
+        _have = set()
+        for _rule in rules:
+            if _rule.get("state") != 74:
+                continue
+            _rec = cmddefs.get(_rule["motion"])
+            if _rec is None:
+                continue
+            _held = _rule.get("held", 0) | _rec[0]
+            _bits = 0
+            for _d, _b in _rec[1]:
+                _bits |= _b
+            if _bits == 2:                 # exactly the strong punch
+                if _held & 4:
+                    _have.add("f")
+                if _held & 8:
+                    _have.add("b")
+        _base = next((r for r in rules if r.get("state") == 74), None)
+        _posture = _base.get("posture", 1) if _base else 1
+        _dist = _base.get("dist", 0x80 | 40) if _base else (0x80 | 40)
+        for _motion, _tag in ((_std_f, "f"), (_std_b, "b")):
+            if _tag in _have:
+                continue
+            rules.append({"motion": _motion, "held": 0, "nheld": 0,
+                          "posture": _posture, "dist": _dist,
+                          "nstate": 0, "state": 74,
+                          # Standard throw fallback: scan it after the
+                          # motion specials/supers so a QCF/DP ending in
+                          # F+strong punch is not stolen by the throw.
+                          "std_throw": True})
     rules.sort(key=lambda rule: motion_rank(rule, cmddefs), reverse=True)
     # Explicit priority for commands whose motion is a subset of another
     # rule's tail (Lucky's SHOOT = DP+kick also completes the DP special).
@@ -10586,7 +10704,21 @@ def build_char(name, cfg, global_pal=None):
             # never matched at normal grab range.
             r["dist"] = (r["dist"] & 0x80) | 40
             r["vgate"] = 1
-    rules.sort(key=lambda r: r["state"] != 74)
+    # Rule order matters: source throws keep their historical first slot,
+    # multi-element motions come before the standard throw fallback, and
+    # the plain single-button normals come last.  Without this the throw
+    # stole QCF/DP inputs, or the normal punch stole the throw.
+    def _throw_order(rule):
+        rec = cmddefs.get(rule["motion"])
+        elems = len(rec[1]) if rec and rec[1] is not None else 1
+        if rule.get("std_throw"):
+            return 2
+        if rule["state"] == 74:
+            return 0
+        if elems > 1:
+            return 1
+        return 3
+    rules.sort(key=_throw_order)
     mot_ids = {}
     for r in rules:
         if r["motion"] not in mot_ids:

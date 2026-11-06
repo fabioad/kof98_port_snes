@@ -694,14 +694,44 @@ segurado (`sid 76`) e o dano mínimo: 31, 56, 56, 31, 31, 31, 31, 37, 37,
 - Regressão: `tools/test_chin_fixes_headless.py` cobre DP fraco/forte,
   supers fraco/forte e o CD sem flash/power.
 
+## Lote de especiais, agarrões e hitboxes (06/11)
+
+- **M. Bison — Head Press / Devil Reverse:** o `VelSet x = p2dist X/33`
+  da origem era normalizado para zero. Agora os dois voam para o
+  oponente: subida 2 px/tick, Head Press 4 px/tick, mergulho do Devil
+  Reverse 3 px/tick, com a transição 1201→1205 cedo (2 frames) e um
+  hitbox de mergulho largo/ativo desde o primeiro frame. Dano 18 no
+  Devil Reverse e 30 no Head Press.
+- **Chun-Li — Kikou Shou:** o super 3000 foi remapeado para o slot 85.
+  O projétil usa o sequencial de 5 contatos do motor: **5 acertos,
+  25 HP, derrubada**.
+- **Geese — DP:** 1301/1311 (o HitDef real e o clip 1302/1312) foram
+  ligados aos slots 55/56. O DP fraco/forte agora acerta e derruba.
+- **Ken — Shoryureppa:** o HitDef de 3050 fica ativo durante o clip e os
+  `MoveHitReset` de cada subida rearmam o golpe: **8 acertos, 45 HP**
+  (o `MoveHitFinisher` continua limitando a 5 contatos quando aplicável).
+- **Krauser — Kaiser Claw:** o override tinha transformado o grab em um
+  golpe normal de 30. Restaurados `p1stateno 1701`, vítima em `S_VHELD`
+  (1705→76) e o dano via `TargetLifeAdd`; agora ele agarra, dá 51 e
+  derruba.
+- **Ryu/Ken — golpes aéreos:** cada normal aéreo ganhou uma segunda
+  caixa mais baixa no frame ativo (600/610/630/640), cobrindo melhor
+  adversários agachados/caindo.
+- **Arremesso padrão:** todos os 50 personagens com sid 74 agora aceitam
+  **frente/trás + soco forte (y sozinho)**, mesmo quando a origem usava
+  x+y ou um chute. A regra fica depois dos especiais/supers de motion,
+  então QCF/DP terminando em frente+forte não são mais roubados.
+- Testes de fumaça: Back throw, Chin fixes, Shoryuken five hits, AI,
+  Super FX, VRAM, select pause, MSU CHR, FFG music, air juggle, Choi/Chris.
+
 ## Build de referência
 
 `build/teamfix_benimaru_20261103/`
 
-- checksum **`$5313`**
-- layout MSU **`0xD270`**
-- `.sfc` SHA-256 `bd83da63…741f0245`
-- `.msu` SHA-256 `60f86de9…1542685a`
+- checksum **`$1368`**
+- layout MSU **`0x10F7`**
+- `.sfc` SHA-256 `9e1e885a…5771a457d`
+- `.msu` SHA-256 `3eb92597…ade80bb`
 - `.msu` 51.396.096 bytes
 
 ## Referências
