@@ -2422,7 +2422,7 @@ ShowSelect:
     sta.l $2105                           ; BGMODE 1
     lda #$18.b
     sta.l $2107                           ; BG1SC: map word $1800, 32x32
-    lda #$04.b
+    lda #$34.b
     sta.l $210B                           ; BG12NBA: BG1 tiles word $4000
     lda #$01.b
     sta.l $2101                           ; OBSEL: 8x8/32x32, table0 $2000
@@ -15006,10 +15006,11 @@ DS_cells:
     lda.w SPARKS+SPK_ATTR,x             ; internal owner/projectile bits
     sta scr6+1                          ; retain projectile flag for header size
     bpl DS_palette_generic              ; ordinary sparks keep their palette
-    ; Projectiles use shared FX palette 2 and OBJ priority 2 so a tall
-    ; pillar (Terry's Power Geyser) draws in front of the opponent instead
-    ; of being clipped to the strip not covered by the fighter body.
-    lda #$04.b
+    ; Projectiles use shared FX palette 2 with the normal OBJ priority.
+    ; The spark pass runs before the fighter bodies (lower OAM index), so a
+    ; tall pillar (Terry's Power Geyser) still draws in front of the
+    ; opponent without the priority-0 layering problem on some stage tiles.
+    lda #$34.b
 DS_palette_set:
     sta scr6
     bra DS_palette_done
@@ -15188,6 +15189,10 @@ BuildOam:
     lda.l CINE_TIMER
     and #$00FF.w
     bne BO_cine
+    ; Draw sparks/explods first.  Equal-priority OBJs with lower OAM
+    ; indexes win, so projectiles (including Terry's geyser pillar) draw in
+    ; front of the fighter bodies instead of being clipped by the opponent.
+    jsr DrawSparks
 .IFDEF PVSNESLIB
     jsr DrawFighterCache
 .ELSE
@@ -15200,10 +15205,6 @@ BuildOam:
 .ELSE
     jsr DrawFighter
 .ENDIF
-    ; Reserve OAM for both playable bodies before cosmetic cells.  Equal
-    ; priority OBJs with lower OAM indexes win, so a large spark/afterimage
-    ; can no longer erase a fighter on dense frames.
-    jsr DrawSparks
     jsl DrawIntroGirls
     ldx #0
     stx fofs
@@ -21605,7 +21606,7 @@ YouLoseEnter:
     bne +                               ;   stage module? (never switch sets
     lda #1                              ;   mid-drain: FxDrainFar reads this)
     sta.w UI_SFXLOAD
-+   lda #$04.b                          ; only BG3 remains: clean black panel
++   lda #$34.b                          ; only BG3 remains: clean black panel
     sta.l TM
     jsr YouLoseClearMap
     jsr YouLoseDraw
@@ -23614,7 +23615,7 @@ PushOamShadowFar:
     sta.l OAMADDL
     sta.l OAMADDL+1
     sta.l $4360                           ; mode 0: bytes to a single reg
-    lda #$04.b
+    lda #$34.b
     sta.l $4361                           ; -> $2104 OAMDATA
     rep #$20
     .ACCU 16

@@ -17,10 +17,12 @@
 >
 > **07/11 — Power Geyser visível:** o pilar do Terry voltou a ser desenhado
 > como um efeito de 48x80 (3x5 células) no clipe alternativo. A paleta
-> compartilhada agora inclui as cores do efeito, e as células de projétil
-> usam prioridade OBJ 0 para o pilar cobrir o oponente em vez de sumir atrás
-> do corpo dele. O hitbox alto, o dano/guarda e as correções de câmera e
-> pushback continuam iguais. Teste: `tools/test_terry_geyser_headless.py`.
+> compartilhada agora inclui as cores do efeito, e os sparks/projéteis são
+> emitidos antes dos lutadores (índice OAM menor), então o pilar cobre o
+> oponente sem alterar a prioridade OBJ — o que mantém todos os projéteis
+> visíveis em todas as áreas da fase. O hitbox alto, o dano/guarda e as
+> correções de câmera e pushback continuam iguais. Teste:
+> `tools/test_terry_geyser_headless.py`.
 
 > **07/11 — Omega Rugal MSU-only:** sem o arquivo `.msu`, a célula do
 > Rugal não aceita o atalho L+R (não seleciona o Omega) e Single Play pula

@@ -3,8 +3,8 @@
 
 The spark object exists for the tall column, ProjTab damage/guard and the
 visible 48x80 alternate clip.  Its OBJ cells use the shared FX palette and
-priority 0 so the pillar covers the opponent instead of disappearing behind
-the fighter body.
+are emitted before the fighter bodies so the pillar covers the opponent
+instead of disappearing behind it.
 
 Run after a PVSnesLib build:
 
