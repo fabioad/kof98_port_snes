@@ -124,11 +124,8 @@ aparecer como blocos de tiles.
 Sem o arquivo `.msu`, o jogo continua rodando, mas com o elenco residente na
 ROM:
 
-- **Kyo, Iori, Shingo, Terry, Benimaru, Daimon e Omega Rugal** (este por
-  **L+R** na célula do Rugal).
-- Esses personagens mantêm as vozes na ROM.
-- Rugal normal, Kyo Nests/Kyo Ash e os convidados que dependem de CHR
-  streamado ficam indisponíveis.
+- **Terry**.
+- Esse personagem não mantêm as vozes na ROM.
 - O attract demo e o Survivor ficam restritos ao roster da ROM; o final do
   Survivor cai no final normal.
 - Música, efeitos, HUD, cenários e o núcleo da luta continuam funcionando.
