@@ -2010,8 +2010,19 @@ DPC_try:
     iny
     cpy #NPOOL.b
     bcc DPC_try
-    lda #0                                ; fallback: Kyo
-    sta.b scr0
+    ; ROM-only build: the random scan found no ROM-resident fighter.  Kyo's
+    ; CHR is streamed in the HI layout, so falling back to id 0 would feed
+    ; MSU tiles into the demo.  Take the first RomFlags=1 fighter instead.
+    ldx #0
+DPC_scan:
+    lda.l RomFlags,x
+    bne DPC_found
+    inx
+    cpx #NROSTER.b
+    bcc DPC_scan
+    ldx #0
+DPC_found:
+    stx.b scr0
 DPC_ok:
     lda.b scr0
     plp
@@ -2277,6 +2288,8 @@ MTS_both_human:
     stz.b cpu2
 MTS_cpu_ready:
     jsl MenuP2StartSetup
+    lda #NPOOL.b                        ; bounded reroll: a ROM-only build may
+    sta.b scr5                          ;   have a single legal pool entry
 MTS_side_done:
     sep #$10
     .INDEX 8
@@ -2292,13 +2305,28 @@ MTS_side_done:
     lda.l CpuPool,x
     sta.b sel2
     lda.b msuok
-    bne +                               ; MSU-1: every pool char is legal
+    bne MTS_cpu_legal                   ; MSU-1: every pool char is legal
     ldx.b sel2
     lda.l RomFlags,x
-    bne +
+    bne MTS_cpu_legal
+    dec.b scr5
+    beq MTS_cpu_fallback
     inc.b rframe                        ; reroll an MSU-only opener
-    bra MTS_cpu_ready
-+   rep #$10
+    bra MTS_side_done
+MTS_cpu_fallback:
+    ; nothing in the pool is ROM-resident: use the first legal fighter
+    ldx #0
+MTS_cfb_scan:
+    lda.l RomFlags,x
+    bne MTS_cfb_found
+    inx
+    cpx #NROSTER.b
+    bcc MTS_cfb_scan
+    ldx #0
+MTS_cfb_found:
+    stx.b sel2
+MTS_cpu_legal:
+    rep #$10
     .INDEX 16
     stz.b nextflag
     lda #SONG_KOF.b

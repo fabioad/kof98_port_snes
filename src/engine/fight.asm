@@ -17732,18 +17732,31 @@ CampPickSel2:
 +   sep #$30
     .ACCU 8
     .INDEX 8
+    lda #NPOOL.b                          ; bounded scan: a ROM-only roster
+    sta.b scr5                            ;   may have very few legal foes
     inc rng
     lda.b rng
     eor.b framecnt
     jsr ModPool
-    tax
-    stx.b scr1
-    lda.w CPU_USED_COUNT
-    sta.b scr6
+    sta.b scr1
+CPS_try:
     ldx.b scr1
     lda.l CpuPool,x
+    sta.b scr0
+    lda.b msuok
+    bne CPS_unused
+    ldx.b scr0
+    lda.l RomFlags,x
+    beq CPS_advance                       ; MSU-only foe without MSU
+CPS_unused:
+    lda.w CPU_USED_COUNT
+    sta.b scr6
+    lda.b scr0
     jsr CampIsUsed
     bcc CPS_accept
+CPS_advance:
+    dec.b scr5
+    beq CPS_exhausted
     ldx.b scr1
     inx
     cpx #NPOOL.b
@@ -17751,13 +17764,15 @@ CampPickSel2:
     ldx #0
 +   stx.b scr1
     bra CPS_try
+CPS_exhausted:
+    ; every legal opponent has already fought: clear the history and retry
+    ; from the current index so the campaign continues instead of spinning.
+    ; Terry is ROM-resident in every profile, so a legal entry always exists.
+    stz.w CPU_USED_COUNT
+    lda #NPOOL.b
+    sta.b scr5
+    bra CPS_try
 CPS_accept:
-    lda.b msuok
-    bne CPS_legal
-    ldx.b scr0
-    lda.l RomFlags,x
-    beq CPS_advance                       ; MSU-only foe without MSU
-CPS_legal:
     lda.b scr0
     lda.w C_HUMAN_SIDE
     bne CPS_cpu_p1
@@ -17774,19 +17789,6 @@ CPS_record:
     inc a
     sta.w CPU_USED_COUNT
     rts
-CPS_try:
-    lda.l CpuPool,x
-    jsr CampIsUsed
-    bcs CPS_advance
-    bra CPS_accept
-CPS_advance:
-    ldx.b scr1
-    inx
-    cpx #NPOOL.b
-    bcc +
-    ldx #0
-+   stx.b scr1
-    bra CPS_try
 
 ; T_TEAM2 <- three random, distinct CpuPool fighters; history covers all
 ; prior campaign teams. CpuPool excludes Rugal and Omega Rugal.
