@@ -33,7 +33,7 @@ próprio em **65816 + PVSnesLib**, com assets convertidos de pacotes MUGEN/KOF
 - Sistema de **power gauge**, MAX, supers, SDM e Quick SDM.
 - **Chains, cancelamentos, especiais, supers, projéteis, agarrões,
   contra-ataques, bloqueio alto/baixo/aéreo, chip damage e blowback**.
-- **IA com níveis de 1 a 9**, com personalidade própria por personagem.
+- **IA com níveis de 1 a 8**, com personalidade própria por personagem.
 - **Modo TREINO/PRACTICE** com command list, meter infinito e CPU parada.
 - **Team Play 3 vs 3**, Survivor com final próprio e campanha Single Play.
 - **Paletas espelhadas** para lutas entre o mesmo personagem.
@@ -275,7 +275,7 @@ emulator).
 - **Power gauge**, MAX mode, supers, SDM and Quick SDM.
 - **Chains, cancels, specials, supers, projectiles, throws, counters,
   high/low/air blocking, chip damage and blowback**.
-- **AI levels 1 to 9**, with per-character personality.
+- **AI levels 1 to 8**, with per-character personality.
 - **PRACTICE mode** with a command list, infinite meter and an idle CPU.
 - **3v3 Team Play**, Survivor with its own ending, and a Single Play campaign.
 - **Mirror-match palettes** when both players pick the same fighter.
