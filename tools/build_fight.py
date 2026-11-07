@@ -3076,6 +3076,10 @@ if "terry" in CHARS:
         # 3050 has no root HitDef in the source (the attack lives in the
         # geyser helper), so drop the old body-hit approximation.
         "hitdef_override": {87: {}},
+        # The geyser's source AfterImage is not modeled (no AfterImageTime),
+        # and its ghost cells read as white/purple "dirt" around Terry after
+        # the super.  The pillar itself is the effect; drop the trail.
+        "act_drop": {3000: [9], 3010: [9]},
         "slice_damage": {
             61: 12, 62: 16, 63: 20, 64: 16, 65: 20,
             88: 7, 89: 7, 103: 20, 104: 34,

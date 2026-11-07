@@ -13811,22 +13811,8 @@ PH_fx:
     cmp #$FF.b
     beq +
     jsr SfxPlay
-+   rep #$20
-    .ACCU 16
-    lda.w SPARKS,x
-    and #$00FF.w
-    sta scr0
-    lda.w SPARKS+2,x
-    sec
-    sbc #24.w
-    sta scr1
-    stz.w SPARKS+SPK_ANIM,x
-    stz.w SPARKS+SPK_ANIM+1,x
-    phx
-    lda #0                                ; generic impact spark
-    jsr SparkSpawnAt
-    plx
-    sep #$20
++   jsr SpawnProjImpact                  ; generic spark, except for the
+    sep #$20                            ;   stationary geyser pillar
     .ACCU 8
     lda #1
     rts

@@ -255,3 +255,35 @@ DMT_dirty:
 
 .ENDS
 
+
+; Geyser cleanup: drop a cosmetic spark in the other slot and invalidate
+; both FX pages.  Keeps the shared spark page from being drawn with the
+; pillar's cells for a frame (golden flashing squares after the super).
+.BANK 126 SLOT 0
+.ORGA $F300
+.SECTION "GeyserResidualFar" FORCE
+ClearGeyserResidualFar:
+    php
+    phx
+    rep #$20
+    .ACCU 16
+    txa
+    eor #SPK_SIZE
+    tax
+    sep #$20
+    .ACCU 8
+    lda.w SPARKS+SPK_ATTR,x
+    bmi CGR_keep
+    stz.w SPARKS+SPK_ANIM,x
+    stz.w SPARKS+SPK_ANIM+1,x
+CGR_keep:
+    rep #$20
+    .ACCU 16
+    stz.w FX_CACHE
+    stz.w FX_CACHE+2
+    stz.w FX_CACHEBANK
+    stz.w FX_CACHEBANK+2
+    plx
+    plp
+    rtl
+.ENDS

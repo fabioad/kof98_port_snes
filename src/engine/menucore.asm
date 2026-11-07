@@ -3067,6 +3067,36 @@ TR_no:
     clc
     rts
 
+; Impact spark for a projectile hit.  The Power Geyser's tall pillar is its
+; own impact effect; spawning the generic white SparkHit on top of it left
+; small white specks ("dirt") around the victim after the super.  X = spark
+; slot.  Frees the projectile slot in both paths.
+SpawnProjImpact:
+    rep #$20
+    .ACCU 16
+    lda.w SPARKS+SPK_ANIM,x
+    cmp #terryProjFx2Anim.w
+    beq SPI_release
+    lda.w SPARKS,x
+    and #$00FF.w
+    sta scr0
+    lda.w SPARKS+2,x
+    sec
+    sbc #24.w
+    sta scr1
+    stz.w SPARKS+SPK_ANIM,x
+    stz.w SPARKS+SPK_ANIM+1,x
+    phx
+    lda #0                              ; generic impact spark
+    jsr SparkSpawnAt
+    plx
+    rts
+SPI_release:
+    stz.w SPARKS+SPK_ANIM,x
+    stz.w SPARKS+SPK_ANIM+1,x
+    jsl ClearGeyserResidualFar           ; clear the other cosmetic slot and
+    rts                                 ;   invalidate both FX pages
+
 ; Throw tech presentation: a guard spark and the defense SFX make the escape
 ; read as an intentional break rather than a failed throw.  fofs = victim.
 ThrowTechFx:
