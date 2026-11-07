@@ -3056,11 +3056,8 @@ SL_not_rugal:
     lda #KYO_ASH_ID.b
     sta.b scr5
 SL_ckmsu:
-    ; ROM-resident hidden Omega must lock with or without the MSU file.
-    lda.b scr5
-    cmp #14.b
-    beq SL_ok
-    ; MSU-gated chr (CH_CHRFLAG bit0) can't lock without the cartridge
+    ; Omega Rugal is streamed from MSU-1 now.  The CharFlags check below
+    ; denies id 14 when the .msu file is absent, with or without L+R.
     lda.b msuok
     bne SL_ok
     lda.b scr5
@@ -3164,11 +3161,8 @@ SFS_loop:
     bra SFS_cmp
 +   cmp #3.b                              ; Rugal cell
     bne SFS_cmp
-    lda.b msuok
-    bne SFS_keep_rugal                    ; with MSU: normal Rugal name
-    lda #14.b                             ; without MSU: the cell is Omega
-    bra SFS_cmp
-SFS_keep_rugal:
+    ; The hidden Omega form is MSU-only now; keep the Rugal face as the
+    ; cell preview in both profiles.
     lda #3.b
 SFS_cmp:
     ldx.b scr4
@@ -18005,25 +17999,22 @@ CNF_boss:
     beq CNF_team_boss
     lda.w C_HUMAN_SIDE
     bne CNF_boss_single_cpu1
-    lda.b msuok                          ; Rugal (3) streams from MSU-1;
-    beq CNF_boss_single_omega2           ;   without it, skip to Omega (14)
+    lda.b msuok                          ; Rugal and Omega stream from MSU-1
+    beq CNF_boss_single_end
     lda #3.b
     sta.b sel2                           ; single: Rugal first, then Omega
     bra CNF_go
-CNF_boss_single_omega2:
-    lda #14.b
-    sta.b sel2
-    bra CNF_go
 CNF_boss_single_cpu1:
     lda.b msuok
-    beq CNF_boss_single_omega1
+    beq CNF_boss_single_end
     lda #3.b
     sta.b sel1
     bra CNF_go
-CNF_boss_single_omega1:
-    lda #14.b
-    sta.b sel1
-    bra CNF_go
+CNF_boss_single_end:
+    ; Without MSU neither Rugal nor the hidden Omega form exists.  Finish
+    ; the campaign with the normal Single Play ending (not the Survivor /
+    ; secret ending).
+    jmp EndEnter
 CNF_team_boss:
     lda.w C_HUMAN_SIDE
     bne CNF_team_cpu1
@@ -21248,8 +21239,9 @@ SMC_val:
     .ACCU 8
     lda.l SelCellChr,x
     bmi SMC_next                           ; empty cell -> keep looking
-    cmp #3.b
-    beq SMC_take                           ; Rugal cell: hidden Omega entry
+    ; The Rugal cell has no ROM-resident form now.  With MSU the branch
+    ; above already accepted it; without MSU the RomFlags check below skips
+    ; both Rugal and the hidden Omega entry.
     ; RomFlags is generated from the CHR slice map: 1 = tiles linked into
     ; the ROM, 0 = streamed from kof98-snes.msu.  Using the table instead of
     ; a hardcoded id range keeps every ROM-resident fighter reachable when

@@ -19,6 +19,8 @@
   hitboxes aéreas revisados.
 - **Yuri:** quadro de queda, backdash e sprites de corpo limpos; tweens
   sintéticos removidos.
+- **Terry:** Power Geyser voltou a desenhar o pilar 48x80 na frente do
+  oponente; hitbox alto, dano e guarda mantidos.
 - **Normais de perto:** perfis de proximidade para os quatro botões do elenco,
   com seleção por distância e empurrão apenas no último acerto dos golpes
   multi-hit.
@@ -36,6 +38,8 @@
 ## Modos e interface
 
 - **TEAM PLAY:** nova tela de ORDER SELECT antes de cada confronto.
+- **Omega Rugal sem MSU:** o atalho L+R não seleciona o Omega; Single Play
+  pula Rugal/Omega e vai ao ending normal. Com MSU o fluxo continua igual.
 - Menu de pausa com CONTINUE e EXIT.
 - Corrigida tela preta dos endings.
 - Corrigida cintilação no topo do HUD.

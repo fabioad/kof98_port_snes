@@ -22,6 +22,12 @@
 > do corpo dele. O hitbox alto, o dano/guarda e as correções de câmera e
 > pushback continuam iguais. Teste: `tools/test_terry_geyser_headless.py`.
 
+> **07/11 — Omega Rugal MSU-only:** sem o arquivo `.msu`, a célula do
+> Rugal não aceita o atalho L+R (não seleciona o Omega) e Single Play pula
+> Rugal/Omega e cai no ending normal (gs 8). O Survivor já filtrava os
+> personagens sem CHR na ROM. Com MSU o fluxo continua igual: Rugal (3) e
+> depois Omega (14).
+
 > **06/11 — Geyser e câmera/stage:** o pilar estacionário não empurra mais a
 > vítima até a parede (o `ProjPushFar` ignora o pushback quando
 > `SPK_GRD` tem a marca de pilar alto, e o `PMT_last` não aplica o slide
