@@ -173,3 +173,85 @@ MPS_done:
     .ACCU 8
     rtl
 .ENDS
+
+
+; MAX tags need their own bank-126 window: SelectHelpers already ends right
+; before MsuChrPageClamp at $E600.  $3500 sits in the free gap between the
+; ORDER portraits/counter helpers ($0000-$34FF) and the next fixed section.
+.BANK 126 SLOT 0
+.ORGA $F200
+.SECTION "MaxTagsFar" FORCE
+; Flashing MAX tag beside each POWER counter.  Lives here so the Fight bank
+; only pays the JSL.  Font tile ids: M=13, A=1, X=24; $34 = gold palette.
+DrawMaxTagsFar:
+    php
+    rep #$20
+    .ACCU 16
+    sep #$20
+    .ACCU 8
+    lda.b framecnt
+    and #$10.b
+    sta.b scr6
+    ; P1
+    lda FP+F_MAX
+    beq DMT_p1off
+    lda.b scr6
+    beq DMT_p1off
+    ldx #((22*32+4)*2).w
+    lda #13
+    sta.w HUDMAP,x
+    lda #$34.b
+    sta.w HUDMAP+1,x
+    lda #1
+    sta.w HUDMAP+2,x
+    lda #$34.b
+    sta.w HUDMAP+3,x
+    lda #24
+    sta.w HUDMAP+4,x
+    lda #$34.b
+    sta.w HUDMAP+5,x
+    bra DMT_p2
+DMT_p1off:
+    ldx #((22*32+4)*2).w
+    stz.w HUDMAP,x
+    stz.w HUDMAP+1,x
+    stz.w HUDMAP+2,x
+    stz.w HUDMAP+3,x
+    stz.w HUDMAP+4,x
+    stz.w HUDMAP+5,x
+DMT_p2:
+    lda FP+F_MAX+FP2OFS
+    beq DMT_p2off
+    lda.b scr6
+    beq DMT_p2off
+    ldx #((22*32+26)*2).w
+    lda #13
+    sta.w HUDMAP,x
+    lda #$34.b
+    sta.w HUDMAP+1,x
+    lda #1
+    sta.w HUDMAP+2,x
+    lda #$34.b
+    sta.w HUDMAP+3,x
+    lda #24
+    sta.w HUDMAP+4,x
+    lda #$34.b
+    sta.w HUDMAP+5,x
+    bra DMT_dirty
+DMT_p2off:
+    ldx #((22*32+26)*2).w
+    stz.w HUDMAP,x
+    stz.w HUDMAP+1,x
+    stz.w HUDMAP+2,x
+    stz.w HUDMAP+3,x
+    stz.w HUDMAP+4,x
+    stz.w HUDMAP+5,x
+DMT_dirty:
+    lda.b huddirty
+    ora #HUD_POWCNT.b
+    sta.b huddirty
+    plp
+    rtl
+
+.ENDS
+

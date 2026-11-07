@@ -23,7 +23,7 @@ from test_counter_grab_headless import boot_select, enter_fight  # noqa: E402
 
 CORE = "/usr/lib/x86_64-linux-gnu/libretro/snes9x_libretro.so"
 FP1, FP2 = 0x4000, 0x4040
-F_STATE, F_X, F_VX, F_FACING, F_HP = 8, 0, 4, 14, 0x10
+F_STATE, F_X, F_Y, F_VX, F_FACING, F_HP = 8, 0, 2, 4, 14, 0x10
 F_TFLAGS = 51
 F_GRAB = 52
 BACK_BIT = 0x20
@@ -76,6 +76,7 @@ def run_throw(core_path, rom, char, back, p1x=100, p2x=125):
         x_after = None
         a_release = None
         a_after = None
+        y_peak = 0
         dmg_peak = 0
         for tick in range(180):
             core.step()
@@ -100,6 +101,8 @@ def run_throw(core_path, rom, char, back, p1x=100, p2x=125):
                 a_after = core.word(FP1) / 256.0
             if released is not None and released == tick:
                 a_release = core.word(FP1) / 256.0
+            if released is not None:
+                y_peak = max(y_peak, core.word(FP2 + F_Y) / 256.0)
             dmg_peak = max(dmg_peak, 200 - core.word(FP2 + F_HP))
         return {
             "grabbed": grabbed,
@@ -113,6 +116,7 @@ def run_throw(core_path, rom, char, back, p1x=100, p2x=125):
             "x_after": x_after,
             "a_release": a_release,
             "a_after": a_after,
+            "y_peak": y_peak,
             "damage": dmg_peak,
         }
     finally:
@@ -135,8 +139,10 @@ def check_char(core_path, rom, char):
         f"{char} forward throw marked as a back throw"
     assert fwd["x_release"] > fwd["x_grab"], \
         f"{char} forward victim did not stay in front ({fwd})"
-    assert abs(fwd["vx_release"]) < 0.1, \
-        f"{char} forward throw gained the back-throw slide ({fwd})"
+    assert fwd["vx_release"] > 1.0, \
+        f"{char} forward throw did not launch the victim away ({fwd})"
+    assert fwd["y_peak"] > 4.0, \
+        f"{char} forward victim never went airborne ({fwd})"
 
     # Back throw: both turned, victim crosses to the other side and slides.
     assert back["facing"] == -1, f"{char} back facing {back['facing']}"
@@ -146,8 +152,14 @@ def check_char(core_path, rom, char):
         f"{char} back victim did not cross behind ({back})"
     assert back["vx_release"] < -0.1, \
         f"{char} back victim did not move away ({back})"
-    assert back["x_after"] < back["x_release"] - 1.0, \
+    # A throw released near the wall now bounces instead of sticking, so
+    # require visible horizontal travel and a legal on-screen landing.
+    assert abs(back["x_after"] - back["x_release"]) > 1.0, \
         f"{char} back victim did not slide horizontally ({back})"
+    assert 24.0 <= back["x_after"] <= 232.0, \
+        f"{char} back victim left the stage ({back})"
+    assert back["y_peak"] > 4.0, \
+        f"{char} back victim never went airborne ({back})"
     assert back["flag_after"] & BACK_BIT == 0, \
         f"{char} back-throw flag leaked after release"
 
@@ -159,8 +171,10 @@ def check_char(core_path, rom, char):
         f"{char} mirror victim did not cross behind ({mirror})"
     assert mirror["vx_release"] > 0.1, \
         f"{char} mirror victim did not move away ({mirror})"
-    assert mirror["x_after"] > mirror["x_release"] + 1.0, \
+    assert abs(mirror["x_after"] - mirror["x_release"]) > 1.0, \
         f"{char} mirror victim did not slide horizontally ({mirror})"
+    assert 24.0 <= mirror["x_after"] <= 232.0, \
+        f"{char} mirror victim left the stage ({mirror})"
 
     # Same animation and damage in both directions.
     assert back["damage"] == fwd["damage"], (

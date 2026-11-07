@@ -29,7 +29,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from asset_paths import resolve as resolve_asset
 from sff import Sff, tiles4bpp  # noqa: E402
-from PIL import Image  # noqa: E402
+from PIL import Image, ImageDraw  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KOF = os.path.join(ROOT, "assets", "kof98data")
@@ -219,6 +219,47 @@ def enc4(tile_pix):
     return tiles4bpp(tile_pix, 8, 8)[0]
 
 
+def _fnt_glyphs(path):
+    """Minimal MUGEN FNT v1 reader for the static select-screen labels."""
+    d = open(path, 'rb').read()
+    pcxstart, pcxsize, txtstart, txtsize = struct.unpack_from("<4I", d, 16)
+    pimg = Image.open(io.BytesIO(d[pcxstart:pcxstart + pcxsize]))
+    bgidx = pimg.getpixel((0, 0))
+    bgcol = tuple(pimg.getpalette()[bgidx * 3:bgidx * 3 + 3])
+    strip = pimg.convert('RGBA')
+    sect = d[txtstart:txtstart + txtsize].decode('ascii', errors='replace')
+    glyphs = {}
+    for line in sect.splitlines():
+        parts = line.split()
+        if len(parts) == 3 and len(parts[0]) == 1 and \
+                parts[1].isdigit() and parts[2].isdigit():
+            ch, x, w = parts[0], int(parts[1]), int(parts[2])
+            g = strip.crop((x, 0, x + w, strip.height))
+            px = g.load()
+            for yy in range(g.height):
+                for xx in range(g.width):
+                    if px[xx, yy][:3] == bgcol:
+                        px[xx, yy] = (0, 0, 0, 0)
+            glyphs[ch] = g
+    return glyphs
+
+
+def draw_centered(img, glyphs, text, cx, y, color, outline=(2, 6, 20)):
+    """Bake a one-line label into the select background art."""
+    widths = [glyphs[c].width if c in glyphs else 8 for c in text]
+    x = cx - (sum(widths) - 1) // 2
+    for ch, w in zip(text, widths):
+        g = glyphs.get(ch)
+        if g is not None:
+            mask = g.split()[3]
+            if outline is not None:
+                for oy, ox in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                    img.paste(outline, (x + ox, y + oy), mask)
+            img.paste(color, (x, y), mask)
+        x += w
+
+
+
 class TileSet:
     """dedup pool of 4bpp tiles; append() -> tile index."""
     def __init__(self):
@@ -298,6 +339,27 @@ def main():
     for cid, cell in vis:
         box = cells[cell]
         bgi.paste(faces_px[cid], (box[0] + 1, box[1] + 1), faces_px[cid])
+
+    # ---- static arcade-style labels ------------------------------------
+    # The title is baked into the BG1 art so the fight bank does not grow
+    # for text that never changes.
+    glyphs = _fnt_glyphs(os.path.join(KOF, "Custom_Font", "Stage.fnt"))
+    # Replace the inherited "STAGE SELECT" caption with a character-select
+    # title in the same band.  Sampling the untouched gradient just outside
+    # the old caption keeps the fill invisible.
+    for yy in range(196, 213):
+        c0 = bgi.getpixel((78, yy))
+        c1 = bgi.getpixel((178, yy))
+        fill = tuple((c0[i] + c1[i]) // 2 for i in range(3))
+        for xx in range(80, 177):
+            bgi.putpixel((xx, yy), fill)
+    draw_centered(bgi, glyphs, "PLAYER SELECT", 128, 199,
+                  (255, 238, 170), (2, 6, 20))
+    # Thin gold frames around the two bottom name plates.  Static art only;
+    # the runtime names are drawn as OBJ text inside these frames.
+    dr = ImageDraw.Draw(bgi)
+    for x0, x1 in ((4, 76), (180, 252)):
+        dr.rectangle([x0, 194, x1, 212], outline=(230, 180, 40))
 
     # ---- palettes ------------------------------------------------------
     # pal0: whole composed art quantized to 15 colors.
@@ -501,10 +563,19 @@ def main():
                 for x in range(8):
                     r, g, b, a = curpx[tx * 8 + x, ty * 8 + y]
                     if a < 128:
-                        t.append(0)
+                        # One-pixel outer glow: brighten pixels touching the
+                        # bracket so the cursor reads as a lit ring.
+                        near = False
+                        for dy in (-1, 0, 1):
+                            for dx in (-1, 0, 1):
+                                xx, yy = tx * 8 + x + dx, ty * 8 + y + dy
+                                if 0 <= xx < 24 and 0 <= yy < 24 and \
+                                        curpx[xx, yy][3] >= 128:
+                                    near = True
+                        t.append(7 if near else 0)
                     else:
                         lum = (r + g + b) // 3
-                        t.append(1 + min(14, lum * 15 // 256))
+                        t.append(1 + min(14, lum * 15 // 220))
             ring.append(t)
     ots = TileSet()
     ring_idx = [ots.append(t) for t in ring]

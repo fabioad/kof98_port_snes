@@ -20,7 +20,7 @@ class PortraitLayoutTests(unittest.TestCase):
                      encoding="utf-8").read()
         self.assertIn("lda.l PortraitOfsP2,x", fight)
         self.assertIn("PortraitOfsP2:", build)
-        self.assertIn("23 - x", build)
+        self.assertIn("size - 1 - x", build)
         self.assertIn('"PortraitOfsP2:\\n"', build)
 
     def test_portraits_load_after_active_team_member_is_selected(self):

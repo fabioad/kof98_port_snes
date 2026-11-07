@@ -4620,6 +4620,7 @@ DrawBars:
     sta huddirty
 +   rep #$20
     .ACCU 16
+    jsl DrawMaxTagsFar
     rts
 
 DrawWins:                               ; fight.def [WinIcon], beneath names
@@ -5949,10 +5950,14 @@ AO_victim:                              ; -> acc16: A=$FFFF or scr5 = bound
 AO_vno:
     lda #$FFFF.w
     rts
+AO_ret16:
+    sep #$20
+    .ACCU 8
+    rts
 AO_tface:                               ; TargetFacing: victim faces
     jsr AO_victim                         ;   attacker.facing * arg
     cmp #$FFFF.w
-    beq AO_out16
+    beq AO_ret16
     lda scr6+1
     and #$00FF.w
     bit #$0080.w
@@ -5969,11 +5974,11 @@ AO_tface:                               ; TargetFacing: victim faces
 +   lda FP+F_FACING,x
 ++  ldx scr5
     sta FP+F_FACING,x
-    bra AO_out16
+    bra AO_ret16
 AO_tlife:                               ; TargetLifeAdd: clamp 0..200
     jsr AO_victim
     cmp #$FFFF.w
-    beq AO_out16
+    beq AO_ret16
     lda scr6+1
     and #$00FF.w
     bit #$0080.w
@@ -5997,20 +6002,27 @@ AO_tlife_apply:
     bcc +
     lda #200.w
 +   sta FP+F_HP,x
-    bra AO_out16
+    bra AO_ret16
 AO_tlife_skip:
     pla
-    bra AO_out16
+    bra AO_ret16
 AO_tstat:                               ; TargetState: victim EnterState
     jsr AO_victim
     cmp #$FFFF.w
-    beq AO_out16
-    lda scr6+1
+    bne +
+    jmp AO_out16
++   lda scr6+1
     and #$00FF.w
     ldx scr5
     stx fofs
     jsr EnterState
-    lda scr5
+    lda scr6+1                            ; source TargetState 821/816 (and
+    and #$00FF.w                          ;   every imported 3020/3503-style
+    cmp #S_VTHROW.w                       ;   victim) maps to the generic
+    bne +                                 ;   flight slot: launch it now.
+    ldx fofs
+    jsr LaunchVictim
++   lda scr5
     eor #FP2OFS.w                         ; back to the attacker
     sta fofs
 AO_out16:
@@ -7233,7 +7245,7 @@ FightTick:
     dec a
     sta FUS_FLASH
     bne +
-    jsr CounterClear
+    jsl CounterClear
     sep #$20
     .ACCU 8
 +   lda rframe                            ; slow dizzy decay: once/second
@@ -8439,6 +8451,9 @@ RollRecover:                            ; tail call: fofs = victim, acc16
 .DEFINE THROWGRAV   $0066               ;  0.4 px/tick^2 (state 821 VelAdd)
 .DEFINE THROWPUSH   $0300               ; back throw: victim keeps 3 px/tick
                                         ;   horizontally away from the thrower
+.DEFINE THROWLIFTV  $0580               ; -5.5 px/tick launch (source 816)
+.DEFINE THROWPUSHV  $0480               ; 4.5 px/tick away from the thrower
+.DEFINE THROWCORNER 16                  ; keep the lying body off the screen edge
 .DEFINE MINTHROWSEP 24                  ; wrong-side re-seat distance (px)
 .DEFINE ESCWIN      12                  ; throw-tech window: ticks since grab
 .DEFINE ESPUSH      $0300               ; escape pushback: 3 px/tick
@@ -8640,8 +8655,19 @@ VH_escape:                              ; tech: both fighters back to neutral
     lda #ESSTUN.w
     sta FP+F_SLIDE,x                      ; slide window keeps vx alive
     sta FP+F_HTIMER,x
+    jsr ThrowTechFx                       ; guard spark + defense SFX
     jmp StateRet
-VH_free:                                ; bind lost mid-throw (attacker hit):
+VH_free:                                ; bind lost without an explicit
+                                        ;   TargetState release.  The
+                                        ;   FightMenuTail helper decides
+                                        ;   between a normal throw finish
+                                        ;   (launch into S_VTHROW) and a
+                                        ;   plain drop when the thrower was
+                                        ;   interrupted.
+    jsr ThrowRelease
+    bcc VH_plain
+    jmp StateRet
+VH_plain:                               ; bind lost mid-throw (attacker hit):
     ldx fofs                            ;   SelfState 5050 -> plain fall
     stz FP+F_GRAB,x                     ;   (clears F_OWNER too)
     lda FP+F_Y,x
@@ -8670,12 +8696,11 @@ StVictimThrow:                          ; 821: thrown flight, VelAdd y=0.4
     sbc FP+F_VY,x
     bpl +
     lda #0
-+   cmp #MAX_AIR_Y.w
-    bcc +
-    lda #MAX_AIR_Y.w
++   cmp #(MAX_AIR_Y<<8).w                ; Y is 8.8 fixed point; the old
+    bcc +                                ;   raw-byte compare clamped every
+    lda #(MAX_AIR_Y<<8).w                ;   throw to 0.4 px of height.
 +   sta FP+F_Y,x
-    lda FP+F_VX,x
-    jsr AddXClamped
+    jsr ThrowFlightMove
     lda FP+F_Y,x
     bne VT_anim
     lda FP+F_VY,x
@@ -10261,8 +10286,8 @@ AT_nothit:
     beq AT_vloop
     cmp #S_VTHROW                         ; thrown flight: fall anim cycles
     beq AT_vloop
-    cmp #S_VHELD                          ; bound pose holds its last frame
-    beq AT_vstay
+    cmp #S_VHELD                          ; held pose: slow 3-pose struggle
+    beq AT_vloop                          ;   loop; one-cel clips stay still
     cmp #S_CGRAB_HIV                      ; counter victims share StVictimHeld:
     beq AT_vstay                          ; the owner's release must end capture,
     cmp #S_CGRAB_LOV                      ; not the shorter victim animation
@@ -10714,7 +10739,7 @@ HM_counter:
     sta FUS_FLASH
     rep #$20
     .ACCU 16
-    jsr CounterDraw
+    jsl CounterDraw
     sep #$20
     .ACCU 8
     ldx aofs
@@ -22609,6 +22634,20 @@ PortraitPal_End:
 .INCLUDE "gen_fight/portraits.inc"
 .ENDS
 
+; ORDER SELECT 32x32 portraits live in the free lower half of bank 126 so
+; the StageData half-bank (bank 127, $8000-$FFFF) does not overflow.  The
+; standalone build has no ORDER SELECT, so it does not emit this section.
+.IFDEF PVSNESLIB
+.BANK 64 SLOT 0
+.ORGA $B700
+.SECTION "OrderPortraitData" FORCE
+OrderPortraits: .INCBIN "gen_fight/order_portraits.chr"
+OrderPortraits_End:
+OrderPortraitPal: .INCBIN "gen_fight/order_portrait_pal.bin"
+OrderPortraitPal_End:
+.ENDS
+.ENDIF
+
 ; ---------------------------------------------------------------------------
 ; KYO normalized tables live in their own bank because two generated
 ; metasprite/AIR sets no longer fit beside the stage data in bank 56.
@@ -23147,8 +23186,13 @@ SAO_out:
 ; loop counter is scr0 (dead after the offset is copied to X): the hit path
 ; keeps its attacker state index in scr4 and reads the damage tables after
 ; CounterDraw returns.
+.IFDEF PVSNESLIB
+.BANK 126 SLOT 0
+.ORGA $F100
+.ELSE
 .BANK 50 SLOT 0
 .ORGA $70C0
+.ENDIF
 .SECTION "CounterStrBig" FORCE
 CounterStrBig:
     rep #$20
@@ -23182,8 +23226,13 @@ CounterStrBig:
 ; rows.  Rows 10/11 are outside the live HUD bands, hence the full upload
 ; request.  Kept in the free bank-50 tail so the CancelData window stays
 ; below OamCache.
+.IFDEF PVSNESLIB
+.BANK 126 SLOT 0
+.ORGA $F180
+.ELSE
 .BANK 50 SLOT 0
 .ORGA $7F98
+.ENDIF
 .SECTION "CounterBanner" FORCE
 CounterDraw:
     rep #$20
@@ -23206,7 +23255,7 @@ CounterDraw:
     sta.w RT_HUDFULL
     rep #$20
     .ACCU 16
-    rts
+    rtl
 
 CounterClear:
     rep #$20
@@ -23235,7 +23284,7 @@ CounterClear:
     sta.w RT_HUDFULL
     rep #$20
     .ACCU 16
-    rts
+    rtl
 .ENDS
 
 ; ---------------------------------------------------------------------------

@@ -8980,7 +8980,8 @@ def legacy_quote_lines(name, cfg):
     return out
 
 
-def wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers):
+def wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers,
+                     cns_statedefs=None):
     """Wire the source throw bind + victim poses for every fighter.
 
     The roster tables predate the throw audit: most rows point sid 74/75 at
@@ -9105,16 +9106,109 @@ def wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers):
             if a in air and air[a][0]:
                 return a
         return None
+
+    # Authored held-victim cels.  The source bind state points at one or more
+    # custom victim states (TargetState); those states switch to their own
+    # ChangeAnim2 action.  Streamed (MSU) fighters can afford the three key
+    # poses, while the fixed ROM banks keep the generic loop below.
+    def target_states():
+        out = []
+        for ctrl in (cns_statedefs or {}).get(p1, []):
+            if ctrl.get("type", "").lower() != "targetstate":
+                continue
+            raw = ctrl.get("value", "").split(",")[0].strip()
+            try:
+                out.append(int(float(raw)))
+            except ValueError:
+                pass
+        return out
+
+    def victim_action(state):
+        for ctrl in (cns_statedefs or {}).get(state, []):
+            if ctrl.get("type", "").lower() not in ("changeanim2",
+                                                    "changeanim"):
+                continue
+            raw = ctrl.get("value", "").split(",")[0].strip()
+            try:
+                action = int(float(raw))
+            except ValueError:
+                continue
+            if action in air and air[action][0]:
+                return action
+        return None
+
+    authored_held = None
+    if cns_statedefs and char_is_msu(name, cfg):
+        for state in target_states():
+            if VICTIM_STATE_IDS.get(state) != 76:
+                continue
+            action = victim_action(state)
+            if action is not None:
+                authored_held = action
+                break
     # Victim poses: keep authored custom cels (Kyo 815, Yuri 303/313);
-    # everyone else uses the already-resident hit/fall art.  Importing the
-    # per-character 815/820/821 sequences for all 50 fighters does not fit
-    # the metasprite/table bank windows, so the generic reaction is the
-    # budget-safe fallback.
+    # everyone else gets a small three-pose "struggle" loop built only from
+    # the 5000/5010 cels that are already resident for every fighter.  This
+    # finally gives a held opponent visible motion without spending new CHR
+    # on the full per-character 815/820 sequences (which do not fit the
+    # fixed bank windows).
+    def synthetic_held():
+        picks = []
+        # 5010 (bent-over low hit) -> 5000 first -> 5000 last (recoil).
+        # Each source clip is already resident for the get-hit animations.
+        sources = []
+        if air.get(5010, ([], 0))[0]:
+            sources.append(air[5010][0][0])
+        if air.get(5000, ([], 0))[0]:
+            sources.append(air[5000][0][0])
+            if len(air[5000][0]) > 1:
+                sources.append(air[5000][0][-1])
+        for src in sources:
+            g, n, x, y, _t, flip, _atk, hurt = src
+            key = (g, n, x, y)
+            if not picks or picks[-1][0] != key:
+                picks.append((key, (g, n, x, y, 9, flip, [], hurt)))
+        if not picks:
+            return None
+        frames = [p[1] for p in picks]
+        if len(frames) == 1:
+            # A single resident cel still gets a tiny breathing offset so the
+            # victim is not a frozen statue for the whole hold.
+            g, n, x, y, t, flip, atk, hurt = frames[0]
+            frames.append((g, n, x, y - 1, t, flip, atk, hurt))
+        return frames
+
     if cfg["anims"].get(76) in (None, 47, 250, 300, 5000, 5050):
-        cfg["anims"][76] = 5000 if 5000 in air else 47
-        anims[76] = cfg["anims"][76]
+        if authored_held is not None:
+            frames, _loop = air[authored_held]
+            src = frames[len(frames) // 2]
+            compact = [(src[0], src[1], src[2], src[3],
+                        max(8, min(14, src[4])), src[5], [], src[7])]
+            alt = air.get(5000, ([], 0))[0]
+            if alt:
+                a = alt[len(alt) // 2]
+                if (a[0], a[1], a[2], a[3]) != (src[0], src[1],
+                                                src[2], src[3]):
+                    compact.append((a[0], a[1], a[2], a[3],
+                                    max(4, min(10, a[4])), a[5], [], a[7]))
+            air[65005] = (compact, 0)
+            cfg["anims"][76] = 65005
+            anims[76] = 65005
+        else:
+            held = synthetic_held()
+            if held and 65004 not in air:
+                air[65004] = (held, 0)
+                cfg["anims"][76] = 65004
+                anims[76] = 65004
+            else:
+                cfg["anims"][76] = 5000 if 5000 in air else 47
+                anims[76] = cfg["anims"][76]
     if cfg["anims"].get(77) in (None, 47, 250, 300, 5000, 5050):
-        cfg["anims"][77] = 5050 if 5050 in air else 47
+        # The flight uses the airborne hit pose (5030).  It is already part
+        # of every fighter's get-hit set, so it costs no new CHR and reads
+        # as a thrown body instead of the old static fall cel (5050).
+        cfg["anims"][77] = (5030 if 5030 in air and air[5030][0]
+                            else 5050 if 5050 in air else 47)
         anims[77] = cfg["anims"][77]
 
 
@@ -9526,7 +9620,8 @@ def build_char(name, cfg, global_pal=None):
     # Stale source hashes or changed manual values fail closed at build time.
     from calibration.native import apply_profile
     apply_profile(ROOT, name, cfg, cns_moves, air)
-    wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers)
+    wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers,
+                     cns_statedefs)
     if name in COUNTER_GRAB_POST_CAL:
         _rows = COUNTER_GRAB_POST_CAL[name]
         wire_counter_grabs(cfg, _rows)
@@ -13286,36 +13381,23 @@ def _lifebar_backdrop(imgs, tiles, top_keys, bottom_keys):
 
 
 def build_portraits():
-    """Build 24x24 2bpp HUD portraits from the select-cell icons.
+    """Build HUD (24x24) and ORDER SELECT (32x32) 2bpp portraits.
 
-    Each portrait uses a per-character 3-colour palette (plus transparent
-    index 0), copied to CGRAM 0/4 at fight start.  The cells stay exactly
-    inside the 3x3 face windows of the lifebar.
+    Both sets come from the same select-cell icon and use a per-character
+    3-colour palette plus transparent index 0.  The HUD keeps the original
+    3x3 face-window size; ORDER SELECT gets a 4x4 portrait that fits the
+    framed card layout.
     """
     from build_select import ROSTER, sprite_rgb
     from PIL import Image
-    data = bytearray()
-    paldata = bytearray()
-    table = []
-    table_p2 = []
-    for entry in ROSTER:
-        rel = entry[0]
-        path = asset_path(os.path.join("assets/characters", rel))
-        try:
-            im, _ = sprite_rgb(Sff(path), 9000, 0)
-            im = im.convert("RGBA").resize((24, 24), Image.LANCZOS)
-        except Exception:
-            im = Image.new("RGBA", (24, 24), (0, 0, 0, 0))
-        # Quantise only the opaque face pixels; transparent pixels become
-        # tile index 0 so the red/blue window shows through.
-        rgb = Image.new("RGB", (24, 24), (128, 128, 128))
+
+    def encode(im, size, data, paldata, table, table_p2, mirror=True):
+        # Quantise only opaque face pixels; transparent -> tile index 0.
+        rgb = Image.new("RGB", (size, size), (128, 128, 128))
         rgb.paste(im, (0, 0), im)
         q = rgb.quantize(colors=3, method=Image.MEDIANCUT,
                          dither=Image.NONE)
         qp = q.getpalette() or []
-        # A fully transparent/blank portrait may quantize to one colour.
-        # Pad the missing entries instead of producing an empty tuple (the
-        # unpack below expects exactly three components per palette row).
         cols = []
         for i in range(3):
             chunk = qp[i * 3:i * 3 + 3]
@@ -13327,21 +13409,44 @@ def build_portraits():
             paldata += struct.pack("<H", c)
         vals = []
         alpha = im.split()[3]
-        for y in range(24):
-            for x in range(24):
+        for y in range(size):
+            for x in range(size):
                 if alpha.getpixel((x, y)) < 96:
                     vals.append(0)
                 else:
                     vals.append(q.getpixel((x, y)) + 1)
         table.append(len(data))
-        data += tiles2bpp(bytes(vals), 24, 24)
-        # P2 uses the same art mirrored horizontally.
-        mirrored = [vals[y * 24 + (23 - x)]
-                    for y in range(24) for x in range(24)]
-        table_p2.append(len(data))
-        data += tiles2bpp(bytes(mirrored), 24, 24)
+        data += tiles2bpp(bytes(vals), size, size)
+        if mirror:
+            mirrored = [vals[y * size + (size - 1 - x)]
+                        for y in range(size) for x in range(size)]
+            table_p2.append(len(data))
+            data += tiles2bpp(bytes(mirrored), size, size)
+
+    data = bytearray()
+    paldata = bytearray()
+    table, table_p2 = [], []
+    odata = bytearray()
+    opaldata = bytearray()
+    otable, otable_p2 = [], []
+
+    for entry in ROSTER:
+        rel = entry[0]
+        path = asset_path(os.path.join("assets", "characters", rel))
+        try:
+            base, _ = sprite_rgb(Sff(path), 9000, 0)
+            base = base.convert("RGBA")
+        except Exception:
+            base = Image.new("RGBA", (25, 25), (0, 0, 0, 0))
+        encode(base.resize((24, 24), Image.LANCZOS), 24,
+               data, paldata, table, table_p2)
+        encode(base.resize((32, 32), Image.LANCZOS), 32,
+               odata, opaldata, otable, otable_p2, mirror=False)
+
     open(os.path.join(OUT, "portraits.chr"), "wb").write(data)
     open(os.path.join(OUT, "portrait_pal.bin"), "wb").write(paldata)
+    open(os.path.join(OUT, "order_portraits.chr"), "wb").write(odata)
+    open(os.path.join(OUT, "order_portrait_pal.bin"), "wb").write(opaldata)
     inc = ["; generated by tools/build_fight.py -- do not edit\n",
            f"PORTRAIT_COUNT = {len(table)}\n",
            "PortraitOfs:\n"]
@@ -13352,8 +13457,19 @@ def build_portraits():
     for i in range(0, len(table_p2), 8):
         inc.append("    .dw " + ",".join(str(v) for v in table_p2[i:i + 8])
                    + "\n")
+    otable_p2 = list(otable)
+    inc.append(f"ORDER_PORTRAIT_COUNT = {len(otable)}\n")
+    inc.append("OrderPortraitOfs:\n")
+    for i in range(0, len(otable), 8):
+        inc.append("    .dw " + ",".join(str(v) for v in otable[i:i + 8])
+                   + "\n")
+    inc.append("OrderPortraitOfsP2:\n")
+    for i in range(0, len(otable_p2), 8):
+        inc.append("    .dw " + ",".join(str(v) for v in otable_p2[i:i + 8])
+                   + "\n")
     open(os.path.join(OUT, "portraits.inc"), "w").write("".join(inc))
-    print(f"hud portraits: {len(table)} chars, {len(data)}B + {len(paldata)}B pal")
+    print(f"hud portraits: {len(table)} chars, {len(data)}B + "
+          f"{len(paldata)}B pal; order: {len(odata)}B + {len(opaldata)}B pal")
 
 
 def build_hud():
@@ -13417,6 +13533,13 @@ def build_hud():
                         cell[y * 8 + x] = 1
                         break
         tiles += tiles2bpp(bytes(cell), 8, 8)
+
+    # Reuse the otherwise-unused '"' glyph slot as a solid 2bpp block for
+    # panel fills (ORDER SELECT headers/frames).  Colour index 2 keeps it
+    # usable with both palette 6 (steel blue) and the new side palettes.
+    solid_idx = CHARSET.index('"')
+    tiles[solid_idx * 16:(solid_idx + 1) * 16] = tiles2bpp(
+        bytes([2] * 64), 8, 8)
 
     # --- big font: KOF98 name font (Name.fnt = Life Names.fnt) ----------
     # Letters/punct come from the 690x15 variable-width PCX strip; the
@@ -13724,7 +13847,8 @@ def build_hud():
                f"ATT_GRN = $30\n"
                f"ATT_RED = $38\n"
                f"ATT_SIL = $3C\n"
-               f"FONT_BASE = 0\n")
+               f"FONT_BASE = 0\n"
+               f"FONT_SOLID = {solid_idx}\n")
     open(os.path.join(OUT, "hud.inc"), "w").write("".join(inc))
 
     pals = [

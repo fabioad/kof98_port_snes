@@ -3039,6 +3039,120 @@ KHD_go:
 KHD_out:
     rts
 
+; ---- throw release helpers (FightMenuTail: same bank, near calls) ----------
+; A normal throw that ends naturally used to drop the victim straight into
+; the neutral/lying path because the source 816 flight state is not a runtime
+; state.  LaunchVictim reproduces its VelSet (5.5 px/tick up, 4.5 px/tick
+; away, victim-facing relative) and ThrowRelease picks between that and the
+; old plain drop when the thrower was interrupted.
+ThrowRelease:
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    txa
+    eor #FP2OFS.w
+    tax                                 ; owner
+    lda FP+F_HTIMER,x                   ; hit while holding -> plain release
+    bne TR_no
+    ldx fofs
+    stz FP+F_GRAB,x                     ; clears F_GRAB + F_OWNER
+    lda #S_VTHROW.w
+    jsr EnterState
+    ldx fofs
+    jsr LaunchVictim                    ; arc away from the thrower
+    jsl BackThrowReleaseFar             ; holdback throw: deferred side seat
+    sec
+    rts
+TR_no:
+    clc
+    rts
+
+; Throw tech presentation: a guard spark and the defense SFX make the escape
+; read as an intentional break rather than a failed throw.  fofs = victim.
+ThrowTechFx:
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    lda FP+F_X,x
+    xba
+    and #$00FF.w
+    sta scr0
+    lda #(GROUND_Y-28).w
+    sta scr1
+    lda #1                              ; SparkGuard
+    jsr SparkSpawnAt
+    lda #SFX_GUARD.b
+    jmp SfxPlay
+
+; fofs = victim, acc16.  Called from AO_tstat (TargetState release) and from
+; ThrowRelease (natural end of a bind).
+LaunchVictim:
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    lda FP+F_Y,x
+    cmp #(96<<8).w                      ; F_Y is 8.8 fixed point
+    bcc +
+    lda #(96<<8).w
+    sta FP+F_Y,x
++   lda #-THROWLIFTV.w
+    sta FP+F_VY,x
+    lda FP+F_FACING,x
+    bmi +
+    lda #-THROWPUSHV.w
+    bra ++
++   lda #THROWPUSHV.w
+++  sta FP+F_VX,x
+    ; Throw impact: one shared hit spark at the victim's chest plus the slam
+    ; SFX.  Source PlaySnd/Explod rows still fire as well; this guarantees
+    ; that throws without an authored impact event are not silent.
+    lda FP+F_X,x
+    xba
+    and #$00FF.w
+    sta scr0
+    lda FP+F_Y,x
+    xba
+    and #$00FF.w
+    sta scr1
+    lda #(GROUND_Y-32).w
+    sec
+    sbc scr1
+    sta scr1
+    lda #0                              ; SparkHit
+    jsr SparkSpawnAt
+    lda #SFX_THROW.b
+    jsr SfxPlay
+    rts
+
+; fofs = victim; acc16 on entry.  Horizontal flight step.  The 16 px margin
+; doubles as the corner treatment: a body that reaches it bounces back toward
+; the playfield instead of sticking to the screen edge or lying off-screen.
+ThrowFlightMove:
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    lda FP+F_VX,x
+    jsr AddXClamped
+    ldx fofs
+    lda FP+F_X,x
+    cmp #(STAGE_L+THROWCORNER)<<8.w
+    bcs +
+    lda #(STAGE_L+THROWCORNER)<<8.w
+    sta FP+F_X,x
+    bra TFM_bounce
++   cmp #(STAGE_R-THROWCORNER)<<8.w
+    bcc TFM_done
+    lda #(STAGE_R-THROWCORNER)<<8.w
+    sta FP+F_X,x
+TFM_bounce:
+    lda FP+F_VX,x                       ; only a wall-bound velocity can reach
+    eor #$FFFF.w                        ;   this path, so bounce at half speed
+    inc a
+    lsr a
+    sta FP+F_VX,x
+TFM_done:
+    rts
+
 .IFDEF PVSNESLIB
 ; Far-bank bridge for the MSU opening video.  TitleEnter is a near routine
 ; that ends with RTS, so the far player cannot JML straight into it: this

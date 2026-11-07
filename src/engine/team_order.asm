@@ -486,33 +486,31 @@ OL_card:
     lda.w OR_SIDE
     and #$00FF.w
     beq OL_face1
-    lda.l PortraitOfsP2,x
+    lda.l OrderPortraitOfsP2,x
     bra OL_face
 OL_face1:
-    lda.l PortraitOfs,x
+    lda.l OrderPortraitOfs,x
 OL_face:
     clc
-    adc #Portraits.w
+    adc #OrderPortraits.w
     sta.b scr0
-    lda #144.w
+    lda #256.w
     sta.b scr1
     lda.w OR_INDEX
     and #$00FF.w
-    sta.b scr2
     asl a
     asl a
     asl a
-    clc
-    adc.b scr2                         ; portrait slot*9 tiles
+    asl a                              ; portrait slot*16 tiles
     asl a
     asl a
-    asl a
+    asl a                              ; *8 -> words
     clc
     adc #(BG3CHR+512*8).w
     sta.b scr2
     sep #$20
     .ACCU 8
-    lda #:Portraits
+    lda #:OrderPortraits
     jsl VrDmaFar
     jsr OrderCardIndex
     rep #$20
@@ -526,11 +524,11 @@ OL_face:
     asl a
     asl a
     clc
-    adc #PortraitPal.w
+    adc #OrderPortraitPal.w
     sta.b scr2
     sep #$20
     .ACCU 8
-    lda #:PortraitPal
+    lda #:OrderPortraitPal
     sta.b scr2+2
     lda.w OR_INDEX
     asl a
@@ -582,7 +580,7 @@ OL_ui_palette:
     .ACCU 16
     inx
     inx
-    cpx #16.w
+    cpx #32.w
     bcc OL_ui_palette
     sep #$20
     .ACCU 8
@@ -624,6 +622,74 @@ OD_clear:
     .ACCU 8
     lda #32.b
     sta.w OR_LIMIT
+    ; ---- arcade-style frame: title band + blue/red side panels ----------
+    ; Title strip behind ORDER SELECT (palette 6, steel blue fill).
+    rep #$20
+    .ACCU 16
+    lda #((1*32+4)*2).w
+    sta.w OR_POS
+    lda #24.w
+    sta.b scr0
+    lda #2.w
+    sta.b scr1
+    lda #(FONT_SOLID|$3800).w
+    sta scr2
+    jsr OrderFill
+    ; P1 header (palette 8, blue) and P2 header (palette 9, red).
+    lda #((5*32+2)*2).w
+    sta.w OR_POS
+    lda #13.w
+    sta.b scr0
+    lda #1.w
+    sta.b scr1
+    lda #(FONT_SOLID|$4000).w
+    sta scr2
+    jsr OrderFill
+    lda #((5*32+17)*2).w
+    sta.w OR_POS
+    lda #13.w
+    sta.b scr0
+    lda #1.w
+    sta.b scr1
+    lda #(FONT_SOLID|$4400).w
+    sta scr2
+    jsr OrderFill
+    ; Thin side borders around each trio.
+    lda #((5*32+1)*2).w
+    sta.w OR_POS
+    lda #1.w
+    sta.b scr0
+    lda #19.w
+    sta.b scr1
+    lda #(FONT_SOLID|$4000).w
+    sta scr2
+    jsr OrderFill
+    lda #((5*32+15)*2).w
+    sta.w OR_POS
+    jsr OrderFill
+    lda #((5*32+16)*2).w
+    sta.w OR_POS
+    lda #(FONT_SOLID|$4400).w
+    sta scr2
+    jsr OrderFill
+    lda #((5*32+30)*2).w
+    sta.w OR_POS
+    jsr OrderFill
+    ; Bottom rail under both trios.
+    lda #((23*32+1)*2).w
+    sta.w OR_POS
+    lda #15.w
+    sta.b scr0
+    lda #1.w
+    sta.b scr1
+    lda #(FONT_SOLID|$4000).w
+    sta scr2
+    jsr OrderFill
+    lda #((23*32+16)*2).w
+    sta.w OR_POS
+    lda #(FONT_SOLID|$4400).w
+    sta scr2
+    jsr OrderFill
     rep #$20
     .ACCU 16
     lda #((2*32+10)*2).w
@@ -794,6 +860,53 @@ OD_status:
 OD_sides_done:
     rts
 
+; Fill a HUDMAP rectangle: OR_POS = start byte offset, scr0 = width (tiles),
+; scr1 = height (rows), scr2 = tile|palette|priority word.  Used only by the
+; ORDER SELECT frame, before text/portraits are placed.
+OrderFill:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    ldx.w OR_POS
+    sep #$20
+    .ACCU 8
+    lda.b scr0
+    asl a
+    sta.b scr4                          ; width in bytes
+    lda #64
+    sec
+    sbc.b scr4
+    sta.b scr5                          ; advance to the next row
+    stz.b scr5+1
+    lda.b scr1
+    sta.b scr6
+OF_row:
+    lda.b scr0
+    sta.b scr3
+OF_col:
+    lda.b scr2
+    sta.w HUDMAP,x
+    lda.b scr2+1
+    sta.w HUDMAP+1,x
+    inx
+    inx
+    dec.b scr3
+    bne OF_col
+    rep #$20
+    .ACCU 16
+    txa
+    clc
+    adc scr5
+    tax
+    sep #$20
+    .ACCU 8
+    dec.b scr6
+    bne OF_row
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    rts
+
 OrderDrawPortrait:
     rep #$30
     .ACCU 16
@@ -804,8 +917,7 @@ OrderDrawPortrait:
     asl a
     asl a
     asl a
-    clc
-    adc.b scr0
+    asl a                              ; slot*16 tiles
     clc
     adc #512.w
     sta.w OR_TILE
@@ -817,9 +929,9 @@ OrderDrawPortrait:
     ora #$2000.w
     sta.b scr2
     ldx.w OR_ROWPOS
-    ldy #3.w
+    ldy #4.w
 ODP_row:
-    lda #3.w
+    lda #4.w
     sta.b scr0
 ODP_col:
     lda.w OR_TILE
@@ -832,7 +944,7 @@ ODP_col:
     bne ODP_col
     txa
     clc
-    adc #58.w
+    adc #56.w
     tax
     dey
     bne ODP_row
@@ -1045,6 +1157,7 @@ OrderChoose: .db 6,3,8,15,15,19,5
 OrderFixed: .db 5,6,9,24,5,4
 OrderBits: .db 1,2,4
 OrderPalette: .dw $0000,$7FFF,$4210,$6318, $0000,$03FF,$7FFF,$4210
+              .dw $0000,$03FF,$03FF,$0010, $0000,$001F,$001F,$0010
 OrderTitle: .db 12,15,18,4,5,18,0,19,5,12,5,3,20
 OrderStage: .db 5,19,20,1,7,5
 OrderPlayer: .db 6,16,12,1,25,5,18
