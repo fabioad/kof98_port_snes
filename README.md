@@ -1,5 +1,7 @@
 # KOF '98 SNES — um port de fã para Super Nintendo
 
+**Versão 1.1.1** · [Notas da versão](docs/RELEASE_NOTES_2026-11-07_V111.md)
+
 **Português (Brasil)** · [English](#english)
 
 ---
@@ -248,6 +250,8 @@ originais.
 
 <a id="english"></a>
 ## 🇺🇸 English
+
+**Version 1.1.1** · [Release notes](docs/RELEASE_NOTES_2026-11-07_V111.md)
 
 ### A love letter to the SNES
 
