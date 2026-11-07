@@ -9622,6 +9622,15 @@ def build_char(name, cfg, global_pal=None):
     apply_profile(ROOT, name, cfg, cns_moves, air)
     wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers,
                      cns_statedefs)
+    # King's normal throw binds the victim at the arcade's torso height, but
+    # with the port's generic held pose (axis at the feet) the opponent hangs
+    # above her head as if she were holding the feet.  Lower only King's
+    # normal-throw bind rows; special/super grabs and every other fighter are
+    # untouched.  Keep a small final lift so the slam still reads.
+    if name == "king" and 810 in cns_binds:
+        cns_binds[810] = [(lo, hi, dx,
+                           min(-1, dy + 35) if dy < 0 else dy)
+                          for lo, hi, dx, dy in cns_binds[810]]
     if name in COUNTER_GRAB_POST_CAL:
         _rows = COUNTER_GRAB_POST_CAL[name]
         wire_counter_grabs(cfg, _rows)
