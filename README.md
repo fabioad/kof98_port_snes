@@ -121,13 +121,15 @@ aparecer como blocos de tiles.
 
 ### Sem MSU-1
 
-Sem o arquivo `.msu`, o jogo continua rodando, mas com o elenco residente na
-ROM:
+Sem o arquivo `.msu`, o jogo continua rodando, mas o único lutador residente
+na ROM é o **Terry**:
 
-- **Terry**.
-- Esse personagem não mantêm as vozes na ROM.
-- O attract demo e o Survivor ficam restritos ao roster da ROM; o final do
-  Survivor cai no final normal.
+- **Terry** é o único personagem jogável sem o `.msu` — os tiles dele são o
+  único CHR de lutador ligado na ROM.
+- Kyo, Iori, Shingo, Benimaru, Omega Rugal e os convidados têm os tiles
+  streamados do arquivo `.msu` e ficam indisponíveis na seleção.
+- O attract demo, o Survivor e os adversários da campanha usam apenas o
+  elenco da ROM; o final do Survivor cai no final normal.
 - Música, efeitos, HUD, cenários e o núcleo da luta continuam funcionando.
 
 ### Controles
@@ -363,13 +365,15 @@ sprites may appear as tile blocks.
 
 ### Without MSU-1
 
-Without the `.msu` file, the game still runs, but with the ROM-resident
-roster:
+Without the `.msu` file, the game still runs, but the only ROM-resident
+fighter is **Terry**:
 
-- **Terry**.
-- These character keep their voices in the ROM.
-- The attract demo and Survivor are restricted to the ROM roster; the
-  Survivor ending falls back to the normal ending.
+- **Terry** is the only playable character without the `.msu` — his tiles are
+  the only fighter CHR linked into the ROM.
+- Kyo, Iori, Shingo, Benimaru, Omega Rugal and the guests stream their tiles
+  from the `.msu` file and are unavailable on the select screen.
+- The attract demo, Survivor and campaign opponents use the ROM roster only;
+  the Survivor ending falls back to the normal ending.
 - Music, sound effects, HUD, stages and the core fight still work.
 
 ### Controls
