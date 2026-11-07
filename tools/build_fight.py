@@ -12065,7 +12065,7 @@ def projectile_action_candidates(cfg, statedefs, move_ids):
     return list(dict.fromkeys(candidates))
 
 
-def crop_projectile_sprite(spr):
+def crop_projectile_sprite(spr, max_h=128):
     """Discard transparent canvas around an effect before applying size limits.
 
     Terry and Joe store their real projectiles on 304x224 transparent sheets;
@@ -12083,7 +12083,7 @@ def crop_projectile_sprite(spr):
     left, top = max(0, min(xs) - 1), max(0, min(ys) - 1)
     right = min(spr.w, max(xs) + 2)
     bottom = min(spr.h, max(ys) + 2)
-    if right - left > 192 or bottom - top > 128:
+    if right - left > 192 or bottom - top > max_h:
         return spr
     clipped = Sprite()
     clipped.group, clipped.number = spr.group, spr.number
@@ -12517,7 +12517,7 @@ def projectile_effect_alt(name, sff, air, spec):
             continue
         if pre_scale != 1:
             source = spark_sprite(source, pre_scale)
-        spr = crop_projectile_sprite(source)
+        spr = crop_projectile_sprite(source, max_h=256)
         # Optional central slice / horizontal squeeze: tall pillars are much
         # wider than the 16-cell OBJ page allows, so trade width for height
         # (Terry's Power Geyser).  Squeezing keeps the full flame silhouette
@@ -12549,6 +12549,23 @@ def projectile_effect_alt(name, sff, air, spec):
                 spr.pix[y * spr.w + left + x]
                 for y in range(spr.h) for x in range(crop_w))
             spr = sliced
+        # Optional vertical squeeze: keeps a tall pillar inside the 16-cell
+        # page without collapsing it to a thin vertical line.  Terry's
+        # geyser uses 48x80 (3x5 = 15 cells) from the source's 94x149 frame.
+        squeeze_h = int(spec.get("squeeze_h", 0))
+        if spr is not None and squeeze_h and spr.h > squeeze_h:
+            orig_h = spr.h
+            resized = Sprite()
+            resized.group, resized.number = spr.group, spr.number
+            resized.w, resized.h = spr.w, squeeze_h
+            resized.ax = spr.ax
+            resized.ay = int(round(spr.ay * squeeze_h / orig_h))
+            resized.palidx, resized.link = spr.palidx, spr.link
+            resized.pix = bytes(
+                spr.pix[min(orig_h - 1, y * orig_h // squeeze_h) * spr.w + x]
+                for y in range(squeeze_h) for x in range(spr.w))
+            yoff = int(round(yoff * squeeze_h / orig_h))
+            spr = resized
         # Optional vertical stretch for a ground wave reused as a stationary
         # pillar (Terry's Power Geyser): keep the source's horizontal frame
         # count, but stretch Y and squeeze X so the 16-cell page still fits.
@@ -12725,6 +12742,26 @@ def build_spark():
                     continue
                 c = projectile_source_color(sff, spr, idx, name)
                 color_hist[c] = color_hist.get(c, 0) + spr.pix.count(idx) * 4
+        # Alternate effect clips (Terry's Power Geyser pillar) use their own
+        # SFF palette bank.  Include those colours in the shared OBJ palette
+        # or the flame collapses to its white core.
+        alt_spec = PROJECTILE_ALT_EFFECTS.get(name)
+        if (alt_spec is not None and not alt_spec.get("invisible")
+                and not cfg.get("projfx_alias")):
+            alt_action = alt_spec.get("action")
+            alt_frames = air.get(alt_action, ([], 0))[0]
+            for _fi, _ticks in alt_spec.get("frames", ()):
+                if not (0 <= _fi < len(alt_frames)):
+                    continue
+                g, n = alt_frames[_fi][0], alt_frames[_fi][1]
+                spr = crop_projectile_sprite(sff.get(g, n))
+                if spr is None:
+                    continue
+                for idx in set(spr.pix):
+                    if not idx:
+                        continue
+                    c = projectile_source_color(sff, spr, idx, name)
+                    color_hist[c] = color_hist.get(c, 0) + spr.pix.count(idx) * 4
 
     # Weighted median cut to the 15 opaque SNES OBJ colors. Deterministic
     # ordering keeps generated ROMs reproducible.

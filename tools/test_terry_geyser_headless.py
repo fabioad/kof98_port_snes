@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Power Geyser is a hitbox-only move now.
+"""Power Geyser must keep its tall hitbox and draw its flame pillar.
 
-The spark object must still exist so the tall column hits and the ProjTab
-damage/guard applies, but Terry's alternate geyser clip must contain a
-zero-cell frame so DrawSparks draws nothing.
+The spark object exists for the tall column, ProjTab damage/guard and the
+visible 48x80 alternate clip.  Its OBJ cells use the shared FX palette and
+priority 0 so the pillar covers the opponent instead of disappearing behind
+the fighter body.
 
 Run after a PVSnesLib build:
 
@@ -93,19 +94,21 @@ def run(buttons, expected_state, expected_damage, expected_power):
     return states, damage
 
 
-def check_invisible_clip():
+def check_visible_clip():
     meta = (ROOT / "build/gen_fight/projectiles_meta.inc").read_text()
-    m = re.search(r"terryProjFx2F0:\s*\.db\s+1,0\b", meta)
-    assert m, (
-        "terryProjFx2F0 should have ticks=1, ncells=0 (invisible geyser)")
-    print("PASS Power Geyser: alternate clip has zero drawable cells")
+    m = re.search(r"terryProjFx2F0:\s*\.db\s+\d+,(\d+)\b", meta)
+    assert m, "terryProjFx2F0 record missing"
+    cells = int(m.group(1))
+    assert cells > 0, (
+        f"terryProjFx2F0 has {cells} cells; the geyser pillar must be visible")
+    print(f"PASS Power Geyser: alternate clip has {cells} drawable cells")
 
 
 def main(core_path, rom):
     global CORE, ROM
     CORE = core_path
     ROM = rom
-    check_invisible_clip()
+    check_visible_clip()
     for tag, buttons, state, damage, power in (
             ("weak", WEAK, 85, 25, 2000),
             ("strong", STRONG, 86, 30, 2000),
@@ -113,7 +116,7 @@ def main(core_path, rom):
         states, got = run(buttons, state, damage, power)
         print(f"PASS Power Geyser {tag}: {got} HP, states={states[:4]}, "
               f"power {power}")
-    print("PASS Power Geyser: hitbox active, no drawn projectile")
+    print("PASS Power Geyser: hitbox active and flame drawn")
 
 
 if __name__ == "__main__":

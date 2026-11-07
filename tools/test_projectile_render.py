@@ -147,7 +147,7 @@ def run(ra):
             dx, dy, tile = struct.unpack_from("<bbH", rom, record + (5 if projectile else 2) + i * 4)
             if side:
                 tile |= 0x100
-            attr = 0x34 | (tile >> 8)
+            attr = 0x04 | (tile >> 8)
             expected.append(bytes(((120 + dx) & 255, (100 + dy) & 255,
                                    tile & 255, attr)))
         effect = bytearray(36)

@@ -15012,7 +15012,10 @@ DS_cells:
     lda.w SPARKS+SPK_ATTR,x             ; internal owner/projectile bits
     sta scr6+1                          ; retain projectile flag for header size
     bpl DS_palette_generic              ; ordinary sparks keep their palette
-    lda #$34.b                          ; both projectiles use shared FX palette 2
+    ; Projectiles use shared FX palette 2 and OBJ priority 2 so a tall
+    ; pillar (Terry's Power Geyser) draws in front of the opponent instead
+    ; of being clipped to the strip not covered by the fighter body.
+    lda #$04.b
 DS_palette_set:
     sta scr6
     bra DS_palette_done

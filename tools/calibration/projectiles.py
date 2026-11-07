@@ -82,20 +82,19 @@ PROJECTILE_ACTION_SEQUENCES = {
 # engine's default third-frame launch (0-based AnimElem 7 = frame 6).
 PROJECTILE_ALT_EFFECTS = {
     "terry": {
-        # Largest stable geyser pillar that fits the SNES effect page.  A
-        # 3x-stretched Power Wave (174 px) exceeds the 8-bit signed cell
-        # offset (-128) and wraps its top tiles to the bottom of the screen;
-        # clipping it leaves only a thin line.  Keep the geyser art at the
-        # stable maximum: 32 px wide x 127 px tall (13 cells).
+        # Source frame 3010,5 is a 94x149 flame pillar.  Fit it to the
+        # 16-cell page as 48x80 (3x5 = 15 cells) instead of squeezing it to
+        # a 32px-wide strip: the earlier 32x127 version read as a thin line.
         "action": 3020,
-        "frames": ((3, 20),),
+        "frames": ((5, 20),),
         "pre_scale": 1,
-        "squeeze_w": 32,
+        "squeeze_w": 48,
+        "squeeze_h": 80,
         "zoom": 1,
-        # The geyser is now a pure hitbox: the spark object stays alive with
-        # its tall SPK_GRD column and ProjTab damage, but the alternate clip
-        # emits a zero-cell frame so DrawSparks draws nothing.
-        "invisible": True,
+        # Draw the pillar again.  The height/width fit the 16-cell effect
+        # page, and the runtime fixes keep the stationary geyser from pushing
+        # the victim or running the camera to the wall.
+        "invisible": False,
         "sids": (85, 86, 87),
         "release": 6,
     },

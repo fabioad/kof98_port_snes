@@ -13,10 +13,14 @@
 > os números da auditoria anterior ainda se referem à ROM antiga.
 
 > **06/11 — build consolidado:** esta ROM inclui todas as correções
-> pendentes (agarrões, especiais/supers, áudio e vídeo). O **Power Geyser**
-> do Terry agora é apenas hitbox: o projétil continua existindo para dano,
-> guarda e coluna alta, mas o clipe alternativo tem zero células e não é
-> desenhado. Teste: `tools/test_terry_geyser_headless.py`.
+> pendentes (agarrões, especiais/supers, áudio e vídeo).
+>
+> **07/11 — Power Geyser visível:** o pilar do Terry voltou a ser desenhado
+> como um efeito de 48x80 (3x5 células) no clipe alternativo. A paleta
+> compartilhada agora inclui as cores do efeito, e as células de projétil
+> usam prioridade OBJ 0 para o pilar cobrir o oponente em vez de sumir atrás
+> do corpo dele. O hitbox alto, o dano/guarda e as correções de câmera e
+> pushback continuam iguais. Teste: `tools/test_terry_geyser_headless.py`.
 
 > **06/11 — Geyser e câmera/stage:** o pilar estacionário não empurra mais a
 > vítima até a parede (o `ProjPushFar` ignora o pushback quando
