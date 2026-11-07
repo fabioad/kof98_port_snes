@@ -9048,10 +9048,18 @@ def wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers,
     if p1 < 0 and self_bind is not None:
         p1 = self_bind
         row["p1mugen"] = p1
+    force_bind = False
     try:
         bind_anim = int(cns_headers.get(p1, {}).get("anim", "-1"))
     except (TypeError, ValueError):
         bind_anim = -1
+    # Leona's throw header is IfElse(Var(50)>0, 806, 805).  The parser cannot
+    # resolve the expression, so the bind used to fall back to her stand art
+    # and she stayed frozen while the victim moved.  Use the normal branch.
+    if name == "leona" and p1 == 805 and bind_anim not in air \
+            and 805 in air and air[805][0]:
+        bind_anim = 805
+        force_bind = True
     if p1 == self_bind and bind_anim not in air and raw_attempt_anim in air:
         bind_anim = raw_attempt_anim
     if p1 < 0 or bind_anim not in air or not air[bind_anim][0]:
@@ -9073,8 +9081,8 @@ def wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers,
         cfg.setdefault("moves", {})[75] = p1
         cur = cfg.setdefault("anims", {}).get(75)
         # Keep authored custom bind cels (Kyo 826, Iori 1305, Yuri 311).
-        if cur in (None, attempt_anim, 47, 250, 300, 5000, 5050) \
-                or cur not in air:
+        if force_bind or cur in (None, attempt_anim, 47, 250, 300,
+                                 5000, 5050) or cur not in air:
             # Keep the source timeline (Bind/Act rows use frame numbers) but
             # render it with three key poses; a 12-25 frame bind does not fit
             # the per-character metasprite bank on top of the victim pose.
