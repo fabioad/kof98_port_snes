@@ -93,15 +93,25 @@ _FULL_SCALE_OVERRIDES = {
     "krauser": 0.93,
     "geese": 0.93,
 }
+# Caps the engine cannot avoid: a character's metasprite blob must fit one
+# 64 KiB CH_MBANK window.  Chang is 65,560 bytes at 0.87 and 65,816 at 0.88,
+# so 0.86 is the largest verified scale that fits (64,920 bytes).  The
+# default 0.88 profile applies only this map; KOF_SCALE_CAPS=full keeps the
+# older aesthetic caps as well.
+_STRUCTURAL_SCALE_OVERRIDES = {"chang": 0.86}
 # The 1.0 test profile only keeps the structural Billy cap (his 1.0 meta is
 # larger than one 64 KiB CH_MBANK).  It intentionally keeps every other pose
 # at 1.0 so the real-hardware test shows the full-scale art and its limits.
+_SCALE_CAPS_MODE = os.environ.get("KOF_SCALE_CAPS", "")
 HI_SCALE_OVERRIDES = ({"billy": 0.90, "shingo": 0.95,
                           "kyo": 0.95, "iori": 0.93, "benimaru": 0.94, "chang": 0.78,
                           "omegarugal": 0.95, "robert": 0.92,
                           "ralf": 0.92, "clark": 0.92, "ryo": 0.92,
                           "joe": 0.92}
-                      if os.environ.get("KOF_SCALE_CAPS") == "minimal"
+                      if _SCALE_CAPS_MODE == "minimal"
+                      else {} if _SCALE_CAPS_MODE == "none"
+                      else dict(_STRUCTURAL_SCALE_OVERRIDES)
+                      if _SCALE_CAPS_MODE == "structural"
                       else dict(_FULL_SCALE_OVERRIDES))
 
 

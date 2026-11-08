@@ -23,15 +23,15 @@ $(error PVSnesLib 4.6+ is required (found '$(PVSNESLIB_VERSION)' at $(PVSNESLIB_
 endif
 
 # Profiles:
-#   default        tuned HI art at 0.90 -> kof98-snes.sfc/.msu
+#   default        0.88 art (Chang structural 0.86) -> kof98-snes.sfc/.msu
 #   HI10=1         1.0 test build        -> kof98-snes-hi.sfc/.msu
 #   OLD=1          stable 0.81 layout    -> kof98-snes-old.sfc/.msu
-#   make -f Makefile.pvsnes            # kof98-snes.sfc/.msu (HI 0.90)
+#   make -f Makefile.pvsnes            # kof98-snes.sfc/.msu (HI 0.88)
 #   make -f Makefile.pvsnes HI10=1     # kof98-snes-hi.sfc/.msu (1.0 test)
 #   make -f Makefile.pvsnes OLD=1      # kof98-snes-old.sfc/.msu (0.81)
 HI10 ?= 0
 OLD ?= 0
-HI_BASE_SCALE ?= 0.90
+HI_BASE_SCALE ?= 0.88
 ifeq ($(HI10),1)
 export ROMNAME := kof98-snes-hi
 export ROMTITLE := KOF98 SNESFEST HI
@@ -62,8 +62,8 @@ BUILD_INC := build
 PROFILE_DEFINE :=
 CUSTOM_OBJECT := 0
 FIGHT_ENV := KOF_OUT_DIR=$(GEN_DIR) KOF_MSU_NAME=$(MSU_NAME) \
-	KOF_CHAR_SCALE=$(HI_BASE_SCALE) KOF_OAM_TRUNCATE=1 \
-	KOF_SPRITE_BBOX_TRUNCATE=1
+	KOF_CHAR_SCALE=$(HI_BASE_SCALE) KOF_SCALE_CAPS=structural \
+	KOF_OAM_TRUNCATE=1 KOF_SPRITE_BBOX_TRUNCATE=1
 endif
 
 export AUTOHDR := 0                       ; hand-written hdr.asm (ExHiROM)
@@ -276,7 +276,7 @@ cleanSpcAudio:
 
 clean: cleanBuildRes cleanRom cleanGfx cleanAudio cleanSpcAudio
 
-# `hi`/`hi10` build the 1.0 test profile; the default `make` stays at 0.90.
+# `hi`/`hi10` build the 1.0 test profile; the default `make` stays at 0.88.
 # `old` builds the stable 0.81 layout under kof98-snes-old.*.
 hi hi10:
 	@$(MAKE) -f Makefile.pvsnes HI10=1
