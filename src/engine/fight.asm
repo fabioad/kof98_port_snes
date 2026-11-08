@@ -20805,6 +20805,15 @@ MHF_super:
     bcs MHF_done
 MHF_range_ok:
     sta scr0
+    ; Iori's 3020 Ya Otome rush has seven source HitDefs; the generic
+    ; five-contact finisher would knock the victim down before the last two.
+    lda FP+F_CHAR,x
+    cmp #CharIori.w
+    bne MHF_notiori
+    lda scr0
+    cmp #87.w
+    beq MHF_done
+MHF_notiori:
     lda combohit,x
     and #$00FF.w
     cmp #1.w
