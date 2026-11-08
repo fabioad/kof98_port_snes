@@ -195,7 +195,7 @@
 .DEFINE S_REVACT    103                 ;   follow-ups (Yamazaki, Kyo,
 .DEFINE S_REVACT_LAST 106               ;   Shingo, Billy); dispatched as
                                         ;   ordinary ground specials
-.DEFINE S_EXT_LAST 114                  ; 107-114 = imported extended
+.DEFINE S_EXT_LAST 116                  ; 107-116 = imported extended
                                         ;   follow-ups (Blue Mary/Clark);
                                         ;   treated as specials by
                                         ;   HitOne/AI/survivor
@@ -6067,11 +6067,17 @@ AO_tlife_skip:
     pla
     bra AO_ret16
 AO_tstat:                               ; TargetState: victim EnterState
+    rep #$20
+    .ACCU 16
+.IFDEF PVSNESLIB
+    jsl IoriExplosionClaimFar
+    bcs AO_tstat_enter
+.ENDIF
     jsr AO_victim
-    cmp #$FFFF.w
-    bne +
-    jmp AO_out16
-+   lda scr6+1
+    inc a                               ; $FFFF -> 0 sets Z, saves 2 bytes
+    beq AO_out16
+AO_tstat_enter:
+    lda scr6+1
     and #$00FF.w
     ldx scr5
     stx fofs
@@ -8020,6 +8026,7 @@ StateTab:
     ;   run/attack/recovery (ground states).
     .dw StAirSpec, StAirSpec, StSpecial, StSpecial, StAirSpec
     .dw StSpecial, StSpecial, StSpecial
+    .dw StSpecial, StSpecial              ; 115 Iori 3021 finisher, 116 spare
 
 StateRet:
     rep #$20
@@ -8657,6 +8664,8 @@ StVictimHeld:                           ; 820: bound pose, own anim data
     beq +
     cmp #S_CGRAB_LO.w
     beq +
+    cmp #115
+    beq VH_ownerok
     ; Clark's Running Three throw chain uses the 60-69 knee-family slots
     ; (the only free range HitOne already accepts).  Keep the victim bound
     ; while the owner is in any of them.
@@ -24383,6 +24392,51 @@ PracFillPowerFar:
 PFP_out:
     rtl
 .ENDS
+
+; ---------------------------------------------------------------------------
+; Iori 3021 explosion: claim the opponent even when the rush already knocked
+; them down, so the final TargetBind/TargetLifeAdd can hold them through the
+; burst.  Returns carry set and scr5 = victim when claimed.
+; ---------------------------------------------------------------------------
+.IFDEF PVSNESLIB
+.BASE $C0
+.BANK 126 SLOT 0
+.ORGA $D070
+.SECTION "IoriExplosionClaimFar" FORCE
+IoriExplosionClaimFar:
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    lda FP+F_CHAR,x
+    cmp #CharIori.w
+    bne IEC_no
+    lda FP+F_STATE,x
+    and #$00FF.w
+    cmp #115
+    bne IEC_no
+    txa
+    eor #FP2OFS.w
+    sta scr5
+    tax
+    sep #$20
+    .ACCU 8
+    lda FP+F_GRAB,x
+    ora #$01.b
+    sta FP+F_GRAB,x
+    lda scr5
+    eor #FP2OFS.b
+    sta FP+F_OWNER,x
+    rep #$20
+    .ACCU 16
+    sec
+    rtl
+IEC_no:
+    rep #$20
+    .ACCU 16
+    clc
+    rtl
+.ENDS
+.ENDIF
 
 .IFDEF KOF_TINY
 .BASE $C0
