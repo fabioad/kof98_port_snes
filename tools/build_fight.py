@@ -1890,6 +1890,10 @@ POST_CAL_PROJS = {}
 # applied again right after that merge.
 POST_CAL_PROJS_FULL = {}
 POST_CAL_TARGET_LIFE = {}
+# TransTab rows that must survive apply_profile (it replaces the per-char
+# extra_trans list with the calibrated profile's copy).  Iori's 3200 ground
+# hit must chain into the 3210 anti-air on contact.
+LATE_EXTRA_TRANS = {"iori": [(89, 88, 3, 0)]}
 POST_CAL_ACT_OVERRIDE = {}
 # Existing low special slots that are intentionally retargeted from a held
 # follow-up to the close-range grab attempt (the source CMD's "strong"
@@ -11781,6 +11785,9 @@ def build_char(name, cfg, global_pal=None):
         trows.append((sid, 0, 0, 0))
     for row in cfg.get("extra_trans", ()):
         trows.append(tuple(row))
+    for row in LATE_EXTRA_TRANS.get(name, ()):
+        if row not in trows:
+            trows.append(row)
     # TransEnd returns the FIRST kind-0 row for a from_sid, so the generic
     # "anim end -> stand" recovery row must sort after real chain targets
     # (else 53->0 shadows 53->60 and a follow-up never fires).
