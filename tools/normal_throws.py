@@ -141,10 +141,13 @@ def repair(name, cfg, anims, air, moves, headers, statedefs, binds, acts, posadd
                 windows.append((offset + lo - phase.first,
                                 offset + hi - phase.first, dx, dy))
         for trigger, op, arg, cond in acts.get(phase.state, ()):
-            # Discard old damage, custom victim states, source turns,
-            # invulnerability and hit latches. A native throw already owns
-            # the target and must preserve the chosen front/back direction.
-            if op not in (5, 7, 10, 14, 15, 16, 17):
+            # Discard old damage, custom victim states, source self-turns,
+            # invulnerability and hit latches.  op2 is TargetFacing: the
+            # victim Turn rows extracted by wire_throw_chain are injected as
+            # op2, so keep them in the flattened timeline.  A native throw
+            # already owns the target and must preserve the chosen
+            # front/back direction.
+            if op not in (2, 5, 7, 10, 14, 15, 16, 17):
                 continue
             element = _local_element(trigger, source)
             if phase.first <= element <= last:

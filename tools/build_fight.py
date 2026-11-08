@@ -8995,7 +8995,7 @@ def legacy_quote_lines(name, cfg):
 
 
 def wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers,
-                     cns_statedefs=None):
+                     cns_statedefs=None, cns_acts=None, cns_binds=None):
     """Wire the source throw bind + victim poses for every fighter.
 
     The roster tables predate the throw audit: most rows point sid 74/75 at
@@ -9145,6 +9145,115 @@ def wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers,
                 pass
         return out
 
+    if cns_acts is not None:
+        own_acts = cns_acts.setdefault(p1, [])
+        for state in target_states():
+            # The victim animation starts when this TargetState fires.  Its
+            # Turn animelem is relative to that entry, while the native bind
+            # ActTab is timed from the bind's first frame.
+            entry_frame = 0
+            for frame, op, arg, _cond in own_acts:
+                if op == 4 and arg == state:
+                    entry_frame = int(frame)
+                    break
+            for ctrl in (cns_statedefs or {}).get(state, []):
+                if ctrl.get("type", "").lower() != "turn":
+                    continue
+                for trigger in ctrl.get("triggers", ()):
+                    m = re.search(r"\banimelem\s*=\s*(\d+)",
+                                  trigger, re.I)
+                    if m:
+                        row = (min(0x7F, entry_frame +
+                                   int(m.group(1)) - 1), 2, 1, 0)
+                        if row not in own_acts:
+                            own_acts.append(row)
+                        break
+        # Nested thrown-state entry turns (e.g. 815 -> 816 at AnimTime 0).
+        # The victim's own state-77 ActTab is only populated when the source
+        # thrown state is mapped there; otherwise the generic 5000/5050 slot
+        # is used and the turn is lost.  Apply it on the last held frame,
+        # while the grab link still exists, so it survives the release.
+        bind_frames = air.get(bind_anim, ([], 0))[0]
+        handled_nested = set()
+        if bind_frames:
+            windows = (cns_binds or {}).get(p1, ())
+            last_held = min(
+                max((hi for _lo, hi, _dx, _dy in windows),
+                    default=len(bind_frames) - 1),
+                len(bind_frames) - 1)
+            for state in target_states():
+                for ctrl in (cns_statedefs or {}).get(state, ()):
+                    if ctrl.get("type", "").lower() not in (
+                            "changestate", "targetstate"):
+                        continue
+                    raw = ctrl.get("value", "").split(",")[0].strip()
+                    try:
+                        nxt = int(float(raw))
+                    except ValueError:
+                        continue
+                    # Any air/hit victim state reached from the held state
+                    # is a thrown phase (816/817/...), even when the port
+                    # kept the generic state-77 animation.
+                    hdr = (cns_headers or {}).get(nxt, {})
+                    if not (hdr.get("type") == "A"
+                            and hdr.get("movetype") == "H"):
+                        continue
+                    if not any(
+                            c2.get("type", "").lower() == "turn" and any(
+                                re.search(r"\b(?:anim)?time\s*=\s*0", t,
+                                          re.I)
+                                for t in c2.get("triggers", ()))
+                            for c2 in (cns_statedefs or {}).get(nxt, ())):
+                        continue
+                    handled_nested.add(nxt)
+                    row = (min(0x7F, last_held), 2, 1, 0)
+                    if row not in own_acts:
+                        own_acts.append(row)
+            # Later bind phases can TargetState the thrown victim directly
+            # (Andy: 811 -> 817 at AnimElem 9).  Skip targets already handled
+            # by the held-state scan above so the victim is not flipped twice.
+            bind_states = []
+            todo = [p1]
+            seen = {p1}
+            while todo:
+                bs = todo.pop()
+                for ctrl in (cns_statedefs or {}).get(bs, ()):
+                    if ctrl.get("type", "").lower() != "changestate":
+                        continue
+                    raw = ctrl.get("value", "").split(",")[0].strip()
+                    try:
+                        nxt = int(float(raw))
+                    except ValueError:
+                        continue
+                    if nxt <= 0 or nxt in seen:
+                        continue
+                    seen.add(nxt)
+                    bind_states.append(nxt)
+                    todo.append(nxt)
+            for bs in bind_states:
+                rows = cns_acts.setdefault(bs, [])
+                for frame, op, arg, _cond in list(rows):
+                    if op != 4 or arg in handled_nested:
+                        continue
+                    if frame >= 0x80:
+                        continue
+                    hdr = (cns_headers or {}).get(arg, {})
+                    if not (hdr.get("type") == "A"
+                            and hdr.get("movetype") == "H"):
+                        continue
+                    if cfg.get("moves", {}).get(77) == arg:
+                        continue
+                    if not any(
+                            c2.get("type", "").lower() == "turn" and any(
+                                re.search(r"\b(?:anim)?time\s*=\s*0", t,
+                                          re.I)
+                                for t in c2.get("triggers", ()))
+                            for c2 in (cns_statedefs or {}).get(arg, ())):
+                        continue
+                    row = (min(0x7F, int(frame)), 2, 1, 0)
+                    if row not in rows:
+                        rows.append(row)
+
     def victim_action(state):
         for ctrl in (cns_statedefs or {}).get(state, []):
             if ctrl.get("type", "").lower() not in ("changeanim2",
@@ -9203,16 +9312,16 @@ def wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers,
     if cfg["anims"].get(76) in (None, 47, 250, 300, 5000, 5050):
         if authored_held is not None:
             frames, _loop = air[authored_held]
-            src = frames[len(frames) // 2]
-            compact = [(src[0], src[1], src[2], src[3],
-                        max(8, min(14, src[4])), src[5], [], src[7])]
-            alt = air.get(5000, ([], 0))[0]
-            if alt:
-                a = alt[len(alt) // 2]
-                if (a[0], a[1], a[2], a[3]) != (src[0], src[1],
-                                                src[2], src[3]):
-                    compact.append((a[0], a[1], a[2], a[3],
-                                    max(4, min(10, a[4])), a[5], [], a[7]))
+            compact = []
+            picked = set()
+            for index in (0, len(frames) // 2, len(frames) - 1):
+                src = frames[index]
+                key = (src[0], src[1], src[2], src[3], src[5])
+                if key in picked:
+                    continue
+                picked.add(key)
+                compact.append((src[0], src[1], src[2], src[3],
+                                max(6, min(12, src[4])), src[5], [], src[7]))
             air[65005] = (compact, 0)
             cfg["anims"][76] = 65005
             anims[76] = 65005
@@ -9643,7 +9752,7 @@ def build_char(name, cfg, global_pal=None):
     from calibration.native import apply_profile
     apply_profile(ROOT, name, cfg, cns_moves, air)
     wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers,
-                     cns_statedefs)
+                     cns_statedefs, cns_acts, cns_binds)
     # King's normal throw binds the victim at the arcade's torso height, but
     # with the port's generic held pose (axis at the feet) the opponent hangs
     # above her head as if she were holding the feet.  Lower only King's

@@ -3043,7 +3043,7 @@ KHD_out:
 ; A normal throw that ends naturally used to drop the victim straight into
 ; the neutral/lying path because the source 816 flight state is not a runtime
 ; state.  LaunchVictim reproduces its VelSet (5.5 px/tick up, 4.5 px/tick
-; away, victim-facing relative) and ThrowRelease picks between that and the
+; away, thrower-facing relative) and ThrowRelease picks between that and the
 ; old plain drop when the thrower was interrupted.
 ThrowRelease:
     rep #$20
@@ -3127,11 +3127,14 @@ LaunchVictim:
     sta FP+F_Y,x
 +   lda #-THROWLIFTV.w
     sta FP+F_VY,x
-    lda FP+F_FACING,x
+    txa
+    eor #FP2OFS.w
+    tay
+    lda FP+F_FACING,y
     bmi +
-    lda #-THROWPUSHV.w
+    lda #THROWPUSHV.w
     bra ++
-+   lda #THROWPUSHV.w
++   lda #-THROWPUSHV.w
 ++  sta FP+F_VX,x
     ; Throw impact: one shared hit spark at the victim's chest plus the slam
     ; SFX.  Source PlaySnd/Explod rows still fire as well; this guarantees

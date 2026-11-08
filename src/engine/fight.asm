@@ -8549,10 +8549,7 @@ TB_next:
 TB_apply:
     lda scr2                            ; dx in pixels, facing-relative
     and #$00FF.w
-    bit #$0080.w
-    beq +
-    ora #$FF00.w
-+   xba                                 ; <<8 fixed point
+    xba                                 ; <<8 fixed point
     ldx fofs
     ldy FP+F_FACING,x
     bpl +
@@ -8566,13 +8563,18 @@ TB_apply:
     jsr AddXClamped                     ; ... plus the bind offset, clamped
     lda scr2+1
     and #$00FF.w
-    bit #$0080.w
-    beq +
-    ora #$FF00.w
-+   xba
+    xba
     eor #$FFFF.w                        ; our Y grows upward: -dy
     inc a
-    ldx scr5
+    ldx fofs
+    clc
+    adc FP+F_Y,x
+    bpl +
+    lda #0
++   cmp #(MAX_AIR_Y<<8).w
+    bcc +
+    lda #(MAX_AIR_Y<<8).w
++   ldx scr5
     sta FP+F_Y,x
 TB_done8:
     rep #$20
@@ -10286,8 +10288,8 @@ AT_nothit:
     beq AT_vloop
     cmp #S_VTHROW                         ; thrown flight: fall anim cycles
     beq AT_vloop
-    cmp #S_VHELD                          ; held pose: slow 3-pose struggle
-    beq AT_vloop                          ;   loop; one-cel clips stay still
+    cmp #S_VHELD                          ; held pose: finish once, then hold
+    beq AT_vstay                          ;   until the owner releases it
     cmp #S_CGRAB_HIV                      ; counter victims share StVictimHeld:
     beq AT_vstay                          ; the owner's release must end capture,
     cmp #S_CGRAB_LOV                      ; not the shorter victim animation
@@ -23320,8 +23322,8 @@ STD_done:
     rtl
 
 ; Release helper for the holdback throw.  The victim leaves S_VHELD through
-; VH_free; give it a horizontal push opposite its facing (which points at the
-; thrower) so it visibly travels to the opposite side instead of collapsing
+; VH_free; give it a horizontal push along the thrower's facing so it visibly
+; travels to the opposite side instead of collapsing
 ; in place.  The owner's F_TFLAGS bit5 is cleared here so it cannot leak into
 ; a later move.
 BackThrowReleaseFar:
@@ -23385,11 +23387,11 @@ BTR_reseat:
     .ACCU 16
 BTR_launch:
     ldx fofs
-    lda FP+F_FACING,x
+    lda FP+F_FACING,y
     bmi +
-    lda #-THROWPUSH.w                   ; facing right -> pushed left
+    lda #THROWPUSH.w
     bra ++
-+   lda #THROWPUSH.w                    ; facing left -> pushed right
++   lda #-THROWPUSH.w
 ++  sta FP+F_VX,x
     sep #$20
     .ACCU 8
