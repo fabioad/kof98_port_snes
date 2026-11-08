@@ -1894,6 +1894,13 @@ POST_CAL_TARGET_LIFE = {}
 # extra_trans list with the calibrated profile's copy).  Iori's 3200 ground
 # hit must chain into the 3210 anti-air on contact.
 LATE_EXTRA_TRANS = {"iori": [(89, 88, 3, 0)]}
+# HitDef rows that must survive apply_profile for the same reason.  Iori's
+# 3200 ground strike must leave the victim in hitstun (not knocked down) so
+# the 3210 anti-air can connect.
+LATE_HITDEF_OVERRIDES = {
+    "iori": {89: {"fall": 0, "gvx": 0, "gvy": 0,
+                  "avx": 0, "avy": 0}},
+}
 POST_CAL_ACT_OVERRIDE = {}
 # Existing low special slots that are intentionally retargeted from a held
 # follow-up to the close-range grab attempt (the source CMD's "strong"
@@ -2808,6 +2815,20 @@ if "leona" in CHARS:
     _leona["slice_damage"].update({
         56: 30, 57: 30, 59: 30, 60: 30, 85: 8, 86: 8, 98: 40,
     })
+    # The source 3306 grip lasts 150 ticks; the imported clip is 88, so the
+    # Time=98/108/118 TargetLifeAdd rows never ran.  Hold the last frame
+    # through the full grip window.
+    _leona["tail_ticks"] = dict(_leona.get("tail_ticks", {}))
+    _leona["tail_ticks"][3306] = 63
+    # The source repeats -21 HP at times 128/138/148; the ActTab time rows
+    # only encode 1..127.  The extended clip holds the last frame, so map the
+    # last three contacts to nearby 120/122/124 ticks.
+    _leona["life_extra"] = dict(_leona.get("life_extra", {}))
+    _leona["life_extra"][3306] = [
+        (0x80 | 120, 3, -5, 0),
+        (0x80 | 122, 3, -5, 0),
+        (0x80 | 124, 3, -5, 0),
+    ]
 
 # ReversalDef counter-grab follow-ups (p1stateno/p2stateno) share four
 # runtime slots: 99/100 for the high/mid counter (actor/held opponent) and
@@ -9915,6 +9936,14 @@ def build_char(name, cfg, global_pal=None):
                 _rows.append(_row)
         cns_acts[_state] = sorted(set(_rows))
 
+    # Extra TargetLifeAdd rows for source timelines whose Time triggers
+    # exceed the ActTab's 7-bit time field (Leona 3306's last three grips).
+    for _state, _rows in (cfg.get("life_extra") or {}).items():
+        _all = list(cns_acts.get(_state, ()))
+        _all += [(int(f), int(op), int(a), int(c))
+                 for f, op, a, c in _rows]
+        cns_acts[_state] = sorted(set(_all))
+
     # Post-calibration air synthesis: POST_CAL_TWEAKS runs after the first
     # synthesis pass, so apply the late actions (Rugal's stripped Eye Beam
     # 1702/1704) here, before AnimTab is built.
@@ -11232,6 +11261,11 @@ def build_char(name, cfg, global_pal=None):
     # parser reads 0.  Keep the calibrated timing but supply the port-scale
     # damage, keep the victim in place (gvx=0) and cap blocked chip.
     for sid, overrides in (cfg.get("hitdef_override") or {}).items():
+        if 0 <= sid < len(move_rows):
+            row = dict(move_rows[sid])
+            row.update(overrides)
+            move_rows[sid] = row
+    for sid, overrides in LATE_HITDEF_OVERRIDES.get(name, {}).items():
         if 0 <= sid < len(move_rows):
             row = dict(move_rows[sid])
             row.update(overrides)
