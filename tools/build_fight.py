@@ -2586,9 +2586,10 @@ if "iori" in CHARS:
     _iori = CHARS["iori"]
     _iori.setdefault("extra_trans", []).extend([
         (85, 87, 3, 0),               # 3000 hit -> 3020 rush
+        (89, 88, 3, 0),               # 3200 ground hit -> 3210 anti-air
     ])
     _iori["hit_soft_resets"] = dict(_iori.get("hit_soft_resets", {}))
-    _iori["hit_soft_resets"][3020] = [10, 17, 26, 35]
+    _iori["hit_soft_resets"][3020] = [10, 17, 26, 32, 37, 44]
     _iori["slice_no_fall"] = sorted(
         set(_iori.get("slice_no_fall", ())) | {85, 86, 87})
     _iori["hitdef_override"] = dict(_iori.get("hitdef_override", {}))
@@ -6978,7 +6979,7 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None, char_scale=1.0):
                         if stop > 0:
                             acts.setdefault(state, []).append(
                                 (stop, 17, 0, cond))
-            elif frame is None:
+            elif frame is None and ctype != "targetlifeadd":
                 continue
             elif ctype == "turn":
                 acts.setdefault(state, []).append((frame, 0, 0, cond))
@@ -9874,6 +9875,40 @@ def build_char(name, cfg, global_pal=None):
         _rows = list(cns_acts.get(_state, ()))
         for _e in _elems:
             _rows.append((max(0, min(0x7F, int(_e) - 1)), 18, 1, 0))
+        cns_acts[_state] = sorted(set(_rows))
+
+    # Multi-HitDef special/super states: the source re-issues the HitDef on
+    # each strike element instead of using MoveHitReset.  Re-arm the native
+    # latch at every controller after the first so the follow-up hits can
+    # connect (Iori 3020/3210, Takuma 1210, Clark 1010, Ryo/Robert rekka,
+    # etc.).  States with an explicit hit_resets/hit_soft_resets entry are
+    # already calibrated and are left untouched.
+    _manual_resets = (set((cfg.get("hit_resets") or {}))
+                      | set((cfg.get("hit_soft_resets") or {})))
+    _state_sid = {}
+    for _sid, _state in (cfg.get("moves") or {}).items():
+        if _sid >= 48 and _state not in _state_sid:
+            _state_sid[_state] = _sid
+    for _state in _state_sid:
+        if _state in _manual_resets:
+            continue
+        _starts = []
+        for _ctrl in (cns_statedefs or {}).get(_state, ()):
+            if _ctrl.get("type", "").lower() != "hitdef":
+                continue
+            for _trig in _ctrl.get("triggers", ()):
+                _m = re.search(r"\banimelem\s*=\s*(\d+)", _trig, re.I)
+                if _m:
+                    _starts.append(int(_m.group(1)))
+                    break
+        _starts = sorted(set(_starts))
+        if len(_starts) < 2:
+            continue
+        _rows = list(cns_acts.get(_state, ()))
+        for _e in _starts[1:]:
+            _row = (max(0, min(0x7F, _e - 1)), 18, 0, 0)
+            if _row not in _rows:
+                _rows.append(_row)
         cns_acts[_state] = sorted(set(_rows))
 
     # Post-calibration air synthesis: POST_CAL_TWEAKS runs after the first
