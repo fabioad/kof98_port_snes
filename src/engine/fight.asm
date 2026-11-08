@@ -36,6 +36,12 @@
 .BASE $C0
 .ENDIF
 
+.IFDEF KOF_TINY
+.DEFINE TinyCharSelRam $7E5800
+.DEFINE TinyBankSelRam $7E5882
+.INCLUDE "gen_fight/tiny_alias.inc"
+.ENDIF
+
 .DEFINE INIDISP     $002100
 .DEFINE OBSEL       $002101
 .DEFINE OAMADDL     $002102
@@ -944,6 +950,9 @@ FightMain:
     jsr CmdListReset                      ; fresh PRACTICE usage log
     jsr CampReset                         ; campaign/team vars + STAGEF
     jsr MsuDetect                         ; probe $2002-2007 for "S-MSU1"
+.IFDEF KOF_TINY
+    jsl TinySelInit                       ; build the runtime roster table
+.ENDIF
     lda #:CharIori                         ; descriptors + spark/hud tables
     sta tblbank                           ;   (char tables live in F_TBANK)
     rep #$20
@@ -2961,6 +2970,7 @@ MsuDetect:
     sta.b msuok
 MD_no:
     rts
+
 .IFNDEF MSU_LAYOUT
 .DEFINE MSU_LAYOUT $FFFF                ; stale/partial generated data: never
                                         ;   accept the .msu at boot
@@ -2975,7 +2985,11 @@ CharFlags:
     and #$00FF.w
     asl a
     tax
+.IFDEF KOF_TINY
+    lda.l TinyCharSelRam,x
+.ELSE
     lda.l CharSelTab,x
+.ENDIF
     sta cptr
     sep #$20
     .ACCU 8
@@ -3056,6 +3070,15 @@ SL_not_rugal:
     lda #KYO_ASH_ID.b
     sta.b scr5
 SL_ckmsu:
+.IFDEF KOF_TINY
+    ; Availability table: the Rugal cell's L+R path sets id 14 first, so
+    ; the hidden Omega is accepted while a plain A on Rugal (id 3) and the
+    ; non-roster cells are denied even when the .msu is present.
+    lda.b scr5
+    tax
+    lda.l TinyAvailTab,x
+    beq SL_denied
+.ENDIF
     ; Omega Rugal is streamed from MSU-1 now.  The CharFlags check below
     ; denies id 14 when the .msu file is absent, with or without L+R.
     lda.b msuok
@@ -3103,8 +3126,12 @@ SLC_solo:
     sta.b lock2
     rts
 SLC_regular:
+.IFDEF KOF_TINY
+    bra SLC_try
+.ELSE
     lda.b msuok
     bne SLC_go                            ; msu present -> anything legal
+.ENDIF
 SLC_try:
     ldx.b scr5
     lda.w SCUR1,x
@@ -3116,6 +3143,15 @@ SLC_try:
     .ACCU 8
     lda.l SelCellChr,x
     bmi SLC_roll                          ; empty cell -> reroll
+.IFDEF KOF_TINY
+    sta.b scr4
+    tax
+    lda.l TinyAvailTab,x
+    beq SLC_roll
+    lda.b msuok
+    bne SLC_go
+    lda.b scr4
+.ENDIF
     jsr CharFlags                         ; flag bit0; clobbers X,Y,cptr
     and #$01.b
     beq SLC_go
@@ -4307,14 +4343,22 @@ SF_carry:
     and #$00FF.w
     asl a
     tax
+.IFDEF KOF_TINY
+    lda.l TinyCharSelRam,x
+.ELSE
     lda.l CharSelTab,x
+.ENDIF
     sta FP+F_CHAR
     txa
     lsr a
     tax
     sep #$20
     .ACCU 8
+.IFDEF KOF_TINY
+    lda.l TinyBankSelRam,x
+.ELSE
     lda.l BankSelTab,x
+.ENDIF
     sta FP+F_TBANK
     rep #$20
     .ACCU 16
@@ -4322,14 +4366,22 @@ SF_carry:
     and #$00FF.w
     asl a
     tax
+.IFDEF KOF_TINY
+    lda.l TinyCharSelRam,x
+.ELSE
     lda.l CharSelTab,x
+.ENDIF
     sta FP+F_CHAR+FP2OFS
     txa
     lsr a
     tax
     sep #$20
     .ACCU 8
+.IFDEF KOF_TINY
+    lda.l TinyBankSelRam,x
+.ELSE
     lda.l BankSelTab,x
+.ENDIF
     sta FP+F_TBANK+FP2OFS
     jsr LoadPortraits                   ; photos of the active team members
     jsr LoadCharPals                    ; per-side OBJ palettes (0/3/5, 1/4/6)
@@ -4912,7 +4964,11 @@ LoadCharPals:
     and #$00FF.w
     asl a
     tax
+.IFDEF KOF_TINY
+    lda.l TinyCharSelRam,x
+.ELSE
     lda.l CharSelTab,x
+.ENDIF
     sta cptr
     ldx #0
     jsr UpCharPals
@@ -4931,7 +4987,11 @@ LoadCharPals:
     and #$00FF.w
     asl a
     tax
+.IFDEF KOF_TINY
+    lda.l TinyCharSelRam,x
+.ELSE
     lda.l CharSelTab,x
+.ENDIF
     sta cptr
     ldx #1
     jsr UpCharPals
@@ -16536,6 +16596,14 @@ SP_gen_done:
     lda scr3
     and #$00FF.w
     sta scr3                            ; character CHR base bank
+.IFDEF KOF_TINY
+    lda msuf
+    and #$0002.w                        ; bit1 = non-contiguous slice table
+    beq +
+    jsl TinySliceLookup                 ; sets scr0/scr4 from the table
+    bra ST_tiny_src_ready
++
+.ENDIF
     lda msuf
     and #$0001.w
     beq +
@@ -16569,6 +16637,9 @@ SP_gen_done:
     clc
     adc scr3
     sta scr4                            ; src bank
+.IFDEF KOF_TINY
+ST_tiny_src_ready:
+.ENDIF
     ; upload cursor, in bytes
     ldx fofs
     lda FP+F_DMAPOS,x
@@ -18011,6 +18082,18 @@ CNF_boss:
     beq CNF_team_boss
     cmp #3
     beq CNF_team_boss
+.IFDEF KOF_TINY
+    ; TINY has no Rugal: the final boss is Omega (0.90 with MSU, 0.50
+    ; from ROM without it).
+    lda.w C_HUMAN_SIDE
+    bne +
+    lda #14.b
+    sta.b sel2
+    bra CNF_go
++   lda #14.b
+    sta.b sel1
+    bra CNF_go
+.ELSE
     lda.w C_HUMAN_SIDE
     bne CNF_boss_single_cpu1
     lda.b msuok                          ; Rugal and Omega stream from MSU-1
@@ -18029,23 +18112,38 @@ CNF_boss_single_end:
     ; the campaign with the normal Single Play ending (not the Survivor /
     ; secret ending).
     jmp EndEnter
+.ENDIF
 CNF_team_boss:
     lda.w C_HUMAN_SIDE
     bne CNF_team_cpu1
+.IFDEF KOF_TINY
+    lda #14.b
+    sta.w T_TEAM2                         ; Omega only
+.ELSE
     lda #3.b
     sta.w T_TEAM2                         ; Rugal
     lda #14.b
     sta.w T_TEAM2+1                       ; Omega Rugal
+.ENDIF
     bra CNF_team_boss_ready
 CNF_team_cpu1:
+.IFDEF KOF_TINY
+    lda #14.b
+    sta.w T_TEAM1
+.ELSE
     lda #3.b
     sta.w T_TEAM1
     lda #14.b
     sta.w T_TEAM1+1
+.ENDIF
 CNF_team_boss_ready:
     stz.w T_I1                            ;   remaining player members enter
     stz.w T_I2
+.IFDEF KOF_TINY
+    lda #1
+.ELSE
     lda #2
+.ENDIF
     sta.w T_N2
 CNF_go:
     stz.b wins1
@@ -18739,7 +18837,11 @@ TeamMemberIn:
     stx scr6                              ; save fofs; lda.l supports only ,x
     asl a
     tax
+.IFDEF KOF_TINY
+    lda.l TinyCharSelRam,x
+.ELSE
     lda.l CharSelTab,x
+.ENDIF
     ldx scr6
     sta FP+F_CHAR,x
     rep #$20
@@ -18753,7 +18855,11 @@ TeamMemberIn:
     tax
     sep #$20
     .ACCU 8
+.IFDEF KOF_TINY
+    lda.l TinyBankSelRam,x
+.ELSE
     lda.l BankSelTab,x
+.ENDIF
     ldx scr6
     sta FP+F_TBANK,x
     jsr LoadCharPals                      ; per-side OBJ palettes (clobbers X)
@@ -22874,6 +22980,11 @@ OrderPortraitPal_End:
 .ENDIF
 ; mass-import bank windows + chr placeholders
 .INCLUDE "gen_fight/newchars_banks.inc"
+.IFDEF KOF_TINY
+; 0.50 ROM copies for the eleven chosen characters, placed in the free
+; 32 KiB half-banks by tools/build_tiny.py.
+.INCLUDE "gen_fight/tiny_variants.inc"
+.ENDIF
 
 ; ---------------------------------------------------------------------------
 ; GuardCheckFar: full guard-posture test, relocated to bank 126 because the
@@ -24260,3 +24371,139 @@ PracFillPowerFar:
 PFP_out:
     rtl
 .ENDS
+
+.IFDEF KOF_TINY
+.BASE $C0
+.BANK 126 SLOT 0
+.ORGA $F400
+.SECTION "TinyHelpers" FORCE
+; TINY: copy the ROM roster tables into WRAM and, when the .msu is present,
+; swap the eight non-Terry roster characters to their 0.90 MSU descriptors.
+; Terry stays on the 0.50 ROM descriptor in both cases (TinyDualTab omits
+; him).
+TinySelInit:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    ldx #0
+TS_copy_desc:
+    lda.l CharSelTabRom,x
+    sta.l TinyCharSelRam,x
+    inx
+    inx
+    cpx #(NROSTER*2).w
+    bne TS_copy_desc
+    sep #$20
+    .ACCU 8
+    ldx #0
+TS_copy_bank:
+    lda.l BankSelTabRom,x
+    sta.l TinyBankSelRam,x
+    inx
+    cpx #NROSTER.w
+    bne TS_copy_bank
+    lda.b msuok
+    beq TS_done
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    ldx #0
+TS_dual:
+    lda.l TinyDualTab,x                 ; id byte; $FF terminates
+    and #$00FF.w
+    cmp #$00FF.w
+    beq TS_done
+    sta.b scr4
+    asl a
+    tay
+    inx
+    lda.l TinyDualTab,x                 ; 0.90 descriptor
+    sta.b scr5
+    inx
+    inx
+    lda.l TinyDualTab,x                 ; 0.90 table bank
+    and #$00FF.w
+    sta.b scr6
+    ; descriptor pointer table at $7E5800 + id*2
+    lda #$5800.w
+    sta cptr
+    sep #$20
+    .ACCU 8
+    lda #$7E.b
+    sta cptr+2
+    rep #$20
+    .ACCU 16
+    lda.b scr5
+    sta [cptr],y
+    ; bank table at $7E5882 + id
+    lda #$5882.w
+    sta cptr
+    sep #$20
+    .ACCU 8
+    lda #$7E.b
+    sta cptr+2
+    lda.b scr6
+    ldy.b scr4
+    sta [cptr],y
+    rep #$20
+    .ACCU 16
+    inx
+    bra TS_dual
+TS_done:
+    ; The boot caller immediately executes an 8-bit `lda #:CharIori`.
+    ; Returning with M=0 here made that immediate swallow the next opcode
+    ; and corrupted the engine state (gamestate ended up as an OAM word).
+    sep #$20
+    .ACCU 8
+    rtl
+
+; X = fighter offset, scr0 = tilebase, scr2 = slice table offset (CH_CHR),
+; F_TBANK = table bank.  Returns scr0 = source offset, scr4 = source bank.
+TinySliceLookup:
+    rep #$20
+    .ACCU 16
+    lda scr0
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    lsr a                               ; tilebase >> 10
+    asl a
+    asl a                               ; *4
+    clc
+    adc scr2
+    sta cptr
+    sep #$20
+    .ACCU 8
+    lda FP+F_TBANK,x
+    sta cptr+2
+    rep #$20
+    .ACCU 16
+    ldy #0
+    lda [cptr],y                        ; slice offset
+    sta scr2
+    iny
+    iny
+    lda [cptr],y
+    and #$00FF.w
+    sta scr3                            ; slice bank
+    lda scr0
+    and #$03FF.w
+    asl a
+    asl a
+    asl a
+    asl a
+    asl a
+    clc
+    adc scr2
+    sta scr0                            ; src offset
+    lda scr3
+    sta scr4                            ; src bank
+    rtl
+.ENDS
+.ENDIF

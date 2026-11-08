@@ -71,6 +71,18 @@ try:
 except ValueError:
     raise SystemExit(f"KOF_CHAR_SCALE must be a number, got {_scale!r}")
 
+# Per-character scale overrides for the TINY profile: name:scale pairs.
+CHAR_SCALE_MAP = {}
+for _item in os.environ.get("KOF_CHAR_SCALES", "").split(","):
+    _item = _item.strip()
+    if not _item:
+        continue
+    _n, _s = _item.split(":", 1)
+    try:
+        CHAR_SCALE_MAP[_n.strip()] = float(_s)
+    except ValueError:
+        raise SystemExit(f"KOF_CHAR_SCALES: bad scale in {_item!r}")
+
 # HI streams a few more fighters from MSU-1 than the 0.81 build.  Keep the
 # override out of the character cfg: calibration.native.config_hash() hashes
 # the whole cfg, and flipping cfg["msu"] would invalidate its verified profile.
@@ -117,6 +129,8 @@ HI_SCALE_OVERRIDES = ({"billy": 0.90, "shingo": 0.95,
 
 def char_scale_for(name, cfg):
     """Effective fighter-art scale for this build profile."""
+    if name in CHAR_SCALE_MAP:
+        return CHAR_SCALE_MAP[name]
     if CHAR_SCALE_OVERRIDE is not None:
         return HI_SCALE_OVERRIDES.get(name, CHAR_SCALE_OVERRIDE)
     return cfg.get("char_scale", 1.0)
@@ -15019,6 +15033,19 @@ if __name__ == "__main__":
         if "terry" in CHARS:
             CNAME_BANKS["terry"] = ("Terry", 95, 95, "$8000")
     os.makedirs(OUT, exist_ok=True)
+    # Variant pass used by the TINY profile: generate only the requested
+    # characters (CHR + sprite/meta tables + palettes) without touching the
+    # shared roster/MSU layout.  The caller post-processes the labels.
+    _only = os.environ.get("KOF_ONLY_CHARS")
+    if _only:
+        # Projectile atlases are quantised against the shared FX palette,
+        # which build_spark() normally initialises later in the full build.
+        build_spark()
+        for _name in [x.strip() for x in _only.split(",") if x.strip()]:
+            if _name not in CHARS:
+                raise SystemExit(f"KOF_ONLY_CHARS: unknown character {_name!r}")
+            build_char(_name, CHARS[_name])
+        raise SystemExit(0)
     with open(os.path.join(OUT, "build_profile.json"), "w") as _f:
         json.dump({
             "base_scale": CHAR_SCALE_OVERRIDE,

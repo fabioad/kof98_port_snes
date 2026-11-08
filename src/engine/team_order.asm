@@ -958,7 +958,11 @@ OrderDrawName:
     and #$00FF.w
     asl a
     tax
+.IFDEF KOF_TINY
+    lda.l TinyCharSelRam,x
+.ELSE
     lda.l CharSelTab,x
+.ENDIF
     sta.b scr2
     sep #$20
     .ACCU 8

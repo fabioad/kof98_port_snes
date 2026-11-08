@@ -31,6 +31,7 @@ endif
 #   make -f Makefile.pvsnes OLD=1      # kof98-snes-old.sfc/.msu (0.81)
 HI10 ?= 0
 OLD ?= 0
+TINY ?= 0
 HI_BASE_SCALE ?= 0.88
 ifeq ($(HI10),1)
 export ROMNAME := kof98-snes-hi
@@ -53,6 +54,20 @@ PROFILE_DEFINE := -D KOF_OLD
 CUSTOM_OBJECT := 1
 FIGHT_ENV := KOF_OUT_DIR=$(GEN_DIR) KOF_MSU_NAME=$(MSU_NAME) \
 	KOF_SKIP_MANIFEST=1
+else ifeq ($(TINY),1)
+# Reduced-ROM profile: nine characters keep a uniform 0.56 ROM copy; the
+# 0.88 layout leaves 143 free 32 KiB halves and the nine need 138.  The
+# traditional kof98-snes.msu still provides the 0.88 versions of the eight
+# dual-scale fighters plus Mature/Vice.
+export KOF_TINY_SCALE ?= 0.56
+export ROMNAME := kof98-snes-tiny
+export ROMTITLE := KOF98 SNESFEST TINY
+GEN_DIR := build/tiny/gen_fight
+MSU_NAME := kof98-snes
+BUILD_INC := build/tiny
+PROFILE_DEFINE := -D KOF_TINY
+CUSTOM_OBJECT := 1
+FIGHT_ENV := KOF_TINY=1
 else
 export ROMNAME := kof98-snes
 export ROMTITLE := KOF SNESFEST
@@ -95,6 +110,10 @@ FIGHT_GEN := $(GEN_DIR)/iori.chr $(GEN_DIR)/iori_pal.bin \
 	$(GEN_DIR)/quote_tables.inc $(GEN_DIR)/char_names.inc \
 	$(GEN_DIR)/hud.chr $(GEN_DIR)/hud_pal.bin \
 	$(GEN_DIR)/$(MSU_NAME).msu
+
+ifeq ($(TINY),1)
+FIGHT_GEN := $(GEN_DIR)/tiny.stamp
+endif
 
 AUDIO_SRC := assets/characters/_excluded/kfm/kfm.snd assets/data/common.snd \
 	assets/data/fight.snd assets/characters/Kyo-KOF98/Kyo.snd
@@ -160,6 +179,7 @@ src/snes/fight_bridge.obj: src/engine/fight.asm src/engine/team_order.asm src/en
 validate-snesmod: $(AUDIOFILES) tools/validate_snesmod.py tools/it_pattern_limit.py
 	python3 tools/validate_snesmod.py $(SMCONV) $(AUDIOFILES)
 
+ifneq ($(TINY),1)
 $(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json assets/characters/*/*_SNES.cns assets/characters/*/*_SNES.cmd assets/characters/*/*.air assets/data/quotes/*.json) \
 	tools/build_fight.py tools/normal_throws.py tools/close_normals.py tools/remaining_specials.py tools/runtime_abi.py assets/runtime_abi.json tools/newroster.py tools/build_spc_neogeo.py \
 	Makefile.pvsnes $(wildcard Makefile.hi Makefile.old) \
@@ -180,6 +200,18 @@ $(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json asse
 	$(wildcard assets/kof98data/Lifebar/Lifebar_Font/*.def \
 	           assets/kof98data/Lifebar/Lifebar_Font/*.sff)
 	$(FIGHT_ENV) python3 tools/build_fight.py
+endif
+
+# TINY: reuse the traditional build's 0.88 data and MSU layout, then add
+# the eleven 0.42-0.45 ROM copies.  build_tiny.py never writes into
+# build/gen_fight or kof98-snes.msu.
+ifeq ($(TINY),1)
+$(GEN_DIR)/tiny.stamp: tools/build_tiny.py \
+	build/gen_fight/newchars_tabs.inc build/gen_fight/newchars_banks.inc \
+	build/gen_fight/newchars_desc.inc build/gen_fight/msu1_bases.inc
+	@mkdir -p $(GEN_DIR)
+	python3 tools/build_tiny.py
+endif
 
 # The generated includes spell their .INCBIN paths as gen_fight/..., so the
 # OLD build generates straight into $(BUILD_INC)/gen_fight.  The checkout lives
@@ -201,7 +233,7 @@ $(PROFILE_FIGHT_OBJ): src/snes/fight_bridge.asm src/engine/fight.asm \
 	$(AS) -d -s -x $(PROFILE_DEFINE) \
 		$(if $(filter 1,$(BIGROM)),-D BIGROM -D FULL12) \
 		$(if $(filter 1,$(BASE4)),-D BASE4) \
-		-I src -I $(BUILD_INC) -I build -o $@ $<
+		-I $(BUILD_INC) -I src -I build -o $@ $<
 
 # Link the profile ROM from its own object, leaving src/snes/fight_bridge.obj
 # and the default kof98-snes.sfc untouched.  Mirrors the SDK's %.sfc recipe.
@@ -294,6 +326,13 @@ old:
 
 old-verify:
 	@$(MAKE) -f Makefile.pvsnes OLD=1 verify
+
+tiny:
+	$(MAKE) -f Makefile.pvsnes TINY=1 kof98-snes-tiny.sfc
+
+tiny-clean:
+	rm -rf build/tiny
+	rm -f kof98-snes-tiny.sfc kof98-snes-tiny.sym kof98-snes-tiny.symfull
 
 old-clean:
 	rm -rf build/old

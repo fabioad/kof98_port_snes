@@ -1,0 +1,28 @@
+# Build the TINY profile without touching the traditional artifacts.
+#
+#   make -f Makefile.tiny
+#
+# 1. Build (or reuse) kof98-snes.sfc + kof98-snes.msu with the normal profile.
+# 2. Build kof98-snes-tiny.sfc, reusing the traditional data/MSU layout and
+#    adding the nine uniform 0.56 ROM copies (override with
+#    KOF_TINY_SCALE=x or KOF_TINY_SCALES=name:scale,...).
+# 3. Verify the tiny ROM's MSU detector CRC against kof98-snes.msu.
+#
+# To play the tiny ROM with MSU, copy/rename kof98-snes.msu to
+# kof98-snes-tiny.msu next to the ROM.  Without it, only the nine ROM
+# characters are selectable (the eight non-Terry ones at their ROM scale);
+# Mature and Vice need the .msu file.
+
+.PHONY: all tiny verify clean
+
+all: tiny
+
+tiny:
+	$(MAKE) -f Makefile.pvsnes
+	$(MAKE) -f Makefile.pvsnes TINY=1 kof98-snes-tiny.sfc
+	python3 tools/verify_tiny.py kof98-snes-tiny.sfc kof98-snes.msu
+
+verify: tiny
+
+clean:
+	$(MAKE) -f Makefile.pvsnes tiny-clean

@@ -40,6 +40,15 @@ FightComboRam dsb $82
 .RAMSECTION ".fight_streaming" BANK $7E SLOT 2 ORGA $5100 FORCE
 FightStreamingRam dsb $0700
 .ENDS
+.IFDEF KOF_TINY
+; Runtime roster table for the TINY profile: CharSelTabRom/BankSelTabRom are
+; copied here at boot and the ten dual-scale entries are swapped to their
+; 0.90 MSU descriptors when msuok=1.  Sits in the free gap after the streaming
+; block (ends at $57FF) and before VOICE_BUF at $6000.
+.RAMSECTION ".tiny_sel" BANK $7E SLOT 2 ORGA $5800 FORCE
+TinySelRam dsb $00C8
+.ENDS
+.ENDIF
 ; Per-side AI jump-in state.  Sits in the free gap between the combo
 ; counters and the streaming queue, away from the C stack/stream buffer.
 .RAMSECTION ".fight_ai" BANK $7E SLOT 2 ORGA $5042 FORCE
