@@ -1893,7 +1893,7 @@ POST_CAL_TARGET_LIFE = {}
 # TransTab rows that must survive apply_profile (it replaces the per-char
 # extra_trans list with the calibrated profile's copy).  Iori's 3200 ground
 # hit must chain into the 3210 anti-air on contact.
-LATE_EXTRA_TRANS = {"iori": [(89, 88, 3, 0)]}
+LATE_EXTRA_TRANS = {"iori": [(89, 88, 3, 0), (87, 90, 0, 0)]}
 # HitDef rows that must survive apply_profile for the same reason.  Iori's
 # 3200 ground strike must leave the victim in hitstun (not knocked down) so
 # the 3210 anti-air can connect.
@@ -2610,6 +2610,28 @@ if "iori" in CHARS:
     _iori["hitdef_override"][87] = {
         "damage": 6, "gdamage": 1, "gvx": 0, "gvy": 0,
     }
+    # Ya Otome explosive finish (source 3021).  The rush ends into it; the
+    # source uses Explod 6021/6112 plus a TargetLifeAdd, but the imported
+    # TargetLifeAdd cannot reach a non-grabbed hitstun victim, so give the
+    # state a real HitDef row and use the shared explosion art.
+    POST_CAL_REACTIVATED.setdefault("iori", []).append((90, 3021, 3021))
+    _iori["hitdef_from_state"] = dict(_iori.get("hitdef_from_state", {}))
+    _iori["hitdef_from_state"][90] = (
+        3200, {"active": 7, "damage": 20, "fall": 1, "gdamage": 0})
+    _iori["air_box_patch_frames"] = dict(
+        _iori.get("air_box_patch_frames", {}))
+    _iori["air_box_patch_frames"][3021] = {
+        6: [(-30, -80, 90, 0)], 7: [(-30, -80, 90, 0)],
+        8: [(-30, -80, 90, 0)]}
+    _iori["explod_override"] = dict(_iori.get("explod_override", {}))
+    _iori["explod_override"][3021] = [
+        (6, "MagicBurst", 20, -60, 20, 0x34),
+        (6, "FlameRise", 12, -40, 20, 0x34),
+        (7, "FlameTop", 28, -70, 20, 0x34),
+        (8, "MagicBurst", 30, -30, 20, 0x34),
+    ]
+    _iori["act_override"] = dict(_iori.get("act_override", {}))
+    _iori["act_override"][3021] = [(6, 8, 3, 0)]
 
 # Kyo's Orochinagi lives in 3000/3010 (charge) -> 3005 (attack) and a helper
 # flame (3020).  Neither the command rules nor the 3005 slot were wired.  Put
