@@ -144,6 +144,23 @@ PROJECTILE_ALT_EFFECTS = {
         "sids": (85, 86, 87),
         "release": 6,
     },
+    # Yuki's Ai no Kusanagi (source state 3350) calls the Kyo helper
+    # (state 3355, AIR 1903 / SFF group 2001).  The native engine keeps the
+    # projectile hitbox but has no helper bodies, so draw Kyo as the
+    # alternate ProjFx clip for sid 89.  The primary clip stays the flame
+    # used by sid 88 (Naku Ko).  Squeeze the 63x82 source cel to 63x64 so
+    # the Kyo frame fits the 16-cell effect page at native width; the alt
+    # clip is one-shot, so a 255-tick frame holds the sprite until the shot
+    # hits or reaches its TTL (two source frames would need more unique
+    # tiles and force a downscale to 24x32).
+    "yuki": {
+        "action": 1903,
+        "frames": ((1, 255),),
+        "sids": (89,),
+        "release": 2,
+        "squeeze_w": 64,
+        "squeeze_h": 64,
+    },
 
 }
 

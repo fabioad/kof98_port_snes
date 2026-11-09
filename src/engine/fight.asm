@@ -14219,6 +14219,39 @@ PS_ground:
     sta.w SPARKS+SPK_AY+1,x
     lda scr3                            ; per-shot guard mask (H/M/L/A<<4)
     sta.w SPARKS+SPK_GRD,x
+    ; Yuki's Kusanagi super draws Kyo from the alternate ProjFx clip.  When
+    ; the opponent is already Kyo / Kyo Nests / Kyo Ash, keep the hitbox but
+    ; mark the shot hidden so DrawSparks suppresses the duplicate Kyo body.
+    ; SPK_GRD bit1 is free after ProjBallisticSetup consumed the low-nibble
+    ; spawn-offset code (GuardCheck reads bits 4-7; ProjRadius treats <8 as
+    ; the ordinary 24 px radius).
+    rep #$20
+    .ACCU 16
+    ldy fofs
+    lda FP+F_STATE,y
+    and #$00FF.w
+    cmp #89
+    bne PS_vis_done
+    lda FP+F_CHAR,y
+    cmp #CharYuki
+    bne PS_vis_done
+    lda fofs
+    eor #FP2OFS.w
+    tay
+    lda FP+F_CHAR,y
+    cmp #CharKyo
+    beq PS_hide
+    cmp #CharKyonests
+    beq PS_hide
+    cmp #CharKyoash
+    bne PS_vis_done
+PS_hide:
+    lda.w SPARKS+SPK_GRD,x
+    ora #$0002.w
+    sta.w SPARKS+SPK_GRD,x
+PS_vis_done:
+    sep #$20
+    .ACCU 8
     stz.w SPARKS+SPK_FIDX,x             ; begin at frame 0
     rep #$20
     .ACCU 16
@@ -14994,7 +15027,15 @@ DS_slot:
     lda.w SPARKS+SPK_ANIM,x
     bne +
         jmp DS_next
-+   lda.w SPARKS,x
++   lda.w SPARKS+SPK_ATTR,x
+    and #$0080.w                        ; hidden helper art (Yuki's Kyo
+    beq DS_visible                      ;   sprite vs a Kyo opponent): the
+    lda.w SPARKS+SPK_GRD,x              ;   hitbox stays active, only the
+    and #$0002.w                        ;   duplicate body is suppressed.
+    beq DS_visible                      ; Cosmetic sparks never carry the
+    jmp DS_next                         ;   hidden bit, so they always draw.
+DS_visible:
+    lda.w SPARKS,x
     sta scr1                            ; spark origin x
     lda.w SPARKS+2,x
     sta scr2                            ; spark origin y

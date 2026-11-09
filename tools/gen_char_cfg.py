@@ -797,7 +797,11 @@ OVERRIDES.update({
         # TransTab landing row, so give them a short synthetic copy instead
         # of freezing for four seconds.
         "air_synth": {13000: 100, 13001: 105},
-        "tail_ticks": {13001: 6},
+        # Anim 3300 (Ai no Kusanagi) ends on the source's 255-tick wait for
+        # the Kyo helper to reach the front.  The native port has no helper
+        # bodies, so that hold left Yuki frozen for four seconds after the
+        # super.  Give the attack a bounded recovery instead.
+        "tail_ticks": {13001: 6, 3300: 24},
         "wire_dash": True,
         "cmd_priority": ["SUP_TRAP_MAX", "SUP_NAKU_MAX", "SUP_AI_MAX",
                          "SUP_TRAP", "SUP_NAKU"]},

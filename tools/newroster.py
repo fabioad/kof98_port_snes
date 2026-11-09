@@ -1166,7 +1166,7 @@ NEW_CHARS = {
         'velset_sids': [94, 95],
         'loop_off': [95],
         'air_synth': {13000: 100, 13001: 105},
-        'tail_ticks': {13001: 6},
+        'tail_ticks': {13001: 6, 3300: 24},
         'wire_dash': True,
         'cmd_priority': ['SUP_TRAP_MAX', 'SUP_NAKU_MAX', 'SUP_AI_MAX', 'SUP_TRAP', 'SUP_NAKU'],
     },
