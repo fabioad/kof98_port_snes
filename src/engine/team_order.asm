@@ -1,5 +1,6 @@
 ; TEAM PLAY only: choose the original trio's first, second and third fighter.
-; BG3 owns this screen; portrait tiles/palettes are restored by StartFight.
+; BG1 owns the blue/red art; BG3 holds the unchanged 32x32 portraits and UI.
+; StartFight restores stage/portrait VRAM and palettes.
 .BASE $00
 .BANK 64 SLOT 0
 .ORGA $3000
@@ -98,9 +99,10 @@ TOE_copy:
     sta.l $2111
     sta.l $2112
     sta.l $2112
-    lda #$04.b
-    sta.l TM                           ; BG3 only, no stale stage or fighters
+    lda #$05.b
+    sta.l TM                           ; BG1 art + BG3 portraits/text
     jsr OrderLoadPortraits
+    jsr OrderLoadBackground
     stz.w OR_SIDE
 TOE_cpu:
     rep #$20
@@ -580,7 +582,7 @@ OL_ui_palette:
     .ACCU 16
     inx
     inx
-    cpx #32.w
+    cpx #16.w
     bcc OL_ui_palette
     sep #$20
     .ACCU 8
@@ -622,80 +624,9 @@ OD_clear:
     .ACCU 8
     lda #32.b
     sta.w OR_LIMIT
-    ; ---- arcade-style frame: title band + blue/red side panels ----------
-    ; Title strip behind ORDER SELECT (palette 6, steel blue fill).
+    ; Static artwork is on BG1. Only changing text/portraits live in HUDMAP.
     rep #$20
     .ACCU 16
-    lda #((1*32+4)*2).w
-    sta.w OR_POS
-    lda #24.w
-    sta.b scr0
-    lda #2.w
-    sta.b scr1
-    lda #(FONT_SOLID|$3800).w
-    sta scr2
-    jsr OrderFill
-    ; P1 header (palette 8, blue) and P2 header (palette 9, red).
-    lda #((5*32+2)*2).w
-    sta.w OR_POS
-    lda #13.w
-    sta.b scr0
-    lda #1.w
-    sta.b scr1
-    lda #(FONT_SOLID|$4000).w
-    sta scr2
-    jsr OrderFill
-    lda #((5*32+17)*2).w
-    sta.w OR_POS
-    lda #13.w
-    sta.b scr0
-    lda #1.w
-    sta.b scr1
-    lda #(FONT_SOLID|$4400).w
-    sta scr2
-    jsr OrderFill
-    ; Thin side borders around each trio.
-    lda #((5*32+1)*2).w
-    sta.w OR_POS
-    lda #1.w
-    sta.b scr0
-    lda #19.w
-    sta.b scr1
-    lda #(FONT_SOLID|$4000).w
-    sta scr2
-    jsr OrderFill
-    lda #((5*32+15)*2).w
-    sta.w OR_POS
-    jsr OrderFill
-    lda #((5*32+16)*2).w
-    sta.w OR_POS
-    lda #(FONT_SOLID|$4400).w
-    sta scr2
-    jsr OrderFill
-    lda #((5*32+30)*2).w
-    sta.w OR_POS
-    jsr OrderFill
-    ; Bottom rail under both trios.
-    lda #((23*32+1)*2).w
-    sta.w OR_POS
-    lda #15.w
-    sta.b scr0
-    lda #1.w
-    sta.b scr1
-    lda #(FONT_SOLID|$4000).w
-    sta scr2
-    jsr OrderFill
-    lda #((23*32+16)*2).w
-    sta.w OR_POS
-    lda #(FONT_SOLID|$4400).w
-    sta scr2
-    jsr OrderFill
-    rep #$20
-    .ACCU 16
-    lda #((2*32+10)*2).w
-    sta.w OR_POS
-    lda #OrderTitle.w
-    jsr OrderLocalText
     lda #((4*32+12)*2).w
     sta.w OR_POS
     lda #OrderStage.w
@@ -706,7 +637,7 @@ OD_clear:
     adc #28.w                           ; charset '1' + confrontation
     ora #$3800.w
     sta.w HUDMAP+((4*32+18)*2)
-    lda #((24*32+3)*2).w
+    lda #((25*32+3)*2).w
     sta.w OR_POS
     lda #OrderHint.w
     jsr OrderLocalText
@@ -821,7 +752,7 @@ OD_cards_done:
     asl a
     asl a
     clc
-    adc #(22*32+4).w
+    adc #(23*32+4).w
     asl a
     sta.w OR_POS
     lda #$3800.w
@@ -860,51 +791,62 @@ OD_status:
 OD_sides_done:
     rts
 
-; Fill a HUDMAP rectangle: OR_POS = start byte offset, scr0 = width (tiles),
-; scr1 = height (rows), scr2 = tile|palette|priority word.  Used only by the
-; ORDER SELECT frame, before text/portraits are placed.
-OrderFill:
+ ; BG1 uses its own 4bpp tiles at $0000 and palette 2 (CGRAM 32..47).
+; BG3's six 2bpp portrait palettes at 0..23 and UI at 24..31 stay intact.
+OrderLoadBackground:
     rep #$30
     .ACCU 16
     .INDEX 16
-    ldx.w OR_POS
+    lda #OrderArtChr.w
+    sta.b scr0
+    lda #(OrderArtChr_End-OrderArtChr).w
+    sta.b scr1
+    lda #BG1CHR.w
+    sta.b scr2
     sep #$20
     .ACCU 8
-    lda.b scr0
-    asl a
-    sta.b scr4                          ; width in bytes
-    lda #64
-    sec
-    sbc.b scr4
-    sta.b scr5                          ; advance to the next row
-    stz.b scr5+1
-    lda.b scr1
-    sta.b scr6
-OF_row:
-    lda.b scr0
-    sta.b scr3
-OF_col:
-    lda.b scr2
-    sta.w HUDMAP,x
-    lda.b scr2+1
-    sta.w HUDMAP+1,x
-    inx
-    inx
-    dec.b scr3
-    bne OF_col
+    lda #:OrderArtChr
+    jsl VrDmaFar
     rep #$20
     .ACCU 16
-    txa
-    clc
-    adc scr5
-    tax
+    lda #OrderArtMap.w
+    sta.b scr0
+    lda #(OrderArtMap_End-OrderArtMap).w
+    sta.b scr1
+    lda #BG1MAP.w
+    sta.b scr2
     sep #$20
     .ACCU 8
-    dec.b scr6
-    bne OF_row
-    rep #$30
+    lda #:OrderArtMap
+    jsl VrDmaFar
+    lda #32.b
+    sta.l CGADD
+    rep #$20
     .ACCU 16
-    .INDEX 16
+    ldx #0.w
+OLB_palette:
+    lda.l OrderArtPal,x
+    sep #$20
+    .ACCU 8
+    sta.l CGDATA
+    xba
+    sta.l CGDATA
+    rep #$20
+    .ACCU 16
+    inx
+    inx
+    cpx #32.w
+    bcc OLB_palette
+    sep #$20
+    .ACCU 8
+    lda #$40.b                         ; BG1 map at $4000, 32x32
+    sta.l BG1SC
+    lda #0.b
+    sta.l BG12NBA                      ; BG1 CHR base $0000
+    sta.l $210D
+    sta.l $210D
+    sta.l $210E
+    sta.l $210E
     rts
 
 OrderDrawPortrait:
@@ -1131,7 +1073,7 @@ TeamOrderPresent:
     sta.l $4361
     lda #$40.b
     sta.l MDMAEN
-    lda #$04.b
+    lda #$05.b
     sta.l TM
     lda #0.b
     sta.l $212D
@@ -1160,8 +1102,7 @@ OrderReady: .db 5,18,5,1,4,25
 OrderChoose: .db 6,3,8,15,15,19,5
 OrderFixed: .db 5,6,9,24,5,4
 OrderBits: .db 1,2,4
-OrderPalette: .dw $0000,$7FFF,$4210,$6318, $0000,$03FF,$7FFF,$4210
-              .dw $0000,$03FF,$03FF,$0010, $0000,$001F,$001F,$0010
+OrderPalette: .dw $0000,$7FFF,$4210,$6318, $0000,$1ABF,$7FFF,$0910
 OrderTitle: .db 12,15,18,4,5,18,0,19,5,12,5,3,20
 OrderStage: .db 5,19,20,1,7,5
 OrderPlayer: .db 6,16,12,1,25,5,18

@@ -168,7 +168,14 @@ $(ROMNAME).msu: $(ROMNAME).sfc $(GEN_DIR)/$(MSU_NAME).msu
 	cp -f $(GEN_DIR)/$(MSU_NAME).msu $@.tmp
 	mv -f $@.tmp $@
 
-assets: $(FIGHT_GEN)
+ORDER_GEN := src/gen_menu/order.chr src/gen_menu/order.map src/gen_menu/order.pal
+
+$(ORDER_GEN) &: tools/build_order.py tools/build_select.py tools/sff.py
+	python3 tools/build_order.py
+
+src/snes/fight_bridge.obj: $(ORDER_GEN)
+
+assets: $(FIGHT_GEN) $(ORDER_GEN)
 
 audio: $(SOUNDBANK).asm $(AUDIO_GEN) validate-snesmod
 
@@ -224,7 +231,7 @@ ifeq ($(CUSTOM_OBJECT),1)
 PROFILE_FIGHT_OBJ := $(BUILD_INC)/fight_bridge.obj
 PROFILE_OFILES := $(filter-out src/snes/fight_bridge.obj,$(OFILES)) $(PROFILE_FIGHT_OBJ)
 
-$(PROFILE_FIGHT_OBJ): src/snes/fight_bridge.asm src/engine/fight.asm \
+$(PROFILE_FIGHT_OBJ): src/snes/fight_bridge.asm $(ORDER_GEN) src/engine/fight.asm \
 	src/engine/voice_queue.asm src/engine/menucore.asm src/engine/menus.asm \
 	src/engine/options.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/msu_seek.asm src/engine/close_normals.asm src/engine/msu_intro.asm src/engine/cancel_gate.asm \
 	$(wildcard src/gen_menu/*) $(wildcard src/gen_menu/intro/*) \

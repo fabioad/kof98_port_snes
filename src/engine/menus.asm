@@ -502,4 +502,11 @@ SelObjChr:      .INCBIN "gen_menu/selobj.chr"
 SelObjChr_End:
 SelObjPal:      .INCBIN "gen_menu/selobj.pal"
 SelObjPal_End:
+; ORDER SELECT BG1 art shares this bank's remaining space.
+OrderArtChr: .INCBIN "gen_menu/order.chr"
+OrderArtChr_End:
+OrderArtMap: .INCBIN "gen_menu/order.map"
+OrderArtMap_End:
+OrderArtPal: .INCBIN "gen_menu/order.pal"
+
 .ENDS
