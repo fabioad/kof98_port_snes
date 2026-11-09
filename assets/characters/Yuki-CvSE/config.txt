@@ -1,0 +1,30 @@
+
+; Configurations
+
+;---------------------------------------------------------------------------
+
+; Initialize (at the start of the round)
+[Statedef 5900]
+type = S
+
+[State configuration]
+type = Null
+; Decide which controller settings to use:
+; 0 = XI style (E button)
+; Anything else = Classic style (E button = C+D shortcut)
+trigger1 = (var(30) := 1)
+persistent = 0
+
+
+
+
+
+
+
+
+; Do not touch anything below this!!!
+
+[State 5900] ;Intro for round 1
+type = ChangeState
+trigger1 = roundno = 1
+value = 190

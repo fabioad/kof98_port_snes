@@ -1,4 +1,4 @@
-"""Source/table contracts for all 100 normal-throw cases, without a ROM build.
+"""Source/table contracts for all 106 normal-throw cases, without a ROM build.
 
 These tests execute signed-byte damage timelines, not the 65816 engine. The
 headless audit remains the final runtime check after a later build.
@@ -45,8 +45,8 @@ class NormalThrowRepairsTests(unittest.TestCase):
         for name, data in cls.fixed.items():
             repair(name, data)
 
-    def test_all_100_roster_direction_cases(self):
-        self.assertEqual(len(self.fixed), 50)
+    def test_all_106_roster_direction_cases(self):
+        self.assertEqual(len(self.fixed), 53)
         checked = 0
         for name, (cfg, anims, air, parsed) in self.fixed.items():
             for facing in (1, -1):
@@ -96,7 +96,7 @@ class NormalThrowRepairsTests(unittest.TestCase):
                     wired = {state: sid for sid, state in cfg["moves"].items()}
                     trans = bf.trans_rules(parsed[4], parsed[3], wired, cfg["buttons"])
                     self.assertIn((75, 0, 0, 0), trans)
-        self.assertEqual(checked, 100)
+        self.assertEqual(checked, 106)
 
     def test_only_the_19_broken_characters_are_repaired(self):
         expected = {"kyo", "kyonests", "kyoash", "rugal", "omegarugal", "leona",
@@ -104,7 +104,7 @@ class NormalThrowRepairsTests(unittest.TestCase):
                     "chizuru", "chang", "shermie", "billy", "lucky", "brian"}
         self.assertEqual(set(nt.PLANS), expected)
 
-    def test_all_50_keep_the_requested_pad_layout(self):
+    def test_all_53_keep_the_requested_pad_layout(self):
         expected_buttons = {"x": 0x4000, "y": 0x0040,
                             "a": 0x8000, "b": 0x0080,
                             "c": 0x0020, "z": 0x0010}

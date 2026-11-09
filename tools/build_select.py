@@ -97,7 +97,10 @@ ROSTER = [
     (_nsff("ken"),                   44),  # 45 KEN
     (_nsff("chunli"),                45),  # 46 CHUN-LI
     (_nsff("sakura"),                46),  # 47 SAKURA  lower-right bottom-right
-    # hidden Kyo EX variants (ids 48/49): L/R on the Kyo cell; they borrow
+    (_nsff("kasumi"),                47),  # new row below Shingo/Rugal/Eiji
+    (_nsff("duckking"),              48),
+    (_nsff("yuki"),                  49),
+    # hidden Kyo EX variants (ids 51/52): L/R on the Kyo cell; they borrow
     # Kyo's cell for SelChrCell so returning from a fight re-seeds there.
     (_nsff("kyonests"),               3, True),
     (_nsff("kyoash"),                 3, True),
@@ -117,7 +120,12 @@ ICON_SPR = (9000, 0)        # cell icon in each char sff
 NEW_CELLS = [(8, 143, 27, 165), (30, 143, 49, 165),
              (8, 168, 27, 190), (30, 168, 49, 190),
              (206, 143, 225, 165), (228, 143, 247, 165),
-             (206, 168, 225, 190), (228, 168, 247, 190)]
+             (206, 168, 225, 190), (228, 168, 247, 190),
+             # release 1.1.2: a new row directly below Shingo/Rugal/Eiji,
+             # aligned with the top row cells (x=96/118/140) and with the
+             # existing bottom-row cells (y=168-190).
+             (96, 168, 115, 190), (118, 168, 137, 190),
+             (140, 168, 159, 190)]
 
 # name/CPU-tag anchors (8px tile coords), kept from the face windows so
 # the OBJ name row still reads "left side = P1, right side = P2".
@@ -277,6 +285,58 @@ class TileSet:
         return b"".join(self.tiles)
 
 
+def clean_icon(icon):
+    """Drop the solid near-black backdrop of large (50x50) kofa icons.
+
+    Those portraits are stored as an opaque black square; pasted straight
+    into a select cell they read as a black box around the face.  Flood-fill
+    only the near-black region connected to the border (so dark hair or
+    outlines inside the portrait survive), then crop to the remaining
+    content so the face fills the cell like the hand-cropped 25x25 icons.
+    """
+    if icon.width <= 32 and icon.height <= 32:
+        return icon
+    from collections import deque
+    icon = icon.convert("RGBA")
+    w, h = icon.size
+    px = icon.load()
+
+    def backdrop(c):
+        return c[3] > 0 and c[0] + c[1] + c[2] <= 42
+
+    queue = deque()
+    for x in range(w):
+        for y in (0, h - 1):
+            if backdrop(px[x, y]):
+                queue.append((x, y))
+    for y in range(h):
+        for x in (0, w - 1):
+            if backdrop(px[x, y]):
+                queue.append((x, y))
+    seen = set()
+    while queue:
+        x, y = queue.popleft()
+        if (x, y) in seen:
+            continue
+        seen.add((x, y))
+        c = px[x, y]
+        if not backdrop(c):
+            continue
+        px[x, y] = (c[0], c[1], c[2], 0)
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in seen:
+                queue.append((nx, ny))
+    bbox = icon.getbbox()
+    return icon.crop(bbox) if bbox else icon
+
+
+def icon_rgba(sff, key=ICON_SPR):
+    """Select/HUD cell icon with the black-square backdrop removed."""
+    icon, _ = sprite_rgb(sff, *key)
+    return clean_icon(icon)
+
+
 def region_tiles(img, tileset, base_tile=0):
     """img WxH (multiple of 8) -> (mapwords list row-major via tileset)."""
     w, h = img.size
@@ -313,7 +373,7 @@ def main():
     for cid, cell in vis:
         sff_rel = ROSTER[cid][0]
         csff = Sff(resolve_asset(ROOT, os.path.join("assets", "characters", sff_rel)))
-        icon, _ = sprite_rgb(csff, *ICON_SPR)
+        icon = icon_rgba(csff)
         box = cells[cell]
         iw, ih = box[2] - box[0] - 1, box[3] - box[1] - 1
         # Preserve the portrait's aspect ratio and center it in the cell's
@@ -374,7 +434,15 @@ def main():
     pals = [art_pal]
     cell_palidx = {}
     GRP = 6
-    if len(vis) == 47:
+    if len(vis) == 50:
+        # 1.1.2 roster: keep the first five groups unchanged and let the
+        # newcomers share the final two palettes.
+        sizes = [7, 7, 7, 7, 7, 8, 7]
+        palette_chunks, start = [], 0
+        for size in sizes:
+            palette_chunks.append(vis[start:start + size])
+            start += size
+    elif len(vis) == 47:
         # Balance the seven SNES icon palettes. The lower-right fighters
         # share one palette group without overloading it with the old final
         # ten portraits.

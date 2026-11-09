@@ -1,0 +1,37 @@
+;***************************************************************************;
+;******************* Created in Fighter Factory Ultimate *******************;
+;*******************      http://www.virtualltek.com     *******************;
+;***************************************************************************;
+
+[Info]
+name ="Yuki kushinada"
+displayname ="Yuki Kushinada"
+versiondate =02,06,2011 (June - 2nd - 2011)
+mugenversion =04,06,2004
+author ="Blue blood & Fervicante"
+pal.defaults =1,2,3,4,5,6,7,8,9,10,11,12
+
+[Files]
+sprite =yuki_kushinada.sff
+anim =yuki_kushinada.air
+sound =yuki_kushinada.snd
+cmd =yuki_kushinada.cmd
+cns =yuki_kushinada.cns
+stcommon =common1.cns
+st =yuki_kushinada.cns
+pal1=yuki_kushinada04.act
+pal2=yuki_kushinada02.act
+pal3=yuki_kushinada03.act
+pal4=yuki_kushinada01.act
+pal5=yuki_kushinada05.act
+pal6=yuki_kushinada06.act
+pal7=yuki_kushinada07.act
+pal8=yuki_kushinada08.act
+pal9=yuki_kushinada09.act
+pal10=yuki_kushinada10.act
+pal11=yuki_kushinada11.act
+pal12=yuki_kushinada12.act
+
+[Arcade]
+intro.storyboard = story/intro.def
+ending.storyboard = 
