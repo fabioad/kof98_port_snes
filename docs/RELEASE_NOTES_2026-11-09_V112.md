@@ -123,6 +123,19 @@ nomes legíveis para os golpes e os comandos no formato SNES.
   causou 90 de dano e recuperou em ~0,77 s.
 - `make -f Makefile.pvsnes verify`: **OK**, checksum **`$EDC9`**.
 
+## Build TINY (opcional)
+
+- `make -f Makefile.pvsnes tiny`: **OK** — `kof98-snes-tiny.sfc`
+  (8 MiB, 22,71% livre, checksum **`$BEDE`**).
+- Com `kof98-snes-tiny.msu` (cópia do `kof98-snes.msu` atual), as células de
+  **Kasumi, Duck King e Yuki** ficam liberadas. Os demais chars MSU fora do
+  roster tiny continuam indisponíveis nesta variante.
+- Sem o MSU, o tiny mantém apenas o roster 0.56 original.
+- Tiny SFC SHA-256:
+  `197fa4169466cf4303f27ad5f4f03c21a6a6d726f949763281c17760bd9d5b68`
+- Tiny MSU SHA-256:
+  `3d134d268c7f3f46ed36b6b8d080639247e0f0e7ded27143bc519c4803b4d681`
+
 ## Build
 
 - ROM: `kof98-snes.sfc` (8 MiB)
