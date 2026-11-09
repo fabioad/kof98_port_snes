@@ -774,6 +774,9 @@ OVERRIDES.update({
             (88, 3150, "SUP_NAKU_MAX", "~D, F, D, F, x+y", 1),
             (89, 3350, "SUP_AI_MAX", "~D, B, D, F, x+y", 1),
         ],
+        # Phantom evades use a short copy of the back-hop clip (see cfg
+        # air_synth) so they do not hold the last pose for 255 ticks.
+        "anims": {95: 13000, 94: 13001, 69: 13001},
         "cfg": {"cmd_labels": {
             48: "YUKI BAG", 49: "OTOME NO SAKEBI",
             50: "VALTING OVER", 51: "KABAN BARRIER",
@@ -790,6 +793,12 @@ OVERRIDES.update({
         "state_vel": {95: (6, 0), 94: (-6, 0)},
         "velset_sids": [94, 95],
         "loop_off": [95],
+        # Anim 105 ends on a 255-tick hold.  The phantom evades have no
+        # TransTab landing row, so give them a short synthetic copy instead
+        # of freezing for four seconds.
+        "air_synth": {13000: 100, 13001: 105},
+        "tail_ticks": {13001: 6},
+        "wire_dash": True,
         "cmd_priority": ["SUP_TRAP_MAX", "SUP_NAKU_MAX", "SUP_AI_MAX",
                          "SUP_TRAP", "SUP_NAKU"]},
     },
@@ -1603,7 +1612,9 @@ def gen_char(key, cdir_name, defname, display):
     for _sid, (cn, _m, post) in motion_order:
         entry(f"special_{_sid}", wired[_sid], cn,
               "= A" if post == 4 else "!= A")
-    if key in ("terry", "yuri") or (calibration and calibration.get("wire_dash")):
+    if (key in ("terry", "yuri")
+            or (calibration and calibration.get("wire_dash"))
+            or ov.get("cfg", {}).get("wire_dash")):
         for _sid, cname in ((45, "FF"), (46, "BB")):
             if _sid in wired:
                 entry(f"sys_{_sid}", wired[_sid], cname, "= S")

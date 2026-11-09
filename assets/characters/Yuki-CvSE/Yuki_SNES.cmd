@@ -263,6 +263,20 @@ triggerall = command = "SUP_AI_MAX"
 triggerall = statetype != A
 trigger1 = ctrl
 
+[State -1, sys_45]
+type = ChangeState
+value = 100
+triggerall = command = "FF"
+triggerall = statetype = S
+trigger1 = ctrl
+
+[State -1, sys_46]
+type = ChangeState
+value = 105
+triggerall = command = "BB"
+triggerall = statetype = S
+trigger1 = ctrl
+
 [State -1, sys_95]
 type = ChangeState
 value = 19995

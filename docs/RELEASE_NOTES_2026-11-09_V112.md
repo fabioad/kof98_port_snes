@@ -90,7 +90,14 @@ nomes legíveis para os golpes e os comandos no formato SNES.
   esquivas (L, L+B, L+F) entram em 69/94/95.
 - **Yuki:** a personagem não tem estados de esquiva no CNS original. As três
   esquivas foram sintetizadas com os clipes de corrida/back-hop, com
-  velocidade de entrada no sentido correto e sem loop infinito.
+  velocidade de entrada no sentido correto e sem loop infinito. O clipe 105
+  terminava com um hold de 255 ticks e o evade frontal compartilhava o clipe
+  de corrida com loop; por isso as recuperações demoravam. Agora o neutral e
+  o para trás usam uma cópia curta do clipe (10 ticks) e o frontal uma cópia
+  sem loop, recuperando em ~0,2 s / ~0,45 s.
+- **Yuki — dashes:** os comandos FF/BB agora entram nos estados 45/46
+  (corrida para frente e back-hop). O dash frontal mantém a corrida enquanto
+  a direção é segurada; o traseiro recupera em ~0,27 s.
 - **Kasumi:** os especiais e supers que usavam helpers (Kasane Ate,
   Chou Kasane Ate) agora lançam projéteis nativos com a arte dos helpers
   1020/3020, causando dano de verdade. Os slots 87–89 (MAX e os counters
@@ -109,14 +116,17 @@ nomes legíveis para os golpes e os comandos no formato SNES.
 - `tools/test_roster.py --launch --only 48,0,49,0,50,0`: **3/3 confrontos OK**
   (Kasumi, Duck King e Yuki carregam, animam e entram em luta).
 - Teste em emulador: Duck e Yuki entram em 69/94/95 com L, L+B e L+F.
+  Em Yuki, a recuperação medida foi 0,18 s (neutral), 0,15 s (para trás) e
+  0,45 s (para frente).
+- Yuki FF/BB: estados 45/46 confirmados; dash traseiro recupera em ~0,27 s.
 - Kasumi: QCF+X causou 18 de dano, QCB+A causou 24 e o super QCFx2+X
   causou 90 de dano e recuperou em ~0,77 s.
-- `make -f Makefile.pvsnes verify`: **OK**, checksum **`$3456`**.
+- `make -f Makefile.pvsnes verify`: **OK**, checksum **`$EDC9`**.
 
 ## Build
 
 - ROM: `kof98-snes.sfc` (8 MiB)
-  - SHA-256 `5d928aa292ba098ab521002126219ed8db18051ac5b08bbaff7ae28ba8f2a717`
+  - SHA-256 `e4a681e19b657483cc2e6a4b00dd9352795f5b1e78dbaa2d47584ee1f9bc3d7f`
 - MSU: `kof98-snes.msu` (54.083.072 bytes)
   - SHA-256 `3d134d268c7f3f46ed36b6b8d080639247e0f0e7ded27143bc519c4803b4d681`
 

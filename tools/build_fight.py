@@ -11675,7 +11675,7 @@ def build_char(name, cfg, global_pal=None):
         sid = sys_cmd_sids.get(r["motion"].split("#", 1)[0])
         if sid is not None and sid in move_ids:
             r["state"] = sid
-    if calibration and calibration.get("wire_dash"):
+    if (calibration and calibration.get("wire_dash")) or cfg.get("wire_dash"):
         for sid, motion in ((45, "FF"), (46, "BB")):
             if sid not in move_ids or motion not in cmddefs:
                 continue
