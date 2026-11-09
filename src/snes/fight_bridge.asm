@@ -76,6 +76,69 @@ MsuStageBuf dsb $0800
 .RAMSECTION ".msu_stage2" BANK $7F SLOT 3 ORGA $5800 FORCE
 MsuStageBuf2 dsb $0800
 .ENDS
+.BASE $00
+.RAMSECTION ".fillbar_memo" BANK $7F SLOT 3 ORGA $6000 FORCE
+FBM_CACHE dsb $0080
+.ENDS
+.IFDEF KOF_PERF_VERIFY
+.RAMSECTION ".perf_verify" BANK $7F SLOT 3 ORGA $6100 FORCE
+PV_SIGNATURE dsb 4
+PV_DRAW_CALLS dsb 4
+PV_DRAW_MISMATCHES dsb 4
+PV_HP_CALLS dsb 4
+PV_HP_MISMATCHES dsb 4
+PV_POW_CALLS dsb 4
+PV_POW_MISMATCHES dsb 4
+PV_FB_CALLS dsb 4
+PV_FB_MISMATCHES dsb 4
+PV_FIRST_VALID dsb 1
+PV_FIRST_TYPE dsb 1
+PV_FIRST_OFFSET dsb 2
+PV_FIRST_EXPECTED dsb 2
+PV_FIRST_ACTUAL dsb 2
+PV_FIRST_CONTEXT dsb 32
+PV_TMP_OFFSET dsb 2
+PV_TMP_EXPECTED dsb 2
+PV_TMP_ACTUAL dsb 2
+PV_DRAW_IN_A dsb 2
+PV_DRAW_IN_X dsb 2
+PV_DRAW_IN_Y dsb 2
+PV_DRAW_SCR0 dsb 2
+PV_DRAW_SCR1 dsb 2
+PV_DRAW_SCR2 dsb 2
+PV_DRAW_SCR3 dsb 2
+PV_DRAW_SCR4 dsb 2
+PV_DRAW_SCR5 dsb 2
+PV_DRAW_SCR6 dsb 2
+PV_DRAW_PBASE dsb 2
+PV_DRAW_AOFS dsb 1
+PV_DRAW_LPTR dsb 3
+PV_DRAW_PRE_TOP dsb 2
+PV_DRAW_PRE_DROP dsb 2
+PV_DRAW_OLD_TOP dsb 2
+PV_DRAW_OLD_DROP dsb 2
+PV_DRAW_OLD_SCR0 dsb 2
+PV_DRAW_OLD_SCR1 dsb 2
+PV_DRAW_OLD_SCR2 dsb 2
+PV_HP_INPUT dsb 2
+PV_HP_FAST_A dsb 2
+PV_HP_FAST_X dsb 2
+PV_HP_OLD_A dsb 2
+PV_HP_OLD_X dsb 2
+PV_POW_INPUT dsb 2
+PV_POW_FAST_A dsb 2
+PV_POW_FAST_X dsb 2
+PV_POW_OLD_A dsb 2
+PV_POW_OLD_X dsb 2
+PV_DRAW_PRE_OAM dsb 544
+PV_DRAW_OLD_OAM dsb 544
+PV_FIRST_OLD_OAM dsb 544
+PV_FIRST_NEW_OAM dsb 544
+PV_DBG dsb 16
+PV_NMISAVE dsb 128
+.ENDS
+.ENDIF
+.BASE $C0
 
 ; Arguments for the sector-aligned MSU reader used by the voice streamer.
 ; Kept in the free top of WRAM next to the select scratch bytes ($7F10/$7F20
@@ -115,6 +178,7 @@ MsuVideoStage dsb $1900
 .INCLUDE "engine/options.asm"
 .INCLUDE "engine/team_order.asm"
 .INCLUDE "engine/frame_present.asm"
+.INCLUDE "engine/fast_paths.asm"
 .INCLUDE "engine/msu_seek.asm"
 .INCLUDE "engine/close_normals.asm"
 .IFDEF MSU_DIAG
@@ -481,61 +545,39 @@ MRA_poll:
     clc
     rtl
 MRA_ready:
-    ; MSU -> WRAM through the CPU data port.  Do not use a second MSU DMA
-    ; here: the CHR uploader owns the DMA/cache path, and interleaving two
-    ; MSU DMA consumers left the SD2SNES cache serving stale CHR sectors on
-    ; some cards (MSU fighters showed garbled tiles again).  A voice chunk
-    ; is only 512 bytes, so the CPU copy is cheap enough.
-    rep #$20
-    .ACCU 16
-    lda #(MsuStageBuf & $FFFF).w
-    sta scr0
-    lda.w MSU_PREFIX
-    clc
-    adc scr3
-    sta scr5                            ; prefix + payload bytes
+    ; Keep the port on the CPU data path: interleaving MSU DMA consumers
+    ; leaves the SD2SNES cache serving stale CHR sectors on some cards.
     sep #$20
     .ACCU 8
-    lda #$7F.b
-    sta scr0+2
-    ldy #0
-MRA_copy_in:
+    ldx.w MSU_PREFIX
+    beq MRA_payload
+MRA_skip_prefix:
     lda.l MSU_DATA
-    sta [scr0],y
-    iny
-    cpy scr5
-    bcc MRA_copy_in
-    ; copy only the requested payload, skipping the sector prefix
+    dex
+    bne MRA_skip_prefix
+MRA_payload:
     rep #$20
     .ACCU 16
-    lda scr3                            ; payload count; scr2+2 (the pointer
-    sta scr6                            ; bank byte) aliases scr3 at $16
-    lda #(MsuStageBuf & $FFFF).w
-    clc
-    adc.w MSU_PREFIX
-    sta scr0
     lda.l MRD_DST
     clc
     adc.l MRD_POS
-    sta scr2
+    sta scr0
     sep #$20
     .ACCU 8
-    lda #$7F.b
-    sta scr0+2
     lda.l MRD_DST+2
-    sta scr2+2
+    sta scr0+2
+    ldy #0
+MRA_copy_payload:
+    lda.l MSU_DATA
+    sta [scr0],y
+    iny
+    cpy scr3
+    bcc MRA_copy_payload
     rep #$20
     .ACCU 16
-    ldy #0
-MRA_copy:
-    lda [scr0],y
-    sta [scr2],y
-    iny
-    cpy scr6
-    bcc MRA_copy
     lda.l MRD_POS
     clc
-    adc scr6
+    adc scr3
     sta.l MRD_POS
     jmp MRA_loop
 MRA_done:

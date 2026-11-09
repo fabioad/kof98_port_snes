@@ -39,6 +39,9 @@ próprio em **65816 + PVSnesLib**, com assets convertidos de pacotes MUGEN/KOF
 - **Modo TREINO/PRACTICE** com command list, meter infinito e CPU parada.
 - **Team Play 3 vs 3**, Survivor com final próprio e campanha Single Play.
 - **Paletas espelhadas** para lutas entre o mesmo personagem.
+- **CPU vs CPU a ~59 fps** no par de referência (era ~52; a matriz completa
+  saiu de ~46–54 para ~53–59). Ver a
+  [nota técnica de framerate](docs/PERF_FRAMERATE_2026-11-09.md).
 - Música e efeitos via SPC700/SNESMOD; gráficos, vozes e extras podem ser
   streamados do arquivo MSU-1.
 
@@ -285,6 +288,9 @@ emulator).
 - **PRACTICE mode** with a command list, infinite meter and an idle CPU.
 - **3v3 Team Play**, Survivor with its own ending, and a Single Play campaign.
 - **Mirror-match palettes** when both players pick the same fighter.
+- **CPU vs CPU at ~59 fps** on the reference pair (up from ~52; the full
+  matrix moved from ~46–54 to ~53–59). See the
+  [framerate technical note](docs/PERF_FRAMERATE_2026-11-09.md).
 - Music and sound effects through SPC700/SNESMOD; graphics, voices and extras
   can be streamed from the MSU-1 file.
 - 17 music tracks use the approved Final Fight Guy instrument/drum profile,

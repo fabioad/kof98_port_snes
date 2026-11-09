@@ -4144,6 +4144,9 @@ StartFight:
     rts
 +
 .ENDIF
+.IFDEF KOF_PERF_VERIFY
+    jsl PerfVerifyReset
+.ENDIF
     jsr VoiceQueueDrop                   ; no queued quote may follow us;
     stz.b winvoice                       ; and no deferred winner voice either
     lda #0
@@ -4425,6 +4428,7 @@ SF_carry:
     ldx #scr2
     jsr NamePtr
     jsr WriteStr
+    jsl FillBarMemoResetFar
     jsr DrawBars
     jsr DrawWins                          ; round-win pips under the names
     jsr DrawLevel                         ; small LEVEL n at the bottom
@@ -4546,7 +4550,8 @@ DrawBars:
     rep #$20
     .ACCU 16
     ldx #((2*32+3)*2).w
-    jsr FillBar
+    ldy #0.w
+    jsr FillBarM
     rep #$20
     .ACCU 16
     lda FP+F_HP+FP2OFS
@@ -4570,7 +4575,8 @@ DrawBars:
     rep #$20
     .ACCU 16
     ldx #((2*32+28)*2).w
-    jsr FillBar
+    ldy #32.w
+    jsr FillBarM
     ; FillBar returns with A=16; no need to rep again here.
     .ACCU 16                            ; power bars on the row below the
     lda FP+F_POWER                      ;   life bars
@@ -4589,7 +4595,8 @@ DrawBars:
     rep #$20
     .ACCU 16
     ldx #((25*32+1)*2).w
-    jsr FillBar
+    ldy #64.w
+    jsr FillBarM
     rep #$20
     .ACCU 16
     lda FP+F_POWER+FP2OFS
@@ -4608,7 +4615,8 @@ DrawBars:
     rep #$20
     .ACCU 16
     ldx #((25*32+30)*2).w
-    jsr FillBar
+    ldy #96.w
+    jsr FillBarM
     jsr DrawPowerCounters
     ; Dirty-band selection: only mark the rows whose source values changed.
     ; DrawBars runs every tick, so this is cheap and keeps HP responsive even
@@ -4747,43 +4755,12 @@ DrawLevel:
 
 ; A(16) = hp 0..MAXHP -> A = filled px 0..88 (hp*11/25)
 HpToPx:
-    and #$00FF.w
-    sta scr1
-    asl a
-    asl a
-    asl a                               ; hp*8
-    clc
-    adc scr1                            ; hp*9
-    adc scr1                            ; hp*10
-    adc scr1                            ; hp*11
-    ldx #0
--   cmp #25.w
-    bcc +
-    sec
-    sbc #25.w
-    inx
-    bra -
-+   txa
+    jsl HpToPxFar
     rts
 
 ; A(16) = power 0..3000 -> A = filled px 0..88 (power*11/375)
 PowToPx:
-    sta scr1
-    asl a
-    asl a                               ; power*4
-    asl a                               ; power*8
-    clc
-    adc scr1
-    adc scr1
-    adc scr1                            ; power*11 <= 33000
-    ldx #0
--   cmp #375.w
-    bcc +
-    sec
-    sbc #375.w
-    inx
-    bra -
-+   txa
+    jsl PowToPxFar
     rts
 
 ; Pixel-granular 11-column bar.  scr5(8) = filled px left; scr6 = palette
@@ -4871,6 +4848,14 @@ FB_after_put:
 +   rep #$20
     .ACCU 16
     rts
+
+FillBarM:
+    jsl FillBarMemoFar
+    rts
+
+FillBarNearT:
+    jsr FillBar
+    rtl
 
 ; The two FNT v2 power fonts provide the stock digits.  They are kept
 ; separate because their SFF glyphs are positioned and styled per side.
@@ -8798,7 +8783,8 @@ TA_row:
     cmp #$00FF.w
     beq TA_done
     cmp FP+F_STATE,x
-    bne TA_next
+    bcc TA_next
+    bne TA_done
     ldy #2
     lda [sptr],y                          ; kind byte
     and #$00FF.w
@@ -8870,7 +8856,8 @@ TE_row:
     cmp #$00FF.w
     beq TE_none
     cmp FP+F_STATE,x
-    bne TE_next
+    bcc TE_next
+    bne TE_none
     ldy #2
     lda [sptr],y
     and #$00FF.w
@@ -15297,17 +15284,8 @@ BuildOam:
 BO_cine:
     jsr DrawSparks
 BO_fill:
-    rep #$20
-    .ACCU 16
-    ldx oamtop
-    lda #$F0F0.w
--   cpx #512.w
-    bcs +
-    sta.w OAMBUF,x
-    inx
-    inx
-    bra -
-+   rts
+    jsl BOFillFar
+    rts
 
 DrawFighter:
     rep #$20
@@ -15426,160 +15404,7 @@ DrawFighter:
     ldx oamtop
     ldy #0
 DF_cell:
-    ; A malformed frame must never walk beyond the 128-entry OAM shadow.
-    ; Keep this guard here (rather than trusting ncells) because ghosts and
-    ; effects share the same OAM cursor with both fighters.
-    cpx #512.w
-    bcc +
-    inc.w RT_OAMDROP
-    stx oamtop
-    jmp DF_done
-+
-    ; peek the cell's tile word (y+2): bit15 marks an 8x8 sub-cell
-    rep #$20
-    .ACCU 16
-    tya
-    clc
-    adc #2
-    tay
-    lda [lptr],y
-    sta scr6                            ; raw tile word (size flag + index)
-    tya
-    sec
-    sbc #2
-    tay
-    sep #$20
-    .ACCU 8
-    lda [lptr],y                        ; dx
-    sta scr3
-    iny
-    rep #$20
-    .ACCU 16
-    lda scr3
-    and #$00FF.w
-    bit #$0080.w
-    beq +
-    ora #$FF00.w
-+   sta scr3                            ; dx signed
-    lda scr0
-    and #$00FF.w
-    beq +
-    lda scr3
-    eor #$FFFF.w
-    inc a
-    sec
-    sbc #8
-    bit scr6                            ; N = tile word bit15 (8x8 flag)
-    bmi ++                              ; 8x8 cell: dx' = -dx-8
-    sec
-    sbc #8                              ; 16x16 cell: dx' = -dx-16
-++  sta scr3
-+   lda scr1
-    clc
-    adc scr3
-    sta scr5                            ; full x (sign in bit15? pixel -256..511)
-    sep #$20
-    .ACCU 8
-    sta.w OAMBUF,x                        ; cell x low byte
-    sep #$20
-    .ACCU 8
-    lda [lptr],y                        ; dy
-    sta scr3
-    iny
-    rep #$20
-    .ACCU 16
-    lda scr3
-    and #$00FF.w
-    bit #$0080.w
-    beq +
-    ora #$FF00.w
-+   clc
-    adc scr2
-    bpl +
-    lda #$00F0.w                        ; cell would start above the screen:
-+   sep #$20                            ;   hide it instead of letting the
-    .ACCU 8                             ;   8-bit OAM y wrap to the bottom
-    sta.w OAMBUF+1,x                      ; cell y
-    rep #$20
-    .ACCU 16
-    iny
-    iny
-    lda scr6
-    and #$7FFF.w                        ; strip the 8x8 size flag
-    clc
-    adc pbase                           ; fighter page + ping-pong page
-    sta scr3
-    sep #$20
-    .ACCU 8
-    lda scr3
-    sta.w OAMBUF+2,x
-    lda aofs                              ; prio 3 + character OBJ palette
-    sta.w OAMBUF+3,x
-    lda scr3+1
-    beq +
-    lda.w OAMBUF+3,x
-    ora #$01.b                          ; name msb
-    sta.w OAMBUF+3,x
-+   lda scr0
-    beq +
-    lda.w OAMBUF+3,x
-    ora #$40.b                          ; hflip
-    sta.w OAMBUF+3,x
-+   ; OAM hi table: byte idx = (oampos>>4), bit pair at (oampos>>2 &3)*2.
-    ; mask = (x-high | size)<<shift; 16x16 cells set the size bit, 8x8
-    ; sub-cells (tile bit15) leave it clear under OBJ size mode 0.
-    rep #$20
-    .ACCU 16
-    phx
-    txa
-    lsr a
-    lsr a                               ; i = entry index
-    sta scr3
-    and #$0003.w
-    asl a                               ; shift count
-    tax
-    lda #$0000.w
-    bit scr6
-    bmi +
-    lda #$0002.w                        ; 16x16 cell: large OBJ size bit
-+   phy                                 ; keep metasprite cell offset
-    ldy scr5
-    bpl ++
-    ora #$0001.w
-++  cpy #256.w
-    bcc +++
-    ora #$0001.w
-+++ cpx #0
-    beq +
--   asl a
-    dex
-    bne -
-+   sta scr5                            ; mask (scr5 free now)
-    lda scr3
-    lsr a
-    lsr a
-    tax                                 ; x = OAMHI byte index
-    sep #$20
-    .ACCU 8
-    lda scr5
-    ora.w OAMHI,x
-    sta.w OAMHI,x
-    rep #$20
-    .ACCU 16
-    ply
-    plx
-    inx
-    inx
-    inx
-    inx
-    sep #$20
-    .ACCU 8
-    dec scr4
-    rep #$20
-    .ACCU 16
-    beq +
-    jmp DF_cell
-+   stx oamtop
+    jsl DrawCellsFar
 DF_done:
     rts
 
@@ -19773,7 +19598,8 @@ TL_row:
     cmp #$00FF.w
     beq TL_no
     cmp FP+F_STATE,x
-    bne TL_next
+    bcc TL_next
+    bne TL_no
     ldy #2
     lda [sptr],y
     and #$00FF.w
@@ -19946,7 +19772,7 @@ PC_spark:
 ; follows the hand instead of flying flat at torso height.  Kept out of the
 ; full Fight bank; X = spark slot, fofs = caster.
 .BANK 50 SLOT 0
-.ORGA $0E36
+.ORGA $0E38
 .SECTION "ProjVyFix" FORCE
 ProjVyFix:
     rep #$20

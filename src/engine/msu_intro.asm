@@ -995,6 +995,18 @@ IntroNmiHandler:
     phy
     phd
     phb
+.IFDEF KOF_PERF_VERIFY
+    sep #$20
+    .ACCU 8
+    lda.l PV_DBG+15
+    beq +
+    lda.l PV_DBG+14
+    inc a
+    sta.l PV_DBG+14
++   rep #$30
+    .ACCU 16
+    .INDEX 16
+.ENDIF
     sep #$20
     .ACCU 8
     lda #ENGINE_DB.b
