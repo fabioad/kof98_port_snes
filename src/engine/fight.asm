@@ -2829,7 +2829,8 @@ SDO_floop:
     .ACCU 8
     lda tblbank.b
     sta.b scr2+2
-    ; centered under the 48px window: x = winx + (48 - len*8)/2
+    ; Yellow name plates span x=4..76 and x=180..252.
+    ; Center the 8px glyph cells at x=40 / x=216: x = center - len*4.
     lda.b [scr2]                          ; name length
     rep #$20
     .ACCU 16
@@ -2838,16 +2839,14 @@ SDO_floop:
     asl a
     asl a                                 ; len*8
     sta.b scr4
-    lda #48.w
+    lda #80.w
     sec
     sbc.b scr4
-    lsr a                                 ; (48-len*8)/2
-    clc
-    adc #(SEL_FACEL*8).w
+    lsr a                                 ; 40-len*4 (longest name: 9 cells)
     ldy.b scr6
     beq +
     clc
-    adc #((SEL_FACER-SEL_FACEL)*8).w
+    adc #176.w                           ; right plate center minus left
 +   sta.b scr0
     sep #$20
     .ACCU 8

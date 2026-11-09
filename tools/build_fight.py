@@ -2000,6 +2000,9 @@ for _c, _cfg in NEW_CHARS.items():
         # Final Psycho Crusher (3050) and MAX Knee Press Nightmare (3150)
         # are part of Vega's move list; 89 is unused.
         _drop = (89,)
+    elif _c in ("kasumi", "duckking", "yuki"):
+        # The 1.1.2 newcomers keep their full super/MAX slots 87-89.
+        _drop = ()
     else:
         _drop = (87, 88, 89)
     _saved_supers = {}
@@ -2014,6 +2017,17 @@ for _c, _cfg in NEW_CHARS.items():
     for _sid in range(98):
         _cfg["anims"].setdefault(_sid, 47)
     CHARS[_c] = _cfg
+
+# Kasumi's damaging specials/supers live in helper states (1020/1510/3020);
+# the native engine has no helpers, so launch them as stationary pooled
+# projectiles with the helper artwork.  The 87-89 slots stay wired as MAX /
+# ReversalDef counters.
+if "kasumi" in CHARS:
+    CHARS["kasumi"].setdefault("projs", {}).update({
+        52: (0, 14, 4), 53: (0, 18, 4),
+        56: (0, 14, 4), 57: (0, 18, 4),
+        85: (0, 18, 4), 86: (0, 22, 4), 87: (0, 28, 4),
+    })
 
 # Re-apply the face-button contract after the mass-import configs join CHARS
 # (the pre-import loop above only covered the fixed descriptors).
@@ -11428,7 +11442,8 @@ def build_char(name, cfg, global_pal=None):
                  move["trip"] << 11)
         if sid in persist:
             flags |= 4                     # bit2 = hitdefpersist
-        if move_ids.get(sid) in vel_states:
+        if (move_ids.get(sid) in vel_states
+                or sid in cfg.get("velset_sids", ())):
             flags |= 0x1000                # bit12 = VelSet-driven movement
         if sid in AIR_GUARD_DENY_SIDS:
             flags |= 0x2000                # bit13 = ground normal: no air guard

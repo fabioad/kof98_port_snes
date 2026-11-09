@@ -706,7 +706,15 @@ OVERRIDES.update({
             85: "CHOU KASANE W", 86: "CHOU KASANE S",
             87: "MAX CHOU KASANE",
             88: "SHINGAN W", 89: "SHINGAN MAX",
-        }},
+        },
+        # The double-QCF supers must win over the single-QCF special that
+        # shares the same tail after the final forward press.
+        "cmd_priority": ["SUP1_MAX", "SUP2_MAX", "SUP1_X", "SUP1_Y",
+                         "SUP2_X"],
+        # The source super root holds its last pose for 255 ticks after the
+        # projectile left.  Keep the launch and a short recovery only.
+        "tail_ticks": {3000: 6},
+        "frame_cap": {85: 5, 86: 5, 87: 5}},
     },
     "duckking": {
         "specials": [
@@ -739,11 +747,17 @@ OVERRIDES.update({
             89: "SUPER POMPING",
             69: "DODGE", 94: "ROLL BACK", 95: "ROLL FWD",
         },
+        "cmd_priority": ["SUP_MAX", "SUP_MAX2", "SUP_QCF2_A",
+                         "SUP_DBF_A", "SUP_DBF_X"],
         "extra_trans": [(52, 17, 1, 0), (52, 0, 0, 0),
                         (53, 17, 1, 0), (53, 0, 0, 0),
                         (54, 17, 1, 0), (54, 0, 0, 0),
                         (55, 17, 1, 0), (55, 0, 0, 0),
-                        (58, 17, 1, 0), (58, 0, 0, 0)]},
+                        (58, 17, 1, 0), (58, 0, 0, 0),
+                        (88, 17, 1, 0), (88, 0, 0, 0)]},
+        # 701 is the source's back evade (the generic Taunt matcher grabbed
+        # it); the actual taunt is 195.
+        "moves": {47: 195, 94: 701},
     },
     "yuki": {
         "specials": [
@@ -771,7 +785,13 @@ OVERRIDES.update({
             69: "DODGE", 94: "ROLL BACK", 95: "ROLL FWD",
             96: "MAX MODE",
         },
-        "palette_bank_map": {2: 0}},
+        "palette_bank_map": {2: 0},
+        # Synthesised evades: run anim forward, back-hop anim backward.
+        "state_vel": {95: (6, 0), 94: (-6, 0)},
+        "velset_sids": [94, 95],
+        "loop_off": [95],
+        "cmd_priority": ["SUP_TRAP_MAX", "SUP_NAKU_MAX", "SUP_AI_MAX",
+                         "SUP_TRAP", "SUP_NAKU"]},
     },
 })
 
@@ -862,6 +882,11 @@ SYS_STATES = {
     "heavyd":  (700, 701, None, 990),
     "brian":   (900, 910, None, 240),   # 700/710 = MAX mode
     "chunli":  (900, 905, None, 910),   # 700/710/720 = SF specials
+    # 1.1.2: Duck's 700/701 are the forward/back evades (702 is the wake-up
+    # dodge); Yuki has no native evade states, so synthesise all three from
+    # her run/back-hop clips.
+    "duckking": (700, 701, None, 250),
+    "yuki":     (None, None, None, 910),
 }
 
 # Fallback animations for slots the source does not implement.  The state
@@ -869,6 +894,7 @@ SYS_STATES = {
 # command rule; the engine only needs the anim and the sid handler.
 SYS_ANIM_FALLBACK = {
     "chizuru": {95: 100, 94: 105, 69: 100},  # run / back hop / run
+    "yuki":    {95: 100, 94: 105, 69: 105},  # run / back hop / back hop
 }
 # english -1 names that pin down a slot (fallback for non-ikaruga cmds)
 SYS_NAMES = {

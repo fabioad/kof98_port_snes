@@ -62,6 +62,9 @@ nomes legíveis para os golpes e os comandos no formato SNES.
   e recorta o retrato, eliminando os quadrados pretos ao redor dos rostos.
 - Os retratos 24×24 do HUD e os 32×32 do ORDER SELECT usam o mesmo recorte,
   mantendo a seleção e o HUD consistentes.
+- A tela passou a usar molduras nativas de **1 px** e o fundo outline do
+  screenpack, com as cores de borda fixadas nas paletas para não engrossar
+  as bordas dos quadrados.
 
 ## Paleta da Yuki
 
@@ -80,20 +83,42 @@ nomes legíveis para os golpes e os comandos no formato SNES.
   únicas (Ken/Ryu e as variantes Kyo compartilham a mesma linha). Isso mantém
   `CancelData` abaixo do helper fixo `OamCache` em `$0A00`, sem mover código.
 
+## Correções da revisão
+
+- **Duck King:** o evade para trás agora usa o estado 701 do source (`x=-5`);
+  o taunt foi movido para o estado 195, que era o verdadeiro taunt. As três
+  esquivas (L, L+B, L+F) entram em 69/94/95.
+- **Yuki:** a personagem não tem estados de esquiva no CNS original. As três
+  esquivas foram sintetizadas com os clipes de corrida/back-hop, com
+  velocidade de entrada no sentido correto e sem loop infinito.
+- **Kasumi:** os especiais e supers que usavam helpers (Kasane Ate,
+  Chou Kasane Ate) agora lançam projéteis nativos com a arte dos helpers
+  1020/3020, causando dano de verdade. Os slots 87–89 (MAX e os counters
+  Shingan) voltaram ao elenco; os counters 88/89 continuam usando a RevTab.
+- **Recuperação do super da Kasumi:** o clipe original segurava a última pose
+  por 255 ticks. O build limita o clipe a cinco frames e reduz o hold, então
+  ela volta a agir em ~0,8 s em vez de mais de 4 s.
+- Prioridade de comandos: os supers de QCF duplo são testados antes do
+  especial de QCF simples, evitando que o comando seja engolido pelo golpe
+  curto.
+
 ## Validação
 
 - `make -f Makefile.pvsnes`: **OK**.
 - `python3 -m unittest discover -s tools/tests`: **311 testes OK**.
 - `tools/test_roster.py --launch --only 48,0,49,0,50,0`: **3/3 confrontos OK**
   (Kasumi, Duck King e Yuki carregam, animam e entram em luta).
-- `make -f Makefile.pvsnes verify`: **OK**, checksum **`$A09F`**.
+- Teste em emulador: Duck e Yuki entram em 69/94/95 com L, L+B e L+F.
+- Kasumi: QCF+X causou 18 de dano, QCB+A causou 24 e o super QCFx2+X
+  causou 90 de dano e recuperou em ~0,77 s.
+- `make -f Makefile.pvsnes verify`: **OK**, checksum **`$3456`**.
 
 ## Build
 
 - ROM: `kof98-snes.sfc` (8 MiB)
-  - SHA-256 `8b73c50c11b708d50a927a895f734b9648b13dd2f7ff4627b45a7f8efe32639e`
-- MSU: `kof98-snes.msu` (54.017.536 bytes)
-  - SHA-256 `ad1dc712fef911ef607cf3a53308e10029e0d544bf2080006e37b878a0d6365b`
+  - SHA-256 `5d928aa292ba098ab521002126219ed8db18051ac5b08bbaff7ae28ba8f2a717`
+- MSU: `kof98-snes.msu` (54.083.072 bytes)
+  - SHA-256 `3d134d268c7f3f46ed36b6b8d080639247e0f0e7ded27143bc519c4803b4d681`
 
 > Os três personagens novos são **MSU-only**. Copie **ROM e MSU juntos** e
 > reabra o par no emulador.

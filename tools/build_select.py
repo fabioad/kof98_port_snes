@@ -2,8 +2,8 @@
 """build_select.py — KOF98 character-select assets for the SNES build.
 
 Sources (assets/kof98data):
-  Select.sff  bg anim frame 0,44 = final layout (blue beams + 39 cells + bar)
-  system.sff  150,0 cell box / 160,0 P1 cursor / 170,0 P2 cursor / 161 done
+  Select.sff  bg anim frame 0,44 = original 39-cell geometry
+  system.sff  160,0 P1 cursor / 170,0 P2 cursor / 161 done
   <Char>.sff  9000,0 = 25x25 cell icon
 
 Emits (src/gen_menu):
@@ -132,7 +132,7 @@ NEW_CELLS = [(8, 143, 27, 165), (30, 143, 49, 165),
 FACE_L = 1                  # left anchor col (x8)
 FACE_R = 25                 # right anchor col (x200)
 FACE_ROW = 17               # CPU tag row (y136)
-NAME_Y = 203                # OBJ name row under the bottom cells
+NAME_Y = 200                # 8px glyphs centered in the y194..212 name plates
 CUR_SIZE = 24               # cursor ring px (3x3 tiles minus center)
 
 
@@ -349,6 +349,42 @@ def region_tiles(img, tileset, base_tile=0):
     return out
 
 
+# Every icon palette shares these colors. A SNES palette applies to the
+# entire 8x8 tile, including the background beside a portrait.
+CELL_COLORS = [(255, 255, 255), (245, 150, 10),
+               (16, 40, 136), (120, 16, 24), (112, 112, 176)]
+ICON_FIRST = 1 + len(CELL_COLORS)
+ICON_COLORS = 15 - len(CELL_COLORS)
+
+
+def arcade_background():
+    """Pixel-native K.O.F. outline pattern, sharing colors with icon tiles."""
+    bg = Image.new("RGB", (256, 224), CELL_COLORS[2])
+    dr = ImageDraw.Draw(bg)
+    dr.rectangle((128, 0, 255, 223), fill=CELL_COLORS[3])
+    # Polygon outlines keep the lettering crisp at the native resolution.
+    letters = [
+        [(0, 0), (5, 0), (5, 10), (17, 0), (24, 0), (10, 13),
+         (24, 28), (17, 28), (5, 16), (5, 28), (0, 28)],
+        [(0, 0), (24, 0), (24, 28), (0, 28)],
+        [(0, 0), (24, 0), (24, 5), (5, 5), (5, 12),
+         (20, 12), (20, 17), (5, 17), (5, 28), (0, 28)],
+    ]
+    for row, yy in enumerate(range(-10, 224, 43)):
+        for origin in (-27 + (row % 2) * 38, 91 + (row % 2) * 38,
+                       209 + (row % 2) * 38):
+            for i, poly in enumerate(letters):
+                xx = origin + i * 34
+                pts = [(xx + x, yy + y) for x, y in poly]
+                dr.line(pts + pts[:1], fill=CELL_COLORS[4], width=1)
+                if i == 1:
+                    dr.rectangle((xx + 5, yy + 5, xx + 19, yy + 23),
+                                 outline=CELL_COLORS[4])
+                dr.rectangle((xx + 28, yy + 24, xx + 30, yy + 28),
+                             outline=CELL_COLORS[4])
+    return bg
+
+
 def main():
     os.makedirs(DST, exist_ok=True)
     sel_sff = Sff(os.path.join(KOF, "Select.sff"))
@@ -388,14 +424,11 @@ def main():
                              ((iw - fw) // 2, (ih - fh) // 2))
         faces_px[cid] = face
 
-    # composite into a bg copy: redraw every cell with the REAL cell sprite
-    # (150,0: crisp white border + orange fill -- the 640->256 downscale had
-    # been blurring them), then paste the occupied-cell icons inside.
-    cellbox, _ = sprite_rgb(sys_sff, *CELL_BG)
-    bgi = bg.copy()
+    # Draw native one-pixel frames; rescaling the cell sprite blurred borders.
+    bgi = arcade_background()
+    dr = ImageDraw.Draw(bgi)
     for box in cells:
-        bgi.paste(cellbox.resize((box[2] - box[0] + 1, box[3] - box[1] + 1),
-                                 Image.LANCZOS), (box[0], box[1]))
+        dr.rectangle(box, fill=CELL_COLORS[1], outline=CELL_COLORS[0], width=1)
     for cid, cell in vis:
         box = cells[cell]
         bgi.paste(faces_px[cid], (box[0] + 1, box[1] + 1), faces_px[cid])
@@ -404,15 +437,10 @@ def main():
     # The title is baked into the BG1 art so the fight bank does not grow
     # for text that never changes.
     glyphs = _fnt_glyphs(os.path.join(KOF, "Custom_Font", "Stage.fnt"))
-    # Replace the inherited "STAGE SELECT" caption with a character-select
-    # title in the same band.  Sampling the untouched gradient just outside
-    # the old caption keeps the fill invisible.
-    for yy in range(196, 213):
-        c0 = bgi.getpixel((78, yy))
-        c1 = bgi.getpixel((178, yy))
-        fill = tuple((c0[i] + c1[i]) // 2 for i in range(3))
-        for xx in range(80, 177):
-            bgi.putpixel((xx, yy), fill)
+    glyphs = {ch: g.resize((max(1, round(g.width * 0.5)),
+                             max(1, round(g.height * 0.5))),
+                            Image.Resampling.NEAREST)
+              for ch, g in glyphs.items()}
     draw_centered(bgi, glyphs, "PLAYER SELECT", 128, 199,
                   (255, 238, 170), (2, 6, 20))
     # Thin gold frames around the two bottom name plates.  Static art only;
@@ -422,14 +450,14 @@ def main():
         dr.rectangle([x0, 194, x1, 212], outline=(230, 180, 40))
 
     # ---- palettes ------------------------------------------------------
-    # pal0: whole composed art quantized to 15 colors.
-    art_pal, art_idx = quant(bgi, 15)
+    # Pin the background colors in pal0 too, so tile boundaries are invisible.
+    art_pal = CELL_COLORS + quant(bgi, ICON_COLORS)[0]
 
     # icon pals: pals 1-7 (all free now that the face windows are gone)
     # groups are about six chars. Keep the final five portraits together so
     # Geese, Krauser, Mr. Big and Eiji share enough colors to remain legible.
     # Border colors stay pinned at idx
-    # 1-3 so boundary tiles read the same no matter the pal bits.
+    # 1-5 so boundary tiles read the same no matter the pal bits.
     group_of = {}                    # charid -> palette index 1..7
     pals = [art_pal]
     cell_palidx = {}
@@ -470,12 +498,11 @@ def main():
             sheet.paste(im, (0, yoff))
             spans.append((cid, yoff, im.width, im.height))
             yoff += im.height
-        spal, sidx = quant(sheet, 12)
-        pals.append([(255, 255, 255), (245, 150, 10), (16, 24, 64)]
-                    + spal)
+        spal, sidx = quant(sheet, ICON_COLORS)
+        pals.append(CELL_COLORS + spal)
         for cid, oy, iw, ih in spans:
             group_of[cid] = pidx
-            cell_palidx[cid] = [sidx[(oy + r) * mw + c] + 4
+            cell_palidx[cid] = [sidx[(oy + r) * mw + c] + ICON_FIRST
                                 for r in range(ih) for c in range(iw)]
     while len(pals) < 8:
         pals.append([(0, 0, 0)] * 15)
@@ -486,15 +513,15 @@ def main():
 
     # art: whole composed frame quantized once to 15 colors -> pal0
     bpx = bgi.load()
-    qfull = bgi.quantize(colors=15, method=Image.MEDIANCUT,
-                         dither=Image.NONE)
-    art_pal = [tuple(qfull.getpalette()[i * 3:i * 3 + 3]) for i in range(15)]
-    qpx = qfull.load()
+    art_lookup = {color: min(range(15), key=lambda i:
+                            sum((color[c] - art_pal[i][c]) ** 2
+                                for c in range(3)))
+                  for color in set(bgi.getdata())}
     # pixels of cell interiors that belong to a char pal get written later;
     # art tiles see raw quantized indices +1 (index0 reserved transparent)
     for ty in range(28):
         for tx in range(32):
-            px = [qpx[tx * 8 + x, ty * 8 + y] + 1
+            px = [art_lookup[bpx[tx * 8 + x, ty * 8 + y]] + 1
                   for y in range(8) for x in range(8)]
             mapw[ty * 32 + tx] = ts.append(px)
 
@@ -530,7 +557,7 @@ def main():
         # icon color in this tile's palette, preserving its silhouette.
         cid = max(candidates, key=candidates.get)
         pidx = group_of[cid]
-        icon_colors = pals[pidx][3:15]
+        icon_colors = pals[pidx][len(CELL_COLORS):15]
         outpx = []
         for y in range(8):
             for x in range(8):
@@ -548,17 +575,33 @@ def main():
                         nearest = min(range(len(icon_colors)), key=lambda i:
                                       sum((ic[c] - icon_colors[i][c]) ** 2
                                           for c in range(3)))
-                        outpx.append(nearest + 4)
+                        outpx.append(nearest + ICON_FIRST)
                 else:
                     p = bpx[gx, gy]
-                    if p[0] > 200 and p[1] > 190 and p[2] > 190:
-                        outpx.append(1)      # white border
-                    elif p[0] > 200 and 100 < p[1] < 200 and p[2] < 80:
-                        outpx.append(2)      # orange box
-                    else:
-                        outpx.append(3)      # bg/outline
+                    # Keep the actual one-pixel border and background;
+                    # replacing the tile margin with navy made thick frames.
+                    nearest = min(range(15), key=lambda i:
+                                  sum((p[c] - pals[pidx][i][c]) ** 2
+                                      for c in range(3)))
+                    outpx.append(nearest + 1)
         t = ts.append(outpx)
-        mapw[ty * 32 + tx] = t | (pidx << 10)
+        mapw[ty * 32 + tx] = (t, pidx)
+
+    # Discard art tiles replaced by portrait patches. Without compaction
+    # the 50-cell screen exceeded the 10-bit tile index and corrupted the
+    # palette bits of the final portraits.
+    # Keep full indices until this remap: patched indices may exceed 1023.
+    # (Palette bits are attached only after compacting below.)
+    remap = {}
+    compact = []
+    for i, word in enumerate(mapw):
+        tile, palette = word if isinstance(word, tuple) else (word, 0)
+        if tile not in remap:
+            remap[tile] = len(compact)
+            compact.append(ts.tiles[tile])
+        mapw[i] = remap[tile] | (palette << 10)
+    ts.tiles = compact
+    assert len(ts.tiles) <= 1024, "select screen exceeds SNES 10-bit tile indices"
 
     chr_b = ts.blob()
     map_b = b"".join(struct.pack("<H", w) for w in mapw)

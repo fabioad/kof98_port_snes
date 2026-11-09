@@ -265,21 +265,21 @@ trigger1 = ctrl
 
 [State -1, sys_95]
 type = ChangeState
-value = 700
+value = 19995
 triggerall = command = "ESQ_F"
 triggerall = statetype = S
 trigger1 = ctrl
 
 [State -1, sys_94]
 type = ChangeState
-value = 710
+value = 19994
 triggerall = command = "ESQ_B"
 triggerall = statetype = S
 trigger1 = ctrl
 
 [State -1, sys_69]
 type = ChangeState
-value = 720
+value = 19969
 triggerall = command = "ESQ_L"
 triggerall = statetype = S
 triggerall = command != "holdfwd"

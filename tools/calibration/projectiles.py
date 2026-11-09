@@ -60,6 +60,10 @@ PROJECTILE_ACTIONS = {
     # Yamazaki's travelling shot helper explods action 3141 for the super;
     # the regular version uses the 1216/1205 wave.
     "yamazaki": 3141,
+    # Kasumi's Kasane Ate / Chou Kasane Ate helpers draw the shot on AIR
+    # 1020/3020; the helper bodies have no velocity, so the native rows are
+    # calibrated below as stationary shots.
+    "kasumi": 1020,
 }
 
 # Some sources paint the flying projectile as one Explod per helper frame
@@ -132,6 +136,15 @@ PROJECTILE_ALT_EFFECTS = {
         "sids": (82,),
         "release": 3,
     },
+    # Kasumi's Chou Kasane Ate supers use the larger 3020 wave; the
+    # regular Kasane Ate rows keep the 1020 clip.
+    "kasumi": {
+        "action": 3020,
+        "frames": tuple((i, 5 if i == 11 else 1) for i in range(12)),
+        "sids": (85, 86, 87),
+        "release": 6,
+    },
+
 }
 
 # Characters that reuse another character's compiled projectile effect.  The
@@ -269,6 +282,10 @@ PROJECTILE_X_OFFSET = {
     # Terry's Power Geyser must erupt in front of his ground-punch sprite;
     # the engine default (14 px) hides the short pillar behind his body.
     "terry": {85: 48, 86: 48, 87: 48},
+    # Kasumi's palm burst sits ahead of her hands; the supers spawn the
+    # larger wave a little farther out.
+    "kasumi": {52: 40, 53: 40, 56: 40, 57: 40,
+                85: 56, 86: 56, 87: 56},
 }
 
 # Per-shot release frame override (0-based source animation frame).  Used
@@ -280,6 +297,11 @@ PROJECTILE_RELEASE = {
     # Kikouken's Projectile controller fires on AnimElem 7 (0-based 6);
     # the engine default third frame spawned it during the startup pose.
     "chunli": {48: 6},
+    # Kasane Ate leaves the hands on AnimElem 7/8; the super root reaches
+    # its follow-up around frame 6.
+    # The super root clips are only 7 frames; frame 6 is already past the
+    # last pose, so launch on frame 4.
+    "kasumi": {52: 6, 53: 6, 56: 7, 57: 7, 85: 4, 86: 4, 87: 4},
 }
 
 # Character-level projectile calibration, in 8.8 px/tick and HUD damage.

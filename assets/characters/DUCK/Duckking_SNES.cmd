@@ -336,6 +336,13 @@ triggerall = command = "ESQ_F"
 triggerall = statetype = S
 trigger1 = ctrl
 
+[State -1, sys_94]
+type = ChangeState
+value = 701
+triggerall = command = "ESQ_B"
+triggerall = statetype = S
+trigger1 = ctrl
+
 [State -1, sys_69]
 type = ChangeState
 value = 19969
@@ -361,7 +368,7 @@ trigger1 = ctrl
 
 [State -1, Taunt]
 type = ChangeState
-value = 701
+value = 195
 triggerall = command = "start"
 triggerall = statetype = S
 trigger1 = ctrl
