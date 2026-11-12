@@ -3,7 +3,7 @@
 
 Checks:
   * menu items 4/5 map to G_MODE 4/5 (and the no-MSU cursor skips team rows);
-  * SURVIVOR builds a no-repeat roster (7 ROM chars without MSU, 48 with);
+  * SURVIVOR builds a no-repeat roster (one byte per visible fighter);
   * carried HP survives a round; a special/super finish adds 50% of the
     remaining HP, and fills the bar when the human was above 50% at the blow;
   * a lost SURVIVOR round ends the run instead of restarting at 0 HP;
@@ -41,11 +41,11 @@ RFRAME = 0x1077
 WINS1 = 0x1080
 WINS2 = 0x1081
 SURV_LIST = 0x4F00
-SURV_COUNT = 0x4F30
-SURV_KOSP = 0x4F32
+SURV_COUNT = 0x4F36
+SURV_KOSP = 0x4F38
 SV_ESCR = 0xF078
 SV_ETICK = 0xF079
-SV_FIN = 0x4F33
+SV_FIN = 0x4F39
 C_STAGE = 0x10C4
 
 
@@ -60,7 +60,16 @@ def expected_rom_ids():
     return {0, 1, 2, 12, 13, 15}
 
 
+def expected_visible_ids():
+    """Read HiddenTab: SURVIVOR lists every non-hidden roster entry."""
+    path = ROOT / "build/gen_fight/newchars_tabs.inc"
+    match = re.search(r"HiddenTab:\s*\.db\s+([0-9,\s]+)", path.read_text())
+    hidden = [int(v) for v in match.group(1).split(",")]
+    return {i for i, flag in enumerate(hidden) if not flag}
+
+
 ROM_IDS = expected_rom_ids()
+VISIBLE_IDS = expected_visible_ids()
 PRACTICE_POOL = ROM_IDS - {3, 14}          # CpuPool excludes both bosses
 
 
@@ -147,6 +156,12 @@ def test_survivor_rom_route():
         ids = [core.ram[SURV_LIST + i] for i in range(count)]
         assert count == len(ROM_IDS) and set(ids) == ROM_IDS, (count, ids)
         assert core.ram[SEL2] == ids[0]
+        if len(ROM_IDS) < 4:
+            # Only ROM-resident fighters can be listed without the MSU file.
+            # The current assets stream almost everyone, so the multi-fight
+            # progression is covered by the full-roster test below.
+            print(f"SKIP survivor ROM-route progression ({len(ROM_IDS)} entry)")
+            return
 
         core.put(HP1, 30)
         core.ram[SURV_KOSP] = 1           # special finish, human <=50%
@@ -195,9 +210,30 @@ def test_survivor_full_roster():
         wait(core, lambda: core.ram[GS] in (1, 4), "survivor list build")
         count = core.ram[SURV_COUNT]
         ids = [core.ram[SURV_LIST + i] for i in range(count)]
-        assert count == 48 and len(set(ids)) == 48, (count, ids)
-        assert min(ids) == 0 and max(ids) == 47, ids
+        assert count == len(VISIBLE_IDS) and set(ids) == VISIBLE_IDS, (count, ids)
+        assert len(set(ids)) == count, ids
         print("PASS survivor full roster", count)
+        core.close()
+
+        # Progression with the CPU opponents (the real route).  P1 locking
+        # first is the order that used to hang when the list overflowed.
+        core = boot()
+        assert open_select(core, 4, 1) == 4
+        lock_sides(core, cpu2=1)
+        wait(core, lambda: core.ram[GS] in (1, 4), "survivor cpu fight 1")
+        for index in range(3):
+            ids = [core.ram[SURV_LIST + i]
+                   for i in range(core.ram[SURV_COUNT])]
+            assert core.ram[C_IDX] == index, (index, core.ram[C_IDX])
+            assert core.ram[SEL2] == ids[index], (index, core.ram[SEL2], ids)
+            core.put(HP1, 150)
+            core.ram[SURV_KOSP] = 0
+            core.ram[WINS1] = 1
+            core.put(HP2, 0)
+            wait(core, lambda: core.ram[GS] == 0, f"survivor banner {index + 1}")
+            wait(core, lambda: core.ram[C_IDX] == index + 1
+                 and core.ram[GS] in (1, 4), f"survivor fight {index + 2}")
+        print("PASS survivor CPU progression (P1 locked first)")
     finally:
         core.close()
 
@@ -269,7 +305,7 @@ def test_survivor_ending():
         wait(core, lambda: core.ram[GS] == 1, "survivor ending fight")
         count = core.ram[SURV_COUNT]
         ids = [core.ram[SURV_LIST + i] for i in range(count)]
-        assert count == 48 and ids[-1] == 14, ids[-4:]
+        assert count == len(VISIBLE_IDS) and ids[-1] == 14, ids[-4:]
 
         core.ram[C_IDX] = count - 1
         core.ram[WINS1] = 1

@@ -14633,6 +14633,15 @@ def emit_newchars_inc(new_keys, msu_slices):
                  for i in range(nroster)]
     hidden = [1 if CHARS.get(idname.get(i), {}).get("hidden") else 0
               for i in range(nroster)]
+    # SURVIVOR keeps one byte per visible fighter at SURV_LIST (menucore.asm).
+    # The list used to be 48 bytes and the roster grew past it: SurvBuild then
+    # overwrote SURV_COUNT/SURV_HP and the mode hung.  Fail the build instead
+    # of regressing silently when another character is added.
+    visible = hidden.count(0)
+    if visible > 54:
+        raise SystemExit(
+            f"SURVIVOR roster overflow: {visible} visible fighters do not fit "
+            f"SURV_LIST (54 bytes, see menucore.asm)")
     new_ids = {k: 15 + i for i, k in enumerate(new_keys)}
     t += [".ENDIF\n",
           "SelCols:    .db 1, 9, 17, 25\n",

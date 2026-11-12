@@ -3672,43 +3672,99 @@ TeamVsSelTick:
 TVS_wait:
     rts
 TVS_normal:
-TVS_side:
+    ; Both pads own their own cursor and pick counter, so P1 and P2 can
+    ; move and confirm in the same frame instead of taking turns.
+    rep #$10
+    .INDEX 16
+    ldx #0
+    jsr TVS_side
+    ldx #1                               ; width and DP survive the side call
+    jsr TVS_side
+    ; launch once both trios are complete
     sep #$20
     .ACCU 8
-    lda.w T_PICK_SIDE
-    sta.b scr5
-    beq TVS_p1
+    lda.b lock1
+    beq TVS_draw
+    lda.b lock2
+    bne TVS_done
+TVS_draw:
+    jsr SelFaceSync
+    jsr SelDrawOam
+    rts
+TVS_done:
+    jsr CampStart                       ; C_STAGE + fresh match state (Team VS
+                                        ;   never went through this; StartFight
+                                        ;   then used uninitialised C_STAGE and
+                                        ;   hung in StagePick)
+    stz.w T_SWAP
+    stz.w T_I1
+    stz.w T_I2
+    lda #3
+    sta.w T_N2
+    stz.b wins1
+    stz.b wins2
+    lda #1
+    sta.b roundno
+    stz.b nextflag
+    lda #8
+    sta.w T_START
+    lda.b framecnt
+    sta.w T_LASTFRAME
+    rts
+
+; X = side (0 = P1 pad, 1 = P2 pad).  A locked side ignores input.
+TVS_side:
+    stx.w T_TVSSIDE
+    sep #$20
+    .ACCU 8
+    lda.b lock1,x                        ; $8E/$8F latches
+    beq TVS_go
+    rts
+TVS_go:
     rep #$20
     .ACCU 16
-    lda FP+F_JOYPR+FP2OFS
-    bra TVS_input
-TVS_p1:
-    rep #$20
-    .ACCU 16
+    cpx #0.w                              ; X still holds the side
+    bne TVS_pad2
     lda FP+F_JOYPR
-TVS_input:
+    bra TVS_padgot
+TVS_pad2:
+    lda FP+F_JOYPR+FP2OFS
+TVS_padgot:
     sta.b scr4
     and #$0F00.w
     beq TVS_confirm
     lda.b scr4
-    ldx.b scr5
+    ldx.w T_TVSSIDE
     jsr SelMove
 TVS_confirm:
     rep #$20
     .ACCU 16
     lda.b scr4
     and #(JOY_A|JOY_X|JOY_Y).w
-    bne TVS_confirm_pick
-    jmp TVS_cancel
-TVS_confirm_pick:
+    bne TVS_pick
+    lda.b scr4
+    and #JOY_B.w
+    beq TVS_out
     sep #$20
     .ACCU 8
-    lda.w T_STEP
+    jsr TVS_stepget
+    beq TVS_out
+    dec a
+    jsr TVS_stepset
+    lda #SFX_BACK.b
+    jsr SfxPlay
+TVS_out:
+    rts
+TVS_pick:
+    sep #$20
+    .ACCU 8
+    jsr TVS_stepget
     cmp #3
-    bcc TVS_have_slot
-    jmp TVS_draw
-TVS_have_slot:
-    ldx.b scr5
+    bcs TVS_out
+    sta.b scr6                           ; pick slot
+    lda #0
+    sta.b scr6+1                         ; keep STZ from clearing pbase at $36
+    ldx.w T_TVSSIDE
     lda.w SCUR1,x
     rep #$20
     .ACCU 16
@@ -3729,12 +3785,10 @@ TVS_candidate_ok:
     bne TVS_candidate_msu
     rep #$20
     .ACCU 16
-    lda.b scr5                            ; side (0/1)
-    and #$00FF.w
+    ldx.w T_TVSSIDE
     beq +
-    lda #FP2OFS.w
-+   tax
-    lda FP+F_JOY,x
+    ldx #FP2OFS.w
++   lda FP+F_JOY,x
     and #(JOY_L|JOY_R).w
     cmp #(JOY_L|JOY_R).w
     sep #$20
@@ -3751,9 +3805,6 @@ TVS_candidate_msu:
     beq TVS_dup
     jmp TVS_deny
 TVS_dup:
-    lda.w T_STEP
-    sta.b scr6
-    stz.b scr6+1
     rep #$20
     .ACCU 16
     ldy #0
@@ -3762,12 +3813,12 @@ TVS_dup_loop:
     bcs TVS_store
     sep #$20
     .ACCU 8
-    lda.b scr5
-    beq TVS_dup_p1
-    lda.w T_TEAM2,y
-    bra TVS_dup_cmp
-TVS_dup_p1:
+    ldx.w T_TVSSIDE
+    bne TVS_dup_p2
     lda.w T_TEAM1,y
+    bra TVS_dup_cmp
+TVS_dup_p2:
+    lda.w T_TEAM2,y
 TVS_dup_cmp:
     cmp.b scr0
     bne TVS_dup_next
@@ -3780,76 +3831,56 @@ TVS_dup_next:
 TVS_store:
     sep #$20
     .ACCU 8
-    lda.b scr5
-    beq TVS_store_p1
-    ldy.w T_STEP
-    lda.b scr0
-    sta.w T_TEAM2,y
-    bra TVS_store_done
-TVS_store_p1:
-    ldy.w T_STEP
+    ldy.b scr6                           ; 16-bit slot from scr6/scr6+1
+    ldx.w T_TVSSIDE
+    bne TVS_store_p2
     lda.b scr0
     sta.w T_TEAM1,y
-TVS_store_done:
-    inc.w T_STEP
-    lda.w T_STEP
+    bra TVS_stored
+TVS_store_p2:
+    lda.b scr0
+    sta.w T_TEAM2,y
+TVS_stored:
+    lda.b scr6
+    inc a
+    jsr TVS_stepset
     cmp #3
-    bcs TVS_full_team
-    lda #SFX_SELECT.b
-    jsr SfxPlay
-    jmp TVS_draw
-TVS_full_team:
-    lda.b scr5
-    bne TVS_p2_full
-    lda #SFX_SELECT.b
-    jsr SfxPlay
-    lda #1
-    sta.w T_PICK_SIDE
-    stz.w T_STEP
-    lda #1
-    sta.b lock1
-    bra TVS_draw
-TVS_p2_full:
-TVS_done:
-    jsr CampStart                       ; C_STAGE + fresh match state (Team VS
-                                        ;   never went through this; StartFight
-                                        ;   then used uninitialised C_STAGE and
-                                        ;   hung in StagePick)
+    bcc TVS_sfx
+    lda.w T_TVSSIDE
+    beq TVS_full_p1
     lda #1
     sta.b lock2
-    stz.w T_SWAP
-    stz.w T_I1
-    stz.w T_I2
-    lda #3
-    sta.w T_N2
-    stz.b wins1
-    stz.b wins2
+    bra TVS_sfx
+TVS_full_p1:
     lda #1
-    sta.b roundno
-    stz.b nextflag
-    lda #8
-    sta.w T_START
-    lda.b framecnt
-    sta.w T_LASTFRAME
+    sta.b lock1
+TVS_sfx:
+    lda #SFX_SELECT.b
+    jsr SfxPlay
     rts
 TVS_deny:
     lda #SFX_BACK.b
     jsr SfxPlay
-    bra TVS_draw
-TVS_cancel:
-    rep #$20
-    .ACCU 16
-    lda.b scr4
-    and #JOY_B.w
-    beq TVS_draw
-    sep #$20
-    .ACCU 8
-    lda.w T_STEP
-    beq TVS_draw
-    dec.w T_STEP
-TVS_draw:
-    jsr SelFaceSync
-    jsr SelDrawOam
+    rts
+
+; A(8) = picks already made by the side in T_TVSSIDE.
+TVS_stepget:
+    lda.w T_TVSSIDE
+    beq +
+    lda.w T_STEP2
+    rts
++   lda.w T_STEP
+    rts
+; A(8) = new count.
+TVS_stepset:
+    sta.b scr0
+    lda.w T_TVSSIDE
+    beq +
+    lda.b scr0
+    sta.w T_STEP2
+    rts
++   lda.b scr0
+    sta.w T_STEP
     rts
 
 ; Match-over banner at row 8: the wins leader's name + "WINS", or "DRAW".

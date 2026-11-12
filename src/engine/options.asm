@@ -323,7 +323,8 @@ OptionsTick:
     rep #$30
     .ACCU 16
     .INDEX 16
-    lda FP+F_JOYPR.w
+    lda FP+F_JOYPR.w                     ; either pad may drive the screen,
+    ora FP+F_JOYPR+FP2OFS.w              ;   as in MenuTick
     sta.b scr0
     and #JOY_UP.w
     beq OT_noup

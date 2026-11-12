@@ -22,15 +22,17 @@ HP1, HP2 = 0x4010, 0x4050
 CORE = "/usr/lib/x86_64-linux-gnu/libretro/snes9x_libretro.so"
 CELLS = (3, 6, 36)
 T_STEP, T_PICK_SIDE = 0x10C7, 0x10D2
+T_STEP2 = T_PICK_SIDE                    # Team VS reuses it as P2's count
 T_TEAM1, T_TEAM2 = 0x10CB, 0x10CE
 LOCK1, LOCK2 = 0x108E, 0x108F
 C_STAGE, STAGEIDX = 0x10C4, 0x1087
 
 
 def pick_trio(core, side, cursor, lock):
+    counter = (T_STEP, T_STEP2)[side]
     guard = 0
     while not core.ram[lock] and guard < 24:
-        step = core.ram[T_STEP]
+        step = core.ram[counter]
         core.ram[cursor] = CELLS[min(step, 2)]
         core.step(8)
         tap(core, 8, side)
@@ -56,6 +58,40 @@ def main():
             if core.ram[GS] == 5:
                 break
         wait(core, lambda: core.ram[GS] == 5, "team vs select", 600)
+
+        # Both pads own a cursor, so one frame of input must move both.
+        before = (core.ram[0xF052], core.ram[0xF053])
+        core.buttons = [{7}, {7}]             # RIGHT on pad 1 and pad 2
+        core.step(4)
+        core.buttons = [set(), set()]
+        core.step(10)
+        after = (core.ram[0xF052], core.ram[0xF053])
+        assert after[0] != before[0] and after[1] != before[1], (
+            f"cursors did not move together: {before} -> {after}")
+        print("PASS both pads move their cursor in the same frame")
+
+        # Same-frame confirm: both sides bank their first pick at once.
+        core.ram[0xF052] = 3
+        core.ram[0xF053] = 6
+        core.step(8)
+        core.buttons = [{8}, {8}]             # A on pad 1 and pad 2
+        core.step(4)
+        core.buttons = [set(), set()]
+        core.step(12)
+        assert core.ram[T_STEP] == 1 and core.ram[T_STEP2] == 1, (
+            f"same-frame confirm: steps {core.ram[T_STEP]}/{core.ram[T_STEP2]}")
+        assert list(core.ram[T_TEAM1:T_TEAM1 + 1]) == [0]
+        assert list(core.ram[T_TEAM2:T_TEAM2 + 1]) == [1]
+        print("PASS both pads confirm their own pick in the same frame")
+
+        # B undoes only the pad that pressed it.
+        core.buttons = [set(), {0}]
+        core.step(4)
+        core.buttons = [set(), set()]
+        core.step(12)
+        assert core.ram[T_STEP] == 1 and core.ram[T_STEP2] == 0, (
+            f"P2 B touched P1: steps {core.ram[T_STEP]}/{core.ram[T_STEP2]}")
+        print("PASS B cancels only the pressing side")
 
         pick_trio(core, 0, 0xF052, LOCK1)
         # P2 is always human in Team VS; the P2 cursor ring must be visible

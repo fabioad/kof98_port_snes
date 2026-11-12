@@ -13,8 +13,8 @@ LEVEL, AI, LANG, MODE = 0x10ED, 0x10EB, 0xF07F, 0x10C0
 START, UP, DOWN, LEFT, RIGHT, A, B = 3, 4, 5, 6, 7, 8, 0
 
 
-def tap(core, button):
-    tap_input(core, button)
+def tap(core, button, port=0):
+    tap_input(core, button, port)
     # A sound-test song replaces the SPC module across several video frames.
     # Wait for normal game ticks before sending another controller edge.
     for _ in range(2):
@@ -129,6 +129,21 @@ def run(library, rom):
         tap(core, B)
         assert core.word(GS) == 6 and core.ram[ITEM] == 6
         print("PASS EXIT/B return to OPTIONS in the menu; settings persist", flush=True)
+
+        # OPTIONS must accept either pad, like the mode menu.  Player 2 can
+        # open the screen, so P2-only navigation used to leave it dead.
+        core.load(menu)
+        core.buttons = [set(), set()]
+        core.ram[ITEM] = 6
+        tap(core, START, port=1)
+        assert core.word(GS) == 11, "P2 START did not open OPTIONS"
+        for row in (1, 2, 3, 0):
+            tap(core, DOWN, port=1)
+            assert core.ram[OPT] == row, (
+                f"P2 DOWN left OPTIONS on row {core.ram[OPT]}, want {row}")
+        tap(core, DOWN)
+        assert core.ram[OPT] == 1, "P1 DOWN stopped working in OPTIONS"
+        print("PASS either pad navigates OPTIONS", flush=True)
 
         for item, mode in enumerate((1, 0, 2, 3, 4, 5)):
             core.load(menu)

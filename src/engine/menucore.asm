@@ -75,7 +75,12 @@
 .DEFINE T_TEAM1     $10CB                 ; 3B player team char ids
 .DEFINE T_TEAM2     $10CE                 ; 3B cpu team char ids
 .DEFINE T_SWAP      $10D1                 ; bit0 P1 / bit1 P2 member swap
-.DEFINE T_PICK_SIDE $10D2                 ; Team VS: 0 = P1, 1 = P2
+.DEFINE T_PICK_SIDE $10D2                 ; Team Play: 0 = P1, 1 = CPU
+; Team VS runs both pads every frame, so each side keeps its own counter.
+; T_STEP is P1's; the side switch byte doubles as P2's count there (the
+; Team Play paths that read it are gated on G_MODE 2).
+.DEFINE T_STEP2     $10D2                 ; Team VS: P2 pick counter
+.DEFINE T_TVSSIDE   $110D                 ; Team VS: side being processed
 .DEFINE CPU_USED     $10D3                 ; campaign roster history (18 bytes)
 .DEFINE MUSIC_STAGE  $10E5                 ; last stage module loaded
 .DEFINE MUSIC_VALID  $10E6                 ; stage music cache valid
@@ -107,23 +112,30 @@
 .DEFINE OR_ROWPOS   $F1A8                 ; word, card HUD offset
 
 ; ---- SURVIVOR route -------------------------------------------------------
-; The shuffled opponent list needs 48 bytes, so it lives outside the DP
-; window.  In the PVSnesLib build DBR is $7E and $8000 is WRAM; the linker
-; reservation for this block lives in src/snes/fight_bridge.asm.  The plain
-; WLA build keeps the same bytes in the free low-WRAM gap at $2000.
+; The shuffled opponent list holds one byte per visible character, so it
+; lives outside the DP window.  In the PVSnesLib build DBR is $7E and $8000
+; is WRAM; the linker reservation for this block lives in
+; src/snes/fight_bridge.asm.  The plain WLA build keeps the same bytes in the
+; free low-WRAM gap at $2000.
 .IFDEF PVSNESLIB
 .DEFINE SURV_LIST   $4F00                 ; right after the 2 KiB HUD shadow
-.DEFINE SURV_COUNT  $4F30                 ; eligible opponents (byte)
-.DEFINE SURV_HP     $4F31                 ; human HP carried between rounds
-.DEFINE SURV_KOSP   $4F32                 ; 0 none / 1 special finish / 2 special finish with human >50% HP
-.DEFINE SV_FIN      $4F33                 ; SURVIVOR ending fade-in frames
+.DEFINE SURV_MAX    54                    ; list bytes: one per visible char
+.DEFINE SURV_COUNT  $4F36                 ; eligible opponents (byte)
+.DEFINE SURV_HP     $4F37                 ; human HP carried between rounds
+.DEFINE SURV_KOSP   $4F38                 ; 0 none / 1 special finish / 2 special finish with human >50% HP
+.DEFINE SV_FIN      $4F39                 ; SURVIVOR ending fade-in frames
 .ELSE
 .DEFINE SURV_LIST   $2000
-.DEFINE SURV_COUNT  $2030
-.DEFINE SURV_HP     $2031
-.DEFINE SURV_KOSP   $2032
-.DEFINE SV_FIN      $2033
+.DEFINE SURV_MAX    54
+.DEFINE SURV_COUNT  $2036
+.DEFINE SURV_HP     $2037
+.DEFINE SURV_KOSP   $2038
+.DEFINE SV_FIN      $2039
 .ENDIF
+; A 48-byte list fitted the 50-character roster; the 1.1.2 newcomers pushed
+; it past that, so SurvBuild overwrote SURV_COUNT/SURV_HP and SURVIVOR hung
+; once P1 locked before the CPU side.  tools/build_fight.py asserts that the
+; visible roster still fits SURV_MAX.
 
 ; ---- endings (gs 8): still screens, BG2 $1800 / CHR $2000 like intro ----
 .DEFINE GS_END      8
