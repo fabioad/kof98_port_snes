@@ -22886,13 +22886,14 @@ OrderPortraitPal_End:
 .INCLUDE "gen_fight/takuma_spr.inc"
 .ENDS
 ; Mature's second super makes the table larger than a 32 KiB half-bank.
-; Bank 83's upper half is ShingoChrN, so use the free tail of the sound
-; bank instead (the map shows $794C-$FFFF unused).  .BASE $C0 makes the
-; full 64 KiB file bank reachable at CPU $F7; without it the $794C start
-; sits below the HiROM $8000 window and the sprites read as empty.
+; It used to sit in the sound bank's tail (bank 55), but the full 8-voice
+; FFG HQ soundbank (2026-11-12) now fills bank 55 up to ~$E900.  Take
+; the tail of bank 59 instead: HeidernData and the ES quote strings grow
+; up from $0000 and may reach $C600 (tools/build_fight.py asserts both
+; sides).  .BASE $C0 makes the full 64 KiB file bank reachable at CPU $FB.
 .BASE $C0
-.BANK 55 SLOT 0
-.ORGA $794C                          ; 34484 bytes free in bank 55
+.BANK 59 SLOT 0
+.ORGA $C600                          ; = build_fight.MATURE_ORG
 .SECTION "MatureData" FORCE
 .INCLUDE "gen_fight/mature_spr.inc"
 .ENDS

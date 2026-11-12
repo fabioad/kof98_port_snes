@@ -11,6 +11,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'tools'))
 import approved_music as music
+import validate_snesmod
 
 
 def pattern_hash(data):
@@ -32,7 +33,7 @@ class ApprovedMusicTests(unittest.TestCase):
                 data = (music.PACK / row['file']).read_bytes()
                 self.assertEqual(hashlib.sha256(data).hexdigest(), row['sha256'])
                 self.assertEqual(pattern_hash(data), row['patternSha256'])
-                self.assertLessEqual(row['aramBytes'], 44500)
+                self.assertLessEqual(row['aramBytes'], validate_snesmod.MAX_MODULE_BYTES)
 
     def test_midi_routing_restores_exact_approved_module_without_converter(self):
         with tempfile.TemporaryDirectory() as tmp:

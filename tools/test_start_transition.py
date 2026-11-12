@@ -35,10 +35,13 @@ def run(library, rom):
     core = Core(library, rom)
     passed = []
     try:
-        wait_for(core, lambda: core.word(GS) == 7, "opening")
+        wait_for(core, lambda: core.word(GS) in (7, 14), "opening")
         tap(core, START)
         wait_for(core, lambda: core.word(GS) == 0, "title")
-        core.step(4)                 # let TitleEnter release the skip press
+        # Let TitleEnter release the skip press and finish loading the title
+        # song: spcLoad is synchronous, so a press inside it is not seen
+        # (~10 frames with the FFG HQ modules).
+        core.step(20)
         tap(core, START)
         wait_for(core, lambda: core.word(GS) == 6, "mode menu")
         menu = core.save()

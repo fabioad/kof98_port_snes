@@ -199,7 +199,8 @@ im7p_14: .incbin "gen_menu/intro/intro14.m7pal"
 ; Raw ExHiROM bank bytes can only reach $8000-$FFFF for banks 64-127, but
 ; the PVSnesLib low-half windows are CPU-mapped ($54-$7D).  EndData21/22
 ; and EndData0 uses low half 43; EndData1-3 use 120-125; EndData19/20 use the
-; free upper halves of banks 54/49.  This frees upper halves 95-117 for
+; free upper halves of banks 23/49 (the FFG HQ soundbank fills 51-55).
+; This frees upper halves 95-117 for
 ; Omega Rugal's ROM CHR.  Banks 84-89/110-117 keep upper-half screens.
 ; Bank 43 is <64: address it through the $C0 window ($EB), not $2B.
 .BASE $C0
@@ -349,8 +350,8 @@ e18_chr_end:
 .ENDS
 
 .BASE $C0
-.BANK 54 SLOT 0
-.ORGA $8000                         ; bank 46 now carries the 1.1.2 select art
+.BANK 23 SLOT 0
+.ORGA $8000                         ; bank 54's upper half is soundbank now
 .SECTION "EndData19" FORCE
 e19_chr: .incbin "gen_menu/end/end19.chr"
 e19_chr_end:

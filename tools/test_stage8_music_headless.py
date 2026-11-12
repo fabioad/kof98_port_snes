@@ -22,6 +22,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 from calibration.headless import Core
 from capture_pair_headless import tap, wait
+from test_team_order_headless import ORDER, ACTIVE as ORDER_ACTIVE, choose
 
 CORE = Path("/usr/lib/x86_64-linux-gnu/libretro/snes9x_libretro.so")
 ROM = ROOT / "kof98-snes.sfc"
@@ -105,9 +106,11 @@ def lock_sides(core, mode_item):
             break
         tap(core, 3)
     wait(core, lambda: core.ram[GS] == 6, "mode menu")
+    core.step(20)               # synchronous menu-song spcLoad ignores pads
     core.ram[M_ITEM] = mode_item
     tap(core, 3)
     wait(core, lambda: core.ram[GS] == 5, f"select item {mode_item}")
+    core.step(20)               # let the select screen finish its song load
     core.ram[SEL1] = 0
     core.ram[LOCK1] = 1
     core.ram[LOCK2] = 1
@@ -147,15 +150,29 @@ def survivor(core):
     print("PASS survivor stage-8 music switch", flush=True)
 
 
+def team_wait(core, pred, label, **kw):
+    """wait_game that also confirms TEAM PLAY's ORDER SELECT (gs 15)."""
+    while True:
+        wait_game(core, lambda: pred() or core.ram[GS] == ORDER, label, **kw)
+        if pred():
+            return
+        wait(core, lambda: core.ram[ORDER_ACTIVE] == 1, "order select ready")
+        core.step(12)
+        choose(core, 0, [0, 1, 2])
+        wait_game(core, lambda: core.ram[GS] != ORDER, f"{label}: order done")
+
+
 def team(core):
     for _ in range(80):
         if core.ram[GS] == 6:
             break
         tap(core, 3)
     wait(core, lambda: core.ram[GS] == 6, "mode menu")
+    core.step(20)               # synchronous menu-song spcLoad ignores pads
     core.ram[M_ITEM] = 2
     tap(core, 3)
     wait(core, lambda: core.ram[GS] == 5, "team select")
+    core.step(20)               # let the select screen finish its song load
     core.ram[CPU2] = 1
     # TEAM PLAY asks the human side for three distinct members: A locks the
     # cell under the cursor, RIGHT advances to a fresh one.
@@ -169,7 +186,7 @@ def team(core):
             break
         tap(core, 7)
         core.step(10)
-    wait_game(core, lambda: core.ram[GS] in (1, 4), "team match 1")
+    team_wait(core, lambda: core.ram[GS] in (1, 4), "team match 1")
     assert core.ram[STAGE] == 8, f"forced stage = {core.ram[STAGE]}"
     # Fall all three CPU members: member swaps keep the stage module loaded,
     # then the match-over banner loads the next match's stage music.
@@ -179,9 +196,9 @@ def team(core):
         core.put(HP2, 0)
         wait_game(core, lambda: core.ram[GS] == 0,
                   f"team member {member} out")
-        wait_game(core, lambda: core.ram[GS] in (1, 4),
+        team_wait(core, lambda: core.ram[GS] in (1, 4),
                   f"team member {member + 1} in", limit=2500)
-    wait_game(core, lambda: core.ram[C_IDX] == 1 and
+    team_wait(core, lambda: core.ram[C_IDX] == 1 and
               core.ram[GS] in (1, 4), "team match 2", limit=3000, stall=500)
     print("PASS team play stage-8 music switch", flush=True)
 

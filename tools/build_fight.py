@@ -14492,6 +14492,11 @@ def build_hud():
           f"{len(tiles) // 16} tiles total")
 
 
+# Bank 59: HeidernData + ES quote strings from $0000, MatureData from here
+# to the end of the bank (src/engine/fight.asm .ORGA must match).
+MATURE_ORG = 0xC600
+
+
 def _inc_size(fname):
     """assembled byte size of a generated .inc (counts data directives)."""
     import re
@@ -15207,7 +15212,7 @@ def emit_newchars_inc(new_keys, msu_slices):
             "kyo_spr.inc": 0x9000,
             "shingo_spr.inc": 0x10000,
             "vice_spr.inc": 0x7000,
-            "mature_spr.inc": 0x10000 - 0x794C,
+            "mature_spr.inc": 0x10000 - MATURE_ORG,
             "takuma_spr.inc": 0x8000,
             "saisyu_spr.inc": 0x8000,
             "clark_spr.inc": 0x8000,
@@ -15227,14 +15232,14 @@ def emit_newchars_inc(new_keys, msu_slices):
                      (_inc_size("iori_spr.inc") + 0xFF) & ~0xFF)
         assert pt_off + qstr_sz["pt"] <= 0xC000
         es_off = (_inc_size("heidern_spr.inc") + 0xFF) & ~0xFF
-        assert es_off + qstr_sz["es"] <= 0x10000
+        assert es_off + qstr_sz["es"] <= MATURE_ORG   # MatureData above
         pvs_qstr = {"en": (44, en_off), "fr": (44, fr_off),
                     "pt": (58, pt_off), "es": (59, es_off)}
     else:
         assert _inc_size("kyo_spr.inc") <= 0x9000   # ViceData starts there
         assert _inc_size("vice_spr.inc") <= 0x7000  # remainder of bank 60
-        # MatureData uses the free tail of sound bank 55 ($794C-$FFFF).
-        assert _inc_size("mature_spr.inc") <= 0x10000 - 0x794C
+        # MatureData takes the tail of bank 59 (fight.asm, MATURE_ORG).
+        assert _inc_size("mature_spr.inc") <= 0x10000 - MATURE_ORG
         # TakumaData shares bank 83's low half with ShingoChrN.
         assert _inc_size("takuma_spr.inc") <= 0x8000
         assert _inc_size("rugal_spr.inc") <= 0x3000
@@ -15246,7 +15251,7 @@ def emit_newchars_inc(new_keys, msu_slices):
         # ES quote strings in the same bank, immediately after the table
         # instead of at a hard-coded offset.
         es_off = (_inc_size("heidern_spr.inc") + 0xFF) & ~0xFF
-        assert es_off + qstr_sz["es"] <= 0x10000
+        assert es_off + qstr_sz["es"] <= MATURE_ORG   # MatureData above
         pvs_qstr = {"en": (44, 0x3000), "fr": (44, 0x5000),
                     "pt": (58, 0x9000), "es": (59, es_off)}
     assert 0xC000 + qtab_sz <= 0x10000            # PVS bank 58

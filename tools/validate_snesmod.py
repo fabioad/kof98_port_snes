@@ -7,13 +7,16 @@ import tempfile
 from pathlib import Path
 from it_pattern_limit import layout, MAX_PATTERNS
 
-MAX_MODULE_BYTES = 44500  # ARAM budget with the combat effects + stream buffer
+MAX_MODULE_BYTES = 42850  # ARAM budget with the combat effects + stream buffer
 # SNESMOD data starts at $1A00; spcAllocateSoundRegion(18) reserves the top
 # 4608 bytes for streamed character voices, leaving 54016 bytes for module +
 # effects.  Fight modules reload five effects (8685 B), so the runtime module
 # ceiling is ~45331 B; smconv's reported total runs ~800 B below the SPC
-# footprint, hence 44500 B here.  Stage 8's original 46553 B module crossed
+# footprint (the old 44500 B budget).  Stage 8's original 46553 B module crossed
 # this line and froze the APU handshake while reloading its combat effects.
+# 2026-11-12: the FFG HQ stg8 at 44331 B (45090 B real footprint) still froze
+# the TEAM PLAY winner-theme load; stg2 at 42835 B (43622 B real) passes the
+# whole stage-8 regression, so that proven size is the budget now.
 
 
 def main(tool, paths):

@@ -157,3 +157,6 @@ Verificações da integração:
 Os resultados e hashes finais ficam em `integration.json`.
 O validador `tools/validate_snesmod.py` agora exporta seu SPC auxiliar em
 pasta temporária: validar um IT não sobrescreve mais o SPC de preview.
+
+> **Substituído em 2026-11-12** por `music/ffg_hq/` (reconversão HQ a partir
+> dos MIDI). Este diretório fica como histórico do pacote de 2026-11-05.

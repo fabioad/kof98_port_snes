@@ -1,4 +1,8 @@
-"""SNESMOD pattern bounds and lossless repacking of Fairy's 71 patterns."""
+"""SNESMOD pattern bounds and lossless repacking of Fairy's 71 patterns.
+
+The fixture is the 2026-11-05 Fairy module, the one real song that overflowed
+the 64-pattern table; the current pack already fits.
+"""
 from pathlib import Path
 import struct
 import sys
@@ -16,7 +20,7 @@ import validate_snesmod
 class PatternLimitTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.source = (ROOT / 'assets/audio/ffg/stg6.it').read_bytes()
+        cls.source = (ROOT / 'tools/tests/fixtures/fairy_71_patterns.it').read_bytes()
         cls.fixed = fit_snesmod(cls.source)
 
     def test_fairy_fits_table_and_preserves_all_4517_rows(self):
@@ -40,24 +44,19 @@ class PatternLimitTests(unittest.TestCase):
         old_tables = self.source[192+orders:192+orders+4*(instruments+samples)]
         self.assertEqual(old_tables, self.fixed[192+new_orders:192+new_orders+len(old_tables)])
 
-    def test_other_reviewed_songs_are_unchanged_and_all_outputs_fit(self):
+    def test_reviewed_songs_already_fit_and_install_unchanged(self):
         for row in approved_music.modules():
             source = (approved_music.PACK / row['file']).read_bytes()
             with self.subTest(song=row['file']):
-                fixed = fit_snesmod(source)
-                self.assertLessEqual(len(layout(fixed)[3]), 64)
-                if row['file'] != 'stg6.it':
-                    self.assertEqual(source, fixed)
+                self.assertLessEqual(len(layout(source)[3]), 64)
+                self.assertEqual(fit_snesmod(source), source)
+                with tempfile.TemporaryDirectory() as directory:
+                    target = Path(directory) / 'module.it'
+                    approved_music.install(row, target)
+                    self.assertEqual(target.read_bytes(), source)
 
-    def test_repacking_is_idempotent_and_installed_from_approved_source(self):
+    def test_repacking_is_idempotent(self):
         self.assertEqual(fit_snesmod(self.fixed), self.fixed)
-        row = next(row for row in approved_music.modules() if row['file'] == 'stg6.it')
-        with tempfile.TemporaryDirectory() as directory:
-            target = Path(directory) / 'stage.it'
-            approved_music.install(row, target)
-            self.assertEqual(target.read_bytes(), self.fixed)
-            approved_music.install(row, target)
-            self.assertEqual(target.read_bytes(), self.fixed)
 
     def test_mask_reuse_is_expanded_across_joined_pattern_boundaries(self):
         # Note+effect followed by reused note/effect without a new mask.

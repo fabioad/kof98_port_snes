@@ -12,6 +12,8 @@ from test_start_transition import tap, wait_for
 ROOT = Path(__file__).resolve().parents[1]
 CORE = '/usr/lib/x86_64-linux-gnu/libretro/snes9x_libretro.so'
 GS, FRAME, ITEM, OPT, SONG = 0x1020, 0x1024, 0xF070, 0xF079, 0xF07A
+# smconv SPC of each approved module (music/ffg_hq/tools/build_hq.py)
+PREVIEWS = ROOT / 'music/ffg_hq/spc'
 ORDER = ['menu_cipher', 'menu_cipher_beta', 'menu_kof', 'menu_lastdance',
          'menu_sunset', 'menu_winner', 'menu_crystal'] + [f'stg{i}' for i in range(10)]
 
@@ -31,7 +33,7 @@ def main():
         wait_for(core, lambda: core.word(GS) in (7, 14), 'opening', 8000)
         tap(core, 3)
         wait_for(core, lambda: core.word(GS) == 0, 'title', 8000)
-        core.step(4)
+        core.step(20)                       # title song load (see test_start_transition)
         tap(core, 3)
         wait_for(core, lambda: core.word(GS) == 6, 'mode menu', 8000)
         core.ram[ITEM] = 6
@@ -43,7 +45,7 @@ def main():
         core.capture_audio = True
         for index, name in enumerate(ORDER):
             wait_for(core, lambda: core.ram[SONG] == index, name + ' select')
-            preview = (ROOT / 'music/ffg_energy/candidates' / (name+'.spc')).read_bytes()
+            preview = (PREVIEWS / (name+'.spc')).read_bytes()
             expected = preview[256+0x1a00:256+0x1a20]
             wait_for(core, lambda: apu(core)[0x1a00:0x1a20] == expected,
                      name + ' module uploaded', 1200)
@@ -62,7 +64,7 @@ def main():
             tap(core, 7)
         assert core.ram[SONG] == 0, 'sound-test wrap failed'
         wait_for(core, lambda: apu(core)[0x1a00:0x1a20] ==
-                 (ROOT / 'music/ffg_energy/candidates/menu_cipher.spc').read_bytes()[256+0x1a00:256+0x1a20],
+                 (PREVIEWS / 'menu_cipher.spc').read_bytes()[256+0x1a00:256+0x1a20],
                  'wrap module uploaded')
     finally:
         core.close()
