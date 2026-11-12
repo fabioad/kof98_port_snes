@@ -1,7 +1,11 @@
 ; Incremental MSU voice loader. Kept outside the full Fight bank.
+; $C300 no longer works: FightData (bank 126, $8000) grew to 17,172 bytes and
+; now ends at $C314.  The replacement must stay in the $8000-$FFFF half: on
+; ExHiROM the low half of the high banks is a WRAM mirror, so code placed at
+; $4000 never executes (the boot died right after gamestate 9).
 .BASE $C0
 .BANK 126 SLOT 0
-.ORGA $C300
+.ORGA $DA60
 .SECTION "VoiceQueueCode" FORCE
 
 VoiceQueueAddFar:

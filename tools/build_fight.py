@@ -1170,6 +1170,15 @@ CHARS = {
         "char_scale": 0.81,
         "msu": True,
         "damage_scale": 2.0,
+        # Ultra Argentine: the victim is thrown up and caught again
+        # (3020/3022 VelSet y=-14 at the elem after the last bind).
+        "target_toss": {3010: (6, 14.0), 3012: (4, 14.0), 3014: (4, 14.0)},
+        # Ultra Argentine slam: the victim's 3026 ends on AnimTime and its
+        # 3027 bounces it away (VelSet 4.2,-6) while Clark still lies on the
+        # floor (elem 10).  Without it the victim stood on its head with the
+        # legs up for the whole 3016 tail.  SlamRelease (AO_tstat) sees the
+        # slam-pose flag and applies the bounce velocity.
+        "act_extra": {3016: [(9, 4, 3027, 0)]},
         "pow_override": {96: -1000},
         # Vulcan Punch: five contacts of 6 points; the fifth contact is
         # the forced knockdown.  The source's later hits would otherwise
@@ -5231,6 +5240,9 @@ VICTIM_STATE_IDS = {1025: 70, 1026: 71, 1027: 72, 1028: 73,
                     # so the victim stays in the generic held slot.
                     3020: 76, 3021: 76, 3022: 76,
                     3025: 76, 3026: 76,
+                    # 3027: the slam bounce (VelSet 4.2,-6 then fall);
+                    # released from the 3016 tail via act_extra.
+                    3027: 77,
                     # Kyo throw victims: held pose -> S_VHELD, thrown flight
                     # -> S_VTHROW (815/816 from the C throw, 825/826 from D)
                     815: 76, 816: 77, 825: 76, 826: 77,
@@ -6083,6 +6095,102 @@ def parse_air(path):
     return anims
 
 
+# --- held-victim choreography ---------------------------------------------
+# The source throws animate the victim with ChangeAnim2 actions that live in
+# the *thrower's* AIR.  Their cels are the shared KOF98 get-hit/throw groups
+# (5000/5010/503x/501x/504x), present in every roster SFF as *linked*
+# sprites, so reproducing the poses costs no new CHR.  The port used to keep
+# one generic held pose for every phase, which is why a thrown opponent
+# floated upright through the whole Ultra Argentine instead of being lifted,
+# turned over and slammed.
+VICTIM_POSE_ACTIONS = ((3020, 0), (3021, 1), (3022, 2), (3026, 3),
+                       (3120, 4), (3121, 5), (1220, 6))
+# Source victim state -> pose slot.  3025 repeats 3021 (identical cels) and
+# the short specials (Mount / Super Argentine / Frankensteiner / Napalm) own
+# a single TargetState each, so they borrow the closest authored pose instead
+# of paying for a clip that would never change.
+VICTIM_POSE_MAP = {3020: 0, 3021: 1, 3025: 1, 3022: 2, 3026: 3,
+                   3120: 4, 3121: 5,
+                   1220: 6, 1320: 4, 1430: 2, 1520: 0}
+# Poses whose last frame leaves the victim on the floor: the release must
+# not add the generic 5.5 px/tick upward launch.
+# Pose 4 is the DP+P backbreaker hold (victim 3120): the opponent is held
+# overhead and released from there, so the release must slam him down.  Only
+# Clark's own grabs emit slot 4, so the normal throw keeps its toss.
+VICTIM_POSE_NOLAUNCH = {3, 4}
+
+VICTIM_POSE_SOURCES = ("assets/characters/Clark-KOF98/Clark.air",)
+VICTIM_POSE_MAX_FRAMES = 8
+# The throw cels 5031/5032, 5011/5012 and 5041 are the *same bitmaps* as
+# 5030, 5010 and 5040 with a different axis (the SFF packs link them).  Draw
+# the resident base cel with the same flips and shift it by the axis delta:
+# the result is pixel-identical and costs no new metasprite/CHR, which is what
+# keeps the pose set inside the per-character bank window.
+VICTIM_POSE_BASE = {5000: 5000, 5010: 5010, 5011: 5010, 5012: 5010,
+                    5030: 5030, 5031: 5030, 5032: 5030,
+                    5040: 5040, 5041: 5040}
+# A character's metasprite blob has to live inside one 64 KiB CH_MBANK
+# window (see _STRUCTURAL_SCALE_OVERRIDES).  The held poses cost metasprites
+# for every cel the victim does not already stream, so a fighter already at
+# the scale cap (Chang at 0.86) has no room for them.  Poses are therefore
+# admitted per character only while they fit that budget; anyone else falls
+# back to the generic held pose the port used before, exactly as they did
+# before this change.
+VICTIM_POSE_BUDGET = 65536
+POSE_ACTIONS_CACHE = {}
+
+
+def victim_pose_actions():
+    """source action -> frames, merged from every registered thrower AIR."""
+    cached = POSE_ACTIONS_CACHE.get("all")
+    if cached is None:
+        cached = {}
+        for rel in VICTIM_POSE_SOURCES:
+            air = parse_air(os.path.join(ROOT, rel))
+            for action, _pose in VICTIM_POSE_ACTIONS:
+                frames = air.get(action, ([], 0))[0]
+                if frames:
+                    cached[action] = frames
+        POSE_ACTIONS_CACHE["all"] = cached
+    return cached
+
+
+def compact_pose(frames, max_frames=VICTIM_POSE_MAX_FRAMES):
+    """Collapse repeated cels while keeping the clip's total duration."""
+    held = []
+    for g, n, x, y, ticks, flip, _atk, _hurt in frames:
+        key = (g, n, x, y, flip)
+        dur = max(2, min(30, int(ticks) if ticks > 0 else 2))
+        if held and held[-1][0] == key:
+            held[-1] = (key, held[-1][1] + dur)
+        else:
+            held.append((key, dur))
+    while len(held) > max_frames:
+        i = min(range(1, len(held)), key=lambda k: held[k][1])
+        held[i - 1] = (held[i - 1][0], held[i - 1][1] + held[i][1])
+        del held[i]
+    return [(key[0], key[1], key[2], key[3], dur, key[4], [], [])
+            for key, dur in held]
+
+
+def pose_top_extent(sprite, flip, yoff=0):
+    """How far above its axis the painted body reaches, in port pixels.
+
+    The bind seats the victim's *axis*; with the AIR "V" flag the body is
+    mirrored about it, so the part that can enter the HUD changes.  This is
+    the number that replaces the old flat -80 px clamp.
+    """
+    if sprite is None:
+        return 0
+    above = (sprite.h - sprite.ay) if "V" in flip else sprite.ay
+    return max(0, int(above) - int(yoff))
+
+
+def bind_floor(extent, ground_y=190, play_top=26):
+    """Lowest allowed TargetBind dy for a pose with this top extent."""
+    return max(-112, int(extent) - (ground_y - play_top))
+
+
 def resolve_import_anims(cfg, air):
     """Replace missing attack actions in imported chars with nearby real art.
 
@@ -6681,62 +6789,77 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None, char_scale=1.0):
     for state in posadds:
         posadds[state] = sorted(set(posadds[state]))
 
-    def elem_window(triggers):
-        """Trigger list -> inclusive 0-based frame window for TargetBind."""
-        lo, hi = 0, 254
+    def elem_windows(triggers):
+        """Trigger list -> every inclusive 0-based frame window it names.
+
+        MUGEN ORs trigger1..triggerN and ANDs the `&`-joined atoms inside
+        one trigger, so a controller can carry several disjoint windows.  A
+        single collapsed [lo,hi] used to drop them (Clark's Super Argentine
+        lost 8 of its 14 TargetBind rows, leaving whole stretches with no
+        bind at all: the victim froze and then jumped when the next row
+        matched).  Each `X >= 0 && Y < 0` pair becomes its own window.
+        """
+        windows = []
         for x in triggers:
-            # Every element-based guard names the ONE animation element
-            # that should carry the bind.  A guard that only bounded the
-            # window at its start used to leave hi at the default 254, so a
-            # single-element hold pinned the victim for the rest of the
-            # state and shadowed every later window.  That is what glued
-            # Clark's Mount victim (clarkBind53) and Vice's throw victims
-            # to one wrong offset.
-            #
-            # `AnimElemTime(N)` may be spelled with a space before the
-            # parenthesis (Mary, Heidern); `AnimElemNo(0) = N` names the
-            # element currently on screen (Vice, King).  Both are the same
-            # single-element window as `AnimElem = N`.
-            single = None
-            m = re.search(r"animelemtime\s*\(\s*(\d+)\s*\)\s*=\s*\d+",
-                          x, re.I)
-            if m:
-                single = int(m.group(1)) - 1
-            else:
-                # `AnimElemTime(N) < M` with M>0 stays inside element N for
-                # the first M ticks, i.e. the whole time element N is on
-                # screen.  `= M` and `< 0` are handled by the branches
-                # below; only a positive M collapses to element N.
+            atoms = [a.strip() for a in re.split(r"&&|&|\|\|", x) if a.strip()]
+            open_lo = None
+            found = False
+            for a in atoms:
+                # `AnimElemTime(N) = M` (including = 0) is element N on the
+                # port's element-granular timeline.
+                m = re.search(r"animelemtime\s*\(\s*(\d+)\s*\)\s*=\s*\d+",
+                              a, re.I)
+                if m:
+                    n = int(m.group(1)) - 1
+                    windows.append((n, n))
+                    found = True
+                    continue
+                # `AnimElemTime(N) < M` with M>0 stays inside element N.
                 m = re.search(r"animelemtime\s*\(\s*(\d+)\s*\)\s*<\s*"
-                              r"(\d+)", x, re.I)
+                              r"(\d+)", a, re.I)
                 if m and int(m.group(2)) > 0:
-                    single = int(m.group(1)) - 1
-            m = re.search(r"animelemtime\s*\(\s*(\d+)\s*\)\s*>=\s*0",
-                          x, re.I)
-            if m and single is None:
-                lo = max(lo, int(m.group(1)) - 1)
-            m = re.search(r"animelemtime\s*\(\s*(\d+)\s*\)\s*<\s*0",
-                          x, re.I)
-            if m:
-                hi = min(hi, int(m.group(1)) - 2)
-            if single is None:
+                    n = int(m.group(1)) - 1
+                    windows.append((n, n))
+                    found = True
+                    continue
+                m = re.search(r"animelemtime\s*\(\s*(\d+)\s*\)\s*>=\s*0",
+                              a, re.I)
+                if m:
+                    open_lo = int(m.group(1)) - 1
+                    found = True
+                    continue
+                m = re.search(r"animelemtime\s*\(\s*(\d+)\s*\)\s*<\s*0",
+                              a, re.I)
+                if m:
+                    lo = 0 if open_lo is None else open_lo
+                    windows.append((lo, int(m.group(1)) - 2))
+                    open_lo = None
+                    found = True
+                    continue
                 m = re.search(r"animelemno\s*\(\s*0\s*\)\s*="
-                              r"\s*\[?\s*(\d+)", x, re.I)
+                              r"\s*\[?\s*(\d+)", a, re.I)
                 if m:
-                    single = int(m.group(1)) - 1
-            if single is None:
-                m = re.search(r"\banimelem\s*=\s*(\d+)", x, re.I)
+                    n = int(m.group(1)) - 1
+                    windows.append((n, n))
+                    found = True
+                    continue
+                m = re.search(r"\banimelem\s*=\s*(\d+)", a, re.I)
                 if m:
-                    single = int(m.group(1)) - 1
-            if single is not None:
-                lo = hi = single
-        return lo, hi
+                    n = int(m.group(1)) - 1
+                    windows.append((n, n))
+                    found = True
+            if open_lo is not None:
+                windows.append((open_lo, 254))
+            if not found:
+                windows.append((0, 254))
+        return windows
 
     # TargetBind -> per-state (lo,hi,dx,dy) windows; elem-gated actor/target
     # controllers -> (frame, op, arg, cond) action rows.  cond bit0 gates
     # var(2) (throw's holdfwd variant); bit1 preserves Random<=500 voices.
     binds = {}
     acts = {}
+    pose_entries = {}                        # state -> (pose slot, frame)
     exprows = []                             # compiled Explod rows
     snds = {}                                # state -> [(triggers, sfx id)]
     for state, ctrls in statedefs.items():
@@ -6793,22 +6916,42 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None, char_scale=1.0):
                 continue
             if ctype == "targetbind":
                 pos = ctrl.get("pos", "0,0")
+                # `(Target,const(size.head.pos.x)) + 48` is how every KOF98
+                # grab seats the victim on the attacker's hands.  The parser
+                # cannot see the victim's constants, so the expression fell
+                # through to (0,0) and the victim was pulled 46-52 px too
+                # close on the grab frame (the "descola da mao" snap).  The
+                # roster's head.pos.x spans -4..8 (median 4), so folding it
+                # to 4 keeps the contact error inside the 8 px budget for
+                # every fighter.
+                pos = re.sub(
+                    r"\(?\s*(?:target|enemy)\s*,\s*const\s*\(\s*size\.head"
+                    r"\.pos\.x\s*\)\s*\)?", "4", pos, flags=re.I)
                 m = re.match(r"(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)",
                              pos.strip())
-                # TargetBind offsets follow the source art scale: shrinking
-                # the fighters to 0.81 must also bring the held victim down
-                # by the same factor, otherwise their feet sit too high on
-                # the attacker's body.  The clamp for the 190 px playfield is
-                # applied in port pixels after both scales.
-                dx, dy = ((int(round(float(m.group(1)) / coord_scale
-                                     * char_scale)),
-                           int(round(float(m.group(2)) / coord_scale
-                                     * char_scale)))
-                          if m else (0, 0))
-                if dy < -80:
-                    dy = -80
-                lo, hi = elem_window(trig)
-                binds.setdefault(state, []).append((lo, hi, dx, dy))
+                if not m:
+                    # simple `A + B` / `A - B` left/right of the comma
+                    m = re.match(r"(-?\d+)\s*([+-])\s*(\d+)\s*,\s*"
+                                 r"(-?\d+(?:\.\d+)?)", pos.strip())
+                    if m:
+                        xv = int(m.group(1))
+                        xv = (xv + int(m.group(3)) if m.group(2) == "+"
+                              else xv - int(m.group(3)))
+                        dx = int(round(xv / coord_scale * char_scale))
+                        dy = int(round(float(m.group(4)) / coord_scale
+                                       * char_scale))
+                    else:
+                        dx, dy = 0, 0
+                else:
+                    dx, dy = (int(round(float(m.group(1)) / coord_scale
+                                        * char_scale)),
+                              int(round(float(m.group(2)) / coord_scale
+                                        * char_scale)))
+                # The playfield ceiling is resolved per frame at table
+                # emission from the victim pose actually on screen (see
+                # `bind_floor`); keep the source offset here.
+                for lo, hi in elem_windows(trig):
+                    binds.setdefault(state, []).append((lo, hi, dx, dy))
             elif ctype == "playsnd":
                 # AnimElem/Time triggers are resolved to frame rows by the
                 # caller (which owns the anim durations); keep the raw
@@ -7123,6 +7266,16 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None, char_scale=1.0):
                     continue                  # expression -> skip
                 arg = int(float(m.group(1)))
                 acts.setdefault(state, []).append((frame, 4, arg, cond))
+                # The victim's ChangeAnim2 phase for this TargetState: the
+                # state keeps S_VHELD, only the body is swapped, so the pose
+                # can change without resetting hitpause/velocity/state time.
+                pose = VICTIM_POSE_MAP.get(arg)
+                if pose is not None:
+                    acts.setdefault(state, []).append(
+                        (frame, 21,
+                         pose | (0x80 if pose in VICTIM_POSE_NOLAUNCH else 0),
+                         cond))
+                    pose_entries[state] = (pose, frame)
             elif ctype == "velset":
                 # AnimElem- and exact Time-triggered VelSet -> op5
                 # velset.x (px/frame, signed, facing-relative) + op15
@@ -7199,7 +7352,7 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None, char_scale=1.0):
             if state in moves:
                 break
     return (moves, posadds, powadds, headers, statedefs, binds, acts,
-            reversals, hitdef_lists, snds, hitsnds, exprows)
+            reversals, hitdef_lists, snds, hitsnds, exprows, pose_entries)
 
 
 def parse_cmd(path, buttons, move_ids):
@@ -9778,7 +9931,7 @@ def build_char(name, cfg, global_pal=None):
     (cns_moves, cns_posadds, cns_powadds, cns_headers,
      cns_statedefs, cns_binds, cns_acts,
      cns_reversals, cns_hitdef_lists,
-     cns_snds, cns_hitsnds, cns_exprows) = parse_cns(
+     cns_snds, cns_hitsnds, cns_exprows, cns_poses) = parse_cns(
         asset_path(cfg["cns"]), coord_scale,
         cfg.get("damage_scale", 1), char=name,
         char_scale=char_scale)
@@ -9801,6 +9954,14 @@ def build_char(name, cfg, global_pal=None):
                             if r[1] not in _drop_ops]
         cns_acts[_state] += [(int(f), int(op), int(a), int(c))
                              for f, op, a, c in _rows]
+    # Extra ActTab rows appended to whatever the source already produced.
+    # Clark 3016: the source victim leaves its 3026 slam pose on its own
+    # AnimTime (-> 3027 bounce) right as the thrower reaches element 10;
+    # the port's victim has no clock of its own, so the thrower releases it.
+    for _state, _rows in (cfg.get("act_extra") or {}).items():
+        cns_acts.setdefault(_state, [])
+        cns_acts[_state] += [(int(f), int(op), int(a), int(c))
+                             for f, op, a, c in _rows]
     # Per-state Explod timeline overrides for effects the source fires at
     # sub-element times (Sakura's 15 Shun Goku Satsu sparks).  Appending a
     # row here reuses the existing ActTab op14/ExplodSpawn path, so the
@@ -9812,6 +9973,18 @@ def build_char(name, cfg, global_pal=None):
                                 0, 0, 0, int(_ttl) & 0xFF, int(_attr)))
             cns_acts.setdefault(_state, []).append(
                 (int(_frame), 14, _row, 0))
+    # TargetToss (ActTab op22): the source binds the victim once at the top
+    # of the lift and then the victim's own state VelSets it upward under
+    # gravity (Clark 3010/3012/3014 -> 3020/3022: VelSet y=-14, VelAdd .5);
+    # the next attacker state catches it.  ThrowBind cannot express the
+    # flight (one offset per element, clamped to the play field), so the
+    # victim used to hang at the clamp for ~50 ticks.  Values: state ->
+    # (1-based AnimElem, source upward speed px/tick); arg = 1/16 px/tick.
+    for _state, (_elem, _vy) in (cfg.get("target_toss") or {}).items():
+        _arg = int(round(float(_vy) * char_scale * 16))
+        if not 0 < _arg <= 255:
+            raise ValueError(f"{name}: TargetToss speed {_vy} out of range")
+        cns_acts.setdefault(_state, []).append((int(_elem) - 1, 22, _arg, 0))
     # Explicitly remove source ActTab ops the port cannot represent safely
     # (an unconditional MUGEN Turn would flip an already-facing fighter).
     for _state, _ops in (cfg.get("act_drop") or {}).items():
@@ -10254,6 +10427,74 @@ def build_char(name, cfg, global_pal=None):
         anim_tables[sid] = (frames, loopstart)
         for g, n, *_ in frames:
             wanted.add((g, n))
+
+    # Held-victim poses for the thrower's ChangeAnim2 phases (Clark's grabs).
+    # Emitted as a per-character table the engine's TargetPose ActTab op
+    # indexes; the cels are linked shared groups, so this adds no tiles.
+    # Staged only: POSE_BUDGET_SPRITES applies them once the character's real
+    # metasprite set is known and they are checked against the bank window.
+    victim_poses = {}
+    pose_sprites = {}
+    for _action, _pose in VICTIM_POSE_ACTIONS:
+        _src = victim_pose_actions().get(_action)
+        if not _src:
+            continue
+        _frames = []
+        for _g, _n, _x, _y, _t, _flip, _a, _h in _src:
+            _src_spr = sff.get(_g, _n)
+            if _src_spr is None:
+                continue
+            _bg = VICTIM_POSE_BASE.get(_g, _g)
+            _base_spr = sff.get(_bg, _n) or sff.get(_bg, 0)
+            # Only swap in a resident cel when it really is the same bitmap:
+            # some packs store a placeholder (or an unrelated cel) under
+            # 5030/5010/5040, and the axis delta of a different sprite then
+            # throws the whole pose far off the victim's feet (Joe/Iori/Ryo
+            # were drawn ~100 px above the slam).
+            if (_base_spr is None or _base_spr is _src_spr
+                    or _base_spr.pix is None or _src_spr.pix is None
+                    or bytes(_base_spr.pix) != bytes(_src_spr.pix)):
+                _bg, _base_spr = _g, _src_spr
+            _dx = _base_spr.ax - _src_spr.ax
+            _dy = _base_spr.ay - _src_spr.ay
+            if "H" in _flip:
+                _dx = -_dx
+            if "V" in _flip:
+                _dy = -_dy
+            _frames.append((_bg, _base_spr.number, _x + _dx, _y + _dy,
+                            _t, _flip, [], []))
+        if not _frames:
+            continue
+        _frames = scale_air_frames(_frames, coord_scale)
+        _frames = scale_air_frames_f(_frames, char_scale)
+        _frames = compact_pose(_frames)
+        # Same pixels, different sprite number (5030,30 == 5030,40 in most
+        # packs): reuse whatever the character already streams so the pose
+        # set does not add a metasprite per cel.
+        _resident = {}
+        for _k in list(wanted):
+            _sp = sff.get(*_k)
+            if _sp is not None and _sp.pix is not None:
+                _resident.setdefault((_k[0], hash(bytes(_sp.pix))),
+                                     _k)
+        _remapped = []
+        for _g, _n, _x, _y, _t, _flip, _a, _h in _frames:
+            _sp = sff.get(_g, _n)
+            _alt = (_resident.get((_g, hash(bytes(_sp.pix))))
+                    if _sp is not None and _sp.pix is not None else None)
+            if _alt is not None and _alt != (_g, _n):
+                _base = sff.get(*_alt)
+                _dx = _base.ax - _sp.ax
+                _dy = _base.ay - _sp.ay
+                if "H" in _flip:
+                    _dx = -_dx
+                if "V" in _flip:
+                    _dy = -_dy
+                _g, _n, _x, _y = _alt[0], _alt[1], _x + _dx, _y + _dy
+            _remapped.append((_g, _n, _x, _y, _t, _flip, _a, _h))
+        _frames = _remapped
+        victim_poses[_pose] = _frames
+        pose_sprites[_pose] = {(g, n) for g, n, *_rest in _frames}
 
     # Imported projectile specials keep the source's long follow-through.
     # Rescale only the tail after the release frame (ProjTrySpawn fires on
@@ -10753,6 +10994,10 @@ def build_char(name, cfg, global_pal=None):
     if synthetic:
         print(f"{name}: {len(synthetic)} tween cels (~{tween_bytes_estimate} B)")
 
+    # Held poses are staged, not admitted: they are emitted after the normal
+    # sprites so the blob size can be measured for real (an estimate was off
+    # by 16% on Chang) and only the poses that still fit the character's
+    # 64 KiB CH_MBANK window are kept.  See _emit_held_poses below.
     move_ids = cfg.get("moves", {})
     proj_fx = None if cfg.get("projfx_alias") else projectile_effect(
         name, cfg, sff, air, cns_statedefs, cns_headers, move_ids,
@@ -10779,7 +11024,8 @@ def build_char(name, cfg, global_pal=None):
     headers = []      # (ax, ay, meta offset)
     max_cells = 0
     max_dma = 0
-    for key in sorted(wanted):
+    def _emit_sprite(key):
+        nonlocal tiles, max_cells, max_dma
         s = sprites[key]
         spr_ids[key] = len(spr_ids)
         remap = [0] * 256
@@ -11132,6 +11378,45 @@ def build_char(name, cfg, global_pal=None):
             meta += struct.pack("<bbH", dx, dy, ti)
         spr_meta.append(bytes(meta))
 
+    def _emit_keys(keys):
+        for _k in keys:
+            if _k not in sprites:
+                sprites[_k] = sprite_or_blank(_k)
+            _emit_sprite(_k)
+
+    # Emit the normal sprites first, then the staged held poses in slot order,
+    # measuring the blob from the records actually emitted.  A pose is kept
+    # only while the character still fits its 64 KiB CH_MBANK window; the
+    # rest fall back to the generic held pose.  An estimate is not good
+    # enough here: quadrant splitting put Chang 16% above its own estimate.
+    _budget = VICTIM_POSE_BUDGET - (16 if CHAR_SCALE_OVERRIDE is not None
+                                    else 0)
+    _emit_keys(sorted(wanted))
+    _kept = {}
+    for _pose in sorted(victim_poses):
+        if sum(len(m) for m in spr_meta) > _budget:
+            print(f"{name}: held pose {_pose} dropped, the blob already "
+                  f"reaches the {_budget}-byte window")
+            break
+        _mark = (len(spr_meta), len(tiles), len(headers))
+        _new = sorted(k for k in pose_sprites[_pose] if k not in spr_ids)
+        _emit_keys(_new)
+        if sum(len(m) for m in spr_meta) <= _budget:
+            _kept[_pose] = victim_poses[_pose]
+            wanted.update(_new)
+            continue
+        del spr_meta[_mark[0]:]
+        del tiles[_mark[1]:]
+        del headers[_mark[2]:]
+        for _k in _new:
+            spr_ids.pop(_k, None)
+            spr_upload_bytes.pop(_k, None)
+            spr_shift.pop(_k, None)
+        print(f"{name}: held pose {_pose} dropped, it would push the "
+              f"metasprite blob past the {_budget}-byte window")
+        break
+    victim_poses = _kept
+
     # Optional per-sid frame cap (OAM-heavy source poses).  Applied before the
     # upload budget so the surviving frames still get their minimum ticks.
     for _sid, _cap in (cfg.get("frame_cap") or {}).items():
@@ -11265,6 +11550,29 @@ def build_char(name, cfg, global_pal=None):
                        f"    .db {min(t, 255)},{(x - sx) & 0xFF},"
                        f"{(y - sy) & 0xFF},"
                        f"{flags},{atk_id},{hurt_id}\n")
+
+    # Held-victim pose clips: one pointer per slot (0 = absent) plus the anim
+    # bodies in the same format as AnimTab.  The TargetPose ActTab op swaps
+    # the bound victim's body without touching its state.
+    inc.append(f"{name}PoseTab:\n")
+    # The table keeps its full slot range even when a pose was dropped for
+    # the metasprite budget: the bind windows still ask for those slots, and
+    # the engine falls back to the generic held pose on a zero entry.
+    pose_slots = max(max(victim_poses, default=-1),
+                     max(pose_sprites, default=-1)) + 1 or 1
+    for p in range(pose_slots):
+        inc.append(f"    .dw {name}Pose{p}\n" if p in victim_poses
+                   else "    .dw 0\n")
+    for p in sorted(victim_poses):
+        frames = victim_poses[p]
+        inc.append(f"{name}Pose{p}:\n    .db {len(frames)},-1\n")
+        for g, n, x, y, t, flip, _atk, _hurt in frames:
+            flags = ("H" in flip and 1 or 0) | ("V" in flip and 2 or 0)
+            sx, sy = spr_shift.get((g, n), (0, 0))
+            inc.append(f"    .dw {spr_ids[(g, n)]}\n"
+                       f"    .db {max(1, min(int(t), 255))},"
+                       f"{(x - sx) & 0xFF},{(y - sy) & 0xFF},"
+                       f"{flags},0,0\n")
 
     move_ids = cfg.get("moves", {})
     persist = set(cfg.get("persist", ()))   # hitdefpersist sids (flag bit2)
@@ -11944,13 +12252,49 @@ def build_char(name, cfg, global_pal=None):
     # used to shadow every specific row after it: Chang/Joe/Terry/Heidern
     # throw victims and Clark's Mount stuck to a single wrong offset for the
     # whole state.  Resolve the per-frame winner at build time and emit runs.
-    def canon_bind(rows):
+    # Per-pose playfield ceiling.  The bind seats the victim's axis; the body
+    # reaches `pose_top_extent` pixels above it, so the allowed dy depends on
+    # the pose that is on screen at that frame.  This replaces the old flat
+    # -80 clamp, which flattened the Ultra Argentine's two lifts into one
+    # and pinned the victim to the ceiling for hundreds of ticks.
+    def pose_extent_at(pose_frames, dt):
+        cum = 0
+        for f in pose_frames:
+            cum += int(f[4])
+            if dt < cum:
+                return pose_top_extent(sprites.get((f[0], f[1])), f[5], f[3])
+        f = pose_frames[-1]
+        return pose_top_extent(sprites.get((f[0], f[1])), f[5], f[3])
+
+    def state_tick_of(sid, frame):
+        """Attacker ticks elapsed when element `frame` of sid starts."""
+        frames, _loop = anim_tables.get(sid, ([], 0))
+        return sum(int(fr[4]) for fr in frames[:max(0, int(frame))])
+
+    def bind_floor_info(sid):
+        entry = cns_poses.get(move_ids.get(sid, -1))
+        if entry is None:
+            return None
+        pose, start = entry
+        frames = victim_poses.get(pose)
+        if not frames:
+            return None
+        return frames, state_tick_of(sid, start)
+
+    def canon_bind(rows, floor_info=None, sid=0):
         frames = [None] * 255
         for lo, hi, dx, dy in rows:
             if hi < lo:
                 continue                  # reversed window never matches
             for f in range(max(0, lo), min(hi, 254) + 1):
-                frames[f] = (dx & 0xFF, dy & 0xFF)
+                d = dy
+                if floor_info is not None:
+                    pose_frames, start_tick = floor_info
+                    d = max(d, bind_floor(pose_extent_at(
+                        pose_frames,
+                        max(0, state_tick_of(sid, f) - start_tick))))
+                d = max(d, -128)
+                frames[f] = (dx & 0xFF, d & 0xFF)
         out = []
         f = 0
         while f < 255:
@@ -11964,7 +12308,8 @@ def build_char(name, cfg, global_pal=None):
             f = g + 1
         return out
 
-    bind_rows = {sid: canon_bind(cns_binds.get(move_ids.get(sid, -1)) or ())
+    bind_rows = {sid: canon_bind(cns_binds.get(move_ids.get(sid, -1)) or (),
+                                 bind_floor_info(sid), sid)
                  for sid in range(nsid)}
     inc.append(f"{name}BindTab:\n")
     for sid in range(nsid):
@@ -11998,6 +12343,11 @@ def build_char(name, cfg, global_pal=None):
             if op == 4:
                 arg = VICTIM_STATE_IDS.get(arg, state_to_sid.get(arg, 0xFF))
                 if arg == 0xFF:
+                    continue
+            if op == 21:
+                # Drop the pose when this character has no clip for it;
+                # bit7 (release must not launch) is already in the arg.
+                if (arg & 0x7F) not in victim_poses:
                     continue
             out.append((frame, op, arg, cond))
         act_sids[sid] = out
@@ -14387,7 +14737,8 @@ def emit_newchars_inc(new_keys, msu_slices):
               f"    .dw {pfx}ProjFxTab, {pfx}ProjFxChr\n",
               f"    .dw {k}CmdList\n",
               f"    .db :{k}CmdList, {MAX_MASKS.get(k, 0)}\n",
-              f"    .dw {k}CancelRow\n"]
+              f"    .dw {k}CancelRow\n",
+              f"    .dw {k}PoseTab\n"]
     for k in new_keys:
         C = cap(k)
         d += [f"{C}Pal: .INCBIN \"gen_fight/{k}_pal.bin\"\n",
@@ -14485,10 +14836,11 @@ def emit_newchars_inc(new_keys, msu_slices):
     # after EndData18 (13 KiB) and its upper half is free.  Small overflow
     # tables/projectile atlases use these tail windows.
     PVS_SLOTS += [(82, 0x4000, 0x4000)]
-    # Bank 50's low half is free below the Fight code, but $7100-$751C is
-    # reserved for FightMenuTail (menucore.asm).  Keep generated data below
-    # that tail or the linker cannot place the section.
-    PVS_SLOTS += [(50, 0x0000, 0x7100)]
+    # Bank 50's low half is free below the Fight code, but $70C0 upwards is
+    # reserved for FightMenuTail (menucore.asm) and the TeamOrderNear stub.
+    # Keep generated data below that tail or the linker cannot place the
+    # section.
+    PVS_SLOTS += [(50, 0x0000, 0x70C0)]
     # Bank 48 ($F0) carries EndDataMP2 at $0000-$6600.  The rest of the
     # 64 KiB window is free and is the only remaining slot large enough for
     # a 33-34 KiB generated table/meta blob (Heavyd/Billy/Mrbig).

@@ -19,6 +19,13 @@ DrawCellsFastBody:
     pei (scr0)
     pei (scr1)
     pei (scr2)
+    ; scr0 bit0 = horizontal flip, bit1 = vertical flip (AIR flag "V").
+    ; MUGEN mirrors the cel around its axis, so the V path negates the cel
+    ; dy and sets OAM attribute bit7.  Keeping both bits here lets the cell
+    ; loop pick the Y formula once per cel without extra scratch RAM.
+    lda scr0
+    and #$0003.w
+    sta scr0
     lda scr2
     sec
     sbc #$0080.w
@@ -29,6 +36,13 @@ DrawCellsFastBody:
     sta scr5
     stz scr5+1
     lda scr0
+    and #$02.b
+    beq +
+    lda scr5
+    ora #$80.b                          ; OAM vertical flip
+    sta scr5
++   lda scr0
+    and #$01.b
     beq DCF_setup_plain
     lda scr5
     ora #$40.b
@@ -39,8 +53,6 @@ DrawCellsFastBody:
     clc
     adc #($0080-16).w
     sta scr1
-    lda #1.w
-    sta scr0
     bra DCF_cell
 DCF_setup_plain:
     rep #$20
@@ -49,7 +61,9 @@ DCF_setup_plain:
     sec
     sbc #$0080.w
     sta scr1
-    stz scr0
+    lda scr0
+    and #$0002.w
+    sta scr0
 DCF_cell:
     cpx #512.w
     bcc DCF_in_range
@@ -63,12 +77,39 @@ DCF_in_range:
     sta scr6
     iny
     iny
+    ; vertical flip mirrors the cel about the axis: y = -dy - 16 (or -8
+    ; for the 8x8 sub-cells).  Both paths add the same (-128) bias that
+    ; scr2 already carries, so the OAM byte matches the horizontal path.
+    lda scr0
+    and #$0002.w
+    bne DCF_y_vflip
     lda scr3
     xba
     and #$00FF.w
     eor #$0080.w
     clc
     adc scr2
+    bra DCF_y_check
+DCF_y_vflip:
+    lda scr3
+    xba
+    and #$00FF.w
+    eor #$00FF.w
+    pha
+    lda scr6
+    bmi DCF_y_vflip8
+    pla
+    clc
+    adc #$0071.w
+    bra DCF_y_sum
+DCF_y_vflip8:
+    pla
+    clc
+    adc #$0079.w
+DCF_y_sum:
+    clc
+    adc scr2
+DCF_y_check:
     bpl DCF_y_visible
     lda #$00F0.w
 DCF_y_visible:
@@ -78,6 +119,7 @@ DCF_y_visible:
     rep #$20
     .ACCU 16
     lda scr0
+    and #$0001.w
     bne DCF_x_flip
     lda scr3
     and #$00FF.w
@@ -695,7 +737,7 @@ DCF_old_in_range:
 DCF_old_dx_positive:
     sta scr3
     lda scr0
-    and #$00FF.w
+    and #$0001.w
     beq DCF_old_dx_done
     lda scr3
     eor #$FFFF.w
@@ -720,7 +762,11 @@ DCF_old_dx_done:
     iny
     rep #$20
     .ACCU 16
+    lda scr0
+    and #$0002.w
+    bne DCF_old_dy_vflip
     lda scr3
+    xba
     and #$00FF.w
     bit #$0080.w
     beq DCF_old_dy_positive
@@ -728,6 +774,29 @@ DCF_old_dx_done:
 DCF_old_dy_positive:
     clc
     adc scr2
+    bra DCF_old_y_done
+DCF_old_dy_vflip:
+    lda scr3
+    xba
+    and #$00FF.w
+    eor #$00FF.w
+    pha
+    lda scr6
+    bmi DCF_old_dy_vflip8
+    pla
+    clc
+    adc #$0071.w
+    bra DCF_old_dy_sum
+DCF_old_dy_vflip8:
+    pla
+    clc
+    adc #$0079.w
+DCF_old_dy_sum:
+    clc
+    adc scr2
+    sec
+    sbc #$0080.w                       ; same -128 bias as the fast path
+DCF_old_y_done:
     bpl DCF_old_y_visible
     lda #$00F0.w
 DCF_old_y_visible:
@@ -756,6 +825,13 @@ DCF_old_y_visible:
     sta.w OAMBUF+3,x
 DCF_old_attr_ok:
     lda scr0
+    and #$02.b
+    beq +
+    lda.w OAMBUF+3,x
+    ora #$80.b                          ; OAM vertical flip
+    sta.w OAMBUF+3,x
++   lda scr0
+    and #$01.b
     beq DCF_old_flip_done
     lda.w OAMBUF+3,x
     ora #$40.b

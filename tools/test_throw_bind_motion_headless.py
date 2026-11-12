@@ -28,14 +28,18 @@ def main():
             core.step()
             if core.ram[P1 + 8] != 75 or core.ram[P2 + 8] != 76:
                 continue
-            frame = core.ram[P1 + 10]
+            # ThrowBind follows the elem whose tiles are on screen
+            # (F_SHOWN, byte 188), lagging F_FRAME while a big sprite
+            # streams in; test the offsets of that elem.
+            frame = core.ram[P1 + 188]
             x1, x2 = core.word(P1), core.word(P2)
             y1, y2 = core.word(P1 + 2), core.word(P2 + 2)
             if frame == 5:
                 assert abs(x2 - x1 + (4 << 8)) <= 1, (frame, x1, x2)
                 checked_x = True
             if frame == 7 and y1 >= 8 << 8:
-                assert abs(y2 - y1 - (68 << 8)) <= 1, (frame, y1, y2)
+                # ryoBind75 elem 7: dy = -67 at the 0.88 grab scale
+                assert abs(y2 - y1 - (67 << 8)) <= 1, (frame, y1, y2)
                 checked_y = True
         assert checked_x and checked_y, (checked_x, checked_y)
         print("PASS signed throw bind and airborne victim tracking")

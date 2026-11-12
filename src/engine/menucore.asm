@@ -1135,11 +1135,13 @@ MsuAvailable: .db 3,25,5,19
 MsuUnavailable: .db 2,14,15
 .ENDIF
 ; The menu/selection/ending tail lives in the free slot above the stage FX
-; graphics at $7100, still inside the Fight bank, so the battle code keeps
-; room below its 32 KiB limit and every near jsr/jmp continues to resolve.
+; graphics, still inside the Fight bank, so the battle code keeps room below
+; its 32 KiB limit and every near jsr/jmp continues to resolve.  It starts at
+; $70C0 rather than $7100: the section grew past the 3,840 bytes $7100..$8000
+; leaves, and $70C0 is the first free byte after TeamOrderNear ($7040+123).
 .IFDEF PVSNESLIB
 .ENDS
-.ORGA $7100
+.ORGA $70C0
 .SECTION "FightMenuTail" FORCE
 
 ; Upload the 2bpp HUD font to BG3 and build the static credit strip on map
@@ -3059,7 +3061,37 @@ ThrowRelease:
     lda #S_VTHROW.w
     jsr EnterState
     ldx fofs
+    ; F_TFLAGS bit7 marks a slam pose (Ultra Argentine 3026): the victim is
+    ; already on the floor, so the generic 5.5 px/tick launch made it pop
+    ; ~35 px up after the slam.  The Super Argentine Backbreaker ends the
+    ; same way (its victim is released at floor level), so the launch is
+    ; skipped whenever the victim has no height left.  Keep the victim's own
+    ; 3027 VelSet (y=-6, authored for the chain that continues into 3016)
+    ; from tossing him back up: without the STIME block he still rose.
+    sep #$20
+    .ACCU 8
+    lda FP+F_TFLAGS,x
+    pha
+    and #$7F.b
+    sta FP+F_TFLAGS,x
+    pla
+    bit #$80.b
+    bne TR_drop
+TR_launch:
+    rep #$20
+    .ACCU 16
+    ldx fofs
     jsr LaunchVictim                    ; arc away from the thrower
+    jsl BackThrowReleaseFar             ; holdback throw: deferred side seat
+    sec
+    rts
+TR_drop:
+    rep #$20
+    .ACCU 16
+    stz FP+F_VX,x
+    stz FP+F_VY,x
+    lda #$0080.w                        ; past ApplyTimeActions' Time<127 window
+    sta FP+F_STIME,x
     jsl BackThrowReleaseFar             ; holdback throw: deferred side seat
     sec
     rts
@@ -3116,6 +3148,17 @@ ThrowTechFx:
 
 ; fofs = victim, acc16.  Called from AO_tstat (TargetState release) and from
 ; ThrowRelease (natural end of a bind).
+; AO_tstat release into S_VTHROW.  Only a victim still flagged with the slam
+; pose (Clark 3026 -> 3027) gets a velocity here: the head-first slam bounces
+; the body away from the thrower.  Other TargetState-821 releases keep their
+; existing (velocity-free) behaviour.  a16, X = victim.
+SlamRelease:
+    lda FP+F_TFLAGS,x
+    bit #$0080.w
+    beq +
+    jsl SlamBounceFar
++   rts
+
 LaunchVictim:
     rep #$20
     .ACCU 16
@@ -3125,9 +3168,16 @@ LaunchVictim:
     bcc +
     lda #(96<<8).w
     sta FP+F_Y,x
-+   lda #-THROWLIFTV.w
++   lda FP+F_Y,x                        ; released overhead?  fall from there
+    cmp #(24<<8).w                      ;   instead of being tossed higher
+    bcc +
+    lda #$0080.w                        ; block the victim's own 3027 VelSet
+    sta FP+F_STIME,x                    ;   (otherwise he is tossed back up)
+    stz FP+F_VY,x                       ;   and drop the entry velocity too
+    bra ++
++   lda #-THROWLIFTV.w                  ; released low: arc up and away
     sta FP+F_VY,x
-    txa
+++  txa
     eor #FP2OFS.w
     tay
     lda FP+F_FACING,y

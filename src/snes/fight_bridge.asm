@@ -196,10 +196,12 @@ MsuDiagBuffers dsb $1800
 
 ; Boot MSU-check strings.  Moving these 31 bytes out of the Fight section
 ; leaves room for the gamestate-14 branch; MtStr walks them through a 24-bit
-; pointer, so the bank byte is all that changes.
+; pointer, so the bank byte is all that changes.  $DE00 was needed for the
+; widened VoiceQueueCode block ($DA60-$DEFF), so they sit in the $EEA0 gap
+; before ProjPinFar.
 .BASE $C0
 .BANK 126 SLOT 0
-.ORGA $DE00
+.ORGA $EEA0
 .SECTION "MsuCheckStrings" FORCE
 MsuCheckText: .db 24,3,8,5,3,11,9,14,7,0,13,19,21,42,28,0,19,21,16,16,15,18,20,38,0
 MsuAvailable: .db 3,25,5,19
@@ -437,6 +439,8 @@ SDF_flip:
     eor #$60.b
     sta FP+F_TILEPG,x                   ; newly-uploaded page becomes visible
     stz FP+F_DMAREQ,x
+    lda FP+F_QFR,x                      ; ThrowBind follows what the screen
+    sta FP+F_SHOWN,x                    ;   shows, not the ticking F_FRAME
     lda FP+F_PXOFF,x
     sta FP+F_XOFF,x
     lda FP+F_PYOFF,x

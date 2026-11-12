@@ -172,6 +172,10 @@
 .DEFINE S_THROW     74                  ; throw attempt HitDef (mugen 800)
 .DEFINE S_TSEQ      75                  ; throw bind sequence (810)
 .DEFINE S_VHELD     76                  ; bound victim (820)
+.DEFINE A_HOLD_SLOT 76                  ; AnimTab slot for the generic held
+                                        ; pose (StVictimHeld's anim 820)
+.DEFINE SLAM_STEP   8                   ; px/tick the victim is driven down
+.DEFINE S_SA_BACKBREAK 101              ; Super Argentine Backbreaker
 .DEFINE S_VTHROW    77                  ; thrown victim flight (821)
 ; ReversalDef counter-grab runtime slots (Geese/Daimon/Heidern/etc.):
 ; 99/101 = actor follow-up, 100/102 = held opponent.  98 stays Iori's
@@ -275,6 +279,9 @@
 .DEFINE F_PFX       63                  ; PalFX bright-flash ticks remaining
 .DEFINE F_LASTSCAN  186                 ; CmdTry: ring head already scanned
 .DEFINE F_LASTSTATE 187                 ; CmdTry: state at that scan
+.DEFINE F_SHOWN     188                 ; elem whose tiles are on screen
+.DEFINE F_REDRAW    189                 ; current pose was dropped mid-upload
+.DEFINE F_QFR       190                 ; elem of the last queued tile upload
 .DEFINE ct_cut      $53                 ; CmdTry: ring age cap (frames)
 .DEFINE F_PROJDONE  180                 ; spare tail byte; must not alias F_MAX
 .DEFINE F_AIRPROJ   181                 ; projectile already juggled this fall
@@ -335,6 +342,7 @@
 .DEFINE CH_CMDLIST   88                 ; PRACTICE command list header
 .DEFINE CH_CMDLISTBANK 90               ; 0 = F_TBANK, else explicit bank
 .DEFINE CH_CANCELROW 92                 ; 22 normal cancel opens (sids 5..26)
+.DEFINE CH_POSETAB  94                 ; held-victim pose anims (TargetPose op)
                                         ;   in the CancelData bank (.db each)
 .DEFINE CH_MAXMASK   91                 ; bit0..bit4 = sids 85..89 are MAX/SDM
                                         ;   (byte uses the padding after
@@ -2271,6 +2279,8 @@ ST_select:
     .ACCU 8
     stz FP+F_DMAREQ
     stz FP+F_DMAREQ+FP2OFS
+    stz FP+F_SHOWN
+    stz FP+F_SHOWN+FP2OFS
     stz framecnt                        ; make the intermission exactly 60 frames
     stz pausecnt                        ;   and never carry a freeze over
     stz shaketmr                        ;   ($74: an old word clear of $73/$74)
@@ -4199,6 +4209,8 @@ SF_full:
     stz FP+F_TFLAGS+FP2OFS
     stz FP+F_DMAREQ
     stz FP+F_DMAREQ+FP2OFS
+    stz FP+F_SHOWN
+    stz FP+F_SHOWN+FP2OFS
     stz.w SP_KIND                         ; drop chunks staged for an old pick
     stz.w SP_KIND+2
     stz FP+F_DMAPOS
@@ -5436,6 +5448,8 @@ AnimSetFrame:
     bne ASF_q_new
     lda FP+F_DMAREQ,x
     bne ASF_q_wait
+    lda FP+F_FRAME,x
+    sta FP+F_SHOWN,x
     stz scr6                            ; mode 0: offsets apply right away
     stz scr6+1
     rep #$20
@@ -5454,6 +5468,9 @@ ASF_q_new:
     lda #1.b
     sta FP+F_DMAREQ,x                   ; F_META committed when upload completes
     stz FP+F_DMAPOS,x
+    stz FP+F_REDRAW,x                   ; this pose is queued: no catch-up
+    lda FP+F_FRAME,x
+    sta FP+F_QFR,x
     ; Telemetry: timestamp the request and count it per side.
     txa
     bne +
@@ -5484,21 +5501,9 @@ ASF_q_new:
 ASF_q_drop:
     ; A new pose arrived while the previous one was still uploading.  The
     ; animation clock keeps running (gameplay timing must not change), so the
-    ; pose is coalesced away; count it so telemetry can show the loss rate.
-    txa
-    bne +
-    rep #$20
-    .ACCU 16
-    inc.w TEL_DROP_P1
-    sep #$20
-    .ACCU 8
-    bra ++
-+   rep #$20
-    .ACCU 16
-    inc.w TEL_DROP_P2
-    sep #$20
-    .ACCU 8
-++  bra ASF_q_wait
+    ; pose is coalesced away; count it so telemetry can show the loss rate,
+    ; and mark it so AnimTick can re-queue it if it is still a long hold.
+    jsl DropMarkFar
 ASF_q_wait:
     .ACCU 8
     stz scr6
@@ -5684,6 +5689,18 @@ AA_time:
     bne AA_next
 AA_match:
     phy
+    ; ActOp may call EnterState on the victim (op4 TargetState), which
+    ; rewrites sptr with the victim's animation table.  Without saving it,
+    ; the remaining rows of this scan are read from that table and a pose
+    ; row (op21 TargetPose) after the TargetState row never runs -- every
+    ; Ultra Argentine phase kept the generic held anim.  Same guard as
+    ; ApplyTimeActions below.
+    lda sptr+2
+    pha
+    rep #$20
+    lda sptr
+    pha
+    sep #$20
     iny
     lda [sptr],y                        ; op
     sta scr6
@@ -5707,6 +5724,12 @@ AA_match:
 +   lda scr6
     jsr ActOp
 AA_skip:
+    rep #$20
+    pla
+    sta sptr
+    sep #$20
+    pla
+    sta sptr+2
     ldx fofs
     ply                                 ; ply restores the row head, so a
     jmp AA_next                         ;   matched row still advances +4
@@ -5883,6 +5906,12 @@ ActOp:
 +   cmp #20
     bne +
     jmp AO_cine
++   cmp #21
+    bne +
+    jmp AO_tpose
++   cmp #22
+    bne +
+    jmp AO_ttoss
 +   rts
 AO_pfx:                                 ; PalFX: arg = bright-flash ticks
     ldx fofs
@@ -6066,12 +6095,23 @@ AO_tstat_enter:
     ldx scr5
     stx fofs
     jsr EnterState
-    lda scr6+1                            ; source TargetState 821/816 (and
+    ldx fofs                              ; catch after a TargetToss: the
+    lda FP+F_GRAB,x                       ;   bind owns the victim again
+    bit #$0004.w
+    beq +
+    and #$FFFB.w                          ;   (keeps F_OWNER in the high byte)
+    sta FP+F_GRAB,x
+    stz FP+F_VY,x
++   lda FP+F_STATE,x                      ; source TargetState 821/816 (and
     and #$00FF.w                          ;   every imported 3020/3503-style
     cmp #S_VTHROW.w                       ;   victim) maps to the generic
     bne +                                 ;   flight slot: launch it now.
-    ldx fofs
-    jsr LaunchVictim
+    jsr SlamRelease                       ; X = fofs on both paths.  Reads
+                                          ;  the state byte: EnterState
+                                          ;  zeroes scr6, so the old scr6
+                                          ;  test never launched anyone;
+                                          ;  only the slam bounce acts here
+                                          ;  (generic launch kept as it was)
 +   lda scr5
     eor #FP2OFS.w                         ; back to the attacker
     sta fofs
@@ -6103,6 +6143,81 @@ AO_cine:                                ; op20: cinematic blackout + combo 0
     stz combohit,x
     stz combotmr,x
     rts
+; TargetPose: arg = pose index (bit7 = this pose ends the throw on the
+; ground, so the release must not launch the victim upward).  The victim
+; keeps S_VHELD (its state machine, hitpause and grab link stay intact);
+; only the animation body is swapped, which is exactly what the source does
+; with the per-phase ChangeAnim2 victim states.
+AO_tpose:
+    jsr AO_victim                       ; a16 = $FFFF or scr5 = victim ofs
+    cmp #$FFFF.w
+    bne +
+    jmp AO_ret16
++   rep #$20
+    .ACCU 16
+    lda scr6+1
+    and #$00FF.w
+    sta scr0                            ; arg
+    ldx scr5
+    sep #$20
+    .ACCU 8
+    lda FP+F_TFLAGS,x
+    and #$7F.b                          ; clear "no launch" from the last pose
+    sta FP+F_TFLAGS,x
+    lda scr0
+    and #$80.b
+    beq +
+    lda FP+F_TFLAGS,x
+    ora #$80.b
+    sta FP+F_TFLAGS,x
++   lda scr0
+    and #$7F.b
+    sta scr0
+    rep #$20
+    .ACCU 16
+    stx fofs
+    ldy #CH_POSETAB.w
+    ldx #lptr
+    jsr CharPtr                         ; lptr -> pose pointer table
+    lda scr0
+    and #$00FF.w
+    asl a
+    tay
+    lda [lptr],y
+    beq AO_tpose_hold                    ; slot dropped for the meta budget
+    ldx fofs
+    sta FP+F_ANIM,x
+    sta lptr                            ; bank stays F_TBANK
+    stz FP+F_FRAME,x
+    lda [lptr]                          ; nframes | loopstart<<8
+    sta FP+F_NFR,x
+    jsr AnimSetFrame
+    jmp AO_tpose_done
+AO_tpose_hold:                          ; generic held pose (AnimTab 76 = 820)
+    lda #A_HOLD_SLOT.w
+    jsr SetAnimSlot
+AO_tpose_done:
+    ldx fofs                            ; back to the attacker
+    txa
+    eor #FP2OFS.w
+    sta fofs
+    jmp AO_ret16
+
+; TargetToss: the source throws the bound victim straight up (Clark's
+; Ultra Argentine 3010/3012/3014 bind (8,-168) once, then the victim's
+; 3020/3022 VelSet y=-14 + 0.5 gravity) and catches it in the next state.
+; arg = upward speed in 1/16 px/tick.  F_GRAB bit2 makes ThrowBind leave
+; the victim alone and StVictimHeld fly it; the catch state's TargetState
+; row clears the bit (AO_tstat).
+AO_ttoss:
+    jsr AO_victim                       ; a16 = $FFFF or scr5 = victim ofs
+    cmp #$FFFF.w
+    bne +
+    jmp AO_ret16
++   ldx scr5
+    jsl TossStartFar                    ; bank 126 (Fight bank is full)
+    jmp AO_ret16
+
 AO_velset:                              ; VelSet x = arg px/frame, signed,
     rep #$20                            ;   facing-relative, 8.8 fixed
     .ACCU 16
@@ -8540,6 +8655,10 @@ ThrowBind:                              ; victim in S_VHELD tracks this
     cmp #S_CGRAB_LOV.w
     beq +
     jmp TB_out                          ; released already -> nothing bound
++   lda FP+F_GRAB,x                     ; tossed (TargetToss): the victim
+    bit #$0004.w                        ;   flies on its own until the
+    beq +                               ;   catch state's TargetState
+    rts
 +
     ldy #CH_BINDTAB.w
     ldx #boxp
@@ -8551,6 +8670,10 @@ ThrowBind:                              ; victim in S_VHELD tracks this
     tay
     lda [boxp],y
     bne +
+    ; The thrower is no longer positioning the victim (Clark's DP+P slam
+    ; states 112/113/114 have no bind rows at all): he used to stay frozen at
+    ; the last hold height while the thrower finished the slam on the ground.
+    jsl TbSlamFar                       ; bank 126
     rts
 +   sta sptr
     jsr DataFighterX
@@ -8560,44 +8683,45 @@ ThrowBind:                              ; victim in S_VHELD tracks this
     sta sptr+2
     rep #$20
     .ACCU 16
-    ldx fofs
-    lda FP+F_FRAME,x
+    lda FP+F_SHOWN,x                    ; elem whose tiles are on screen
     and #$00FF.w
-    sta scr6                            ; current elem (0-based)
-    ldy #0
-TB_row:
+    sta scr6
     sep #$20
     .ACCU 8
-    lda [sptr],y                        ; window lo; $FF ends
+    lda [sptr]                          ; empty table: leave the victim be
     cmp #$FF
     beq TB_done8
-    lda scr6
-    cmp [sptr],y                        ; frame < lo -> next row
-    bcc TB_next
+    ldy #0
+TB_row:
+    lda [sptr],y                        ; window lo; $FF ends
+    cmp #$FF
+    beq TB_apply                        ; past the last row: clamp to it
+    sta scr3                            ; this row's window lo
     iny
     lda [sptr],y                        ; window hi
-    cmp scr6                            ; hi < frame -> next row
-    bcc TB_next1
+    sta scr1
     iny
     lda [sptr],y                        ; dx (s8)
     sta scr2
     iny
     lda [sptr],y                        ; dy (s8, mugen: negative = up)
     sta scr2+1
-    rep #$20
-    .ACCU 16
-    bra TB_apply
-TB_next1:
-    dey                                 ; back to the row base
-TB_next:
-    rep #$20
-    .ACCU 16
-    tya
-    clc
-    adc #4
-    tay
+    ; The staged row is the clamp candidate: a pose whose tiles were coalesced
+    ; away can jump several elems and the table need not cover them all
+    ; (Clark 3016 stops at elem 9, anim ends on a 24-tick elem 10).  Without
+    ; clamping, the victim kept the last height it had and hung in the air
+    ; while Clark finished the slam on the ground.
+    lda scr6
+    cmp scr3
+    bcc TB_apply                        ; frame before this row: clamp up
+    lda scr1
+    cmp scr6
+    bcs TB_apply                        ; frame inside this window
+    iny                                 ; next row (4-byte rows)
     bra TB_row
 TB_apply:
+    rep #$20
+    .ACCU 16
     lda scr2                            ; dx in pixels, facing-relative
     and #$00FF.w
     xba                                 ; <<8 fixed point
@@ -8681,6 +8805,12 @@ VH_ownerok:
     and #(JOY_Y|JOY_B).w
     bne VH_escape
 VH_no_tech:
+    lda FP+F_GRAB,x                     ; TargetToss flight: rise/fall under
+    bit #$0004.w                        ;   gravity until the catch
+    beq VH_anim
+    jsl TossFlyFar                      ; bank 126 (Fight bank is full)
+    ldx fofs
+VH_anim:
     jmp AnimTick                        ; victim's own anim 820; position
                                         ;   is owned by the attacker's bind
 VH_escape:                              ; tech: both fighters back to neutral
@@ -10304,6 +10434,7 @@ AnimTick:
     rts
 +   dec FP+F_FTICK,x
     beq +
+    jsl AnimCatchUpFar                    ; dropped long pose: re-queue it
     rep #$20
     .ACCU 16
     rts
@@ -14829,8 +14960,8 @@ GhostPush:                              ; shift slot0->1, store current pose
     .ACCU 8
     lda FP+F_TILEPG,y
     sta.w GHBUF+6,x
-    lda FP+F_FLAGS,y                      ; resolve flip = anim hflip ^ facing
-    and #$01.b
+    lda FP+F_FLAGS,y                      ; resolve flip = anim flips ^ facing
+    and #$03.b
     sta scr0
     lda FP+F_FACING+1,y
     bpl +
@@ -14979,7 +15110,7 @@ DG_slot:
     ora #$FF00.w
 +   sta scr3
     lda scr0
-    and #$00FF.w
+    and #$0001.w
     beq +
     lda scr3
     eor #$FFFF.w
@@ -15405,7 +15536,7 @@ DrawFighter:
     sta scr3
     lda FP+F_YOFF,x
     sta scr5
-    lda FP+F_FLAGS,x                    ; anim hflip
+    lda FP+F_FLAGS,x                    ; anim flips (bit0 H, bit1 V)
     sta scr0
     lda FP+F_FACING+1,x                 ; sign byte: $FF when facing left
     bpl +
@@ -15413,8 +15544,8 @@ DrawFighter:
     eor #$01.b
     sta scr0
 +   lda scr0
-    and #$01.b
-    sta scr0                            ; flip?
+    and #$03.b
+    sta scr0                            ; bit0 hflip, bit1 vflip
     rep #$20
     .ACCU 16
     lda scr3
@@ -22007,6 +22138,7 @@ CharIori:
     .dw ioriCmdList
     .db 0, ioriMaxMask
     .dw ioriCancelRow
+    .dw ioriPoseTab
 CharKyo:
     .dw kyoSprOfs, kyoBoxTab, kyoAnimTab
     .dw kyoActiveTab, kyoDamageTab, kyoHitTimeTab
@@ -22045,6 +22177,7 @@ CharKyo:
     .dw kyoCmdList
     .db 0, kyoMaxMask
     .dw kyoCancelRow
+    .dw kyoPoseTab
 CharShingo:
     .dw shingoSprOfs, shingoBoxTab, shingoAnimTab
     .dw shingoActiveTab, shingoDamageTab, shingoHitTimeTab
@@ -22083,6 +22216,7 @@ CharShingo:
     .dw shingoCmdList
     .db :shingoCmdList, shingoMaxMask
     .dw shingoCancelRow
+    .dw shingoPoseTab
 CharRugal:
     .dw rugalSprOfs, rugalBoxTab, rugalAnimTab
     .dw rugalActiveTab, rugalDamageTab, rugalHitTimeTab
@@ -22116,6 +22250,7 @@ CharRugal:
     .dw rugalCmdList
     .db 0, rugalMaxMask
     .dw rugalCancelRow
+    .dw rugalPoseTab
 CharOmegaRugal:
     .dw omegarugalSprOfs, omegarugalBoxTab, omegarugalAnimTab
     .dw omegarugalActiveTab, omegarugalDamageTab, omegarugalHitTimeTab
@@ -22154,6 +22289,7 @@ CharOmegaRugal:
     .dw omegarugalCmdList
     .db 0, omegarugalMaxMask
     .dw omegarugalCancelRow
+    .dw omegarugalPoseTab
 
 .IFNDEF BASE4
 CharSaisyu:
@@ -22189,6 +22325,7 @@ CharSaisyu:
     .dw saisyuCmdList
     .db 0, saisyuMaxMask
     .dw saisyuCancelRow
+    .dw saisyuPoseTab
 CharHeidern:
     .dw heidernSprOfs, heidernBoxTab, heidernAnimTab
     .dw heidernActiveTab, heidernDamageTab, heidernHitTimeTab
@@ -22222,6 +22359,7 @@ CharHeidern:
     .dw heidernCmdList
     .db 0, heidernMaxMask
     .dw heidernCancelRow
+    .dw heidernPoseTab
 CharTakuma:
     .dw takumaSprOfs, takumaBoxTab, takumaAnimTab
     .dw takumaActiveTab, takumaDamageTab, takumaHitTimeTab
@@ -22255,6 +22393,7 @@ CharTakuma:
     .dw takumaCmdList
     .db 0, takumaMaxMask
     .dw takumaCancelRow
+    .dw takumaPoseTab
 CharClark:
     .dw clarkSprOfs, clarkBoxTab, clarkAnimTab
     .dw clarkActiveTab, clarkDamageTab, clarkHitTimeTab
@@ -22288,6 +22427,7 @@ CharClark:
     .dw clarkCmdList
     .db 0, clarkMaxMask
     .dw clarkCancelRow
+    .dw clarkPoseTab
 CharRalf:
     .dw ralfSprOfs, ralfBoxTab, ralfAnimTab
     .dw ralfActiveTab, ralfDamageTab, ralfHitTimeTab
@@ -22321,6 +22461,7 @@ CharRalf:
     .dw ralfCmdList
     .db 0, ralfMaxMask
     .dw ralfCancelRow
+    .dw ralfPoseTab
 CharLeona:
     .dw leonaSprOfs, leonaBoxTab, leonaAnimTab
     .dw leonaActiveTab, leonaDamageTab, leonaHitTimeTab
@@ -22354,6 +22495,7 @@ CharLeona:
     .dw leonaCmdList
     .db 0, leonaMaxMask
     .dw leonaCancelRow
+    .dw leonaPoseTab
 CharMature:
     .dw matureSprOfs, matureBoxTab, matureAnimTab
     .dw matureActiveTab, matureDamageTab, matureHitTimeTab
@@ -22387,6 +22529,7 @@ CharMature:
     .dw matureCmdList
     .db 0, matureMaxMask
     .dw matureCancelRow
+    .dw maturePoseTab
 CharVice:
     .dw viceSprOfs, viceBoxTab, viceAnimTab
     .dw viceActiveTab, viceDamageTab, viceHitTimeTab
@@ -22420,6 +22563,7 @@ CharVice:
     .dw viceCmdList
     .db 0, viceMaxMask
     .dw viceCancelRow
+    .dw vicePoseTab
 CharBenimaru:
     .dw benimaruSprOfs, benimaruBoxTab, benimaruAnimTab
     .dw benimaruActiveTab, benimaruDamageTab, benimaruHitTimeTab
@@ -22463,6 +22607,7 @@ CharBenimaru:
     .dw benimaruCmdList
     .db 0, benimaruMaxMask
     .dw benimaruCancelRow
+    .dw benimaruPoseTab
 CharDaimon:
     .dw daimonSprOfs, daimonBoxTab, daimonAnimTab
     .dw daimonActiveTab, daimonDamageTab, daimonHitTimeTab
@@ -22496,6 +22641,7 @@ CharDaimon:
     .dw daimonCmdList
     .db 0, daimonMaxMask
     .dw daimonCancelRow
+    .dw daimonPoseTab
 .ENDIF
 
 ; sel index -> descriptor / generated-data bank.  Ids 0-13 = visible
@@ -23299,7 +23445,18 @@ SetThrowDirFar:
     lda scr6+1
     and #$08.b                            ; holdback -> back throw
     beq STD_done
-    lda FP+F_TFLAGS,x
+    ; Only the plain throw (sid 74/75, mugen 800/810) uses the SF2-style
+    ; back throw.  Command grabs end their motion on back (Clark's Ultra
+    ; Argentine HCB, Running Three HCF) and used to be treated as back
+    ; throws: both fighters turned and the deferred re-seat yanked the
+    ; victim 24-53 px to the other side at release.
+    ldx fofs
+    lda FP+F_STATE,x
+    cmp #S_THROW.b
+    beq +
+    cmp #S_TSEQ.b
+    bne STD_done
++   lda FP+F_TFLAGS,x
     ora #$20.b
     sta FP+F_TFLAGS,x
     rep #$20
@@ -24222,9 +24379,11 @@ PPM_out:
 ; ---------------------------------------------------------------------------
 ; PRACTICE refills.  Kept in the bank-126 gap between the cinematic helpers
 ; and ProjPinFar because the Fight bank is full.  Called with JSL every tick.
+; $EE90 is inside SakuraCinema now ($E900 + 1437 = $EE9D), so the refills sit
+; in the free $F327-$F3FF tail before TinyHelpers.
 ; ---------------------------------------------------------------------------
 .BANK 126 SLOT 0
-.ORGA $EE90
+.ORGA $F330
 .SECTION "PracFillFar" FORCE
 PracFillHPFar:
     sep #$20
@@ -24257,6 +24416,78 @@ PracFillPowerFar:
     .ACCU 8
 PFP_out:
     rtl
+.ENDS
+
+; ---------------------------------------------------------------------------
+; TargetToss helpers (ActTab op22, Clark's Ultra Argentine).  Same bank-126
+; tail as the refills.  Both are entered with a16 and X = victim offset.
+; ---------------------------------------------------------------------------
+.ORGA $F360
+.SECTION "TossFar" FORCE
+TossStartFar:                           ; scr6+1 = upward speed, 1/16 px/tick
+    .ACCU 16
+    lda scr6+1
+    and #$00FF.w
+    asl a
+    asl a
+    asl a
+    asl a                               ; -> 8.8
+    sta FP+F_VY,x
+    lda FP+F_GRAB,x
+    ora #$0004.w                        ; flying: ThrowBind lets go
+    sta FP+F_GRAB,x
+    rtl
+
+TossFlyFar:                             ; one tick of flight under gravity
+    .ACCU 16
+    lda FP+F_VY,x                       ; F_Y is an unsigned 8.8 height for
+    bmi TF_fall                         ;   the draw path: the toss apex
+    clc                                 ;   (~250 px) is above 127.
+    adc FP+F_Y,x
+    bcc TF_sety
+    lda #$FF00.w                        ; ceiling: stay off-screen
+    bra TF_sety
+TF_fall:
+    clc
+    adc FP+F_Y,x
+    bcs TF_sety                         ; no borrow -> still above ground
+    lda #0
+    stz FP+F_VY,x
+TF_sety:
+    sta FP+F_Y,x
+    lda FP+F_VY,x
+    sec
+    sbc #GRAV.w
+    sta FP+F_VY,x
+    rtl
+
+; SlamRelease (AO_tstat -> S_VTHROW) on a victim still flagged with the slam pose (F_TFLAGS bit7,
+; Clark 3026): source 3027 VelSet x=4.2 (victim-facing, i.e. away from the
+; thrower that slammed it behind itself), y=-6, then falls (S_VTHROW lands
+; into the knockdown).  Velocities at the port's 0.88 grab scale.  The slam
+; already had its spark/SFX, so none here.  X = victim, a16.
+SlamBounceFar:
+    .ACCU 16
+    lda FP+F_TFLAGS,x
+    and #$FF7F.w                        ; consumed: later throws launch again
+    sta FP+F_TFLAGS,x
+    lda #-$0548.w                       ; -5.28 px/tick (821 flight: <0 = up)
+    sta FP+F_VY,x
+    txa
+    eor #FP2OFS.w
+    tay                                 ; thrower
+    lda FP+F_X,x
+    cmp FP+F_X,y
+    lda #$03B2.w                        ; 3.7 px/tick
+    bcs +
+    lda #-$03B2.w
++   sta FP+F_VX,x
+    lda #$0080.w                        ; past ApplyTimeActions' Time<127
+    sta FP+F_STIME,x                    ;   window: the victim's own 821
+    rtl                                 ;   VelSet (Benimaru: time=1, x=-4
+                                        ;   y=-6.5) must not replace the
+                                        ;   bounce.  Time=0 already ran.
+
 .ENDS
 
 ; ---------------------------------------------------------------------------
@@ -24301,6 +24532,182 @@ IEC_no:
     .ACCU 16
     clc
     rtl
+.ENDS
+.ENDIF
+
+; ---------------------------------------------------------------------------
+; Dropped-pose catch-up.  AnimSetFrame coalesces a pose away when the
+; previous big sprite is still streaming in; a short pose is fine to lose,
+; but a long hold (Clark 3016: 3015,8 lasts 17 ticks) then shows the stale
+; pose for its whole duration.  Once the upload drains, re-queue the current
+; elem's tiles + pending offsets only -- no AnimSetFrame side effects (PosAdd,
+; ActTab, projectile spawn) and the animation clock is untouched.
+; ---------------------------------------------------------------------------
+.IFDEF PVSNESLIB
+.BASE $C0
+.BANK 126 SLOT 0
+.ORGA $C320
+.SECTION "PoseCatchUpFar" FORCE
+DropMarkFar:                            ; a8, X = fofs; returns a8, X kept
+    .ACCU 8
+    lda #1.b
+    sta FP+F_REDRAW,x
+    rep #$20
+    .ACCU 16
+    txa
+    bne +
+    inc.w TEL_DROP_P1
+    bra ++
++   inc.w TEL_DROP_P2
+++  sep #$20
+    .ACCU 8
+    rtl
+
+; No bind data for this state: drop the victim at a steady rate and keep him
+; on the thrower's x (Clark's DP+P slam states have no bind rows at all).
+; In: fofs = attacker, scr5 = victim.  a16.
+TbSlamFar:                             ; fofs = attacker, scr5 = victim
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    sep #$20
+    .ACCU 8
+    lda FP+F_STATE,x
+    cmp #112.b                          ; Clark's DP+P slam phases only
+    bcc TbS_out
+    cmp #115.b
+    bcs TbS_out
+    rep #$20
+    .ACCU 16
+    lda FP+F_X,x
+    ldx scr5
+    sta FP+F_X,x
+    lda FP+F_Y,x
+    beq +
+    sec
+    sbc #(SLAM_STEP<<8).w
+    bcs ++
+    lda #0
+++  sta FP+F_Y,x
++   rep #$20
+    .ACCU 16
+    rtl
+TbS_out:
+    rep #$20
+    .ACCU 16
+    rtl
+
+AnimCatchUpFar:                         ; a8, X = fofs; returns a8, X = fofs
+    .ACCU 8
+    lda FP+F_REDRAW,x
+    beq ACU_early
+    lda FP+F_DMAREQ,x
+    bne ACU_early                       ; still uploading: retry next tick
+    lda FP+F_FTICK,x
+    cmp #4.b
+    bcs ACU_go                          ; nearly over: not worth an upload
+ACU_early:                              ;   (REDRAW stays: ThrowBind keeps
+    rtl                                 ;   the elem actually on screen)
+ACU_go:
+    stz FP+F_REDRAW,x
+    rep #$20
+    .ACCU 16
+    lda scr0                            ; AnimTick's no-advance path never
+    pha                                 ;   touched scratch before: keep the
+    lda scr6                            ;   callers' scr0/scr6/lptr intact
+    pha
+    lda lptr
+    pha
+    lda lptr+2
+    pha
+    phy
+    jsr ACU_body
+    rep #$20
+    .ACCU 16
+    ply
+    pla
+    sep #$20
+    .ACCU 8
+    sta lptr+2
+    rep #$20
+    .ACCU 16
+    pla
+    sta lptr
+    pla
+    sta scr6
+    pla
+    sta scr0
+    sep #$20
+    .ACCU 8
+    ldx fofs
+    rtl
+ACU_body:
+    .ACCU 16
+    lda FP+F_ANIM,x
+    clc
+    adc #2.w
+    sta lptr
+    lda FP+F_FRAME,x
+    and #$00FF.w
+    asl a
+    asl a
+    asl a
+    sta scr6                            ; elem row (sprid.w ticks xoff yoff fl)
+    lda FP+F_GRAB,x                     ; same data fighter as AnimSetFrame
+    and #$0002.w
+    beq +
+    lda FP+F_OWNER,x
+    and #$00FF.w
+    tax
++   sep #$20
+    .ACCU 8
+    lda FP+F_TBANK,x
+    sta lptr+2
+    ldx fofs
+    rep #$20
+    .ACCU 16
+    ldy scr6
+    lda [lptr],y
+    sta scr0
+    sep #$20
+    .ACCU 8
+    lda scr0
+    cmp FP+F_PSPRID,x
+    bne +
+    lda scr0+1
+    cmp FP+F_PSPRID_H,x
+    beq ACU_out                         ; these tiles are already on screen
++   lda scr0
+    sta FP+F_PSPRID,x
+    lda scr0+1
+    sta FP+F_PSPRID_H,x
+    lda FP+F_FRAME,x
+    sta FP+F_QFR,x
+    iny
+    iny
+    iny
+    lda [lptr],y
+    sta FP+F_PXOFF,x
+    iny
+    lda [lptr],y
+    sta FP+F_PYOFF,x
+    iny
+    lda [lptr],y
+    sta FP+F_PFLAGS,x
+    rep #$20
+    .ACCU 16
+    lda FP+F_ATKBOX,x                   ; collision already follows the
+    sta FP+F_PATKBOX,x                  ;   logical elem; keep the queued
+    lda FP+F_HURTBOX,x                  ;   copy identical
+    sta FP+F_PHURTBOX,x
+    sep #$20
+    .ACCU 8
+    stz FP+F_DMAPOS,x
+    lda #1.b
+    sta FP+F_DMAREQ,x                   ; F_META committed when upload completes
+ACU_out:
+    rts
+
 .ENDS
 .ENDIF
 
