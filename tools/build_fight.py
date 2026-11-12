@@ -3444,7 +3444,7 @@ if "rugal" in CHARS:
     _rug = POST_CAL_TWEAKS.setdefault("rugal", {})
     _rug.setdefault("slice_damage", {}).update({66: 14})
     _rug.setdefault("cmd_priority", []).extend([
-        "EYE_BEAM", "BEADS_DESTRUCTION"])
+        "MAX_SUPER", "EYE_BEAM", "BEADS_DESTRUCTION"])
     _rug.setdefault("cmd_extra", []).extend([{
         "name": "BEADS_DESTRUCTION", "label": "BEADS DESTRUCTION",
         "state": 1800, "posture": 3, "time": 26,
@@ -3654,6 +3654,7 @@ if "robert" in CHARS:
     _btw.setdefault("cmd_priority", []).extend([
         # The real HCB+K Hien Shippuu command must win over the shorter
         # QCB+K "Hien Shippuu '95" extra; both tails match an HCB input.
+        "MDBDF_a+db+df", "MDBDF_b+db+df",
         "MFDB_b+db+df", "MFDB_a+db+df",
         "HAOH_MAX", "HAOH_S", "HAOH_W", "SENEN", "RENBU",
         "HIEN_S", "HIEN_W"])
@@ -3732,7 +3733,8 @@ if "takuma" in CHARS:
     })
     # QCFx2+P is also the existing Ryuuko shortcut (sid 88); keep Haoh on
     # the same-length tie.
-    _tak.setdefault("cmd_priority", []).extend(["HAOH_W", "HAOH_S"])
+    _tak.setdefault("cmd_priority", []).extend(
+        ["QQCF_X", "QQCF_Y", "HAOH_W", "HAOH_S"])
     _tak.setdefault("cmd_extra", []).extend([
         {"name": "MOUKO_W", "label": "MOUKO BURAI GAN",
          "state": 1400, "posture": 3, "time": 22,
@@ -5154,8 +5156,8 @@ if "iori" in CHARS:
         108: (0x0400, 12, 0x20),
     })
     POST_CAL_TWEAKS.setdefault("iori", {}).update({
-        "cmd_priority": ["YASAKAZAKI_MAX", "YASAKAZAKI_S",
-                         "YASAKAZAKI_W"],
+        "cmd_priority": ["MAX_SUPER", "YASAKAZAKI_MAX",
+                         "YASAKAZAKI_S", "YASAKAZAKI_W", "HCBF_X"],
         "cmd_extra": [{
             "name": "YASAKAZAKI_W", "label": "YA SAKAZAKI",
             "state": 3100, "posture": 3, "time": 24,
