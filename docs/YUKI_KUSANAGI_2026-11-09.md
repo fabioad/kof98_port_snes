@@ -100,3 +100,17 @@ PASS: Yuki Kusanagi helper art, mirror-Kyo suppression and recovery
 - `test_projectile_render` continua com a falha antiga de expectativa
   (`attr $04` vs `$34`), já reproduzida no ROM baseline; não é regressão
   deste trabalho.
+
+## Atualização (2026-11-12): contra Kyo o projétil volta a aparecer
+
+- **Antes:** contra Kyo / Nests / Ash o corpo do helper era oculto
+  (`SPK_GRD` bit1) para não duplicar o oponente — e o super ficava sem
+  nenhum sprite visível.
+- **Agora:** nesse confronto o sid 89 desenha o **clipe primário** (a chama
+  do AIR 1315, o projétil de antes), visível, com velocidade, dano e guarda
+  inalterados.  O clipe alternativo com o Kyo continua valendo para os
+  demais oponentes.
+- O bit1 de `SPK_GRD` e o teste de "oculto" no `DrawSparks` foram removidos.
+- `tools/test_yuki_kusanagi_headless.py` confere os dois clipes (anims
+  diferentes) e que o tiro continua acertando; capturas em
+  `build/yuki_sheet_kyo.png` (chama) e `build/yuki_sheet_mai.png` (Kyo).

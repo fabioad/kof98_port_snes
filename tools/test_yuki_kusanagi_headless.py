@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Yuki's Ai no Kusanagi: Kyo helper art, mirror-Kyo suppression, recovery.
+"""Yuki's Ai no Kusanagi: Kyo helper art, mirror-Kyo shot, recovery.
 
 The native engine has no MUGEN helper bodies, so Yuki's Kusanagi super rides
 the pooled projectile slot (sid 89) with Kyo's AIR 1903 cel as the alternate
 ProjFx clip.  These checks cover the three port-side rules:
 
   * the Kyo sprite is drawn for ordinary opponents (OAM gains its cells);
-  * against Kyo / Kyo Nests / Kyo Ash the hitbox stays active but the
-    duplicate Kyo body is suppressed (SPK_GRD bit1, no extra OAM cells);
+  * against Kyo / Kyo Nests / Kyo Ash the alternate Kyo cel would duplicate
+    the opponent, so the primary (flame) clip is drawn instead -- the shot
+    stays visible exactly as it was before the Kyo art landed;
   * anim 3300's source 255-tick tail no longer freezes Yuki for four
     seconds; the move returns to stand shortly after the attack.
 
@@ -70,6 +71,7 @@ def run_case(opponent):
         active_oam = 0
         projectile_seen = False
         hidden = None
+        anim = 0
         recovery = None
         for tick in range(1, 220):
             core.step()
@@ -81,6 +83,7 @@ def run_case(opponent):
                 projectile_seen = True
                 if hidden is None:
                     hidden = bool(word(core, SPARKS + SPK_GRD) & 0x0002)
+                    anim = word(core, SPARKS + SPK_ANIM)
             if core.ram[F_STATE] != 89 and tick > 10 and recovery is None:
                 recovery = tick
 
@@ -90,31 +93,29 @@ def run_case(opponent):
             f"{opponent}: recovery tick {recovery} (expected ~123)"
         assert hp_after < hp_before, \
             f"{opponent}: super did not connect ({hp_before}->{hp_after})"
-
-        hidden_opponents = {"kyo", "kyonests", "kyoash"}
-        if opponent in hidden_opponents:
-            assert hidden is True, f"{opponent}: Kyo helper sprite not hidden"
-            assert active_oam - pre_oam < 20, \
-                (f"{opponent}: hidden helper still added OAM cells "
-                 f"({pre_oam}->{active_oam})")
-            print(f"PASS vs {opponent}: recovery={recovery}, "
-                  f"invisible Kyo, super still hits {hp_before}->{hp_after}")
-        else:
-            assert hidden is False, f"{opponent}: Kyo helper sprite was hidden"
-            assert active_oam - pre_oam >= 20, \
-                (f"{opponent}: Kyo helper cells missing from OAM "
-                 f"({pre_oam}->{active_oam})")
-            print(f"PASS vs {opponent}: recovery={recovery}, "
-                  f"Kyo sprite drawn (+{active_oam - pre_oam} OAM bytes), "
-                  f"super hits {hp_before}->{hp_after}")
+        # The shot is always visible now: no hidden bit, and the active OAM
+        # grows with the effect either way.
+        assert hidden is False, f"{opponent}: shot was hidden"
+        assert active_oam - pre_oam >= 20, \
+            (f"{opponent}: shot cells missing from OAM "
+             f"({pre_oam}->{active_oam})")
+        print(f"PASS vs {opponent}: recovery={recovery}, "
+              f"shot drawn (+{active_oam - pre_oam} OAM bytes), "
+              f"super hits {hp_before}->{hp_after}")
+        return anim
     finally:
         core.close()
 
 
 def main():
-    for opponent in ("mai", "kyo", "kyonests", "kyoash"):
-        run_case(opponent)
-    print("PASS: Yuki Kusanagi helper art, mirror-Kyo suppression and recovery")
+    # Ordinary opponents get the Kyo cel (alternate clip); the three Kyo
+    # fighters get the primary clip so the shot stays visible without
+    # duplicating the opponent.
+    alt_anim = run_case("mai")
+    for opponent in ("kyo", "kyonests", "kyoash"):
+        assert run_case(opponent) != alt_anim, \
+            f"{opponent}: duplicate Kyo cel drawn against Kyo"
+    print("PASS: Yuki Kusanagi Kyo art, mirror-Kyo shot and recovery")
 
 
 if __name__ == "__main__":
