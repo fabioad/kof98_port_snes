@@ -299,6 +299,27 @@ def sha256(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def settle(core, limit=900):
+    """Wait until both fighters have been standing on the ground for a while.
+
+    The fight starts with an intro state and streams CHR from the MSU, and how
+    many frames that takes changed between builds (the vblank presenter
+    rewrite shifted it).  A fixed core.step(24) therefore started the move at a
+    different point of the entrance on different ROMs: Billy's counter and
+    Yuri's air fireball read as regressions when only their setup had moved.
+    """
+    stable = 0
+    for _ in range(limit):
+        core.step()
+        if (core.ram[P1 + 8] == 0 and core.ram[P1 + 2] == 0
+                and core.ram[P2 + 8] == 0 and core.ram[P2 + 2] == 0):
+            stable += 1
+            if stable >= 20:
+                return
+        else:
+            stable = 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("snapshot", type=Path)
@@ -326,7 +347,7 @@ def main():
             info = character(name, tables)
             enter_fight(core, select, name, "kyo")
             core.ram[0x1090] = core.ram[0x1091] = 0
-            core.step(24)
+            settle(core)
             base = core.save()
             cases = []
             for index, rule in enumerate(info["rules"]):
