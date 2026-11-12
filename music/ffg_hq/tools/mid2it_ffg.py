@@ -142,21 +142,33 @@ def read_midi(path):
     return notes, tempos or [(0, 500000)], mf.ticks_per_beat, end
 
 
-def dedupe(notes, grid):
+def dedupe(notes, grid, merge_pan=False):
     """drop channels whose notes (on the row grid, any octave) are >=85%
-    covered by an already-kept channel: chorus/unison/octave doublings"""
-    by = {}
+    covered by an already-kept channel: chorus/unison/octave doublings.
+
+    merge_pan: the kept channel takes the mean pan of itself and the
+    doublings it absorbed.  A line split hard left + hard right (USA Yard
+    lead, ch1 pan 0 + ch4 pan 127) then stays centred instead of keeping the
+    left side only, which also matters on mono TVs."""
+    by, pan = {}, {}
     for n in notes:
         if n[4] != 9:
             by.setdefault(n[4], set()).add((n[0] // grid, n[2] % 12))
-    kept, drop = [], set()
+            pan.setdefault(n[4], n[6])
+    kept, drop, absorbed = [], set(), {}
     for ch in sorted(by, key=lambda c: (-len(by[c]), c)):
         s = by[ch]
-        if any(len(s & by[k]) >= 0.85 * len(s) for k in kept):
+        owner = next((k for k in kept if len(s & by[k]) >= 0.85 * len(s)), None)
+        if owner is not None:
             drop.add(ch)
+            absorbed.setdefault(owner, [pan[owner]]).append(pan[ch])
         else:
             kept.append(ch)
-    return [n for n in notes if n[4] not in drop], drop
+    out = [n for n in notes if n[4] not in drop]
+    if merge_pan:
+        mean = {k: round(sum(v) / len(v)) for k, v in absorbed.items()}
+        out = [n[:6] + (mean[n[4]],) if n[4] in mean else n for n in out]
+    return out, drop
 
 
 # ---- IT writer ------------------------------------------------------------
@@ -267,7 +279,7 @@ def pan_bucket(cc10):
     return int(round(p / 4)) * 4
 
 
-def convert(sdir, mid, out, name, mix=96, max_seconds=None):
+def convert(sdir, mid, out, name, mix=96, max_seconds=None, merge_pan=False):
     meta = json.load(open(os.path.join(sdir, 'samples.json')))['base']['samples']
     notes, tempos, ppq, end = read_midi(mid)
     total = -(-end // ppq) * ppq
@@ -284,7 +296,7 @@ def convert(sdir, mid, out, name, mix=96, max_seconds=None):
             total = limit
             notes = [(a, min(b, total), n, v, c, p, pn) for a, b, n, v, c, p, pn in notes if a < total]
     rpb, speed, qerr = choose_grid(notes, ppq)
-    notes, dropped = dedupe(notes, ppq // rpb)
+    notes, dropped = dedupe(notes, ppq // rpb, merge_pan)
     row = lambda t: int(round(t * rpb / ppq))
 
     samples, smp_of = [], {}
@@ -470,6 +482,8 @@ if __name__ == '__main__':
     ap.add_argument('--name', default=None)
     ap.add_argument('--mix', type=int, default=96, help='IT global volume 0..128')
     ap.add_argument('--max-seconds', type=float, default=None)
+    ap.add_argument('--merge-pan', action='store_true',
+                    help='centre a doubled line using the pan of the dropped copies')
     a = ap.parse_args()
     convert(a.samples, a.mid, a.out, a.name or os.path.splitext(os.path.basename(a.out))[0],
-            a.mix, a.max_seconds)
+            a.mix, a.max_seconds, a.merge_pan)

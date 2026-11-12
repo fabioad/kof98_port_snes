@@ -53,6 +53,10 @@ SONGS = {
     'menu_winner': ('music/W.mid', None),
     'menu_crystal': ('assets/survival_ending/kof00_crystal.mid', None),
 }
+# songs whose doubled lines take the mean pan of the dropped copies
+# (mid2it_ffg.dedupe merge_pan).  stg9: the USA Yard lead (ch1 pan 0 +
+# ch4 pan 127) stays centred; approved 2026-11-12 on a mono TV.
+MERGE_PAN = {'stg9'}
 
 
 def smconv_size(it):
@@ -118,7 +122,7 @@ def build(name, midi, max_seconds):
     info = None
     for attempt in range(8):
         info = mid2it_ffg.convert(str(HERE / 'capcom'), str(ROOT / midi), str(out),
-                                  name, mix, max_seconds)
+                                  name, mix, max_seconds, name in MERGE_PAN)
         data = fit_snesmod(out.read_bytes())
         out.write_bytes(data)
         size = smconv_size(out)

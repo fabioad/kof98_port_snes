@@ -229,13 +229,14 @@
     "instruments": 8,
     "samples": 8,
     "lostNotes": 0,
-    "mix": 99,
+    "mix": 100,
     "rows": 1292,
     "smconvBytes": 28253,
+    "aramBytes": 28996,
     "patternsAfterFit": 21,
-    "rawPeak": 24125,
+    "rawPeak": 24070,
     "clipped": 0.0,
-    "rms": 4201.416791674082,
+    "rms": 4100.812274506729,
     "keptSeconds": null
   },
   "menu_cipher": {

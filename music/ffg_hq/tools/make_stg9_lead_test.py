@@ -6,17 +6,17 @@ conversion maps it to 'brass', dedupe() drops ch4 (pan 127) as a doubling of
 ch1 (pan 0), so the lead ends up hard-ish left, at the same level as each of
 the two centred rhythm guitars.  Variants (notes and order unchanged):
 
-  ATUAL  approved module (assets/audio/ffg/stg9.it)
-  A      dedupe merges the pan of the dropped doubling -> lead centred
+  ANTERIOR  module before A (lead on the left)
+  A      dedupe merges the pan of the dropped doubling -> lead centred;
+         chosen 2026-11-12, this is assets/audio/ffg/stg9.it now
   B      rhythm guitar instrument GV 128 -> 77 (-4.4 dB); the lead is
          already at the maximum (vol column 64, GV 128)
   C      lead uses the FFG 'lead' timbre (sample 09) instead of 'brass'
   A+B+C  all three
 
-Global volume stays at the approved 99 in every variant, so the comparison
-is not hidden by a loudness renormalisation.  Nothing in the game build or in
-mid2it_ffg.py is changed: the options are applied by patching the module at
-run time.  Output: kof98-stg9-lead-soundtest.sfc in the repo root.
+Global volume stays at the approved value in every variant, so the
+comparison is not hidden by a loudness renormalisation.  A uses
+mid2it_ffg.convert(merge_pan=True); B and C are applied here only.  Output: kof98-stg9-lead-soundtest.sfc in the repo root.
 """
 import copy
 import os
@@ -35,7 +35,7 @@ SDK = Path('/run/media/fabio/Dados/Fabio/pvsneslib-sdk-4.6')
 SMCONV = SDK / 'devkitsnes/tools/smconv'
 MIDI = ROOT / 'music/Kurikinton_Gomame_Guitar_Ver_.mid'
 APPROVED = ROOT / 'assets/audio/ffg/stg9.it'
-MIX = 99                                   # approved stg9 global volume
+MIX = APPROVED.read_bytes()[0x30]          # approved stg9 global volume
 
 sys.path.insert(0, str(ROOT / 'tools'))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -56,33 +56,12 @@ def set_instrument_gv(it, prefix, gv):
             it[p + 0x18] = gv
             hits += 1
     assert hits == 1, (prefix, hits)
-ORIG_DEDUPE = M.dedupe
-
-
-def dedupe_centre(notes, grid):
-    """dedupe(), but a kept channel takes the mean pan of the doublings it
-    absorbed (ch1 pan 0 + ch4 pan 127 -> centre)."""
-    kept_notes, drop = ORIG_DEDUPE(notes, grid)
-    by, pan = {}, {}
-    for n in notes:
-        if n[4] != 9:
-            by.setdefault(n[4], set()).add((n[0] // grid, n[2] % 12))
-            pan.setdefault(n[4], n[6])
-    newpan = {}
-    for d in drop:
-        for k in sorted(by, key=lambda c: (-len(by[c]), c)):
-            if k not in drop and len(by[d] & by[k]) >= 0.85 * len(by[d]):
-                newpan.setdefault(k, [pan[k]]).append(pan[d])
-                break
-    newpan = {k: round(sum(v) / len(v)) for k, v in newpan.items()}
-    out = [n[:6] + (newpan[n[4]],) if n[4] in newpan else n for n in kept_notes]
-    return out, drop
 
 
 VARIANTS = [
     # (file stem, label, centre, louder, lead timbre)
-    ('v0_atual', 'ATUAL (NO JOGO)', None, None, None),
-    ('v1_a', 'A  LEAD CENTRO', True, False, False),
+    ('v0_antes', 'ANTERIOR (SEM A)', False, False, False),
+    ('v1_a', 'A  LEAD CENTRO (JOGO)', None, None, None),
     ('v2_b', 'B  GUITARRA BASE -4DB', False, True, False),
     ('v3_c', 'C  TIMBRE LEAD', False, False, True),
     ('v4_abc', 'A+B+C', True, True, True),
@@ -92,16 +71,15 @@ VARIANTS = [
 def convert(out, centre, louder, timbre):
     M.MELODIC.clear()
     M.MELODIC.update(copy.deepcopy(ORIG_MELODIC))
-    M.dedupe = dedupe_centre if centre else ORIG_DEDUPE
     lead = 'lead' if timbre else 'brass'
     if timbre:
         M.MELODIC['brass'] = M.MELODIC['lead']
     try:
-        info = M.convert(str(HERE / 'capcom'), str(MIDI), str(out), 'stg9', MIX)
+        info = M.convert(str(HERE / 'capcom'), str(MIDI), str(out), 'stg9', MIX,
+                         merge_pan=centre)
     finally:
         M.MELODIC.clear()
         M.MELODIC.update(ORIG_MELODIC)
-        M.dedupe = ORIG_DEDUPE
     data = bytearray(out.read_bytes())
     if louder:
         # Every note carries a volume column, so sample default volumes are
@@ -129,9 +107,9 @@ def main():
     shutil.copyfile(Path(__file__).resolve().parent / 'stg9_lead_jukebox.c',
                     ST / 'jukebox.c')
 
-    # sanity: without options the converter reproduces the approved module
+    # sanity: option A (merge_pan) reproduces the approved module
     probe = its / 'probe.it'
-    convert(probe, False, False, False)
+    convert(probe, True, False, False)
     assert probe.read_bytes() == APPROVED.read_bytes(), 'baseline differs from approved stg9.it'
     probe.unlink()
 
