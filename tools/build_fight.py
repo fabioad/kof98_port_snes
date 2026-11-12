@@ -3506,6 +3506,13 @@ if "omegarugal" in CHARS:
     ])
     # The source rush crosses the whole screen before its frame-18 hitbox;
     # the port reuses a close punch clip (AIB 1074) instead.
+    # Source dashes (states 100/105) and rolls (1010 front, 1011 back, 720
+    # in place) exist in the CNS but the CMD never wires FF/BB and its
+    # ESQ_* rows point at states the move map did not know.  The generic
+    # slots are 45/46 for the dashes and 69/94/95 for ESQ_L/B/F.
+    POST_CAL_REACTIVATED.setdefault("omegarugal", []).extend([
+        (95, 1010, 1010), (94, 1011, 1009), (69, 720, 1009)])
+    _orug["wire_dash"] = True
     _orug.setdefault("cmd_priority", []).extend(
         ["ESQ_F", "ESQ_B", "ESQ_L", "RE_RUSH", "GRAVITY_SHOT"])
     _orug.setdefault("cmd_extra", []).extend([{
