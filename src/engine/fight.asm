@@ -9502,7 +9502,9 @@ SJ_air:
 SJ_air_notblow:
     ldx fofs
     lda FP+F_JOYPR,x
-    and #(JOY_B|JOY_Y).w                  ; FUSION air throw before air normals
+    and #(JOY_A|JOY_X).w                  ; strong punch/kick air throw, like
+                                          ; the ground throw; weak remains a
+                                          ; normal air attack
     beq +
     jsr AirThrowTry
     bcc +
