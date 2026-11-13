@@ -18582,6 +18582,8 @@ TS_hud:
     jsr LoadPortraits
     sep #$20
     .ACCU 8
+    lda #$15.b                          ; PpuInit left TM = stage only
+    sta.l TM                            ;   (loading screen): HUD + fighters
     lda #$0F.b
     sta.l INIDISP
     rep #$30
