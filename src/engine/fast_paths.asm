@@ -1,12 +1,12 @@
-; Fast paths moved to bank 64 to keep the Fight window in bank 50 small.
-.BASE $00
-.BANK 64 SLOT 0
-.IFDEF KOF_PERF_VERIFY
-.ORGA $7358
-.ELSE
-.ORGA $4109
-.ENDIF
-.SECTION "FightFastPaths" FORCE
+; Fast paths, kept out of the Fight window in bank 50.  They live in a
+; FastROM bank: on ExHiROM the old home (bank 64 = $40:xxxx) is SlowROM, so
+; every opcode fetch of the hottest per-frame code (DrawCells, BOFill, ...)
+; cost 8 master cycles instead of 6.  Banks 31-42 ($DF-$EA) are unused in
+; the MSU build; the linker places the section anywhere in bank 31.
+.BASE $C0
+.BANK 31 SLOT 0
+.ORG 0
+.SECTION "FightFastPaths" FREE
 
 DrawCellsFar:
 .IFDEF KOF_PERF_VERIFY
@@ -1550,4 +1550,134 @@ PVR_done:
     rtl
 .ENDIF
 
+.ENDS
+
+; ---------------------------------------------------------------------------
+; MSU -> WRAM byte copy for MsuReadAlignedFar (streamed voices).  The port
+; stays on the CPU data path (see MRA_ready), but the old one-byte loop ran
+; from SlowROM bank $3E at ~160 master cycles per byte, so a 512-byte voice
+; chunk plus its sector prefix took up to ~95 scanlines.  Here the prefix
+; skip is unrolled x8 and the payload x16 with long stores into bank $7F.
+; In:  A8/X16, D = engine DP, MSU_PREFIX = bytes to discard,
+;      scr0 = 24-bit destination, scr3 = payload bytes.
+; Out: A8/X16.  scr0/scr3 preserved; X/Y clobbered.
+.SECTION "MsuCopyFast" FREE
+MsuCopyFar:
+    .ACCU 8
+    .INDEX 16
+    ldx.w MSU_PREFIX
+MCF_skip8:
+    cpx #8.w
+    bcc MCF_skip1
+    lda.l MSU_DATA
+    lda.l MSU_DATA
+    lda.l MSU_DATA
+    lda.l MSU_DATA
+    lda.l MSU_DATA
+    lda.l MSU_DATA
+    lda.l MSU_DATA
+    lda.l MSU_DATA
+    rep #$20
+    .ACCU 16
+    txa
+    sec
+    sbc #8.w
+    tax
+    sep #$20
+    .ACCU 8
+    bra MCF_skip8
+MCF_skip1:
+    cpx #0.w
+    beq MCF_payload
+    lda.l MSU_DATA
+    dex
+    bra MCF_skip1
+MCF_payload:
+    lda scr0+2
+    cmp #$7F.b
+    beq +
+    jmp MCF_generic                     ; only the voice cache bank is unrolled
++   ldx scr0
+    rep #$20
+    .ACCU 16
+    lda scr3
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    bne +
+    jmp MCF_tail
++   tay                                 ; Y = 16-byte blocks
+    sep #$20
+    .ACCU 8
+MCF_block:
+    lda.l MSU_DATA
+    sta.l $7F0000,x
+    lda.l MSU_DATA
+    sta.l $7F0001,x
+    lda.l MSU_DATA
+    sta.l $7F0002,x
+    lda.l MSU_DATA
+    sta.l $7F0003,x
+    lda.l MSU_DATA
+    sta.l $7F0004,x
+    lda.l MSU_DATA
+    sta.l $7F0005,x
+    lda.l MSU_DATA
+    sta.l $7F0006,x
+    lda.l MSU_DATA
+    sta.l $7F0007,x
+    lda.l MSU_DATA
+    sta.l $7F0008,x
+    lda.l MSU_DATA
+    sta.l $7F0009,x
+    lda.l MSU_DATA
+    sta.l $7F000A,x
+    lda.l MSU_DATA
+    sta.l $7F000B,x
+    lda.l MSU_DATA
+    sta.l $7F000C,x
+    lda.l MSU_DATA
+    sta.l $7F000D,x
+    lda.l MSU_DATA
+    sta.l $7F000E,x
+    lda.l MSU_DATA
+    sta.l $7F000F,x
+    rep #$21
+    .ACCU 16
+    txa
+    adc #16.w
+    tax
+    sep #$20
+    .ACCU 8
+    dey
+    beq MCF_tail
+    jmp MCF_block                       ; the 16-byte body is beyond bne range
+MCF_tail:
+    rep #$20
+    .ACCU 16
+    lda scr3
+    and #$000F.w
+    tay
+    sep #$20
+    .ACCU 8
+    cpy #0.w
+    beq MCF_done
+MCF_tail1:
+    lda.l MSU_DATA
+    sta.l $7F0000,x
+    inx
+    dey
+    bne MCF_tail1
+MCF_done:
+    rtl
+MCF_generic:
+    ldy #0.w
+MCF_gen1:
+    cpy scr3
+    bcs MCF_done
+    lda.l MSU_DATA
+    sta [scr0],y
+    iny
+    bra MCF_gen1
 .ENDS

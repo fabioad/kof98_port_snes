@@ -35,7 +35,30 @@ VQAF_full:
     clc
     rtl
 
+; Fight frames (gs 1) load voices in the idle tail of the previous frame
+; (VoiceQueueSlackFar, MainLoop top) instead of here at the frame start,
+; where a 512-byte MSU chunk + spcPlaySoundV landed on top of FightTick and
+; pushed heavy frames past vblank.  This frame-start slot only runs when the
+; idle tail had no room VQ_MISS_MAX frames in a row.
 VoiceQueueTickFar:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    lda gamestate
+    and #$00FF.w
+    cmp #1.w
+    bne VQTF_body
+    lda.w VQ_SLACK
+    beq +
+    stz.w VQ_SLACK                      ; already ticked in the idle tail
+    jmp VQTF_ret
++   inc.w VQ_MISS
+    lda.w VQ_MISS
+    cmp #VQ_MISS_MAX.w
+    bcs +
+    jmp VQTF_ret
++   stz.w VQ_MISS
+VQTF_body:
     rep #$30
     .ACCU 16
     .INDEX 16
@@ -170,12 +193,22 @@ VQTF_chunk:
     lda.w VQ_MSUOFS+2
     adc #0.w
     sta.l MRD_SRC+2
+    ; End each chunk on a 512-byte sector boundary (VOICE_CHUNK = 512): the
+    ; first chunk is shortened by the in-sector offset, so every later chunk
+    ; starts aligned and MsuReadAlignedFar no longer re-reads and discards
+    ; up to 511 prefix bytes per frame.
+    lda.l MRD_SRC
+    and #$01FF.w
+    eor #$FFFF.w
+    sec
+    adc #VOICE_CHUNK.w                  ; VOICE_CHUNK - in-sector offset
+    sta scr6
     lda.w VQ_TOTAL
     sec
     sbc.w VQ_POS
-    cmp #VOICE_CHUNK.w
+    cmp scr6
     bcc +
-    lda #VOICE_CHUNK.w
+    lda scr6
 +   sta.w VQ_COUNT
     sta.l MRD_LEN
     lda.w VQ_POS
@@ -242,6 +275,43 @@ VQTF_play:
 VQTF_ret:
     rep #$20
     .ACCU 16
+    rtl
+
+; MainLoop top, before SprPrepBoth: run the fight voice tick now if the
+; frame's logic finished early enough that the chunk copy plus the sprite
+; prep still end before vblank.  Same MSU port order as the frame-start
+; slot: the voice read invalidates the port and SprPrepBoth re-seeks after.
+; In: D = ENGINE_DP, DBR = ENGINE_DB.  Preserves P and DBR (snesmod may
+; leave DBR elsewhere; SprPrepBoth runs right after with .w refs).
+VoiceQueueSlackFar:
+    php
+    phb
+    sep #$20
+    .ACCU 8
+    lda gamestate
+    cmp #1.b
+    bne VQS_out
+    lda.l $004212
+    bmi VQS_out                         ; already in vblank
+    lda.l $00213F                       ; reset the OPVCT read flip-flop
+    lda.l $002137                       ; latch H/V
+    lda.l $00213D                       ; V bits 0-7
+    xba
+    lda.l $00213D                       ; V bit 8
+    and #1.b
+    bne VQS_out
+    xba
+    cmp #VQ_SLACK_LINE.b
+    bcs VQS_out
+    rep #$20
+    .ACCU 16
+    lda #1.w
+    sta.w VQ_SLACK
+    stz.w VQ_MISS
+    jsl VQTF_body
+VQS_out:
+    plb
+    plp
     rtl
 
 ; Drop the shared ring but leave an in-flight sample alone.  StartFight uses

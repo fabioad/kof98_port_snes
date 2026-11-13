@@ -563,15 +563,7 @@ MRA_poll:
 MRA_ready:
     ; Keep the port on the CPU data path: interleaving MSU DMA consumers
     ; leaves the SD2SNES cache serving stale CHR sectors on some cards.
-    sep #$20
-    .ACCU 8
-    ldx.w MSU_PREFIX
-    beq MRA_payload
-MRA_skip_prefix:
-    lda.l MSU_DATA
-    dex
-    bne MRA_skip_prefix
-MRA_payload:
+    ; The byte loop itself runs from FastROM (MsuCopyFar, fast_paths.asm).
     rep #$20
     .ACCU 16
     lda.l MRD_DST
@@ -582,13 +574,7 @@ MRA_payload:
     .ACCU 8
     lda.l MRD_DST+2
     sta scr0+2
-    ldy #0
-MRA_copy_payload:
-    lda.l MSU_DATA
-    sta [scr0],y
-    iny
-    cpy scr3
-    bcc MRA_copy_payload
+    jsl MsuCopyFar                      ; skips MSU_PREFIX, copies scr3 bytes
     rep #$20
     .ACCU 16
     lda.l MRD_POS

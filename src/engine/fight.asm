@@ -821,6 +821,10 @@
 .DEFINE VQ_LASTSLOT $5190
 .DEFINE VQ_COUNT    $5192               ; bytes copied during this tick
 .DEFINE VQ_CUR_SIDE $5194               ; 0 = current stream is P1, 1 = P2
+.DEFINE VQ_SLACK    $5196               ; 1 = fight voice tick ran in the idle tail
+.DEFINE VQ_MISS     $5198               ; fight frames without an idle-tail tick
+.DEFINE VQ_SLACK_LINE 168               ; idle tick only when V is below this
+.DEFINE VQ_MISS_MAX 2                   ; then fall back to the frame-start slot
 .DEFINE VQ_TABLE    $51A0               ; mutable 8-byte SNESMOD sample record
 .DEFINE VQ_CACHE0   $0000               ; bank $7F, 6 KiB per slot
 .DEFINE VQ_CACHE1   $1800
@@ -1080,6 +1084,7 @@ ML_top_ok:
     lda #ENGINE_DB.b
     pha
     plb
+    jsl VoiceQueueSlackFar              ; fight voice chunk in the idle tail
     lda.l $4212
     bmi ML_prep_done                    ; vblank already started: next frame
     lda gamestate                       ; only states that present fighters
