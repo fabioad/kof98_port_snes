@@ -5490,6 +5490,20 @@ if "shermie" in CHARS:
         2185: [(0x80 | t, 15, 0, 0) for t in range(0, 27)],
         2190: [(0, 3, -10, 0), (1, 4, 821, 0)]})
 
+if "chin" in CHARS:
+    # Chin Flash Punch 2 (1205): physics = S, so the 27.83 px/t VelSet at
+    # AnimElem 4 decays by stand.friction (.85) each tick and the dash
+    # covers ~125 px before the AnimElem 6 HitDef.  The engine has no
+    # standing friction, so the port kept 28 px/t and ran to the wall
+    # before the strike.  Replay the decay as per-tick VelSet rows (elem 4
+    # starts at t=9; elem 9 at t=28 sets 0 in the source).
+    _chin_v = []
+    for _t in range(9, 28):
+        _v = int(round(27.83 * 0.85 ** (_t - 9)))
+        _chin_v.append((0x80 | _t, 5, _v, 0))
+    _chin_v.append((0x80 | 28, 5, 0, 0))
+    POST_CAL_ACT_OVERRIDE.setdefault("chin", {}).update({1205: _chin_v})
+
 if "krauser" in CHARS:
     _krauser = CHARS["krauser"]
     # 3222's damage loop uses var(16)/Const(data.attack), which the extractor
