@@ -37,6 +37,7 @@ CHAR_BUTTONS = {
     "king": (9,),
     "benimaru": (9,),
     "ryu": (9, 1),
+    "mai": (9, 1),
     "chizuru": (9,),
 }
 
@@ -218,7 +219,7 @@ def check_chizuru(core_path, rom):
 
 
 def main(core_path, rom):
-    for char in ("yuri", "iori", "king", "benimaru", "ryu"):
+    for char in ("yuri", "iori", "king", "benimaru", "ryu", "mai"):
         check_char(core_path, rom, char)
     check_chizuru(core_path, rom)
     print("PASS all sampled fighters: SF2-style back throw")

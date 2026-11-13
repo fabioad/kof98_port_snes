@@ -10293,6 +10293,13 @@ def build_char(name, cfg, global_pal=None):
     # Stale source hashes or changed manual values fail closed at build time.
     from calibration.native import apply_profile
     apply_profile(ROOT, name, cfg, cns_moves, air)
+    # Mai's port cmd maps the normal throw to her aerial attempt (820), which
+    # has a single-frame animation and the wrong state type.  Point the native
+    # throw attempt at the ground throw (800 -> 801) before wiring the chain,
+    # so the attempt animation and the held victim pose come from the ground
+    # move.  The aerial throw state stays untouched in the source.
+    if name == "mai":
+        cfg.setdefault("moves", {})[74] = 800
     wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers,
                      cns_statedefs, cns_acts, cns_binds)
     # King's normal throw binds the victim at the arcade's torso height, but
