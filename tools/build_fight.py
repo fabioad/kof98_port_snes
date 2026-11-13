@@ -6097,6 +6097,73 @@ if "geese" in POST_CAL_REACTIVATED:
     POST_CAL_REACTIVATED_OVERWRITE.setdefault("geese", set()).update(
         (55, 56, 61, 63))
 
+# --- v1.1.5: specials the audit found entered but without their damage ---
+#
+# Eiji's Kotsu Hazaki rush (1200/1210) is only the wind-up; the strike is
+# 1201 (body HitDef, Clsn1 8..71 px), which the source holds for 21 ticks
+# (41 after 1210) before the 1202 recovery.  1201's AIR action is a single
+# one-tick loop, so hold its pose with tail_ticks.
+_wire_followups("eiji", [(58, 1201, 1201), (60, 1202, 1202)],
+                [(50, 58, 0, 0), (51, 58, 0, 0),
+                 (58, 60, 3, 0), (58, 60, 0, 0), (60, 0, 0, 0)])
+_tweak("eiji", "tail_ticks", {1201: 21})
+_tweak("eiji", "hitdef_override", {
+    58: {"active": 1, "damage": 22, "gdamage": 2, "fall": 1}})
+
+# Mai's air Musasabi (1043) is the hover before the dive: 1045 is the
+# diagonal dive (VelSet 7.8, 8.2, the HitDef) and 1047 the landing.  Only
+# the hover was wired, so the move floated and dropped without attacking.
+_wire_followups("mai", [(60, 1045, 1045), (63, 1047, 1047)],
+                [(54, 60, 0, 0), (55, 60, 0, 0),
+                 (60, 63, 1, 0), (63, 0, 0, 0)])
+_tweak("mai", "state_vel", {60: (7.8, 8.2)})
+_tweak("mai", "hitdef_override", {
+    # Source scale (HitDef damage = 80); the import's automatic Kyo-relative
+    # normalisation brings it to the port scale with the rest of her moves.
+    60: {"active": 1, "damage": 80, "gdamage": 10, "fall": 1}})
+
+# Yuki: the 1000 shot is a source Projectile (projanim 1010, released on
+# AnimElem 8) with an unevaluable velocity expression, so no ProjTab row
+# was derived.  1300 (Kaban Barrier) is a stationary projectile whose box
+# sits 16..68 px in front of her for 15-20 ticks: model it as a body box.
+POST_CAL_PROJS.setdefault("yuki", {}).update({48: (0x0400, 14, 0x0A)})
+PROJECTILE_RELEASE.setdefault("yuki", {}).update({48: 7})
+_tweak("yuki", "air_box_patch_frames", {
+    1300: {i: [(16, -95, 68, -31)] for i in range(1, 7)},
+    1305: {i: [(16, -95, 68, -31)] for i in range(1, 7)},
+})
+_tweak("yuki", "hitdef_override", {
+    # Source scale (projectile damage = 60,15), normalised like her HitDefs.
+    51: {"active": 2, "damage": 60, "gdamage": 15, "fall": 1}})
+
+# Ryo's air Kohou (2000/2010) fires down-forward from the air (vel 5,5).
+# The shared projectile path is flat, so spawn it at the fixed upper-torso
+# height the air Shippuu Ken uses; at the caster's height it flew over
+# every standing opponent.
+PROJECTILE_TORSO_SIDS.setdefault("ryo", set()).update({109, 110})
+
+# Omega Rugal's 7200 striker only exists in the palette 7-12 mode
+# (var(58) = 1 in omegarugal98C.cns); the port has no such mode and the
+# striker helper (7201..7210) is another character.  Drop the command.
+if "omegarugal" in CHARS:
+    POST_CAL_TWEAKS.setdefault("omegarugal", {}).setdefault(
+        "cmd_drop_states", []).append(7200)
+
+# Kasumi's counters (1200/1300/3100/3150) send the opponent to her own held
+# states (1215/1315/3115), which have no runtime slot, so RevTab carried
+# vsid $FF and the counter only parried.  Use the generic held pose (100)
+# every fighter table has: HO_cgrab sets F_GRAB and her follow-ups
+# (1210/1310/3110/3160) apply their TargetLifeAdd rows.  Keyed by the
+# stance MUGEN state.
+REV_VICTIM_SLOT = {
+    "kasumi": {1200: 100, 1300: 100, 3100: 100, 3150: 100},
+}
+
+# Mary's low counter 1520 -> 1525: the source damage is the ReversalDef
+# fall.damage (55); 1525 itself has no TargetLifeAdd, so the throw landed
+# for 0.  Apply it on the TargetState slam (AnimElem 7 -> frame 6).
+_late_act("mary", {1525: [(6, 3, -55, 0)]})
+
 # Runtime SFX ids -- kept in sync with the SAMPLES order in
 # tools/build_audio.py (spc_ids.inc is generated from that list).
 CHAR_VOICES = {}                        # name -> {(snd group,item): voice id}
@@ -12623,6 +12690,9 @@ def build_char(name, cfg, global_pal=None):
             win, bmugen, cls, vmugen = rev
             bsid = state_to_sid.get(bmugen, 0xFF)
             vsid = state_to_sid.get(vmugen, 0xFF) if vmugen >= 0 else 0xFF
+            if vsid == 0xFF:
+                vsid = REV_VICTIM_SLOT.get(name, {}).get(
+                    move_ids.get(sid, -1), 0xFF)
             inc.append(f"{name}Rev{sid}:\n")
             inc.append(f"    .db {win},{bsid},{cls},{vsid}\n")
 
