@@ -45,7 +45,10 @@ POW_BLUE = (32, 64, 246)
 POW_COLS = ((0, 1), (30, 31))      # P1 / P2 map columns of the 2x2 digit
 POW_DIGIT_X = (7, 0)               # digit x inside each side's 16x16 cell
 POW_DIGIT_Y = 1                    # BG line 185
-HDMA_LINES = POW_Y + POW_LINES
+# Run the tables to the last visible line so every frame ends on the resting
+# colours.  Those are also each table's first entry, so a late re-arm that
+# skips the first entry (HudHdmaTick) still sees the right colours on top.
+HDMA_LINES = 224
 
 
 def tiles2bpp(pix, w, h):
@@ -545,6 +548,8 @@ def build(lb_dir, files, fspr, go_key, ko_key, fnt_v1, sff_imgs, fnt_v2_sff,
             cur = (POW_DARK,
                    POW_BLUE if y < POW_BLUE_END - 1 else POW_ORANGE,
                    POW_CREAM)
+        elif y >= POW_Y + POW_LINES:
+            cur = rest                      # back to entry 1's colours
         lines.append(cur)
 
     def bgr(c):

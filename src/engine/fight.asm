@@ -23805,39 +23805,33 @@ HHT_out:
     plp
     rtl
 HHT_on:
-    ; HDMA latches its tables at line 0.  $4212 can still say "vblank" on
-    ; line 261 while the HDMAEN write below lands just after the line-0
-    ; init; an un-initialised channel then resumes from last frame's stale
-    ; pointer, reads the tables misaligned and sprays colour bytes into
-    ; CGADD (the whole palette went green/yellow).  Read the real V counter
-    ; and re-arm every channel by hand, so a late enable starts from the
-    ; top of its table (a few lines late, for one frame) instead.
-    lda.l $00213F                        ; reset the OPVCT read flip-flop
-    lda.l $002137                        ; latch H/V
-    lda.l $00213D                        ; V bits 0-7
-    xba
-    lda.l $00213D                        ; V bit 8
-    and #1.b
-    bne HHT_late_ok                      ; V >= 256: vblank tail
-    xba
-    cmp #225.b                           ; V 225-255: vblank
-    bcs HHT_arm
-    cmp #4.b                             ; V 0-3: re-armed, ~1 line shift
-    bcc HHT_arm
-    plp                                  ; uploads overran into the picture:
-    rtl                                  ;   leave the gradient off this frame
-HHT_late_ok:
-HHT_arm:
+    ; HDMA latches its tables at line 0, and the uploads above sometimes run
+    ; past it.  Re-arming then from the top of the tables pushed the whole
+    ; gradient 1-4 lines down for that frame: the flicker on the P2 name and
+    ; on the POW box.  Instead, when late, resume at each table's second
+    ; entry with its line count trimmed so it still lands on its usual line.
+    ; The first entry holds the resting colours, which every table's last
+    ; entry (line 223) already left in CGRAM.
+    ;
+    ; A channel enabled mid-frame may or may not transfer on its first
+    ; HBlank (bsnes: it does, from A2A).  Point A2A at entry 1's own colour
+    ; bytes and give it a long count, so that HBlank is harmless either way;
+    ; one line later DoTransfer is clear everywhere and A2A/NTRL are set
+    ; for real.  Channels are off here, so the registers can be primed now.
+    sei                                  ; the late path counts scanlines
     rep #$20
     .ACCU 16
     lda #HudHdma1.w
-    sta.l $004312
-    sta.l $004318                        ; A2A: current table address
+    sta.l $004312                        ; line-0 init: table start
+    ina
+    sta.l $004318                        ; A2A: entry 1 colour bytes
     lda #HudHdma2.w
     sta.l $004322
+    ina
     sta.l $004328
     lda #HudHdma3.w
     sta.l $004332
+    ina
     sta.l $004338
     sep #$20
     .ACCU 8
@@ -23918,16 +23912,98 @@ HHT_notsel:
     sta.l $004311
     sta.l $004321
     sta.l $004331
-    lda #$01.b                           ; NTRL 1: fetch the first entry
-    sta.l $00431A                        ;   on the next line if the line-0
-    sta.l $00432A                        ;   init has already passed
+    lda #$7F.b                           ; NTRL: no fetch for 127 lines
+    sta.l $00431A
+    sta.l $00432A
     sta.l $00433A
+    jsr HHT_vpos
+    cmp #225.b
+    bcc HHT_sync                         ; already inside the picture
+    cmp #250.b
+    bcc HHT_enable                       ; deep in vblank: line-0 init re-arms
+HHT_sync:
+    jsr HHT_nextline                     ; start of a fresh line: the enable
+HHT_enable:                              ;   lands before its HBlank
     lda #$0E.b                           ; channels 1, 2 and 3
     sta.l HDMAEN
+    jsr HHT_vpos
+    cmp #225.b
+    bcs HHT_armed                        ; vblank (incl. 261): init re-arms
+    cmp #7.b
+    bcc HHT_late
+    lda #0                               ; far too late: gradient off this
+    sta.l HDMAEN                         ;   frame (resting colours)
+    plp
+    rtl
+HHT_late:
+    ; Line V (0-6).  Entry 2 must transfer on line C (entry 1's count): it
+    ; is fetched when NTRL runs out, so from line V+1 NTRL = C - V - 1.
+    pha                                  ; V
+    eor #$FF.b                           ; -V-1
+    pha
+    clc
+    adc.l HudHdma3
+    pha                                  ; n3
+    lda 2,s
+    clc
+    adc.l HudHdma2
+    pha                                  ; n2
+    lda 3,s
+    clc
+    adc.l HudHdma1
+    pha                                  ; n1
+HHT_wait:
+    jsr HHT_vpos                         ; wait for line V+1
+    cmp 5,s
+    beq HHT_wait
+    pla
+    sta.l $00431A
+    pla
+    sta.l $00432A
+    pla
+    sta.l $00433A
+    rep #$20
+    .ACCU 16
+    lda #HudHdma1+5
+    sta.l $004318                        ; A2A: entry 2
+    lda #HudHdma2+5
+    sta.l $004328
+    lda #HudHdma3+5
+    sta.l $004338
+    pla                                  ; drop -V-1 and V
+    sep #$20
+    .ACCU 8
+HHT_armed:
     lda #1
     sta.w HUD_HDMA
     plp
     rtl
+
+; A = current V counter (8-bit; 256-261 read as 255).
+HHT_vpos:
+    lda.l $00213F                        ; reset the OPVCT read flip-flop
+    lda.l $002137                        ; latch H/V
+    lda.l $00213D                        ; V bits 0-7
+    xba
+    lda.l $00213D                        ; V bit 8
+    and #1.b
+    bne HHT_vpos_hi
+    xba
+    rts
+HHT_vpos_hi:
+    lda #$FF.b
+    rts
+
+; Return at the start of the line after the current one.
+HHT_nextline:
+    lda.l $004212
+    and #$40.b
+    beq HHT_nextline                     ; wait for this line's HBlank
+HHT_nl_end:
+    lda.l $004212
+    and #$40.b
+    bne HHT_nl_end                       ; HBlank over: next line starts
+    rts
 .ENDS
 
 ; ---------------------------------------------------------------------------
