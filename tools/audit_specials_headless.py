@@ -100,7 +100,8 @@ def dirs(bits, facing=1):
 def attempt(core, base, info, rule, distance=24, hold=2, keep_direction=True,
             limit=700, complement=False, opponent_attack=False,
             power=5000, opponent_air=False, air_height=72, combine_finish=False,
-            input_game_ticks=False):
+            input_game_ticks=False, opponent_at=3, opponent_button=1,
+            natural_jump=False):
     core.load(base)
     core.buttons = [set(), set()]
     core.ram[0x1090] = core.ram[0x1091] = 0
@@ -121,8 +122,16 @@ def attempt(core, base, info, rule, distance=24, hold=2, keep_direction=True,
         core.buttons[0] = {4}
         core.step(6)
         core.buttons[0] = set()
-        core.put(P1 + 2, air_height << 8)
-        core.put(P1 + 6, (-6 * 256) & 65535)
+        if natural_jump:
+            # Let the jump rise on its own until air_height: forcing the
+            # height mid-takeoff is overwritten by some air specials (Kim).
+            for _ in range(60):
+                if core.word(P1 + 2) >> 8 >= air_height:
+                    break
+                core.step()
+        else:
+            core.put(P1 + 2, air_height << 8)
+            core.put(P1 + 6, (-6 * 256) & 65535)
     expected = {rule["sid"]}
     if info["target"][rule["sid"]][2] != 255:
         expected.add(info["target"][rule["sid"]][2])
@@ -219,9 +228,12 @@ def attempt(core, base, info, rule, distance=24, hold=2, keep_direction=True,
                 if src == state and kind == 2 and index % 6 == 0:
                     buttons |= {v for k, v in PAD_MASKS.items() if arg & k}
                     complementary.append([state, dst, arg])
-        if opponent_attack and entered and index == 3:
-            core.buttons[1] = {1}
-        if index == 6:
+        if opponent_attack and entered and index == opponent_at:
+            # a tuple presses several pad bits (e.g. (5, 1) = crouch + Y)
+            core.buttons[1] = (set(opponent_button)
+                               if isinstance(opponent_button, (tuple, list))
+                               else {opponent_button})
+        if index == opponent_at + 3:
             core.buttons[1] = set()
         step(buttons, 1)
         if entered and entered_at is None:
@@ -253,10 +265,50 @@ def attempt(core, base, info, rule, distance=24, hold=2, keep_direction=True,
                       "opponent_attack": opponent_attack, "power": power,
                       "opponent_air": opponent_air, "air_height": air_height,
                       "combine_finish": combine_finish,
-                      "input_game_ticks": input_game_ticks}}
+                      "input_game_ticks": input_game_ticks,
+                      "opponent_at": opponent_at,
+                      "opponent_button": opponent_button,
+                      "natural_jump": natural_jump}}
 
 
-def classify(result, meta):
+# States that are entered but, by the source's own design, deal no damage in
+# this probe (no HitDef/Projectile/TargetLifeAdd in the source chain, or a
+# self-heal).  Verified against the .cns; see
+# docs/AUDITORIA_ESPECIAIS_2026-11-12.md.  A by-design case that suddenly
+# deals damage is still reported normally.
+BY_DESIGN = {
+    ("athena", 1040): "no attack controller (1040->1041)",
+    ("athena", 1050): "no attack controller (1050->1051)",
+    ("athena", 1060): "no attack controller",
+    ("athena", 1065): "no attack controller",
+    ("vega", 1400): "teleport", ("vega", 1410): "teleport",
+    ("vega", 1420): "teleport", ("vega", 1430): "teleport",
+    ("rugal", 1300): "Dark Barrier (projectile reflector)",
+    ("rugal", 1310): "Dark Barrier (projectile reflector)",
+    ("daimon", 1100): "Chou Ukemi (no attack)",
+    ("daimon", 1110): "Chou Ukemi (no attack)",
+    ("daimon", 1010): "Jiraishin C is the feint: no shock wave",
+    ("chris", 1000): "no attack controller", ("chris", 1050): "no attack controller",
+    ("chris", 2000): "no attack controller",
+    ("eiji", 1500): "no attack controller", ("eiji", 1510): "no attack controller",
+    ("heavyd", 1250): "no attack controller", ("heavyd", 1900): "no attack controller",
+    ("shermie", 2000): "no attack controller",
+    ("omegarugal", 2000): "no attack controller (2000/2002->2001)",
+    ("omegarugal", 2002): "no attack controller (2000/2002->2001)",
+    ("lucky", 1000): "no attack controller", ("lucky", 1010): "no attack controller",
+    ("kensou", 2000): "self heal (LifeAdd +10)", ("kensou", 2050): "self heal (LifeAdd +10)",
+    ("iori", 1400): "Kuzukaze: knockdown throw without source damage",
+    ("yuki", 1200): "positioning throw: HitDef without damage",
+    ("chin", 1460): "counter wait window (hit lives in 1400/1401)",
+    ("chin", 1461): "counter wait window (hit lives in 1400/1401)",
+    ("billy", 3100): "power charge (3101 PowerAdd), no attack",
+    ("heavyd", 1950): "partial: source deals 1 per contact (4 hits + a "
+                      "falling 5th); one flags row per state, so the first "
+                      "contact already knocks down",
+}
+
+
+def classify(result, meta, key=None):
     if not result["entered"]:
         return "input_missed"
     if result["clock_stall"] > 360:
@@ -268,6 +320,8 @@ def classify(result, meta):
     if result["healing"]:
         return "victim_healed"
     if result["damage"] <= 2:
+        if key in BY_DESIGN:
+            return "by_design"
         return "conditional" if meta["reversal"] else "no_impact_review"
     return "hit_and_recovered"
 
@@ -276,12 +330,56 @@ def best_attempt(attempts):
     # A failed fast-cadence retry must not hide an earlier successful entry
     # with zero impact. Preserve real recovery/state errors above all passes.
     rank = {"clock_frozen": 9, "grab_flag_leak": 8, "victim_healed": 7,
-            "recovery_timeout": 6, "hit_and_recovered": 5,
+            "recovery_timeout": 6, "hit_and_recovered": 5, "by_design": 4,
             "conditional": 3, "no_impact_review": 2, "input_missed": 0}
     return max(attempts, key=lambda a: (rank[a["status"]], a["result"]["damage"]))
 
 
-def confirmation_setups(case):
+# Setups under which a case is known to connect (measured with
+# /tmp-style sweeps on the frozen ROM).  Keys are (character, source state).
+def _s(**kw):
+    kw.setdefault("hold", 3)
+    kw.setdefault("keep_direction", False)
+    return kw
+
+
+def _counter(at=0, button=1, air=True, distance=24):
+    return _s(opponent_attack=True, opponent_air=air, opponent_at=at,
+              opponent_button=button, distance=distance)
+
+
+CASE_SETUPS = {
+    # long-range rushes: they only connect from their real starting range
+    ("joe", 1410): [_s(distance=100, hold=2)],
+    ("ryo", 1510): [_s(distance=120, hold=2)],
+    ("yuri", 431): [_s(distance=120, hold=2)],
+    ("lucky", 2600): [_s(distance=100, hold=2)],
+    # air specials: low jump-in at close range
+    ("benimaru", 1100): [_s(air_height=16, distance=48, opponent_air=True)],
+    ("yuri", 450): [_s(air_height=16, distance=24)],
+    ("kim", 1200): [_s(natural_jump=True, air_height=16, distance=24)],
+    ("mai", 1043): [_s(air_height=16, distance=24)],
+    ("ryo", 2000): [_s(air_height=16, distance=24)],
+    ("ryo", 2010): [_s(air_height=16, distance=24)],
+    # counters: armed against a jump-in (S/A masks) or a crouch attack
+    ("geese", 1400): [_counter()],
+    ("billy", 1100): [_counter(button=0)],
+    ("chizuru", 1004): [_counter()],
+    ("chizuru", 1300): [_counter()],
+    ("kasumi", 1200): [_counter()],
+    ("kasumi", 1300): [_counter(at=16, button=9)],
+    ("kasumi", 3100): [_counter(at=48, air=False)],
+    ("kasumi", 3150): [_counter(at=48, air=False)],
+    ("mary", 1520): [_counter(at=16), _counter(at=2, button=(5, 1), air=False)],
+}
+
+
+def confirmation_setups(case, key=None):
+    # Case-specific setups first: moves that only connect at their real range
+    # or timing (long rushes, jump-ins, counters).  Stop at the first hit.
+    if case["status"] in ("input_missed", "no_impact_review", "conditional", "by_design"):
+        for setup in CASE_SETUPS.get(key, ()):
+            yield setup
     if case["status"] == "input_missed":
         for power, hold, distance in ((1000, 3, 40), (0, 3, 40), (5000, 4, 64)):
             yield dict(power=power, hold=hold, distance=distance, keep_direction=False)
@@ -356,15 +454,16 @@ def main():
                 if args.charged_only and not any(d & 32 for d, _b in rule["elements"]):
                     continue
                 meta = info["metadata"][rule["sid"]]
+                key = (name, meta.get("state"))
                 result = attempt(core, base, info, rule, limit=args.limit,
                                  complement=True, opponent_attack=bool(meta["reversal"]))
-                status = classify(result, meta)
+                status = classify(result, meta, key)
                 retries = []
                 if (args.retry or args.confirm) and status in ("input_missed", "no_impact_review"):
                     for distance, hold, keep in ((18, 2, False), (64, 2, False), (24, 1, True)):
                         retry = attempt(core, base, info, rule, distance, hold, keep,
                                         args.limit, True, bool(meta["reversal"]))
-                        retry_status = classify(retry, meta)
+                        retry_status = classify(retry, meta, key)
                         retries.append({"status": status, "result": result})
                         result, status = retry, retry_status
                         if status not in ("input_missed", "no_impact_review"):
@@ -374,15 +473,19 @@ def main():
                 case = {"index": index, "rule": rule, "meta": meta,
                         **best, "attempts": attempts}
                 if args.confirm:
-                    for setup in confirmation_setups(case):
+                    for setup in confirmation_setups(case, key):
+                        setup = dict(setup)
+                        setup.setdefault("opponent_attack", bool(meta["reversal"]))
                         result = attempt(core, base, info, rule, limit=max(800, args.limit),
-                                         complement=True, opponent_attack=bool(meta["reversal"]),
-                                         **setup)
-                        status = classify(result, meta)
+                                         complement=True, **setup)
+                        status = classify(result, meta, key)
                         attempts.append({"status": status, "result": result})
-                        if status not in ("input_missed", "no_impact_review"):
+                        if status not in ("input_missed", "no_impact_review",
+                                          "conditional", "by_design"):
                             break
                     case.update(best_attempt(attempts))
+                if case["status"] == "by_design":
+                    case["reason"] = BY_DESIGN[key]
                 cases.append(case)
             report["characters"][name] = cases
             counts = {}
