@@ -5310,6 +5310,9 @@ _CATEGORY_A_FOLLOWUPS = {
     # 103/104 now carry the Kaiser Wave strike follow-ups; move the MAX
     # Gigantic Cyclone grab chain to the free 105/106 slots.
     "krauser":  [(105, 3221, 3201), (106, 3222, 3202)],
+    # Billy Hold Type 1/2: 3000/3020 grab -> 3001/3021 carry the bind and
+    # the slam.  103/104 are taken, 106 is the counter slot.
+    "billy":    [(111, 3001, 3001), (112, 3021, 3021)],
 }
 for _c, _rows in _CATEGORY_A_FOLLOWUPS.items():
     if _c in CHARS:
@@ -5367,6 +5370,89 @@ if "geese" in CHARS:
     # TargetState 3222 releases the victim (element 21).  Move the 25-point
     # hit before the release so AO_tlife still sees the bound victim.
     _geese.setdefault("act_override", {})[3261] = [(18, 3, -25, 0)]
+
+# Billy: the source damage is a LifeAdd in the victim's own end states
+# (3003: -150, 3023: -40 of 1500 life), which the port never runs.  Apply it
+# as TargetLifeAdd on the slam element while the victim is still bound, then
+# release it with the thrown knockdown (821 -> S_VTHROW).
+POST_CAL_ACT_OVERRIDE.setdefault("billy", {}).update({
+    3001: [(6, 3, -20, 0), (8, 4, 821, 0)],
+    3021: [(18, 3, -5, 0), (20, 4, 821, 0)],
+})
+
+# --- Grab follow-ups that never ran (audit group C, 2026-11-12) ------------
+# Each of these grabs bound the victim and released it for 0-1 damage: the
+# damage lives in a follow-up state that had no runtime slot, or in a slot
+# below the 103..116 grab window, so StVictimHeld let go before the
+# TargetLifeAdd row fired.  Life values are scaled to the 200-point bar.
+#
+# Ralf SAB (440 -> 441): 441 sat on sid 53, outside the grab window.  The
+# source damage is fvar-driven (12/6 * fvar(11)=10 on 1071 life).
+if "ralf" in CHARS:
+    POST_CAL_MOVES_DROP.setdefault("ralf", set()).add(53)
+    POST_CAL_REACTIVATED.setdefault("ralf", []).append((105, 441, 441))
+    POST_CAL_ACT_OVERRIDE.setdefault("ralf", {}).update({
+        441: [(8, 3, -22, 0), (12, 3, -11, 0)]})
+
+# Heidern Killing Bringer (ReversalDef 1400/1410 -> 1420): the 1420 HitDef
+# that leads to the 1421/1422 life drain cannot hit the bound victim, so
+# chain at the end of the 1420 clip.  1422 drains ~9.5/1000 every 5 ticks
+# for 80 ticks (~30/200); the source loop exits on Time=80, so unroll it as
+# an 80-tick one-shot clip.  The self heal has no ActTab op and is dropped.
+if "heidern" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("heidern", []).extend([
+        (108, 1421, 1421), (109, 1422, 1422), (110, 1423, 1423)])
+    _hei = POST_CAL_TWEAKS.setdefault("heidern", {})
+    _hei.setdefault("extra_trans", []).extend([
+        (99, 108, 0, 0), (109, 110, 0, 0)])
+    _hei.setdefault("tail_ticks", {}).update({1420: 6, 1422: 75})
+    _hei.setdefault("loop_off", []).append(109)
+    POST_CAL_ACT_OVERRIDE.setdefault("heidern", {}).update({
+        1422: [(0x80 | t, 3, -2, 0) for t in range(4, 80, 5)],
+        1423: [(1, 4, 821, 0)]})
+
+# Daimon Nekko Gaeshi (ReversalDef 1400 -> 1410 -> 1411 on landing): 1411
+# owns the fvar TargetLifeAdd (26/1000).
+if "daimon" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("daimon", []).append((108, 1411, 1411))
+    POST_CAL_ACT_OVERRIDE.setdefault("daimon", {}).update({
+        1411: [(0, 3, -5, 0), (6, 4, 821, 0)]})
+
+# Duck King Breakspiral (2000) and its MAX/air form (2300).  The source
+# launches the victim and loops 2001/2303 until `enemy,vel y > 0 && enemy,
+# pos y >= -120`, then drains in 2002 until Time=48 and finishes in 2003 /
+# 2304.  None of those triggers fit the TransTab, so the loops are cut to
+# their source length and chained on anim end; 2002 runs on two sids so
+# each branch keeps its own finisher.  Life 1500 -> /7.5 for the 200 bar.
+if "duckking" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("duckking", []).extend([
+        (108, 2001, 2001), (109, 2002, 2002), (110, 2003, 2003),
+        (111, 2302, 2302), (112, 2303, 2303), (113, 2002, 2002),
+        (114, 2304, 2304)])
+    _duck = POST_CAL_TWEAKS.setdefault("duckking", {})
+    _duck.setdefault("extra_trans", []).extend([
+        (108, 109, 0, 0), (109, 110, 0, 0),
+        (112, 113, 0, 0), (113, 114, 0, 0)])
+    # 2001: windup + nine looped spin frames (~the launch airtime);
+    # 2303: one fall cycle; 2002: 12 + 20 + 16 = Time 48.
+    _duck.setdefault("slices", {}).update({
+        108: (2001, 0, 17), 112: (2303, 0, 7)})
+    _duck.setdefault("loop_off", []).extend([108, 109, 112, 113])
+    _duck.setdefault("tail_ticks", {}).update({2002: 16})
+    POST_CAL_ACT_OVERRIDE.setdefault("duckking", {}).update({
+        2001: [(8, 3, -13, 0)],
+        2002: [(i, 3, -1, 0) for i in (1, 5, 9, 13, 17, 21)],
+        2003: [(3, 3, -22, 0), (4, 4, 821, 0)],
+        2304: [(3, 3, -45, 0), (4, 4, 821, 0)]})
+
+# Yuki 1600 -> 1605: five -20/1000 TargetLifeAdds (elems 3/7/11/15/19) and
+# the release on elem 21.  1200 -> 1210 (Kaban Barrier) is a vault over the
+# opponent with no damage in the source; it is left as is.
+if "yuki" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("yuki", []).append((108, 1605, 1605))
+    POST_CAL_ACT_OVERRIDE.setdefault("yuki", {}).update({
+        1605: [(i, 3, -4, 0) for i in (2, 6, 10, 14, 18)]
+              + [(20, 4, 821, 0)]})
 
 if "krauser" in CHARS:
     _krauser = CHARS["krauser"]
@@ -12302,7 +12388,11 @@ def build_char(name, cfg, global_pal=None):
                     d = max(d, bind_floor(pose_extent_at(
                         pose_frames,
                         max(0, state_tick_of(sid, f) - start_tick))))
-                d = max(d, -128)
+                # -127, not -128: TrackBind negates the byte in 16 bits, and
+                # $80 -> $8000 stays negative, which pinned the victim to the
+                # floor exactly on the highest hold poses (Billy 3001/3021,
+                # Daimon, Krauser, Brian, Andy/Billy throws, Omega Rugal).
+                d = max(d, -127)
                 frames[f] = (dx & 0xFF, d & 0xFF)
         out = []
         f = 0
