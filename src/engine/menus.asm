@@ -79,23 +79,26 @@ OptSpanish:    .db 7,19,16,1,14,9,19,8                ; SPANISH
 OptFrench:     .db 6,6,18,5,14,3,8                   ; FRENCH
 OptLangPtrTab: .dw OptEnglish, OptPortuguese, OptSpanish, OptFrench
 
+; Length-prefixed charset names, 10 cells wide (x=136..216).  Every length
+; below must match its character count: a wrong byte makes the row print into
+; the next entry ("LUMARTFIGHTUSAYARD" and friends).
 OptS0:  .db 6,3,9,16,8,5,18                          ; CIPHER
-OptS1:  .db 11,3,9,16,8,5,18,0,2,5,20,1              ; CIPHER BETA
+OptS1:  .db 8,3,9,16,8,5,18,0,2                      ; CIPHER B
 OptS2:  .db 3,11,15,6                                ; KOF
 OptS3:  .db 10,12,1,19,20,0,4,1,14,3,5               ; LAST DANCE
 OptS4:  .db 6,19,21,14,19,5,20                        ; SUNSET
 OptS5:  .db 6,23,9,14,14,5,18                         ; WINNER
 OptS6:  .db 7,3,18,25,19,20,1,12                      ; CRYSTAL
-OptS7:  .db 5,19,1,11,1                      ; ESAKA (Hero)
-OptS8:  .db 3,8,9,14,1                       ; CHINA (Psycho)
-OptS9:  .db 1,18,1,19,8,9                    ; ARASHI (Yagami)
-OptS10: .db 19,15,21,12,0,20,15,23,14        ; SOUL TOWN (Kim)
-OptS11: .db 18,21,13,2,12,9,14,7             ; RUMBLING (Ikari)
-OptS12: .db 18,21,7,1,12                     ; RUGAL
-OptS13: .db 6,1,9,18,25                      ; FAIRY (Women)
-OptS14: .db 19,12,21,13                      ; SLUM (Wharf B)
-OptS15: .db 1,18,20,6,9,7,8,20               ; ARTFIGHT (Wharf)
-OptS16: .db 21,19,1,0,25,1,18,4              ; USA YARD
+OptS7:  .db 5,5,19,1,11,1                    ; ESAKA (Hero)
+OptS8:  .db 5,3,8,9,14,1                     ; CHINA (Psycho)
+OptS9:  .db 6,1,18,1,19,8,9                  ; ARASHI (Yagami)
+OptS10: .db 9,19,15,21,12,0,20,15,23,14      ; SOUL TOWN (Kim)
+OptS11: .db 8,18,21,13,2,12,9,14,7           ; RUMBLING (Ikari)
+OptS12: .db 5,18,21,7,1,12                   ; RUGAL
+OptS13: .db 5,6,1,9,18,25                    ; FAIRY (Women)
+OptS14: .db 4,19,12,21,13                    ; SLUM (Wharf B)
+OptS15: .db 8,1,18,20,6,9,7,8,20             ; ARTFIGHT (Wharf)
+OptS16: .db 8,21,19,1,0,25,1,18,4            ; USA YARD
 OptSongPtrTab:
     .dw OptS0, OptS1, OptS2, OptS3, OptS4, OptS5
     .dw OptS6, OptS7, OptS8, OptS9, OptS10, OptS11
