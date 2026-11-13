@@ -8632,12 +8632,17 @@ TB_apply:
     ldx fofs
     clc
     adc FP+F_Y,x
-    bpl +
-    lda #0
-+   cmp #(MAX_AIR_Y<<8).w
-    bcc +
+    bvs TB_y_high                       ; positive overflow: held above 127 px
+    bmi TB_y_floor                      ; genuine negative: clamp to the floor
+    cmp #(MAX_AIR_Y<<8).w
+    bcc TB_y_store
+TB_y_high:
     lda #(MAX_AIR_Y<<8).w
-+   ldx scr5
+    bra TB_y_store
+TB_y_floor:
+    lda #0
+TB_y_store:
+    ldx scr5
     sta FP+F_Y,x
 TB_done8:
     rep #$20
