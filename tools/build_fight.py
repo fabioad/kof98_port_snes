@@ -4581,7 +4581,9 @@ if "geese" in CHARS:
     # the pair is 1000 + 50*(var(10)=0) and var(10)=1 only on palettes
     # 7-12, but the helper-fired 1050 (the "ura" wave) cannot run here:
     # the port compiles the Reppuken projectile onto 1000 (CHARS projs
-    # 48/49) and keeps 1050 as the EX variant.  Leave 1000 first.
+    # 48/49) and keeps 1050 as the EX variant.  Drop the unreachable EX
+    # row so it stops shadowing nothing.
+    _gee.setdefault("cmd_drop_states", []).append(1050)
     _gee.setdefault("slice_damage", {}).update({107: 25, 108: 30})
     _gee.setdefault("hitdef_override", {}).update({
         107: {"active": 1, "damage": 25, "gdamage": 2, "p2state": 0xFF,
@@ -4753,10 +4755,14 @@ if "chunli" in CHARS:
     _chun.setdefault("hitdef_override", {})[110] = {
         "active": 3, "damage": 30, "gdamage": 2, "fall": 1}
     _chun.setdefault("cmd_priority", []).append("HOUYOKU")
+    # Dead command rows (the audit kept them as input_missed, no gameplay
+    # change): "M_b" is the 4x b mash for state 1100 -- the first press
+    # already enters a normal attack, so the 18-tick window is gone before
+    # control returns; the source's HYAKU_A (a,a,a) reaches 1100.  The
+    # QCF+y row for 1050 duplicates the conversion's QCF+y row for 1000,
+    # which is listed first and always wins; 1050 keeps its own B,D,F+x/y.
+    _chun.setdefault("cmd_disable", []).append("M_b")
     _chun.setdefault("cmd_extra", []).extend([
-        {"name": "KIKOUKEN_NEW", "label": "KIKOUKEN",
-         "state": 1050, "posture": 3, "time": 22,
-         "elems": [(2, 0), (6, 0), (4, 0), (0, 2)]},
         {"name": "SPINNING_AIR", "label": "SPINNING BIRD AEREO",
          "state": 1250, "posture": 3, "time": 22,
          "elems": [(4, 0), (2, 0), (6, 0), (0, 1)]},
