@@ -1857,7 +1857,8 @@ TitleSprites:
     .ACCU 8
     lda #:TitleCredit2
     sta.b scr2+2
-    lda #$3A.b                            ; prio3, OBJ pal5: blue credit
+    lda #$38.b                            ; prio3, OBJ pal4: same orange as
+                                          ;   the PRESS prompt
     sta.b scr4
     jsr MtStr
     sep #$20
@@ -1932,7 +1933,7 @@ TTN_blink:
     beq +
     lda #$F0.b                            ; hide
     bra ++
-+   lda #136.b                            ; show at y=136
++   lda #152.b                            ; show at y=152 (TitleSprites)
 ++  sta.w OAMBUF+1,x
     inx
     inx
