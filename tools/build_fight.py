@@ -5393,6 +5393,11 @@ if "ralf" in CHARS:
     POST_CAL_REACTIVATED.setdefault("ralf", []).append((105, 441, 441))
     POST_CAL_ACT_OVERRIDE.setdefault("ralf", {}).update({
         441: [(8, 3, -22, 0), (12, 3, -11, 0)]})
+    # Ralf_SNES.cmd sends "Ralf Kick strong" (HCF+B) straight to 441, the
+    # throw follow-up, so it played the slam with nobody held.  The source
+    # ralf.cmd routes both kick buttons (41236b / 41236y) to the 440 grab.
+    POST_CAL_TWEAKS.setdefault("ralf", {}).setdefault(
+        "cmd_remap", {}).update({441: 440})
 
 # Heidern Killing Bringer (ReversalDef 1400/1410 -> 1420): the 1420 HitDef
 # that leads to the 1421/1422 life drain cannot hit the bound victim, so
