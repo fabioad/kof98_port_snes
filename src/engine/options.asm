@@ -9,6 +9,16 @@ OptionsEnter:
     .ACCU 8
     lda #0
     jsl OptCall_MnLoadArt                       ; title art + menu font/OBJ
+    ; Backdrop: the character select's scrolling K.O.F. art on BG2 instead of
+    ; the static title art (BG1 stays loaded but hidden).  MnLoadArt left NMI
+    ; off, so the DMA here cannot race the NMI's OAM upload.
+    lda #$80.b
+    sta.l $2100                         ; blank while the backdrop uploads
+    jsl SelBgLoadFar                    ; BG2 chr/map + palette 0
+    lda #$12.b
+    sta.l $212C                         ; TM = BG2 (backdrop) + OBJ (text)
+    lda #$0F.b
+    sta.l $2100
     jsl OptCall_MtClear
     stz.w OPT_ITEM
     stz.w OPT_SONG

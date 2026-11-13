@@ -23870,9 +23870,11 @@ HudHdmaTick:
     cmp #5.b
     beq HHT_scroll
     cmp #GS_MSUCHK.b
+    beq HHT_scroll
+    cmp #GS_OPTIONS.b
     bne HHT_notsel
 HHT_scroll:
-    ; Character select and the boot MSU status screen: the K.O.F. backdrop
+    ; Character select, OPTIONS and the boot MSU status screen: the K.O.F. backdrop
     ; (BG2) climbs 1 px every two frames like the arcade.  Its pattern
     ; repeats every 128 px, so the 8-bit framecnt/2 wraps seamlessly.
     lda framecnt
