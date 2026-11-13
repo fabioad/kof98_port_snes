@@ -18612,7 +18612,7 @@ TS_hud:
     ldy #CH_NAME
     ldx #scr2
     jsr NamePtr
-    jsr WriteStr
+    jsl NameDrawFar                     ; italic name font, as in the fight setup
     lda #((4*32+23)*2).w
     sta scr0
     ldx #FP2OFS
@@ -18620,7 +18620,8 @@ TS_hud:
     ldy #CH_NAME
     ldx #scr2
     jsr NamePtr
-    jsr WriteStr
+    jsl NameDrawFar                     ; member swap must not fall back to the
+                                        ;   old HUD font
     sep #$20
     .ACCU 8
     rep #$30
