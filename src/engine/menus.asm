@@ -58,9 +58,9 @@ MnPalTabB:
     .db :ArtTitleP, :ArtModesP
 ; Menu OBJ palettes: white and gold.
 MnObjPal:
-    .dw $0000, $6B5A, $56B5, $7FFF
+    .dw $0000, $1441, $1441, $7FFF
     .dw 0,0,0,0, 0,0,0,0, 0,0,0,0
-    .dw $0000, $0FBF, $13FF, $2BFF
+    .dw $0000, $1441, $1441, $2BFF
     .dw 0,0,0,0, 0,0,0,0, 0,0,$03FF,0
 ; Seven visible rows: the six modes plus OPTIONS; EXIT is the eighth
 ; cursor position, synthesized by MenuDraw.

@@ -1102,7 +1102,7 @@ OrderReady: .db 5,18,5,1,4,25
 OrderChoose: .db 6,3,8,15,15,19,5
 OrderFixed: .db 5,6,9,24,5,4
 OrderBits: .db 1,2,4
-OrderPalette: .dw $0000,$7FFF,$4210,$6318, $0000,$1ABF,$7FFF,$0910
+OrderPalette: .dw $0000,$1441,$1441,$6318, $0000,$1441,$1441,$0910
 OrderTitle: .db 12,15,18,4,5,18,0,19,5,12,5,3,20
 OrderStage: .db 5,19,20,1,7,5
 OrderPlayer: .db 6,16,12,1,25,5,18

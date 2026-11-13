@@ -27,7 +27,7 @@ def label(core, text, y):
              for a in range(0x1800, 0x1A00, 4)}
     for i, ch in enumerate(text):
         tile = ord(ch) - ord('A') + 1 if ch != ' ' else 0
-        assert cells.get((40 + 6 * i, y)) == tile, f"missing {text} glyph {i}"
+        assert cells.get((40 + 8 * i, y)) == tile, f"missing {text} glyph {i}"
 
 
 def cursor(core):

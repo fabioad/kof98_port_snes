@@ -1011,7 +1011,7 @@ MsuDraw:
     sta.b scr2+2
     lda #$34.b
     sta.b scr4
-    jsr MtStrDense
+    jsr MtStr
     sep #$20
     .ACCU 8
     lda.w MSU_PHASE
@@ -1042,7 +1042,7 @@ MSD_no:
     lda #$38.b                            ; OBJ palette 4: red
 MSD_color:
     sta.b scr4
-    jsr MtStrDense
+    jsr MtStr
 MSD_done:
     ; The cursor-like blink matches the title prompt's half-second phase.
     sep #$20
@@ -2235,8 +2235,9 @@ OptCall_MtClear:          php
                           jsr MtClear
                           plp
                           rtl
-OptCall_MtStrDense:       php
-                          jsr MtStrDense
+; Same glyphs as LEVEL X: 8 px cells, so neighbouring outlines never touch.
+OptCall_MtStr:            php
+                          jsr MtStr
                           plp
                           rtl
 OptCall_MtCell:           php

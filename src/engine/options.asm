@@ -209,7 +209,7 @@ OptDrawString:
     .ACCU 8
     tya
     sta.b scr2+2
-    jsl OptCall_MtStrDense
+    jsl OptCall_MtStr
     rts
 
 ; A = new OPT_ITEM.  Entering SOUND TEST starts the first track; leaving
