@@ -2344,6 +2344,9 @@ ShowSelect:
     sta.l NMITIMEN                        ; VRAM repack -> NMI off
     lda #$80.b
     sta.l INIDISP                         ; force blank
+    ; Same overlap as the title: BG3MAP ($5000) sits inside the BG1 art tile
+    ; range ($4000+).  Drop any pending HUD upload before rebuilding the art.
+    stz.b huddirty
     rep #$20
     .ACCU 16
     ; --- palettes: art + cell pals + initial face pals (8 BG pals) ---
@@ -7609,6 +7612,10 @@ RE_team:
     beq RE_single                         ; practice follows Single Play
     jmp RE_normal
 RE_survivor:
+    lda.w C_PVP                           ; opening P1-vs-P2 bout: the winner's
+    beq SRE_run                           ;   pad only starts the run afterwards,
+    jmp RE_normal                         ;   so this match keeps normal rules
+SRE_run:
     lda.b roundwin
     beq SRE_lost                          ; draw: nobody can carry 0 HP
     lda.w C_HUMAN_SIDE
@@ -17562,6 +17569,8 @@ SurvSaveHP:
     lda.w G_MODE
     cmp #4
     bne SVH_out
+    lda.w C_PVP                          ; opening bout is not the survivor run:
+    bne SVH_out                          ;   do not carry either side's HP
     rep #$20
     .ACCU 16
     lda.w C_HUMAN_SIDE
@@ -17596,6 +17605,8 @@ SurvTrackHit:
     pha
     lda.w G_MODE
     cmp #4
+    bne STH_out
+    lda.w C_PVP                          ; opening bout: no survivor bonus yet
     bne STH_out
     lda.w C_HUMAN_SIDE
     beq STH_p1
@@ -17639,6 +17650,8 @@ SurvTrackProj:
     pha
     lda.w G_MODE
     cmp #4
+    bne STP_out
+    lda.w C_PVP                          ; opening bout: no survivor bonus yet
     bne STP_out
     pla
     pha

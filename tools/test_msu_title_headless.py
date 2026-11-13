@@ -21,6 +21,9 @@ from calibration.headless import Core                    # noqa: E402
 from test_counter_grab_headless import tap, wait, GS, START  # noqa: E402
 
 CORE = "/usr/lib/x86_64-linux-gnu/libretro/snes9x_libretro.so"
+HUDDIRTY = 0x1026                        # DP $26 + ENGINE_DP $1000
+RT_HUDFULL = 0x5100
+S_WAIT = 0xF074
 
 
 def boot_msu(core):
@@ -29,10 +32,15 @@ def boot_msu(core):
     return core.save()
 
 
-def title_frame(core, snapshot, skip):
+def title_frame(core, snapshot, skip, hud_dirty=False):
     core.load(snapshot)
     core.capture_video = True
     core.step(2)
+    if hud_dirty:
+        # A KO/banner HUD write that never got its vblank flush, as left by
+        # the attract demo, used to DMA over the title art tiles at $5000.
+        core.ram[HUDDIRTY] = 0x80
+        core.ram[RT_HUDFULL] = 1
     if skip:
         tap(core, START)
     wait(core, lambda: core.word(GS) == 0, "title", 8000)
@@ -71,6 +79,27 @@ def main():
             return 1
         print(f"MSU title hand-off: natural and skipped title match "
               f"({diff}/{total} masked pixels differ)")
+
+        # A stale HUD dirty flag must not survive the art load: BG3MAP ($5000)
+        # overlaps the BG1 art tiles ($4000+), so a full HUD upload paints a
+        # black band across the "98" after an attract demo/KO banner.
+        dirty = title_frame(core, snapshot, skip=True, hud_dirty=True)
+        diff, total = masked_diff(skipped, dirty, 120, 210)
+        if diff != 0:
+            print(f"FAIL stale HUD dirty flag corrupted the title: "
+                  f"{diff}/{total} pixels")
+            return 1
+        print("stale HUD dirty flag cleared before the title art load")
+
+        # S_WAIT is a 16-bit idle counter.  A stale high byte must be cleared
+        # when the title starts, or the attract demo fires early/never.
+        core.load(snapshot)
+        core.ram[S_WAIT] = 0
+        core.ram[S_WAIT + 1] = 5
+        tap(core, START)
+        wait(core, lambda: core.word(GS) == 0, "title", 8000)
+        assert core.word(S_WAIT) < 100, hex(core.word(S_WAIT))
+        print("title idle counter starts from zero")
         return 0
     finally:
         core.close()

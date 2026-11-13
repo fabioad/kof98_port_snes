@@ -55,6 +55,7 @@ def start_single(core):
         tap(core, 3)
     wait(core, lambda: core.ram[GS] == 6, "mode menu")
     core.ram[0xF070] = 0                 # SINGLE PLAY
+    core.step(4)                         # let the menu latch the new row
     tap(core, 3)
     wait(core, lambda: core.ram[GS] == 5, "select")
     core.ram[SEL1] = 0

@@ -772,6 +772,7 @@ OpnEnter:
     sta.l $7E0000+IN_SCR
     sta.l $7E0000+IN_FX
     sta.l $7E0000+IN_FDIRTY
+    stz.b huddirty                       ; no stale HUD flush over the intro art
     rep #$20
     .ACCU 16
     lda #0
@@ -880,8 +881,7 @@ OT_end:
     cmp #IN_FRAMES.w
 ++ 
     bcc OT_stay
-    lda #0
-    sta.w IN_TICK
+    stz.w IN_TICK                        ; word: A is 16-bit here
     sep #$20
     .ACCU 8
     lda.w IN_SCR
@@ -1500,6 +1500,10 @@ MnLoadArt:
     sta.l $4200                           ; NMI off while we repack VRAM
     lda #$80.b
     sta.l $2100                           ; force blank
+    ; A stale HUD flush must not survive into this screen: BG3MAP ($5000)
+    ; overlaps the BG1 art tiles ($4000+) and a full 2 KiB upload paints a
+    ; black band across the logo.  Title/menu/options own BG1 here, never BG3.
+    stz.b huddirty
     rep #$30
     .ACCU 16
     .INDEX 16
@@ -1793,12 +1797,12 @@ TitleEnter:
     jsr TitleSprites
     sep #$20
     .ACCU 8
-    lda #0
-    sta.w S_WAIT
-    lda #0
-    sta.w S_WAIT+1
-    lda #0
-    sta.w S_BLINK
+    rep #$20                             ; S_WAIT is a word: a byte store
+    .ACCU 16                             ;   would leave a stale high byte
+    stz.w S_WAIT                         ;   and shorten/skip the title idle
+    sep #$20
+    .ACCU 8
+    stz.w S_BLINK
     stz.b nextflag
     stz.b framecnt
     stz FP+F_DMAREQ                       ; kill stale sprite uploads
@@ -2470,8 +2474,8 @@ EndEnter:
     lda #ENGINE_DB.b
     pha
     plb
-    lda #0
-    sta.w E_SCR
+    stz.b huddirty                       ; no stale HUD flush over the ending art
+    stz.w E_SCR
     jsr EndLoad
     sep #$20
     .ACCU 8
@@ -2595,6 +2599,7 @@ SvEndEnter:
     lda #ENGINE_DB.b
     pha
     plb
+    stz.b huddirty                       ; no stale HUD flush over MSU stills
     lda.b msuok
     beq SV_fallback
     stz.w E_SCR

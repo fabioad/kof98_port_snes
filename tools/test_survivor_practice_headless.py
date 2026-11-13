@@ -26,12 +26,14 @@ M_ITEM = 0xF070
 MSUOK = 0x107A
 G_MODE = 0x10C0
 C_IDX = 0x10C1
+C_PVP = 0x10C2
 SEL1 = 0x1085
 SEL2 = 0x1086
 LOCK1 = 0x108E
 LOCK2 = 0x108F
 CPU1 = 0x1090
 CPU2 = 0x1091
+HUMAN_SIDE = 0x10EA
 HP1 = 0x4010
 HP2 = 0x4050
 POW1 = 0x4030
@@ -40,8 +42,10 @@ RSECS = 0x1076
 RFRAME = 0x1077
 WINS1 = 0x1080
 WINS2 = 0x1081
+ROUNDNO = 0x1082
 SURV_LIST = 0x4F00
 SURV_COUNT = 0x4F36
+SURV_HP = 0x4F37
 SURV_KOSP = 0x4F38
 SV_ESCR = 0xF078
 SV_ETICK = 0xF079
@@ -376,6 +380,77 @@ def test_survivor_boss_stage():
         core.close()
 
 
+def test_survivor_p2_route():
+    """P2 owns SURVIVOR: best-of-3 opener, full start and the same HP rules."""
+    core = boot()
+    try:
+        core.ram[MSUOK] = 1
+        core.ram[M_ITEM] = 4
+        press(core, 3, port=1)            # P2 START starts the mode
+        wait(core, lambda: core.ram[GS] == 5, "survivor P2 select")
+        assert core.ram[G_MODE] == 4
+        assert core.ram[HUMAN_SIDE] == 1
+        assert core.ram[CPU1] == 1 and core.ram[CPU2] == 0
+        core.ram[LOCK1] = 1
+        core.ram[LOCK2] = 1
+        wait(core, lambda: core.ram[GS] in (1, 4), "survivor P2 opener")
+        assert core.ram[C_PVP] == 1
+
+        # The P1-vs-P2 opener is a normal best-of-3 even when the human is P2.
+        core.put(HP2, 150)
+        core.put(HP1, 0)
+        wait(core, lambda: core.ram[GS] == 0, "P2 opener round 1 banner")
+        wait(core, lambda: core.ram[GS] == 1 and core.ram[WINS2] == 1,
+             "P2 opener round 2")
+        assert core.ram[ROUNDNO] == 2, core.ram[ROUNDNO]
+        assert core.ram[SURV_HP] == 200, core.ram[SURV_HP]
+
+        # Finish the opener: P2 carries the survivor run with full HP.
+        core.ram[WINS2] = 1
+        core.put(HP2, 150)
+        core.put(HP1, 0)
+        wait(core, lambda: core.ram[GS] == 0, "P2 opener match banner")
+        wait(core, lambda: core.ram[C_PVP] == 0 and core.ram[C_IDX] == 0
+             and core.ram[GS] in (1, 4), "P2 survivor fight 1")
+        assert core.ram[HUMAN_SIDE] == 1
+        assert core.word(HP2) == 200, hex(core.word(HP2))
+        assert core.ram[SEL1] == core.ram[SURV_LIST], (
+            core.ram[SEL1], core.ram[SURV_LIST])
+
+        # Same HP carry/special bonus as the P1 route, now on the P2 side.
+        core.ram[WINS2] = 1
+        core.put(HP2, 60)
+        core.ram[SURV_KOSP] = 1           # special finish, human <=50%
+        core.put(HP1, 0)
+        wait(core, lambda: core.ram[GS] == 0, "P2 survivor banner 1")
+        wait(core, lambda: core.ram[C_IDX] == 1 and core.ram[GS] in (1, 4),
+             "P2 survivor fight 2")
+        assert core.word(HP2) == 90, hex(core.word(HP2))   # 60 + 50%
+
+        core.ram[WINS2] = 1
+        core.put(HP2, 130)
+        core.ram[SURV_KOSP] = 2           # special finish, human >50%
+        core.put(HP1, 0)
+        wait(core, lambda: core.ram[GS] == 0, "P2 survivor banner 2")
+        wait(core, lambda: core.ram[C_IDX] == 2 and core.ram[GS] in (1, 4),
+             "P2 survivor fight 3")
+        assert core.word(HP2) == 200, hex(core.word(HP2))
+
+        # The special ending must also fire for the P2 run with MSU-1.
+        count = core.ram[SURV_COUNT]
+        ids = [core.ram[SURV_LIST + i] for i in range(count)]
+        assert ids[-1] == 14, ids[-4:]
+        core.ram[C_IDX] = count - 1
+        core.ram[WINS2] = 1
+        core.put(HP2, 150)
+        core.put(HP1, 0)
+        wait(core, lambda: core.ram[GS] == 10, "P2 survivor ending", 12000)
+        assert core.ram[SV_ESCR] == 0
+        print("PASS survivor P2: best-of-3 opener, full start, carry and ending")
+    finally:
+        core.close()
+
+
 def test_practice():
     core = boot()
     try:
@@ -444,4 +519,5 @@ if __name__ == "__main__":
     test_survivor_finish_tracking()
     test_survivor_ending()
     test_survivor_boss_stage()
+    test_survivor_p2_route()
     test_practice()
