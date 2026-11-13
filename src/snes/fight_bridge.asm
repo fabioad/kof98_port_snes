@@ -314,6 +314,18 @@ SDF_kind_ok:
     lda.w SP_COUNT,y
     bne +
     jmp SDF_commit                      ; 0 count = 64 KiB: never DMA it
++   ; Vblank budget.  The fighter CHR upload is the first DMA in the present,
+    ; but an effect page (up to 2 KiB) may already have run, so check the
+    ; live scanline with a single setup line of slack (the HUD/stage uploads
+    ; that follow re-check their own budget).  A refused chunk stays staged.
+    jsl SprRoomFar
+    bcs +
+    sep #$20
+    .ACCU 8
+    rtl
++   rep #$30
+    .ACCU 16
+    .INDEX 16
 +   ; MSU source: stage the positioned sector into WRAM under forced
 +    ; blank.  The direct MSU->WRAM DMA is not reliable with the PPU on.
     lda.w SP_KIND,y
@@ -589,6 +601,60 @@ MRA_done:
     .ACCU 16
     .INDEX 16
     sec
+    rtl
+.ENDS
+
+; Fighter CHR vblank budget.  A16 = bytes to transfer; C=1 when they fit
+; the current vblank with one line of setup slack.  X/Y and DP scratch are
+; untouched.  Kept here because the SprUploadFar window is full.
+.BANK 126 SLOT 0
+.ORGA $C580
+.SECTION "SprRoomFar" FORCE
+SprRoomFar:                             ; Y = side (0/2)
+    rep #$20
+    .ACCU 16
+    lda.w SP_COUNT,y
+    sta scr0
+    lda.w SP_KIND,y
+    and #$00FF.w
+    cmp #2.w
+    bne +
+    lda scr0                            ; MSU: prefix + payload read plus the
+    asl a                               ;   WRAM->VRAM write
+    clc
+    adc.w SP_PREFIX,y
+    bra ++
++   lda scr0
+++  pha
+    stz.w RT_SPR_SCAN
+    sep #$20
+    .ACCU 8
+    lda.l $213F
+    lda.l $2137
+    lda.l $213D
+    sta.w RT_SPR_SCAN
+    rep #$20
+    .ACCU 16
+    pla
+    stz.w RT_SPR_LINES
+SDR_lines:
+    inc.w RT_SPR_LINES
+    sec
+    sbc #160.w
+    bcs SDR_lines
+    lda.w RT_SPR_SCAN
+    cmp #225.w
+    bcc SDR_no
+    lda.w RT_SPR_LINES
+    inc a                               ; one line for DMA setup
+    clc
+    adc.w RT_SPR_SCAN
+    cmp #260.w
+    bcs SDR_no
+    sec
+    rtl
+SDR_no:
+    clc
     rtl
 .ENDS
 

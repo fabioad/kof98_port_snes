@@ -83,43 +83,10 @@ PF_two:
     jsl PresentSpriteFar
     rts
 
+; Sprite CHR presentation: the budget check and the kind/owner tests live
+; in SprDmaFar (bank 126) so an FX-page vblank can be accounted for there.
 PresentSpriteFar:
-    rep #$30
-    .ACCU 16
-    .INDEX 16
-    txa
-    lsr a
-    lsr a
-    lsr a
-    lsr a
-    lsr a
-    tay
-    lda.w SP_KIND,y
-    and #$00FF.w
-    beq PS_skip
-    cmp #3.w
-    beq PS_go                           ; commit only: no tile transfer
-    cmp #2.w
-    bne PS_rom
-    cpy.w SP_MSUOWN
-    bne PS_skip
-    lda.w SP_COUNT,y                    ; MSU -> WRAM plus WRAM -> VRAM
-    asl a
-    clc
-    adc.w SP_PREFIX,y                   ; aligned sector prefix is read too
-    bra PS_room
-PS_rom:
-    lda.w SP_COUNT,y
-PS_room:
-    beq PS_go                           ; SprDmaFar handles zero as commit
-    jsr VblankRoom
-    bcc PS_skip
-PS_go:
     jml SprDmaFar
-PS_skip:
-    sep #$20
-    .ACCU 8
-    rtl
 
 HudRoomFar:
     sep #$20

@@ -91,6 +91,7 @@
                                         ; 1536 bytes fit the aligned MSU buffer.
                                         ; The presenter checks the remaining
                                         ; vblank including both DMAs/prefix.
+.DEFINE DMACHUNK_FX 768                ; cap while an FX page shares the vblank
 
 .DEFINE GROUND_Y    190
 .DEFINE STAGE_L     24
@@ -770,6 +771,8 @@
 .DEFINE RT_PRESENT_READY $5226         ; MainLoop is waiting for presentation
 .DEFINE RT_PRESENT_LINES $5228        ; remaining-vblank budget scratch
 .DEFINE RT_PRESENT_SCAN  $522A
+.DEFINE RT_SPR_SCAN     $526C           ; scanline at the fighter CHR check
+.DEFINE RT_SPR_LINES    $526E           ; lines that chunk needs
 ; Team member entrance: the incoming fighter starts above/at the screen edge
 ; and jumps to the intro gap.  T_ENTERX keeps the target (8.8 fixed point);
 ; T_ENTERFLAG freezes the camera while a side is still in the air.
@@ -14743,6 +14746,14 @@ TS_frame_load:
     .ACCU 8
     lda [sptr]                          ; frame ticks
     sta.w SPARKS+SPK_FTIM,x
+    lda.w SPARKS+SPK_ATTR,x
+    bpl TS_ticks_done                   ; sparks use the cached static page
+    lda.w SPARKS+SPK_FTIM,x             ; a projectile re-uploads its 2 KiB
+    cmp #2.b                            ;   page whenever the frame changes;
+    bcs TS_ticks_done                   ;   1-tick frames would starve the
+    lda #2.b                            ;   fighter CHR stream
+    sta.w SPARKS+SPK_FTIM,x
+TS_ticks_done:
 TS_next8:
     rep #$20
     .ACCU 16
@@ -16580,9 +16591,17 @@ ST_tiny_src_ready:
 +   cmp scr3
     bcc +
     lda scr3
-+   cmp #DMACHUNK.w
-    bcc +
++   sta scr3                            ; count = min(dmalen-pos, page left)
+    ; An effect page upload (up to 2 KiB) runs in the same vblank and eats
+    ; most of it, so a full chunk would always be refused and the pose would
+    ; freeze for the whole effect.  Use a smaller slice on those frames.
     lda #DMACHUNK.w
+    ldy.w RT_FXUPLOAD
+    beq +
+    lda #DMACHUNK_FX.w
++   cmp scr3
+    bcc +
+    lda scr3
 +   sta scr3                            ; count
     lda scr3                            ; STA does not set flags; a zero
     beq SP_commit_only                  ;   count would mean a 64 KiB DMA
