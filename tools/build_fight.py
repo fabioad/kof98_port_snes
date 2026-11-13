@@ -14525,8 +14525,9 @@ def build_hud():
         tiles += tiles2bpp(bytes(cell[64:]), 8, 8)
 
     # fight.def embeds the AIR actions.  The held frames are ROUND, GO!, KO.
+    round_keys = [(int(round_def[f'round{i}.anim']), 4) for i in range(1, 10)]
     keys = {round_key, go_key, ko_key, life_fill, power_fill,
-            win_icon, *life_bg, *power_bg}
+            win_icon, *life_bg, *power_bg, *round_keys}
     fspr = _sff_imgs(os.path.join(lb_dir, files['sff']), keys)
     logo_blocks = {}
 
@@ -14816,7 +14817,8 @@ def build_hud():
     import build_hud_arcade
     arc = build_hud_arcade.build(lb_dir, files, fspr, go_key, ko_key,
                                  _fnt_v1, _sff_imgs, _fnt_v2_sff, CHARSET,
-                                 OUT, pow_box=(bottommap, bytes(tiles)))
+                                 OUT, pow_box=(bottommap, bytes(tiles)),
+                                 rounds=[fspr[k] for k in round_keys])
     print(f"hud2: {arc['tiles']} arcade tiles")
 
 

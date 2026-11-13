@@ -2270,29 +2270,8 @@ ShowTitle:
     lda nextflag
     cmp #1
     bne ST_title
-    rep #$20                            ; round intermission: "ROUND n"
-    .ACCU 16                            ;   shared "ROUND" text...
-    lda #((9*32+12)*2).w
-    sta scr0
-    lda #RoundLogo.w
-    sta scr2
-    jsr WriteBlock
-    rep #$20
-    .ACCU 16
-    ldx #((9*32+18)*2).w                  ; digit follows the ROUND text
-    sep #$20
-    .ACCU 8
-    lda roundno
-    asl a
-    clc
-    adc #BIGD0.b
-    sta HUDMAP,x
-    inc a
-    sta HUDMAP+64,x
-    lda #ATT_YEL.b
-    sta HUDMAP+1,x
-    sta HUDMAP+65,x
-    bra ST_select
+    jsl HudRoundDrawFar                  ; round intermission: big arcade
+    bra ST_select                       ;   ROUND n banner
 ST_title:
     sep #$20
     .ACCU 8
@@ -22696,6 +22675,96 @@ HudChr2:     .INCBIN "gen_fight/hud2.chr"
 HudChr2_End:
 .ENDS
 
+; ROUND n banner: fight.sff's ROUND art redrawn in the GO!/K.O. style by
+; tools/build_hud_arcade.py (hudround.chr/inc).  Its tiles replace the arcade
+; HUD tiles at $3600 for the intermission -- nothing else uses that band
+; there, and StartFight/TeamSwap reload hud2.chr right after -- so the bigger
+; banner needs no spare VRAM.  The 3.8 KiB does not fit a vblank, so the
+; upload runs with the display blanked for that one frame.
+.BANK 46 SLOT 0
+.ORGA $E600
+.SECTION "HudRound" FORCE
+HudRoundDrawFar:
+    php
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    sep #$20
+    .ACCU 8
+    lda #$8F.b                          ; blank for this frame only: the whole
+    sta.l INIDISP                       ;   3.8 KiB goes in below one vblank
+    lda #$80.b
+    sta.l VMAIN
+    rep #$20
+    .ACCU 16
+    lda #$3600.w                        ; BG3 tile 704: the arcade HUD's own
+    sta.l $2116                         ;   band, reloaded by LoadStaticGfx
+    lda #$01.w                          ; mode 1: two writes to $2118/$2119
+    sta.l $4360
+    lda #$18.w
+    sta.l $4361
+    lda #HudRoundChr.w
+    sta.l $4362
+    sep #$20
+    .ACCU 8
+    lda #:HudRoundChr.b
+    sta.l $4364
+    rep #$20
+    .ACCU 16
+    lda #RND_LEN.w
+    sta.l $4365
+    sep #$20
+    .ACCU 8
+    lda #$40.b                          ; fire channel 6, like FlushHud
+    sta.l MDMAEN
+    ; --- centre this round's block on rows 12..16 ---
+    rep #$20
+    .ACCU 16
+    lda roundno
+    and #$00FF.w
+    dec a
+    cmp #9.w
+    bcc +
+    lda #8.w
++   asl a
+    tax
+    lda.l HudRoundTab,x
+    sta scr2
+    sep #$20
+    .ACCU 8
+    lda #:HudRoundTab.b                 ; bank first: [scr2] reads through it
+    sta scr2+2
+    rep #$20
+    .ACCU 16
+    lda [scr2]                          ; .db cols,rows
+    and #$00FF.w
+    sta scr4
+    lda #32.w
+    sec
+    sbc scr4
+    lsr a
+    asl a
+    clc
+    adc #((12*32)*2).w
+    sta scr0
+    jsr WriteBlockW
+    sep #$20
+    .ACCU 8
+    lda #$0F.b                          ; display back on with the banner in
+    sta.l INIDISP                       ;   place; StartFight sets TM later
+    lda.w RT_HUDFULL
+    ora #1
+    sta.w RT_HUDFULL                    ; rows 12..16 need the full transfer
+    lda huddirty
+    ora #HUD_FULL
+    sta huddirty
+    plp
+    rtl
+HudRoundChr: .INCBIN "gen_fight/hudround.chr"
+HudRoundChr_End:
+.INCLUDE "gen_fight/hudround.inc"
+.ENDS
+
 ; Arcade HUD blocks, lookup tables and gradient tables.  Kept with the tiles
 ; so the FightData bank (which ends at $C700) does not grow.
 .BANK 46 SLOT 0
@@ -23896,6 +23965,12 @@ HHT_notsel:
     beq HHT_on
     cmp #4.b
     beq HHT_on
+    cmp #0.b
+    bne HHT_nograd
+    lda nextflag                        ; ROUND intermission keeps the HUD
+    cmp #1.b                            ;   palette's gold banner gradient
+    beq HHT_on
+HHT_nograd:
     lda.w HUD_HDMA
     beq HHT_out
     stz.w HUD_HDMA
