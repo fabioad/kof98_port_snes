@@ -995,7 +995,7 @@ MST_intro:
     jmp OpnEnter
 
 ; Draw the check text with the same title font and blue prompt palette.
-; Six-pixel spacing keeps the longest result within the 256px screen.
+; 8 px cells: the line ends at x=199 and the longest result (YES) at 223.
 MsuDraw:
     php
     sep #$20
@@ -1024,8 +1024,8 @@ MsuDraw:
     beq MSD_done
     rep #$20
     .ACCU 16
-    lda #152.w
-    sta.b scr0
+    lda #200.w                            ; right after the 24-cell check line
+    sta.b scr0                            ;   (8 + 24*8, 8 px cells since c8b19b6)
     lda #MsuAvailable.w
     sta.b scr2
     sep #$20
