@@ -10304,6 +10304,14 @@ def build_char(name, cfg, global_pal=None):
         cns_binds[810] = [(lo, hi, dx,
                            min(-1, dy + 35) if dy < 0 else dy)
                           for lo, hi, dx, dy in cns_binds[810]]
+    # Yuri's normal throw (THROW_Y -> state 301) uses the same generic held
+    # pose and leaves the opponent hanging above her head.  King's 35 px drop
+    # put Yuri's victim too low, so use about two thirds of it (24 px); her
+    # command grabs and supers are untouched.
+    if name == "yuri" and 301 in cns_binds:
+        cns_binds[301] = [(lo, hi, dx,
+                           min(-1, dy + 24) if dy < 0 else dy)
+                          for lo, hi, dx, dy in cns_binds[301]]
     if name in COUNTER_GRAB_POST_CAL:
         _rows = COUNTER_GRAB_POST_CAL[name]
         wire_counter_grabs(cfg, _rows)
