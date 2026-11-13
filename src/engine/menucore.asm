@@ -1828,6 +1828,7 @@ TitleSprites:
     lda #$80.b
     sta.l $2100                           ; blank for CGRAM/OAM setup
     jsl TitlePaletteFar
+    jsl TitleRingFar                      ; black outline behind the texts
     rep #$20
     .ACCU 16
     lda #48.w                             ; centre the 20-cell prompt

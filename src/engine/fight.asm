@@ -22815,6 +22815,68 @@ HudRoundChr_End:
 .INCLUDE "gen_fight/hudround.inc"
 .ENDS
 
+; Title screen text outline: the ring layer goes to BG2 (4bpp, palette 4 =
+; CGRAM 64-79, which the title art does not use) so the black ring needs no
+; sprite slots.  The gold glyphs are still drawn by MtStr with menufont.chr.
+; Called from TitleSprites with the display blanked; bank 50 has no room.
+.BANK 46 SLOT 0
+.ORGA $FE00
+.SECTION "TitleRing" FORCE
+TitleRingFar:
+    php
+    ; --- ring tiles -> BG2 chr base $0000 ---
+    rep #$20
+    .ACCU 16
+    lda #TitleRingChr.w
+    sta scr0
+    lda #(TitleRingChr_End-TitleRingChr).w
+    sta scr1
+    lda #$0000.w
+    sta scr2
+    sep #$20
+    .ACCU 8
+    lda #:TitleRingChr
+    jsl VrDmaFar
+    ; --- 32x32 BG2 map -> $1400 (clears everything not used by the ring;
+    ;     $1C00 belongs to the opening video's BG2 map) ---
+    rep #$20
+    .ACCU 16
+    lda #TitleRingMap.w
+    sta scr0
+    lda #2048.w
+    sta scr1
+    lda #$1400.w
+    sta scr2
+    sep #$20
+    .ACCU 8
+    lda #:TitleRingMap
+    jsl VrDmaFar
+    ; --- BG2 palette 4 colour 1 = black (colour 0 stays transparent) ---
+    rep #$20
+    .ACCU 16
+    lda #65.w
+    sta.l $2121
+    lda #$0000.w
+    sta.l $2122
+    ; --- BG2 map at $1400, BG2 chr at $0000, BG1+BG2+OBJ on ---
+    lda #(($1400>>10)<<2).w
+    sep #$20
+    .ACCU 8
+    sta.l $2109                           ; BG2SC
+    stz.w $210F                           ; BG2HOFS: a fight before the title
+    stz.w $210F                           ;   leaves the stage's scroll here
+    stz.w $2110                           ; BG2VOFS
+    stz.w $2110
+    lda #$04.b
+    sta.l $210B                           ; BG12NBA: BG1 $4000, BG2 $0000
+    lda #$13.b
+    sta.l $212C                           ; TM = BG1 + BG2 + OBJ
+    rep #$20
+    .ACCU 16
+    plp
+    rtl
+.ENDS
+
 ; Arcade HUD blocks, lookup tables and gradient tables.  Kept with the tiles
 ; so the FightData bank (which ends at $C700) does not grow.
 .BANK 46 SLOT 0
@@ -23901,6 +23963,28 @@ HudHdmaOffVqClear:
 ; that screen's palette loads.
 HudHdmaNmiGate:
     lda gamestate
+    cmp #0.b
+    bne HHNG_nog
+    lda #65.b                            ; title: BG palette 4 colour 1 is the
+    sta.l $002121                        ;   texts' black ring (BG2 layer)
+    lda #0
+    sta.l $002122
+    sta.l $002122
+    lda #$01.b                           ; a late opening-video vblank can
+    sta.l $002105                        ;   re-assert the video's BG2 mode:
+    lda #$14.b                           ;   keep the title's ring layer
+    sta.l $002109                        ;   (map $1400, chr $0000) on top
+    lda #$04.b
+    sta.l $00210B
+    lda #$13.b
+    sta.l $00212C
+    lda #0
+    sta.l $00210F                        ; BG2 HOFS/ VOFS: the outline layer is
+    sta.l $00210F                        ;   not scrolled; a preceding fight
+    sta.l $002110                        ;   or the opening video can leave a
+    sta.l $002110                        ;   stale scroll here
+    lda gamestate
+HHNG_nog:
     cmp #1.b
     beq HHNG_out
     cmp #2.b

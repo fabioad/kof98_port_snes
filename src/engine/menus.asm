@@ -151,6 +151,20 @@ i15_map: .incbin "gen_menu/intro/intro15.map"
 i15_pal: .incbin "gen_menu/intro/intro15.pal"
 .ENDS
 
+; Title text outline: the prompt/credit glyphs' bodies dilated by one pixel,
+; cut into 4bpp tiles plus a 32x32 BG2 map (tools/build_title_text.py).  The
+; gold text stays exactly as menufont.chr draws it; this ring sits behind it.
+; Bank 45's tail is free after the mode-7 intro packs and, like them, is
+; reached through the $C0 window ($ED).
+.BASE $C0
+.BANK 45 SLOT 0
+.ORGA $A000
+.SECTION "TitleRingData" FORCE
+TitleRingChr:     .INCBIN "gen_menu/titlering.chr"
+TitleRingChr_End:
+.INCLUDE "gen_menu/titlering.inc"
+.ENDS
+
 ; Keep bank 56 free for the sixth contiguous soundbank chunk.  SNESMod
 ; calculates its address as soundbank base + bank number at offset zero.
 .BANK 49 SLOT 0

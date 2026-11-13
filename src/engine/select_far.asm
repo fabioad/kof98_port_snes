@@ -113,9 +113,9 @@ TitlePaletteFar:
     lda #$00.b
     sta.l $2122
     sta.l $2122
-    lda #$36.b                            ; colour 1: shadow 0x1A36
-    sta.l $2122
-    lda #$1A.b
+    lda #$00.b                            ; colour 1: black -- the glyph's own
+    sta.l $2122                           ;   edge, matching the BG2 ring
+    lda #$00.b
     sta.l $2122
     lda #$36.b                            ; colour 2: unused, same shadow
     sta.l $2122
