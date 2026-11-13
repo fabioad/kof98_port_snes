@@ -3,12 +3,17 @@
 assets and emit the per-stage animation tables described by
 assets/stages/stages_png_snes/animations/stage_animations.json.
 
-The PNGs are already authored to the SNES format (512x224, <=15 colours,
-<=512 unique 8x8 tiles), so conversion is lossless:
+The PNGs are authored to the SNES format (512x224, three palette groups of
+15 colours, <=512 unique 8x8 tiles -- see tools/stage_requant.py), so the
+conversion is lossless:
 
   stages/stgNN.chr   4bpp tiles (deduped, <= 512 -> fits BG1CHR $0000-$1FFF)
   stages/stgNN.map   64x32-word tilemap (two 32x32 planes, 512px wide)
-  stages/stgNN.pal   3x16 BGR555 entries (BG palette 2 holds the art colours)
+  stages/stgNN.pal   3x16 BGR555 entries (BG palettes 2-4 hold the art)
+
+Pixel value in the PNG is `palette group * 15 + colour`; the group picks
+BG palette 2+group.  Tiles are folded across H/V flips and across palette
+groups (same pattern with other palette bits).
 
 It also generates:
 
@@ -36,6 +41,8 @@ OUT = os.path.join(ROOT, "build/gen_fight")
 
 MAX_TILES = 512                     # BG1CHR $0000-$1FFF = 16 KiB
 STAGE_BG_PALETTE = 2                # BG3 HUD uses CGRAM colours 12-31
+STAGE_NPAL = 3                      # StagePick uploads BG palettes 2-4
+STAGE_NCOL = 15                     # 15 art colours + transparent per group
 # file banks >= 64 map into the CPU $00-$3D:$8000 windows under ExHiROM;
 # 45-49 stay free for the SNESMOD soundbank (it wants banks < 64).
 FREE_BANKS = [65, 66, 67, 68, 69, 90, 91, 92, 93, 94]
@@ -76,41 +83,87 @@ DYN_BASE = 704                      # first dynamic BG1 tile ($2C00 word)
 DYN_MAX = 704 + 160                 # $2C00..$3FFF words -> 160 tiles
 
 
+def _flip(tile, h, v):
+    """64 raw indices (8x8 row major) -> flipped tile."""
+    rows = [tile[r * 8:(r + 1) * 8] for r in range(8)]
+    if h:
+        rows = [r[::-1] for r in rows]
+    if v:
+        rows = rows[::-1]
+    return b"".join(rows)
+
+
+# flip bit values of a BG tilemap word (bit 15 / priority stays 0)
+FLIPS = [("noflip", lambda t: t), ("h", lambda t: _flip(t, True, False)),
+         ("v", lambda t: _flip(t, False, True)),
+         ("hv", lambda t: _flip(t, True, True))]
+FLIPBITS = [0, 0x4000, 0x8000, 0xC000]
+
+
 def emit_stage(path):
-    """512x224 mode-P PNG -> (chr, map64x32, pal96B, pixel indices)."""
+    """512x224 indexed PNG -> (chr, map64x32, pal96B, pixel indices).
+
+    Pixel value = palette group * 15 + colour; every 8x8 tile belongs to one
+    group.  The group selects BG palette 2+group, so the three stage
+    palettes that StagePick uploads each hold up to 15 colours.  Tiles are
+    reused across H/V flips and across palette groups (same pattern, other
+    palette bits), which saves room inside the 512-tile budget."""
     from PIL import Image
     img = Image.open(path)
     assert img.mode == "P" and img.size == (512, 224), \
         f"{path}: needs a 512x224 indexed PNG"
     cols = img.getcolors(1 << 24)
-    assert len(cols) <= 15, f"{path}: {len(cols)} colours > 15"
+    assert len(cols) <= STAGE_NCOL * STAGE_NPAL, \
+        f"{path}: {len(cols)} colours > {STAGE_NCOL * STAGE_NPAL}"
     sp = img.getpalette()
-    pal = [(0, 0, 0)] + [tuple(sp[i * 3:i * 3 + 3]) for i in range(len(cols))]
-    pal += [(0, 0, 0)] * (16 - len(pal))
-    pix = bytes(b + 1 for b in img.tobytes())
+    rgb = [tuple(sp[i * 3:i * 3 + 3]) for i in range(STAGE_NCOL * STAGE_NPAL)]
+    pal = b""
+    for p in range(STAGE_NPAL):                  # BG palettes 2, 3 and 4
+        # BG colour 0 is transparent, so colour c of the group sits at CGRAM
+        # entry c+1 (16 entries: spare + 15 art colours)
+        group = [(0, 0, 0)] + rgb[p * STAGE_NCOL:(p + 1) * STAGE_NCOL]
+        group += [(0, 0, 0)] * (16 - len(group))
+        pal += snes_pal(group, 16)
+    raw = img.tobytes()
+    pix = raw                                    # 0 = transparent, as-is
 
-    tiles = tiles4bpp(pix, 512, 224)[0]
-    tileset, order, tilemap = {}, [], bytearray()
-    for i in range(28 * 64):
-        t = tiles[i * 32:(i + 1) * 32]
-        if t not in tileset:
-            tileset[t] = len(order)
-            order.append(t)
-        tilemap += struct.pack("<H", tileset[t] | (STAGE_BG_PALETTE << 10))
+    tileset, order = {}, []
+    flipset = {}                     # stored tile bytes -> tile number
+    tiles = [0] * (28 * 64)
+    for ty in range(28):
+        for tx in range(64):
+            rows = [raw[(ty * 8 + r) * 512 + tx * 8:
+                        (ty * 8 + r) * 512 + tx * 8 + 8] for r in range(8)]
+            grp = rows[0][0] // STAGE_NCOL
+            assert all(v // STAGE_NCOL == grp for r in rows for v in r), \
+                f"{path}: tile {tx},{ty} spans palette groups"
+            tile = bytes(v - grp * STAGE_NCOL for r in rows for v in r)
+            hit = None
+            for f in range(4):    # stored tile flipped by f == this tile?
+                k = FLIPS[f][1](tile)
+                if k in flipset:
+                    hit = (flipset[k], f)
+                    break
+            if hit is None:
+                t4 = tiles4bpp(bytes(v + 1 for v in tile), 8, 8)[0]
+                if t4 not in tileset:
+                    tileset[t4] = len(order)
+                    order.append(t4)
+                hit = (tileset[t4], 0)
+                flipset[tile] = hit[0]   # stored orientation, unflipped
+            tiles[ty * 64 + tx] = (hit[0] | ((STAGE_BG_PALETTE + grp) << 10) |
+                                   FLIPBITS[hit[1]])
+    tiles += [0] * (32 * 64 - len(tiles))        # rows 28-31 stay blank
+    tilemap = struct.pack("<%dH" % len(tiles), *tiles)
     assert len(order) <= MAX_TILES, \
         f"{path}: {len(order)} tiles > BG1 budget {MAX_TILES}"
     wide = bytearray()
     for plane in (0, 1):
         for ty in range(32):
-            if ty < 28:
-                for tx in range(32):
-                    wide += tilemap[(ty * 64 + plane * 32 + tx) * 2:
-                                    (ty * 64 + plane * 32 + tx) * 2 + 2]
-            else:
-                wide += b"\x00" * 64
-    return (b"".join(order), bytes(wide),
-            b"".join(snes_pal(p, 16) for p in
-                     (pal, [(0, 0, 0)] * 16, [(0, 0, 0)] * 16)), pix)
+            for tx in range(32):
+                wide += tilemap[(ty * 64 + plane * 32 + tx) * 2:
+                                (ty * 64 + plane * 32 + tx) * 2 + 2]
+    return b"".join(order), bytes(wide), pal, pix
 
 
 def build_anims(stage_names, pix_by_stage):
@@ -155,7 +208,9 @@ def build_anims(stage_names, pix_by_stage):
             ticks = [s["ticks60"] for s in t["sequence"]]
             assert len(ticks) == nposes and max(ticks) < 65536
             phase = t.get("start_phase_ticks60", 0)
-            pix = pix_by_stage[sname]
+            pix, rgbpal = pix_by_stage[sname]
+            pal = [tuple(rgbpal[i * 3:i * 3 + 3])
+                   for i in range(STAGE_NCOL * STAGE_NPAL)]
             cells = []
             for ty in range(ry // 8, (ry + rh) // 8):
                 for tx in range(rx // 8, (rx + rw) // 8):
@@ -168,17 +223,42 @@ def build_anims(stage_names, pix_by_stage):
             cells = sorted(cells, reverse=True)[:cap]
             cells.sort(key=lambda s: (s[2], s[1]))
             entries = []
+            def best_group(idx):
+                """Group whose 15 colours reproduce these pixels best."""
+                pick = None
+                for g in range(STAGE_NPAL):
+                    remap = {}
+                    for v in idx:
+                        if v not in remap:
+                            col = pal[v] if v < len(pal) else (0, 0, 0)
+                            k = min(range(STAGE_NCOL),
+                                    key=lambda k: sum(
+                                        (col[i] - pal[g * STAGE_NCOL + k][i])
+                                        ** 2 for i in range(3)))
+                            remap[v] = g * STAGE_NCOL + k
+                    err = sum(sum((pal[a][j] - pal[remap[a]][j]) ** 2
+                                  for j in range(3)) for a in idx)
+                    if pick is None or err < pick[0]:
+                        pick = (err, g, remap)
+                return pick[1], pick[2]
+
             for _, tx, ty in cells:
+                # every pose is its own dynamic tile, so each pose picks the
+                # palette group that reproduces its 8x8 sample best
+                tws = []
                 for pose in range(nposes):
                     y0 = max(ty * 8 - pose, 0)
+                    idx = [pix[(y0 + r) * 512 + tx * 8 + c]
+                           for r in range(8) for c in range(8)]
+                    grp, remap = best_group(idx)
                     chr_out += tiles4bpp(b"".join(
-                        bytes(pix[(y0 + r) * 512 + tx * 8:
-                                  (y0 + r) * 512 + tx * 8 + 8])
+                        bytes(remap[pix[(y0 + r) * 512 + tx * 8 + c]] + 1
+                              - grp * STAGE_NCOL for c in range(8))
                         for r in range(8)), 8, 8)[0]
+                    tws.append((tile_no + pose) |
+                               ((STAGE_BG_PALETTE + grp) << 10))
                 mapidx = (tx // 32) * 1024 + ty * 32 + tx % 32
-                entries.append([mapidx] +
-                               [(tile_no + p) | (STAGE_BG_PALETTE << 10)
-                                for p in range(nposes)])
+                entries.append([mapidx] + tws)
                 tile_no += nposes
             flat = [w for e in entries for w in e]
             body += [f"StgAnimC{clip_id}:                       ; {c['id']}",
@@ -226,7 +306,8 @@ def build():
         open(os.path.join(out_dir, f"stg{idx}.pal"), "wb").write(pal_b)
         Image.open(path).save(os.path.join(out_dir, f"stg{idx}_preview.png"))
         stages.append((name, len(chr_b) + len(map_b) + len(pal_b)))
-        pix_by_stage[name] = pix
+        pix_by_stage[name] = (
+            pix, Image.open(path).getpalette()[:STAGE_NCOL * STAGE_NPAL * 3])
         print(f"stg{idx} {name}: {len(chr_b)//32} tiles")
 
     nclips = build_anims([n for n, _ in stages], pix_by_stage)

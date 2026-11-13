@@ -1,5 +1,10 @@
 # Cenários redesenhados — 16-bit
 
+> **13/11/2026 — formato atual:** os PNGs da pasta principal passaram a usar
+> **3 paletas de BG (45 cores)** e tiles espelhados, reexportados de `hires/`
+> por `tools/stage_requant.py`. Ver `docs/STAGES_3PAL_FLIP_2026-11-13.md`.
+> O texto abaixo descreve a geração/exportação anterior, de 15 cores.
+
 Os dez PNGs na pasta superior são as versões finais para o jogo.
 Os arquivos anteriores estão em `originals/`; as referências em `../hires/`
 foram preservadas. `ready/` contém cópias das exportações aprovadas.
