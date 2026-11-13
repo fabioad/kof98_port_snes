@@ -32,6 +32,10 @@ UpCharPalsAltFar:
 AltPalUpFar:
     sep #$20
     .ACCU 8
+    pha
+    lda #0.b                            ; no HUD gradient HDMA during uploads
+    sta.l $00420C
+    pla
     sta.l CGADD
     rep #$20
     .ACCU 16

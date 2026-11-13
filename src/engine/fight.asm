@@ -797,9 +797,14 @@
 .DEFINE HUD_TIMER   $04                 ; row 3: timer bottom
 .DEFINE HUD_TOP4    $08                 ; row 4: spare top row
 .DEFINE HUD_COMBO   $10                 ; row 11: "n HITS"
-.DEFINE HUD_POWCNT  $20                 ; rows 22-23: power level counters
+.DEFINE HUD_POWCNT  $20                 ; rows 21-24: MAX tags + POW digits
 .DEFINE HUD_POWER   $40                 ; row 25: power bars
 .DEFINE HUD_FULL    $80                 ; all 2048 bytes (overlays/setup)
+; Arcade HUD (hud2) scratch: verified untouched in fights with the marker test.
+.DEFINE HUD_HDMA    $52F0               ; 1 = gradient HDMA already enabled
+.DEFINE HUD_CB      $52F1               ; combo hit count
+.DEFINE HUD_CB2     $52F2               ; word: RUSH cell offset (row 8)
+.DEFINE HUD_CB4     $52F4               ; word: digit cell offset (row 7)
 .DEFINE VQ_HEAD     $5110               ; word offsets in 16-entry ring
 .DEFINE VQ_TAIL     $5112
 .DEFINE VQ_DATA     $5120               ; 16 records: ptr-index.w, voice-index.w
@@ -1236,6 +1241,8 @@ ML_intromsu:
 ; ---------------------------------------------------------------------------
 PpuInit:
     .ACCU 8
+    lda #0.b                            ; HUD gradient HDMA off for the reload
+    sta.l HDMAEN
     lda #$80.b                          ; enable software beam-counter latching
     sta.l $4201                         ; used by the bounded vblank scheduler
     lda #0.b                            ; no NMI while reloading VRAM/CGRAM
@@ -1271,6 +1278,18 @@ PpuInit:
     sta scr1
     stz scr1+1
     lda #:HudPal
+    sta scr3
+    jsr CgDma
+    lda #8                              ; BG3 palette 2: gradient rest colours
+    sta.l CGADD                         ;   (HDMA rewrites 9-11 during the
+    lda #<HudPal2Rest                   ;   fight; see HudHdmaTick)
+    sta scr0
+    lda #>HudPal2Rest
+    sta scr0+1
+    lda #8                              ; 4 rest colours for CGRAM 8..11
+    sta scr1
+    stz scr1+1
+    lda #:HudPal2Rest
     sta scr3
     jsr CgDma
     lda #160                            ; OBJ palette 2: hit sparks
@@ -1328,6 +1347,11 @@ ClearCgram96:                           ; zero 48 colours at current CGADD
     rts
 
 CgDma:                                  ; scr0 src, scr3 src bank, scr1 len
+    php                                 ; callers enter with A in either size
+    sep #$20
+    lda #0.b                            ; no HUD gradient HDMA during uploads
+    sta.l HDMAEN
+    plp
     lda scr0
     sta lptr
     lda scr0+1
@@ -1683,6 +1707,19 @@ LoadStaticGfx:
     jsl VrDmaFar
     rep #$20
     .ACCU 16
+    ; Arcade HUD extras (tiles 704..1023, right after the stage-anim window).
+    lda #HudChr2
+    sta scr0
+    lda #HudChr2_End-HudChr2
+    sta scr1
+    lda #$3600
+    sta scr2
+    sep #$20
+    .ACCU 8
+    lda #:HudChr2
+    jsl VrDmaFar
+    rep #$20
+    .ACCU 16
     ; crowd-anim pose tiles -> dynamic BG1 slots ($2C00, above the font)
     lda #StgAnimChr
     sta scr0
@@ -1866,9 +1903,9 @@ FlushHudRange:
 HudBandTab:
     .db HUD_LIFE,                  $80, $00, $40, $00, $40, $00
     .db HUD_POWER,                 $40, $06, $20, $03, $40, $00
-    .db HUD_POWCNT,                $80, $05, $C0, $02, $80, $00
-    .db HUD_TIMER,                 $80, $00, $40, $00, $80, $00
-    .db HUD_COMBO,                 $C0, $02, $60, $01, $40, $00
+    .db HUD_POWCNT,                $40, $05, $A0, $02, $00, $01
+    .db HUD_TIMER,                 $40, $00, $20, $00, $C0, $00
+    .db HUD_COMBO,                 $C0, $01, $E0, $00, $C0, $00
     .db 0
 .ENDIF
 
@@ -2168,32 +2205,36 @@ BannerTick:
 BT_out:
     rts
 
-; FIGHT! logo cells: clear the 8x2 block drawn at round start (row 9,
-; cols 12-19).  Called by FightTick when bantime reaches zero.
+; GO!/K.O. banner cells: clear rows 12..16 (cols 8..23).  Called by
+; FightTick when bantime reaches zero.
 ClearBanner:
+    php
     rep #$20
     .ACCU 16
-    ldx #((9*32+12)*2).w
-    sep #$20
-    .ACCU 8
+    rep #$10
+    .INDEX 16
+    ldx #((12*32+8)*2).w
+    ldy #5
+CB_row:
+    lda #16.w
+    sta scr4
     lda #0
 -   sta HUDMAP,x
-    sta HUDMAP+1,x
     inx
     inx
-    cpx #((9*32+20)*2).w
+    dec scr4
     bne -
-    ldx #((10*32+12)*2).w
--   sta HUDMAP,x
-    sta HUDMAP+1,x
-    inx
-    inx
-    cpx #((10*32+20)*2).w
-    bne -
+    txa
+    clc
+    adc #32.w                           ; skip the rest of the 32-cell row
+    tax
+    dey
+    bne CB_row
     rep #$20
     .ACCU 16
     lda #1
-    sta.w RT_HUDFULL                    ; rows 9/10 lie outside the live HUD bands
+    sta.w RT_HUDFULL                    ; rows 12..16 are outside the live bands
+    plp
     rts
 
 ShowTitle:
@@ -4467,7 +4508,7 @@ SF_carry:
     ldy #CH_NAME
     ldx #scr2
     jsr NamePtr
-    jsr WriteStr
+    jsl NameDrawFar
     lda #((4*32+23)*2).w
     sta scr0
     ldx #FP2OFS
@@ -4475,7 +4516,7 @@ SF_carry:
     ldy #CH_NAME
     ldx #scr2
     jsr NamePtr
-    jsr WriteStr
+    jsl NameDrawFar
     jsl FillBarMemoResetFar
     jsr DrawBars
     jsr DrawWins                          ; round-win pips under the names
@@ -4568,7 +4609,7 @@ SF_gs_store:
     bne +
     rep #$10                            ; DrawTimer indexes HUDMAP with X16
     .INDEX 16
-    jsr DrawTimer
+    jsl DrawTimer
     sep #$20
     .ACCU 8
 +   lda huddirty
@@ -4665,7 +4706,7 @@ DrawBars:
     ldx #((25*32+30)*2).w
     ldy #96.w
     jsr FillBarM
-    jsr DrawPowerCounters
+    jsl DrawPowerCounters
     ; Dirty-band selection: only mark the rows whose source values changed.
     ; DrawBars runs every tick, so this is cheap and keeps HP responsive even
     ; when no other HUD event fires.
@@ -4907,63 +4948,6 @@ FillBarNearT:
 
 ; The two FNT v2 power fonts provide the stock digits.  They are kept
 ; separate because their SFF glyphs are positioned and styled per side.
-DrawPowerCounters:
-    rep #$20
-    .ACCU 16
-    lda FP+F_POWER
-    ldy #0
--   cmp #1000.w
-    bcc +
-    sec
-    sbc #1000.w
-    iny
-    cpy #3
-    bne -
-+   tya
-    asl a
-    clc
-    adc #P1POW0.w
-    sta scr0
-    ldx #((22*32+2)*2).w
-    sep #$20
-    .ACCU 8
-    lda scr0
-    sta HUDMAP,x
-    inc a
-    sta HUDMAP+64,x
-    lda #ATT_SIL.b
-    sta HUDMAP+1,x
-    sta HUDMAP+65,x
-    rep #$20
-    .ACCU 16
-    lda FP+F_POWER+FP2OFS
-    ldy #0
--   cmp #1000.w
-    bcc +
-    sec
-    sbc #1000.w
-    iny
-    cpy #3
-    bne -
-+   tya
-    asl a
-    clc
-    adc #P2POW0.w
-    sta scr0
-    ldx #((22*32+29)*2).w
-    sep #$20
-    .ACCU 8
-    lda scr0
-    sta HUDMAP,x
-    inc a
-    sta HUDMAP+64,x
-    lda #ATT_SIL.b
-    sta HUDMAP+1,x
-    sta HUDMAP+65,x
-    rep #$20
-    .ACCU 16
-    rts
-
 ; Return X = fighter whose generated data/graphics own the current state.
 ; ChangeAnim2 victim states keep their position/state in `fofs`, but source
 ; animation, boxes and tiles from the attacker recorded in F_OWNER.
@@ -7450,7 +7434,7 @@ FightTick:
     stz rframe
     dec rsecs
     beq +
-    jsr DrawTimer
+    jsl DrawTimer
     sep #$20
     .ACCU 8
     lda huddirty
@@ -7513,11 +7497,11 @@ FightTick:
     sta.l DBGREG_L+96                     ; sticky marker: KO sfx dispatched
     rep #$20                              ;   (sfxlast is overwritten by the
     .ACCU 16                              ;   landing thud a few ticks later)
-    lda #((9*32+13)*2).w                  ; real K.O. logo, centred
-    sta scr0
-    lda #KoLogo.w
+    lda #HudKo.w                          ; arcade K.O. logo, centred
     sta scr2
-    jsr WriteBlock
+    lda #:HudKo.w
+    sta scr2+2
+    jsl BannerDrawFar
     sep #$20
     .ACCU 8
     rts
@@ -7797,14 +7781,14 @@ IT_entrance:
     lda #99.b                             ; clock is drawn now, but only
     sta rsecs                             ;   counts once gotime expires
     stz rframe
-    jsr DrawTimer
+    jsl DrawTimer
     rep #$20                            ; FIGHT! logo across the centre
     .ACCU 16                            ;   rows; bantime clears it later
-    lda #((9*32+12)*2).w
-    sta scr0
-    lda #FgLogo.w
+    lda #HudGo.w
     sta scr2
-    jsr WriteBlock
+    lda #:HudGo.w
+    sta scr2+2
+    jsl BannerDrawFar
     sep #$20
     .ACCU 8
     lda #45.b
@@ -7893,7 +7877,7 @@ TO_done:
     jsr SfxPlay
     rep #$20
     .ACCU 16
-    lda #((9*32+11)*2).w
+    lda #((12*32+11)*2).w               ; below the combo band (rows 7..9)
     sta scr0
     lda #BStrTime.w
     sta scr2
@@ -7903,51 +7887,6 @@ TO_done:
     lda huddirty
     ora #HUD_FULL
     sta huddirty
-    rts
-
-; Draw the 2-digit countdown at the top center of the HUD (rsecs), using
-; the tall KOF98 timer digits (two 8x8 tiles per digit, gold attr).
-DrawTimer:
-    rep #$20
-    .ACCU 16
-    ldx #((2*32+15)*2).w                  ; fight.def [Time] center
-    ldy #0
-    sep #$20
-    .ACCU 8
-    lda rsecs
-    cmp #100.b
-    bcc +
-    lda #99.b
-+
--   cmp #10
-    bcc +
-    sec
-    sbc #10
-    iny
-    bra -
-+   pha                                ; ones; keep the timer off shared
-    tya                                ; scratch used by the HUD renderer
-    asl a
-    clc
-    adc #BIGD0.b                         ; tens -> tall digit pair
-    sta HUDMAP,x
-    inc a
-    sta HUDMAP+64,x                       ; bottom half on row 3
-    lda #ATT_YEL.b
-    sta HUDMAP+1,x
-    sta HUDMAP+65,x
-    pla
-    asl a
-    clc
-    adc #BIGD0.b                         ; units
-    sta HUDMAP+2,x
-    inc a
-    sta HUDMAP+66,x
-    lda #ATT_YEL.b
-    sta HUDMAP+3,x
-    sta HUDMAP+67,x
-    rep #$20
-    .ACCU 16
     rts
 
 TickFighter:
@@ -8321,7 +8260,7 @@ CB_fresh:
 CB_draw:
     sta combohit,x
     stz combotmr,x
-    jsr ComboDraw
+    jsl ComboDraw
     rep #$20
     .ACCU 16
     rts
@@ -8358,82 +8297,10 @@ CB_check:                               ; X = fighter -> clear opponent's count
     sta combotmr,x
     bne +++
     stz combohit,x
-    jsr ComboDraw
+    jsl ComboDraw
 +++ rep #$20
     .ACCU 16
 +   rts
-ComboDraw:                              ; acc8, X = attacker ofs: "<n> HITS"
-    lda combohit,x                      ;   under the name (2+ hits; else erase)
-    sta scr6
-    rep #$20
-    .ACCU 16
-    txa
-    bne +
-    ldx #((11*32+2)*2).w                ; fight.def [Combo] y=195
-    bra ++
-+   ldx #((11*32+24)*2).w               ; P2 row
-++  sep #$20
-    .ACCU 8
-    lda scr6
-    cmp #2.b
-    bcs CD_show
-    ldy #6
-    lda #0
--   sta HUDMAP,x                        ; blank tile, blank attr
-    sta HUDMAP+1,x
-    inx
-    inx
-    dey
-    bne -
-    bra CD_done
-CD_show:
-    lda #0
-    sta scr5                            ; tens
-    lda scr6
--   cmp #10.b
-    bcc +
-    sbc #10.b
-    inc scr5
-    bra -
-+   tay                                 ; ones digit
-    lda scr5
-    beq +
-    clc
-    adc #27.b
-    sta HUDMAP,x
-    bra ++
-+   stz HUDMAP,x
-++  lda #$2C.b
-    sta HUDMAP+1,x
-    inx
-    inx
-    tya
-    clc
-    adc #27.b
-    sta HUDMAP,x
-    lda #$2C.b
-    sta HUDMAP+1,x
-    inx
-    inx
-    rep #$20                            ; "HITS" via WriteStr: absolute
-    .ACCU 16                            ;   reads use DBR=$7E (WRAM), so the
-    stx scr0                            ;   literal needs a far pointer
-    lda #ComboHits.w
-    sta scr2
-    sep #$20
-    .ACCU 8
-    lda #:ComboHits.b
-    sta scr2+2
-    jsr WriteStr
-CD_done:
-    sep #$20                            ; WriteStr returns with A=16
-    .ACCU 8                             ; the erase path already has A=8
-    lda huddirty
-    ora #HUD_COMBO
-    sta huddirty
-    rep #$20
-    .ACCU 16
-    rts
 StAirSpec:                              ; knee-style air phases: gravity via
     rep #$20                            ; Physics; TransTab supplies the
     .ACCU 16                            ; live (kind 1 land / kind 2 follow-up
@@ -13339,7 +13206,7 @@ AGS_clear:
     lda AI_SIDE
     rep #$20
     .ACCU 16
-    and #$00FF.w
+    and #$0001.w
     tax
     sep #$20
     .ACCU 8
@@ -15596,6 +15463,10 @@ DF_done:
 FightPresent:
     sep #$20
     .ACCU 8
+    lda #0.b                            ; HUD gradient HDMA rewrites CGADD on
+    sta.l HDMAEN                        ;   every line; uploads below may run
+                                        ;   past vblank -> keep it off until
+                                        ;   HudHdmaTick at the end
     jsl TelPresent
     lda #$8F.b
     sta.l INIDISP
@@ -15656,6 +15527,7 @@ FP_present_on:
     jsl CineAdvance
     jsl CineApply
     jsl SuperFxPresent                   ; super flash/dim, INIDISP, framecnt
+    jsl HudHdmaTick                      ; arcade gradient palette (BG3 pal 2)
     rts
 .ELSE
 ; Standalone build owns the native NMI vector.
@@ -18725,7 +18597,7 @@ TS_hud:
     jsr DrawBars
     jsr DrawWins
     jsr DrawLevel
-    jsr DrawTimer                       ; keep the clock lit through the swap
+    jsl DrawTimer                       ; keep the clock lit through the swap
     sep #$20
     .ACCU 8
     stz.w T_SWAP
@@ -19379,9 +19251,9 @@ FlushHudTop:
 HudBandTab:
     .db HUD_LIFE,                  $80, $00, $40, $00, $40, $00
     .db HUD_POWER,                 $40, $06, $20, $03, $40, $00
-    .db HUD_POWCNT,                $80, $05, $C0, $02, $80, $00
-    .db HUD_TIMER,                 $80, $00, $40, $00, $80, $00
-    .db HUD_COMBO,                 $C0, $02, $60, $01, $40, $00
+    .db HUD_POWCNT,                $40, $05, $A0, $02, $00, $01
+    .db HUD_TIMER,                 $40, $00, $20, $00, $C0, $00
+    .db HUD_COMBO,                 $C0, $01, $E0, $00, $C0, $00
     .db 0
 .ENDS
 .BASE $C0
@@ -19707,7 +19579,7 @@ VoiceQueueDrop:
     rts
 VoiceQueueClear:
     php
-    jsl VoiceQueueClearFar
+    jsl HudHdmaOffVqClear               ; HDMA off, then VoiceQueueClearFar
     plp
     rts
 VoiceQueueReset:
@@ -22774,7 +22646,25 @@ PortraitPal_End:
 .ENDS
 
 ; ORDER SELECT 32x32 portraits live in the free lower half of bank 126 so
-; the StageData half-bank (bank 127, $8000-$FFFF) does not overflow.  The
+; the StageData half-bank (bank 127, $8000-$FFFF) does not overflow.
+
+; Arcade HUD extras (BG3 tiles 704..1023 = VRAM $3600-$3FFF).  Bank 46's tail
+; is free in both builds; .BASE $C0 is already active here.
+.BANK 46 SLOT 0
+.ORGA $C000
+.SECTION "HudChr2" FORCE
+HudChr2:     .INCBIN "gen_fight/hud2.chr"
+HudChr2_End:
+.ENDS
+
+; Arcade HUD blocks, lookup tables and gradient tables.  Kept with the tiles
+; so the FightData bank (which ends at $C700) does not grow.
+.BANK 46 SLOT 0
+.ORGA $E000
+.SECTION "HudArcadeData" FORCE
+.INCLUDE "gen_fight/hud2.inc"
+.ENDS
+
 ; standalone build has no ORDER SELECT, so it does not emit this section.
 .IFDEF PVSNESLIB
 .BANK 64 SLOT 0
@@ -23327,94 +23217,443 @@ SAO_out:
     rts
 .ENDS
 
-; 8x16 string writer for the counter banner.  Same as WriteStrBig, but the
-; loop counter is scr0 (dead after the offset is copied to X): the hit path
-; keeps its attacker state index in scr4 and reads the damage tables after
-; CounterDraw returns.
-.IFDEF PVSNESLIB
-.BANK 126 SLOT 0
-.ORGA $F100
-.ELSE
-.BANK 50 SLOT 0
-.ORGA $70C0
-.ENDIF
-.SECTION "CounterStrBig" FORCE
-CounterStrBig:
+; ---------------------------------------------------------------------------
+; Arcade HUD (hud2.inc/hud2.chr): far routines live in bank 46's tail, right
+; after the tile data, so the full Fight bank does not grow.  They run from
+; the tick, where D=$1000 and DBR=$7E, and are entered with JSL.
+; ---------------------------------------------------------------------------
+.BANK 46 SLOT 0
+.ORGA $D400
+.SECTION "HudArcade" FORCE
+
+; scr2 -> block (.db cols,rows + cols*rows words), scr0 = HUDMAP byte offset.
+; Every word already carries its palette/priority, so tiles 704..1023 work.
+WriteBlockW:
+    php
+    rep #$10
+    .INDEX 16
     rep #$20
     .ACCU 16
+    rep #$10
+    lda [scr2]                          ; low byte = columns
+    and #$00FF.w
+    beq WBW_out
+    sta scr6
+    lda [scr2]
+    xba
+    and #$00FF.w                        ; high byte = rows
+    pha
+    ldy #2
+WBW_row:
+    ldx scr0
+    lda scr6
+    sta scr5
+WBW_col:
+    lda [scr2],y
+    sta HUDMAP,x
+    iny
+    iny
+    inx
+    inx
+    dec scr5
+    bne WBW_col
     lda scr0
-    tax
+    clc
+    adc #64.w
+    sta scr0
+    pla
+    dec a
+    pha
+    bne WBW_row
+    pla
+WBW_out:
     sep #$20
     .ACCU 8
-    ldy #0
-    lda [scr2],y
-    sta scr0
-    iny
--   lda [scr2],y
+    plp
+    rts
+
+; Combo digit: A = 0..9, X = HUDMAP offset of its top-left cell.
+CD_digit:
+    php
+    rep #$10
+    .INDEX 16
+    rep #$20
+    .ACCU 16
+    and #$000F.w
+    sta scr3
+    asl
+    sta scr4
+    lda scr3
+    asl
+    asl
+    clc
+    adc scr4
+    clc
+    adc #CDIG_W
+    sta scr3
+    lda scr3
     sta HUDMAP,x
     inc a
-    sta HUDMAP+64,x                     ; bottom half on the row below
-    lda #ATT_YEL.b
-    sta HUDMAP+1,x
-    sta HUDMAP+65,x
-    iny
-    inx
-    inx
-    dec scr0
-    bne -
-    rep #$20
-    .ACCU 16
+    sta HUDMAP+2,x
+    lda scr3
+    clc
+    adc #2
+    sta HUDMAP+64,x
+    inc a
+    sta HUDMAP+66,x
+    lda scr3
+    clc
+    adc #4
+    sta HUDMAP+128,x
+    inc a
+    sta HUDMAP+130,x
+    plp                                 ; php above: restore M/X and the stack
     rts
-.ENDS
 
-; COUNTER banner: the string uses the shared 8x16 big font, so it needs two
-; rows.  Rows 10/11 are outside the live HUD bands, hence the full upload
-; request.  Kept in the free bank-50 tail so the CancelData window stays
-; below OamCache.
-.IFDEF PVSNESLIB
-.BANK 126 SLOT 0
-.ORGA $F180
-.ELSE
-.BANK 50 SLOT 0
-.ORGA $7F98
-.ENDIF
-.SECTION "CounterBanner" FORCE
-CounterDraw:
+; 2-digit countdown, 16x24 arcade digits at rows 1..3, cols 14..17.
+DrawTimer:
+    php
+    rep #$10
+    .INDEX 16
     rep #$20
     .ACCU 16
-    lda #((10*32+12)*2).w
+    sep #$20
+    .ACCU 8
+    lda rsecs
+    cmp #100.b
+    bcc +
+    lda #99.b
++   ldy #0
+-   cmp #10.b
+    bcc +
+    sbc #10.b
+    iny
+    bra -
++   sta scr6+1
+    tya
+    sta scr6+2
+    lda scr6+2
+    rep #$20
+    .ACCU 16
+    and #$00FF.w
+    sta scr3
+    asl
+    sta scr4
+    lda scr3
+    asl
+    asl
+    clc
+    adc scr4
+    clc
+    adc #TDIG_W
+    sta scr3
+    ldx #((1*32+14)*2).w
+    lda scr3
+    sta HUDMAP,x
+    inc a
+    sta HUDMAP+2,x
+    lda scr3
+    clc
+    adc #2
+    sta HUDMAP+64,x
+    inc a
+    sta HUDMAP+66,x
+    lda scr3
+    clc
+    adc #4
+    sta HUDMAP+128,x
+    inc a
+    sta HUDMAP+130,x
+    sep #$20
+    .ACCU 8
+    lda scr6+1
+    rep #$20
+    .ACCU 16
+    and #$00FF.w
+    sta scr3
+    asl
+    sta scr4
+    lda scr3
+    asl
+    asl
+    clc
+    adc scr4
+    clc
+    adc #TDIG_W
+    sta scr3
+    ldx #((1*32+16)*2).w
+    lda scr3
+    sta HUDMAP,x
+    inc a
+    sta HUDMAP+2,x
+    lda scr3
+    clc
+    adc #2
+    sta HUDMAP+64,x
+    inc a
+    sta HUDMAP+66,x
+    lda scr3
+    clc
+    adc #4
+    sta HUDMAP+128,x
+    inc a
+    sta HUDMAP+130,x
+    sep #$20
+    .ACCU 8
+    rep #$20
+    .ACCU 16
+    plp
+    rtl
+
+; "<n> HITS" on the attacker's side: RUSH (rows 8..9) + 16x24 digits
+; (rows 7..9) + HITS (rows 8..9).  P1 starts at col 1; P2 ends at col 30.
+; X = attacker offset (0 / FP2OFS).  HUD_CB is a byte: every 16-bit read
+; masks it, because the next byte is HUD_CB2.
+ComboDraw:
+    php
+    rep #$10
+    .INDEX 16
+    sep #$20
+    .ACCU 8
+    lda combohit,x
+    sta.w HUD_CB
+    rep #$20
+    .ACCU 16
+    txa
+    and #$00FF.w
+    beq +
+    lda #((7*32+16)*2).w                ; P2 erase base: cols 16..31
+    bra ++
++   lda #((7*32+0)*2).w                 ; P1 erase base: cols 0..15
+++  sta.w HUD_CB4
+    ; erase this side's rows 7..9 first, so a shorter count leaves nothing
+    tax
+    ldy #48                             ; 3 rows x 16 cells
+-   stz HUDMAP,x
+    inx
+    inx
+    dey
+    beq CBD_erased
+    tya
+    and #$000F.w
+    bne -
+    txa
+    clc
+    adc #32.w                           ; skip the other half of the row
+    tax
+    bra -
+CBD_erased:
+    lda.w HUD_CB
+    and #$00FF.w
+    cmp #2.w
+    bcs +
+    jmp CBD_dirty
++   cmp #100.w
+    bcc +
+    lda #99.w
++   ldy #0                              ; Y = tens, A = ones
+-   cmp #10.w
+    bcc +
+    sbc #10.w
+    iny
+    bra -
++   phy                                 ; 3,s = tens (0 = one digit)
+    pha                                 ; 1,s = ones  (WriteBlockW/CD_digit
+                                        ;   use scr3..scr6 as scratch)
+    ; RUSH start cell (row 8): P1 col 1; P2 col 21 (one digit) / 19 (two)
+    lda.w HUD_CB4
+    and #$0020.w                        ; P2 erase base has col 16 (=$20)
+    beq +
+    lda 3,s
+    beq +++
+    lda #((8*32+19)*2).w
+    bra ++
++++ lda #((8*32+21)*2).w
+    bra ++
++   lda #((8*32+1)*2).w
+++  sta.w HUD_CB2
     sta scr0
-    lda #CounterTxt.w
+    lda #HudRush.w
+    sta scr2
+    lda #:HudRush.w
+    sta scr2+2
+    jsr WriteBlockW
+    rep #$20
+    .ACCU 16
+    lda.w HUD_CB2                       ; digits: row 7, 4 cells after RUSH
+    sec
+    sbc #(64-8).w
+    sta scr5
+    lda 3,s
+    beq +
+    ldx scr5
+    jsr CD_digit
+    rep #$20
+    .ACCU 16
+    lda scr5
+    clc
+    adc #4.w                            ; next 16 px digit
+    sta scr5
++   lda 1,s
+    ldx scr5
+    jsr CD_digit
+    rep #$20
+    .ACCU 16
+    lda scr5                            ; HITS: row 8, right after the digits
+    clc
+    adc #(64+4).w
+    sta scr0
+    pla                                 ; drop ones/tens
+    pla
+    lda #HudHits.w
+    sta scr2
+    lda #:HudHits.w
+    sta scr2+2
+    jsr WriteBlockW
+CBD_dirty:
+    sep #$20
+    .ACCU 8
+    lda huddirty
+    ora #HUD_COMBO
+    sta huddirty
+    rep #$20
+    .ACCU 16
+    plp
+    rtl
+
+; Italic names at row 4.  scr0 = HUDMAP offset, scr2 = string (CHARSET
+; indices).  The side comes from the column: left half = P1 (palette 3),
+; right half = P2 (gradient palette 2).  CharPtr may clobber the scratch
+; registers, so no flag is passed in.
+NameDrawFar:
+    php
+    rep #$10
+    .INDEX 16
+    rep #$20
+    .ACCU 16
+    rep #$10
+    lda scr0
+    sta scr6
+    stz scr4
+    cmp #((4*32+16)*2).w                ; right half of the row = P2
+    sep #$20
+    .ACCU 8
+    bcc +
+    lda #$28.b                          ; P2: gradient palette 2
+    bra ++
++   lda #$2C.b                          ; P1: white/blue palette 3
+++  sta scr4+1                          ; attribute byte: prio + palette
+    ldy #0
+    lda [scr2],y
+    sta scr5
+    beq NDF_out
+    iny
+NDF_loop:
+    lda [scr2],y
+    rep #$20
+    .ACCU 16
+    and #$00FF.w
+    asl
+    tax
+    lda.l NameIMap,x
+    beq +
+    ora scr4
+    ldx scr6
+    sta HUDMAP,x
++   lda scr6
+    clc
+    adc #2
+    sta scr6
+    sep #$20
+    .ACCU 8
+    iny
+    dec scr5
+    bne NDF_loop
+NDF_out:
+    rep #$20
+    .ACCU 16
+    plp
+    rtl
+
+; GO! / K.O. banner: scr2 -> block, centred over rows 12..16.
+BannerDrawFar:
+    php
+    rep #$10
+    .INDEX 16
+    rep #$20
+    .ACCU 16
+    lda [scr2]
+    and #$00FF.w
+    sta scr4
+    lda #32.w
+    sec
+    sbc scr4
+    lsr a
+    asl a
+    clc
+    adc #((12*32)*2).w
+    sta scr0
+    sep #$20
+    .ACCU 8
+    jsr WriteBlockW
+    rep #$20
+    .ACCU 16
+    plp
+    rtl
+
+; COUNTER!! below HITS on the attacker's side (aofs), rows 10..11.
+CounterDraw:
+    php
+    rep #$10
+    .INDEX 16
+    rep #$20
+    .ACCU 16
+    lda scr4                            ; the hit path reads the damage tables
+    pha                                 ;   after this call
+    lda scr5
+    pha
+    lda scr6
+    pha
+    lda aofs
+    and #$00FF.w
+    beq +
+    lda #((10*32+21)*2).w
+    bra ++
++   lda #((10*32+1)*2).w
+++  sta scr0
+    lda #HudCounter.w
     sta scr2
     sep #$20
     .ACCU 8
-    lda #:CounterTxt.b
+    lda #:HudCounter.b
     sta scr2+2
-    jsr CounterStrBig                    ; 8x16, but keeps scr4 for the hit path
+    jsr WriteBlockW
     sep #$20
-    .ACCU 8
-    lda huddirty                         ; rows 10/11 are outside the live HUD
-    ora #HUD_FULL                        ;   bands: force a complete upload so
-    sta huddirty                         ;   both halves reach VRAM
+    lda huddirty
+    ora #HUD_FULL
+    sta huddirty
     lda #1
     sta.w RT_HUDFULL
     rep #$20
     .ACCU 16
+    pla
+    sta scr6
+    pla
+    sta scr5
+    pla
+    sta scr4
+    plp
     rtl
 
 CounterClear:
+    php
+    rep #$10
+    .INDEX 16
     rep #$20
     .ACCU 16
-    ldx #((10*32+12)*2).w
-    ldy #7
+    ldx #((10*32)*2).w
+    ldy #64
     lda #0
--   sta HUDMAP,x
-    inx
-    inx
-    dey
-    bne -
-    ldx #((11*32+12)*2).w                ; bottom half of the 8x16 glyphs
-    ldy #7
 -   sta HUDMAP,x
     inx
     inx
@@ -23429,6 +23668,175 @@ CounterClear:
     sta.w RT_HUDFULL
     rep #$20
     .ACCU 16
+    plp
+    rtl
+
+; POW stock counter: 16x16 blue digit on a navy tab, rows 21..22.
+PD_draw:                                ; A = base word, X = destination
+    lda scr3
+    sta HUDMAP,x
+    inc a
+    sta HUDMAP+2,x
+    lda scr3
+    clc
+    adc #2.w
+    sta HUDMAP+64,x
+    inc a
+    sta HUDMAP+66,x
+    rts
+
+DrawPowerCounters:
+    php
+    rep #$10
+    .INDEX 16
+    rep #$20
+    .ACCU 16
+    lda FP+F_POWER
+    ldy #0
+-   cmp #1000.w
+    bcc +
+    sec
+    sbc #1000.w
+    iny
+    cpy #3
+    bne -
++   tya
+    asl
+    asl
+    clc
+    adc #PDIG1_W
+    sta scr3
+    ldx #((23*32+0)*2).w                 ; inside the cream box (P1)
+    jsr PD_draw
+    lda FP+F_POWER+FP2OFS
+    ldy #0
+-   cmp #1000.w
+    bcc +
+    sec
+    sbc #1000.w
+    iny
+    cpy #3
+    bne -
++   tya
+    asl
+    asl
+    clc
+    adc #PDIG2_W
+    sta scr3
+    ldx #((23*32+30)*2).w                ; inside the cream box (P2)
+    jsr PD_draw
+    rep #$20
+    .ACCU 16
+    plp
+    rtl
+
+; VoiceQueueClear (fight -> title/opening/ending hand-off): the gradient HDMA
+; must not run over the next screen's CGRAM loads.
+HudHdmaOffVqClear:
+    sep #$20
+    lda #0.b
+    sta.l HDMAEN
+    jml VoiceQueueClearFar
+
+; NMI hook (IntroNmiHandler, A 8-bit, DB = engine): a demo or fight that hands
+; off to another screen must not leave the gradient HDMA rewriting CGADD over
+; that screen's palette loads.
+HudHdmaNmiGate:
+    lda gamestate
+    cmp #1.b
+    beq HHNG_out
+    cmp #2.b
+    beq HHNG_out
+    cmp #4.b
+    beq HHNG_out
+    lda #0.b
+    sta.l HDMAEN
+HHNG_out:
+    rtl
+
+; Gradient palette for BG3 palette 2: three HDMA channels rewrite CGRAM
+; 9/10/11 on every scanline (CGRAM 0-7 are the portraits, 12-31 the HUD).  Enabled only while the fight HUD is up.
+HudHdmaTick:
+    php
+    rep #$10
+    .INDEX 16
+    sep #$20
+    .ACCU 8
+    lda gamestate
+    cmp #1.b
+    beq HHT_on
+    cmp #2.b
+    beq HHT_on
+    cmp #4.b
+    beq HHT_on
+    lda.w HUD_HDMA
+    beq HHT_out
+    stz.w HUD_HDMA
+    lda #0
+    sta.l HDMAEN                         ; no gradients outside the fight
+HHT_out:
+    plp
+    rtl
+HHT_on:
+    ; HDMA latches its tables at line 0.  $4212 can still say "vblank" on
+    ; line 261 while the HDMAEN write below lands just after the line-0
+    ; init; an un-initialised channel then resumes from last frame's stale
+    ; pointer, reads the tables misaligned and sprays colour bytes into
+    ; CGADD (the whole palette went green/yellow).  Read the real V counter
+    ; and re-arm every channel by hand, so a late enable starts from the
+    ; top of its table (a few lines late, for one frame) instead.
+    lda.l $00213F                        ; reset the OPVCT read flip-flop
+    lda.l $002137                        ; latch H/V
+    lda.l $00213D                        ; V bits 0-7
+    xba
+    lda.l $00213D                        ; V bit 8
+    and #1.b
+    bne HHT_late_ok                      ; V >= 256: vblank tail
+    xba
+    cmp #225.b                           ; V 225-255: vblank
+    bcs HHT_arm
+    cmp #4.b                             ; V 0-3: re-armed, ~1 line shift
+    bcc HHT_arm
+    plp                                  ; uploads overran into the picture:
+    rtl                                  ;   leave the gradient off this frame
+HHT_late_ok:
+HHT_arm:
+    rep #$20
+    .ACCU 16
+    lda #HudHdma1.w
+    sta.l $004312
+    sta.l $004318                        ; A2A: current table address
+    lda #HudHdma2.w
+    sta.l $004322
+    sta.l $004328
+    lda #HudHdma3.w
+    sta.l $004332
+    sta.l $004338
+    sep #$20
+    .ACCU 8
+    lda #:HudHdma1.b
+    sta.l $004314
+    lda #:HudHdma2.b
+    sta.l $004324
+    lda #:HudHdma3.b
+    sta.l $004334
+    lda #$03.b                           ; two bytes to $21 + two to $22
+    sta.l $004310
+    sta.l $004320
+    sta.l $004330
+    lda #$21.b
+    sta.l $004311
+    sta.l $004321
+    sta.l $004331
+    lda #$01.b                           ; NTRL 1: fetch the first entry
+    sta.l $00431A                        ;   on the next line if the line-0
+    sta.l $00432A                        ;   init has already passed
+    sta.l $00433A
+    lda #$0E.b                           ; channels 1, 2 and 3
+    sta.l HDMAEN
+    lda #1
+    sta.w HUD_HDMA
+    plp
     rtl
 .ENDS
 

@@ -102,7 +102,7 @@ FIGHT_GEN := $(GEN_DIR)/iori.chr $(GEN_DIR)/iori_pal.bin \
 	$(GEN_DIR)/kyo.chr \
 	$(GEN_DIR)/kyo_pal.bin $(GEN_DIR)/kyo_spr.inc \
 	$(GEN_DIR)/kyo_chr.inc \
-	$(GEN_DIR)/hud.inc \
+	$(GEN_DIR)/hud.inc $(GEN_DIR)/hud2.inc \
 	$(GEN_DIR)/portraits.chr $(GEN_DIR)/portraits.inc \
 	$(GEN_DIR)/portrait_pal.bin \
 	$(GEN_DIR)/spark.chr $(GEN_DIR)/spark_pal.bin \
@@ -115,7 +115,7 @@ FIGHT_GEN := $(GEN_DIR)/iori.chr $(GEN_DIR)/iori_pal.bin \
 	$(GEN_DIR)/quote_strings_en.inc $(GEN_DIR)/quote_strings_pt.inc \
 	$(GEN_DIR)/quote_strings_es.inc $(GEN_DIR)/quote_strings_fr.inc \
 	$(GEN_DIR)/quote_tables.inc $(GEN_DIR)/char_names.inc \
-	$(GEN_DIR)/hud.chr $(GEN_DIR)/hud_pal.bin \
+	$(GEN_DIR)/hud.chr $(GEN_DIR)/hud2.chr $(GEN_DIR)/hud_pal.bin \
 	$(GEN_DIR)/$(MSU_NAME).msu
 
 ifeq ($(TINY),1)
@@ -197,7 +197,7 @@ ifneq ($(TINY),1)
 $(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json assets/characters/*/*_SNES.cns assets/characters/*/*_SNES.cmd assets/characters/*/*.air assets/data/quotes/*.json) \
 	tools/build_fight.py tools/normal_throws.py tools/close_normals.py tools/remaining_specials.py tools/runtime_abi.py assets/runtime_abi.json tools/newroster.py tools/build_spc_neogeo.py \
 	Makefile.pvsnes $(wildcard Makefile.hi Makefile.old) \
-	tools/build_stages.py tools/sff.py tools/build_endings.py \
+	tools/build_stages.py tools/build_hud_arcade.py tools/sff.py tools/build_endings.py \
 	$(wildcard assets/survival_ending/*.png) \
 	$(wildcard assets/characters/*/*.snd) \
 	$(wildcard assets/stages/stages_png_snes/*.png) \

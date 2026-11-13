@@ -502,6 +502,7 @@ InLoad:
     php
     lda #0
     sta.l $4200                            ; NMI off while we repack VRAM
+    sta.l $00420C                          ; HDMA off: HUD gradient must not hit CGADD
     lda #$80.b
     sta.l $2100                            ; force blank
     rep #$30
@@ -765,6 +766,7 @@ OpnEnter:
     .ACCU 8
     lda #0
     sta.l NMITIMEN                         ; kill NMI before the ISR can land
+    sta.l $00420C                          ; HDMA off: HUD gradient must not hit CGADD
     lda #ENGINE_DB.b                    ; defensive: callers may arrive with a
     pha                                 ;   foreign DBR; every .w var below
     plb                                 ;   lives in WRAM
@@ -994,6 +996,7 @@ MsuDraw:
     .ACCU 8
     lda #0
     sta.l $4200
+    sta.l $00420C                          ; HDMA off: HUD gradient must not hit CGADD
     jsr MtClear
     rep #$20
     .ACCU 16

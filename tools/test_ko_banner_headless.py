@@ -5,12 +5,15 @@ The 6x2 K.O. logo used to be written with a 16-bit row-counter decrement:
 the stale high byte of the scratch word turned it into hundreds of rows,
 scribbling HUD tiles down (and past) the BG3 map.  On screen that showed up
 as a garbled vertical column over the falling loser and stalled the KO
-sequence.  This checks that only rows 9-10 change and that KoTick advances.
+sequence.  The arcade K.O. is now the 13x5 HudKo block (hud2.inc), centred
+over rows 12-16.  This checks that exactly that block is written, nothing
+spills around it, and that KoTick advances.
 
 Run after a PVSnesLib build:
 
     python3 tools/test_ko_banner_headless.py
 """
+import re
 import sys
 from pathlib import Path
 
@@ -19,6 +22,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 from calibration.headless import Core                    # noqa: E402
 from test_roster import parse_tables                     # noqa: E402
+from test_counter_grab_headless import boot_select as _boot  # noqa: E402
 
 CORE = "/usr/lib/x86_64-linux-gnu/libretro/snes9x_libretro.so"
 ROM = ROOT / "kof98-snes.sfc"
@@ -43,19 +47,18 @@ def wait(core, pred, label, limit=8000):
     raise AssertionError(f"{label}: gs={core.word(GS)}")
 
 
+def parse_ko():
+    text = (ROOT / "build/gen_fight/hud2.inc").read_text()
+    m = re.search(r"HudKo: \.db (\d+),(\d+)\n\s*\.dw ([^\n]+)", text)
+    cols, rows = int(m.group(1)), int(m.group(2))
+    words = [int(v.strip().lstrip("$"), 16) for v in m.group(3).split(",")]
+    assert len(words) == cols * rows, (cols, rows, len(words))
+    return cols, rows, words
+
+
 def boot_select(core):
-    wait(core, lambda: core.word(GS) == 7, "opening")
-    tap(core, START)
-    wait(core, lambda: core.word(GS) == 0, "title")
-    core.step(60)
-    tap(core, START)
-    wait(core, lambda: core.word(GS) == 6, "mode menu")
-    core.ram[0xF070] = 1
-    tap(core, START)
-    wait(core, lambda: core.word(GS) == 5, "select")
-    core.ram[0x1091] = 0
-    core.step(10)
-    return core.save()
+    # Shared boot: handles the MSU opening video (gs14) as well as gs7.
+    return _boot(core)
 
 
 def enter_fight(core, select_state, p1, p2):
@@ -102,15 +105,16 @@ def main(core_path=CORE, rom=ROM):
         core.buttons[0] = set()
         wait(core, lambda: core.word(GS) == 2, "KO")
         assert core.word(FP + FP2 + F_HP) == 0
-        # K.O. logo = 6x2 cells at row 9, col 13 (tiles 140-151).
-        assert hud_row(core, 9, 13, 6) == [0x348C + i for i in range(6)], \
-            hud_row(core, 9, 13, 6)
-        assert hud_row(core, 10, 13, 6) == [0x3492 + i for i in range(6)], \
-            hud_row(core, 10, 13, 6)
+        # Arcade K.O. = HudKo block, centred over rows 12..16.
+        cols, rows, words = parse_ko()
+        col = (32 - cols) // 2
+        for r in range(rows):
+            got = hud_row(core, 12 + r, col, cols)
+            assert got == words[r * cols:(r + 1) * cols], (12 + r, got)
         # Nothing may spill outside the declared block.
-        for row in (8, 11, 12, 13, 14, 15, 16, 17, 18, 19):
-            assert hud_row(core, row, 13, 6) == [0, 0, 0, 0, 0, 0], \
-                f"row {row} spilled: {hud_row(core, row, 13, 6)}"
+        for row in (10, 11, 17, 18, 19):
+            assert hud_row(core, row, col, cols) == [0] * cols, \
+                f"row {row} spilled: {hud_row(core, row, col, cols)}"
         # KoTick must run immediately, not stall for hundreds of frames.
         start = core.ram[KOTIMER]
         frame0 = core.word(FRAMECNT)
@@ -124,7 +128,7 @@ def main(core_path=CORE, rom=ROM):
             core.step()
         assert core.ram[FP + FP2 + F_STATE] == 10
         assert core.word(FP + FP2 + F_Y) == 0
-        print("K.O. banner: 6x2 only, KoTick advances, loser lands cleanly")
+        print("K.O. banner: 13x5 block only, KoTick advances, loser lands cleanly")
     finally:
         core.close()
 

@@ -41,6 +41,7 @@ OptionsDraw:
     .ACCU 8
     lda #0
     sta.l $4200                         ; NMI off while drawing
+    sta.l $00420C                          ; HDMA off: HUD gradient must not hit CGADD
     jsl OptCall_MtClear
     ; title
     lda #107
@@ -438,6 +439,7 @@ MenuDraw:
     .ACCU 8
     lda #0
     sta.l $4200                           ; NMI off while drawing
+    sta.l $00420C                          ; HDMA off: HUD gradient must not hit CGADD
     jsl OptCall_MtClear
     rep #$20
     .ACCU 16
@@ -522,6 +524,7 @@ MusPlaySongFar:
 MPS_apu_idle:
     lda #0
     sta.l NMITIMEN                      ; NMI's spcProcess would corrupt the
+    sta.l $00420C                          ; HDMA off: HUD gradient must not hit CGADD
     lda.l $4210                         ;   module-upload handshake; also
     rep #$30                            ;   wait out an NMI already in flight
     .ACCU 16

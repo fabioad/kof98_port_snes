@@ -18,11 +18,11 @@ FIGHT_GEN := build/gen_fight/iori.chr build/gen_fight/iori_pal.bin \
 	build/gen_fight/runtime_abi.inc \
 	build/gen_fight/iori_spr.inc build/gen_fight/kyo.chr \
 	build/gen_fight/kyo_pal.bin build/gen_fight/kyo_spr.inc \
-	build/gen_fight/hud.inc \
+	build/gen_fight/hud.inc build/gen_fight/hud2.inc \
 	build/gen_fight/portraits.chr build/gen_fight/portraits.inc \
 	build/gen_fight/portrait_pal.bin \
 	build/gen_fight/stage.chr build/gen_fight/stage.map \
-	build/gen_fight/stage_pal.bin build/gen_fight/hud.chr \
+	build/gen_fight/stage_pal.bin build/gen_fight/hud.chr build/gen_fight/hud2.chr \
 	build/gen_fight/hud_pal.bin build/gen_fight/spark.chr \
 	build/gen_fight/spark_pal.bin build/gen_fight/spark.inc \
 	build/gen_fight/stages.inc build/gen_fight/stages_tab.inc \

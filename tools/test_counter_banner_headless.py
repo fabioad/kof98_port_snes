@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Headless regression for the COUNTER banner.
+"""Headless regression for the COUNTER!! banner.
 
-The banner string is drawn with the shared 8x16 big font.  It must write
-both rows (top tile at row 10, tile+1 at row 11) and force a full HUD
-upload, because rows 10/11 are outside the live HUD bands.  When the flash
-timer expires both rows must be erased and uploaded again.
+The arcade banner is the 10x2 HudCounter block from hud2.inc, drawn on the
+attacker's side (P1: row 10, col 1).  It must match the block word for
+word and force a full HUD upload, because rows 10/11 are outside the live
+HUD bands.  When the flash timer expires both rows must be erased and
+uploaded again.
 
 Run after a PVSnesLib build:
 
@@ -30,17 +31,18 @@ HUDDIRTY = 0x1026
 RT_HUDFULL = 0x5100
 FUS_FLASH = 0x505C
 HUD_FULL = 0x80
-TOP_ROW, COL = 10, 12
-LEN = 7
+TOP_ROW, COL = 10, 1                     # P1 attacker side
+LEN = 10
 
 
 def parse_banner():
-    text = (ROOT / "build/gen_fight/hud.inc").read_text()
-    line = re.search(r"CounterTxt: \.db ([^\n]+)", text).group(1)
-    values = [int(v.strip()) for v in line.split(",")]
-    assert values[0] == LEN, values
-    attr = int(re.search(r"ATT_YEL = \$([0-9A-Fa-f]+)", text).group(1), 16)
-    return values[1:], attr
+    text = (ROOT / "build/gen_fight/hud2.inc").read_text()
+    m = re.search(r"HudCounter: \.db (\d+),(\d+)\n\s*\.dw ([^\n]+)", text)
+    cols, rows = int(m.group(1)), int(m.group(2))
+    assert (cols, rows) == (LEN, 2), (cols, rows)
+    words = [int(v.strip().lstrip("$"), 16) for v in m.group(3).split(",")]
+    cells = [(w & 0xFF, w >> 8) for w in words]
+    return cells[:LEN], cells[LEN:]
 
 
 def cell(core, row, col):
@@ -59,7 +61,7 @@ def wait(core, pred, label, limit=2000):
 
 
 def main(core_path, rom):
-    top, attr = parse_banner()
+    expected_top, expected_bottom = parse_banner()
     core = Core(core_path, rom)
     try:
         select_state = boot_select(core)
@@ -85,8 +87,6 @@ def main(core_path, rom):
         assert core.ram[F_STATE] in (5, 6, 7, 8), (
             f"P1 was not attacking: state {core.ram[F_STATE]}")
 
-        expected_top = [(tile, attr) for tile in top]
-        expected_bottom = [(tile + 1, attr) for tile in top]
         got_top = [cell(core, TOP_ROW, COL + i) for i in range(LEN)]
         got_bottom = [cell(core, TOP_ROW + 1, COL + i) for i in range(LEN)]
         assert got_top == expected_top, (got_top, expected_top)
@@ -104,7 +104,7 @@ def main(core_path, rom):
         cleared_bottom = [cell(core, TOP_ROW + 1, COL + i) for i in range(LEN)]
         assert cleared_top == [(0, 0)] * LEN, cleared_top
         assert cleared_bottom == [(0, 0)] * LEN, cleared_bottom
-        print("PASS COUNTER banner: 8x16 glyphs on rows 10/11, erased on expiry")
+        print("PASS COUNTER!! banner: 10x2 block on rows 10/11, erased on expiry")
     finally:
         core.close()
 

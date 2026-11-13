@@ -14264,10 +14264,19 @@ def _lifebar_backdrop(imgs, tiles, top_keys, bottom_keys):
 
     top = strip(top_keys, 10, 130, 7)
     # Dynamic life cells: x24..111 (P1) and x144..231 (P2), row 15..22.
-    # Draw the static outline one pixel outside those cells so the green
-    # band meets the white border on all four sides.
-    draw_life_frame(top, (23, 11, 114, 23), (24, 14, 112, 23), 20)
-    draw_life_frame(top, (141, 11, 231, 23), (143, 14, 231, 23), 236)
+    # The inner end column of each gauge (x111 / x144) is drawn by the
+    # dynamic end tile itself, so the static frame stops there and leaves
+    # cols 14..17 (x112..143) of rows 1..3 to the 2x3-tile arcade timer.
+    draw_life_frame(top, (23, 11, 111, 23), (24, 14, 111, 23), 20)
+    draw_life_frame(top, (144, 11, 231, 23), (144, 14, 231, 23), 236)
+    for y in range(8, 32):
+        for x in range(112, 144):
+            top.putpixel((x, y), (0, 0, 0, 0))
+        # close the cut panel ends with the frame's dark contour
+        for x in (111, 144):
+            r, g, b, a = top.getpixel((x, y))
+            if a >= 96 and min(r, g, b) <= 185:
+                top.putpixel((x, y), (0, 0, 0, 255))
     strips = (top, strip(bottom_keys, 399, 467, 4))
     pool = {bytes(tiles[i:i + 16]): i // 16
             for i in range(0, len(tiles), 16)}
@@ -14557,12 +14566,17 @@ def build_hud():
     # exactly that 8 px tall window, so the fill meets the white border on
     # all four sides instead of covering the left edge or stopping short.
     life_base = Image.new('RGBA', (88, 8), (0, 0, 0, 0))
+    # The inner end (x87: screen x111 / x144 for P2) carries the white
+    # border too: the static frame stops there to leave room for the timer.
     for y in range(8):
         life_base.putpixel((0, y), (255, 255, 255, 255))
+        life_base.putpixel((87, y), (255, 255, 255, 255))
     life = Image.new('RGBA', (88, 8), (0, 0, 0, 0))
     life.alpha_composite(
         fspr[life_fill].crop((68, 38, 286, 62)).resize(
-            (87, 8), Image.LANCZOS), (1, 0))
+            (86, 8), Image.LANCZOS), (1, 0))
+    for y in range(8):
+        life.putpixel((87, y), (255, 255, 255, 255))
     # Power gauge: the source frame reserves a small level box before the
     # fill starts.  Build the dynamic strip from the frame itself (palette 7
     # carries both the beige frame and the orange fill) and paste the fill
@@ -14790,6 +14804,13 @@ def build_hud():
     open(os.path.join(OUT, "hud_pal.bin"), "wb").write(snes_pal(pals, 20))
     print(f"hud: {len(CHARSET)} + {len(BIGSET)}x2 font tiles, "
           f"{len(tiles) // 16} tiles total")
+
+    # Arcade extras: hud2.chr (BG3 tiles 704+) + hud2.inc (blocks, HDMA).
+    import build_hud_arcade
+    arc = build_hud_arcade.build(lb_dir, files, fspr, go_key, ko_key,
+                                 _fnt_v1, _sff_imgs, _fnt_v2_sff, CHARSET,
+                                 OUT, pow_box=(bottommap, bytes(tiles)))
+    print(f"hud2: {arc['tiles']} arcade tiles")
 
 
 # Bank 59: HeidernData + ES quote strings from $0000, MatureData from here

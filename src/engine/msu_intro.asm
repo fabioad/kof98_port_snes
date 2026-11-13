@@ -1018,6 +1018,7 @@ IntroNmiHandler:
     tcd
     sep #$20
     .ACCU 8
+    jsl HudHdmaNmiGate                     ; HUD gradient HDMA: fight states only
     lda gamestate
     cmp #GS_INTRO_MSU.b
     beq IntroNmi_video
