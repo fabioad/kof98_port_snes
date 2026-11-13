@@ -1269,6 +1269,10 @@ PpuInit:
     sta.l BG12NBA
     lda #(BG3CHR>>12).b
     sta.l BG34NBA
+    lda #$01.b                          ; TM = stage only while it loads: the
+    sta.l TM                            ;   previous screen's layers (select
+                                        ;   BG2 backdrop, OBJ) would show stale
+                                        ;   VRAM; StartFight sets $15 later
     lda #32                             ; BG palettes 2-4: stage regions are
     sta.l CGADD                         ;   uploaded per pick by StagePick;
     jsr ClearCgram96                    ;   black them out until then

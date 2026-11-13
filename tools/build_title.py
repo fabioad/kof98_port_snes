@@ -4,7 +4,11 @@ Writes src/gen_menu/title.tiles / title.map / title.pal in the layout the
 engine expects:
 
   * title.tiles: 4bpp tiles, loaded at BG1 tile base (VRAM word $4000).  At
-    most 896 tiles (32x28) so the upload stays below $7800.
+    most 758 tiles, so the upload ends at $6F60 like the original title art:
+    the fight keeps P2's OBJ tiles at $7000 and only refills them after the
+    loading screen, so anything left there shows up as garbage on the HUD
+    sprites while the stage loads.  When the picture needs more, the closest
+    same-palette tiles (mostly the textured background) are merged.
   * title.map:   32x28 map words (tile index | palette << 10).
   * title.pal:   4 palettes x 15 colors (colors 1..15; color 0 is never used,
     so no pixel is transparent).
@@ -30,7 +34,7 @@ DST = os.path.join(ROOT, "src/gen_menu")
 W, H = 256, 224
 TW, TH = W // 8, H // 8
 NPAL, NCOL = 4, 15
-MAX_TILES = 896
+MAX_TILES = 758                  # incl. the solid tile 0
 
 
 def snes5(rgb):
@@ -114,6 +118,49 @@ def main(src=DEFAULT_SRC):
             break
         assign = new
 
+    # quantize every tile against its palette
+    idxs = [((tiles[t][:, None, :] - pals[assign[t]][None]) ** 2).sum(2)
+            .argmin(1) for t in range(TH * TW)]
+
+    # unique (palette, pattern) groups; merge the closest pairs inside a
+    # palette until the char count fits (tile 0 is reserved)
+    groups, gof = {}, []
+    for t in range(TH * TW):
+        key = (int(assign[t]), idxs[t].tobytes())
+        gof.append(groups.setdefault(key, len(groups)))
+    keys = list(groups)
+    gpal = np.array([k[0] for k in keys])
+    grgb = np.array([pals[k[0]][np.frombuffer(k[1], dtype=idxs[0].dtype)]
+                     .reshape(-1) for k in keys])
+    uses = np.bincount(gof, minlength=len(keys)).astype(float)
+    target = [i for i in range(len(keys))]
+    alive = np.ones(len(keys), bool)
+    n_alive = len(keys)
+    if n_alive > MAX_TILES - 1:
+        sq = (grgb ** 2).sum(1)
+        dist = sq[:, None] + sq[None] - 2 * grgb @ grgb.T
+        dist[gpal[:, None] != gpal[None]] = np.inf
+        np.fill_diagonal(dist, np.inf)
+        merged_err = 0.0
+        while n_alive > MAX_TILES - 1:
+            cost = dist * np.minimum(uses[:, None], uses[None])
+            i, j = np.unravel_index(np.argmin(cost), cost.shape)
+            if uses[j] > uses[i]:
+                i, j = j, i                      # keep the more used look
+            merged_err += cost[i, j]
+            target[j] = i
+            uses[i] += uses[j]
+            alive[j] = False
+            dist[j, :] = dist[:, j] = np.inf
+            n_alive -= 1
+        print(f"  merged {len(keys) - n_alive} tiles, "
+              f"rms +{np.sqrt(merged_err / tiles.size):.2f}")
+
+    def root(g):
+        while target[g] != g:
+            g = target[g]
+        return g
+
     # Tile 0 stays a solid dark tile: MnLoadArt fills map rows 28-31 with
     # word 0, and the bottom scanline shows row 28.
     dark = int(np.argmin(pals[0].sum(1)))
@@ -121,15 +168,17 @@ def main(src=DEFAULT_SRC):
     chars, lut, mwords = [blank], {blank: 0}, []
     preview = np.zeros_like(a)
     for t in range(TH * TW):
-        pal = pals[assign[t]]
-        idx = ((tiles[t][:, None, :] - pal[None]) ** 2).sum(2).argmin(1)
+        g = root(gof[t])
+        pal_i, pat = keys[g]
+        idx = np.frombuffer(pat, dtype=idxs[0].dtype)
         enc = enc4([int(i) + 1 for i in idx])          # colours 1..15
         if enc not in lut:
             lut[enc] = len(chars)
             chars.append(enc)
-        mwords.append(lut[enc] | (int(assign[t]) << 10))
+        mwords.append(lut[enc] | (pal_i << 10))
         ty, tx = divmod(t, TW)
-        preview[ty * 8:ty * 8 + 8, tx * 8:tx * 8 + 8] = pal[idx].reshape(8, 8, 3)
+        preview[ty * 8:ty * 8 + 8, tx * 8:tx * 8 + 8] = \
+            pals[pal_i][idx].reshape(8, 8, 3)
     assert len(chars) <= MAX_TILES, len(chars)
 
     pal_b = bytearray()
