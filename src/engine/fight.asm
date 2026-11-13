@@ -3893,7 +3893,11 @@ TVS_full_p1:
     lda #1
     sta.b lock1
 TVS_sfx:
-    lda #SFX_SELECT.b
+    ldx.w T_TVSSIDE
+    lda.w lock1,x                       ; completed trio: leave the cursor put
+    bne +
+    jsr SelTeamNext                     ; next portrait, or left at the edge
++   lda #SFX_SELECT.b
     jsr SfxPlay
     rts
 TVS_deny:
@@ -3919,6 +3923,40 @@ TVS_stepset:
     rts
 +   lda.b scr0
     sta.w T_STEP
+    rts
+
+; X = side (0/1).  After a trio pick, advance the cursor to the next
+; portrait on the right.  At the right edge (the right neighbour is the
+; same cell), fall back to the portrait on the left, like the arcade
+; select.  Uses the same legal/empty-cell scan as SelMove.
+SelTeamNext:
+    php
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    txa
+    and #$00FF.w
+    pha                                 ; side (word)
+    sep #$20
+    .ACCU 8
+    lda.w SCUR1,x
+    pha                                 ; old cell (byte)
+    rep #$20
+    .ACCU 16
+    lda #JOY_RT.w
+    jsr SelMove
+    sep #$20
+    .ACCU 8
+    pla                                 ; old cell
+    plx                                 ; side
+    cmp.w SCUR1,x
+    bne STN_done
+    rep #$20
+    .ACCU 16
+    lda #JOY_LF.w
+    jsr SelMove                         ; right edge: go to the left
+STN_done:
+    plp
     rts
 
 ; Match-over banner at row 8: the wins leader's name + "WINS", or "DRAW".
@@ -19042,6 +19080,12 @@ TTS_member_unique:
     lda.b scr0
     sta.w T_TEAM1,y
     inc.w T_STEP
+    lda.w T_STEP
+    cmp #3
+    bcs TTS_cursor_done
+    ldx #0
+    jsr SelTeamNext                     ; next portrait, or left at the edge
+TTS_cursor_done:
     sep #$20
     .ACCU 8
     lda #SFX_SELECT.b
@@ -19161,6 +19205,12 @@ TTS_p2_store:
     pla
     sta.w T_TEAM2,y
     inc.w T_STEP
+    lda.w T_STEP
+    cmp #3
+    bcs TTS_p2_cursor_done
+    ldx #1
+    jsr SelTeamNext                     ; next portrait, or left at the edge
+TTS_p2_cursor_done:
     lda.w T_STEP
     cmp #3
     bcc TTS_p2_sfx

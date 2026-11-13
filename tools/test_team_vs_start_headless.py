@@ -49,6 +49,7 @@ def main():
             tap(core, 3)
         assert core.ram[GS] == 6, f"mode menu not reached: gs={core.ram[GS]}"
         core.ram[0xF070] = 3                  # TEAM VS
+        core.step(4)                          # let the menu latch the new row
         for _ in range(30):
             tap(core, 3)
             for _ in range(20):
@@ -60,6 +61,9 @@ def main():
         wait(core, lambda: core.ram[GS] == 5, "team vs select", 600)
 
         # Both pads own a cursor, so one frame of input must move both.
+        core.ram[0xF052] = 3
+        core.ram[0xF053] = 6
+        core.step(4)
         before = (core.ram[0xF052], core.ram[0xF053])
         core.buttons = [{7}, {7}]             # RIGHT on pad 1 and pad 2
         core.step(4)
@@ -82,7 +86,27 @@ def main():
             f"same-frame confirm: steps {core.ram[T_STEP]}/{core.ram[T_STEP2]}")
         assert list(core.ram[T_TEAM1:T_TEAM1 + 1]) == [0]
         assert list(core.ram[T_TEAM2:T_TEAM2 + 1]) == [1]
-        print("PASS both pads confirm their own pick in the same frame")
+        assert core.ram[0xF052] == 4 and core.ram[0xF053] == 7, (
+            f"cursor did not advance right: {core.ram[0xF052]}/"
+            f"{core.ram[0xF053]}")
+        print("PASS both pads confirm and advance their cursor to the right")
+
+        # A pick on the right edge falls back to the portrait on the left.
+        core.ram[0xF052] = 35
+        core.step(8)
+        core.buttons = [{8}, set()]
+        core.step(4)
+        core.buttons = [set(), set()]
+        core.step(12)
+        assert core.ram[0xF052] == 34, (
+            f"right-edge pick left cursor at {core.ram[0xF052]}, expected 34")
+        assert core.ram[T_STEP] == 2
+        core.buttons = [{0}, set()]           # undo the edge pick
+        core.step(4)
+        core.buttons = [set(), set()]
+        core.step(12)
+        assert core.ram[T_STEP] == 1
+        print("PASS right-edge pick moves the cursor left")
 
         # B undoes only the pad that pressed it.
         core.buttons = [set(), {0}]
