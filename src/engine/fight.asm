@@ -631,7 +631,6 @@
 .DEFINE AI_LEVEL    $10EB               ; 1..9 internal CPU difficulty
 .DEFINE DIFFICULTY  $10ED               ; 1..8 Neo-Geo style options level
 .DEFINE AI_TIMER1   $10EE               ; per-side action commit timer
-.DEFINE AI_TIMER2   $10EF
 .DEFINE AI_HOLD1    $10F0               ; 0 idle, 1 back/block, 2 forward
 .DEFINE AI_HOLD2    $10F1
 .DEFINE AI_SIDE     $10F2               ; 0 = P1, 1 = P2 during AI_one
@@ -658,6 +657,8 @@
 .DEFINE AI_OPPHIT   $1109               ; foe is in hitstun/recovery
 .DEFINE AI_OPPDOWN  $110A               ; foe is down/getting up
 .DEFINE AI_GSL      $110B               ; per side: 0 undecided, 1 block, 2 let it hit
+.DEFINE AI_TIMER2   $110E               ; per side: hit-confirm throttle (2 bytes;
+                                        ;   must not alias AI_TIMER1/AI_HOLD1)
 .IFDEF PVSNESLIB
 ; Reserved by fight_bridge.asm between the combo counters and streaming queue.
 .DEFINE AI_OPPFALL  $5042               ; foe is airborne and falling
@@ -951,6 +952,7 @@ FightMain:
     stz.w AI_JUMPCD
     stz.w AI_OFFCD
     stz.w AI_GSL                        ; per-side ground-shock block latch
+    stz.w AI_TIMER2                     ; hit-confirm throttle starts clean
     sep #$20
     .ACCU 8
     lda #1
@@ -12285,6 +12287,11 @@ AI_holdback:
     jsr AI_DirBack
     jmp AI_done
 AI_holdfwd:
+    lda AI_DIST                          ; never walk into the foe: at body
+    cmp #40                              ; range the engine may flip facing,
+    bcs AI_holdfwd_go                    ; which reads as a backward tap
+    jmp AI_done
+AI_holdfwd_go:
     jsr AI_DirFwd
     jmp AI_done
 AI_holdcrouch:
@@ -13169,9 +13176,9 @@ AI_aa_pressed:
 ; Personality-driven spacing.  The authored band is walking space, not a
 ; parking spot: the CPU keeps advancing until it reaches the inner edge of
 ; the band (or normal-attack range) instead of idling at the outer edge.
-; The old per-frame "hold back" rolls made the CPU shuffle backwards in
-; short taps; only a rare zoner reset remains, and it is committed by the
-; hold timer so it cannot turn into a twitch.
+; The CPU holds the front line at close range; the old zoner back-roll only
+; produced short backward taps, so it is gone.  Back movement now comes only
+; from committed guard/projectile/ground-shock holds.
 AI_Move:
     lda AI_DIST
     cmp AI_ZLO
@@ -13180,15 +13187,6 @@ AI_Move:
     bcc AI_move_close                  ; normal-attack range
     jmp AI_HoldFwd                     ; close the gap / walk the foe down
 AI_move_close:
-    lda AI_STYLE
-    cmp #3
-    beq AI_move_idle                   ; grappler wants the clinch
-    cmp #1
-    bne AI_move_idle                   ; everyone else holds the front line
-    jsr AI_Rand
-    and #$7F                           ; zoner gives ground very rarely
-    beq AI_HoldBack
-AI_move_idle:
     rts
 
 ; Hold toward / away from the opponent.
@@ -13230,23 +13228,23 @@ AI_DirBack:
 ++  sta FP+F_JOY+1,x
     rts
 
-; Start a committed hold: direction plus a 14-frame timer.  Longer chunks
+; Start a committed hold: direction plus a 20-frame timer.  Longer chunks
 ; make the walk read as continuous movement instead of little taps, and
 ; keep a guard up long enough to cover slow attacks.
 AI_HoldFwd:
     jsr AI_DirFwd
-    lda #14
+    lda #20
     sta AI_TMP
     lda #2
     jmp AI_SetHold
 AI_HoldBack:
     jsr AI_DirBack
-    lda #14
+    lda #20
     sta AI_TMP
     lda #1
     jmp AI_SetHold
 
-; Hold back+down for fourteen frames: crouch guard against lows.
+; Hold back+down for twenty frames: crouch guard against lows.
 AI_HoldCrouch:
     jsr AI_DirBack
     rep #$20
@@ -13257,7 +13255,7 @@ AI_HoldCrouch:
     sta FP+F_JOY,x
     sep #$20
     .ACCU 8
-    lda #14
+    lda #20
     sta AI_TMP
     lda #3
     jmp AI_SetHold
@@ -13268,8 +13266,8 @@ AI_SetHold:
     lda AI_SIDE
     rep #$20
     .ACCU 16
-    and #$00FF.w
-    tax
+    and #$0001.w                       ; side is a 0/1 index; never let a
+    tax                                 ;   stray byte write the other side
     sep #$20
     .ACCU 8
     lda scr0
@@ -13283,7 +13281,7 @@ AI_SetTimer:
     lda AI_SIDE
     rep #$20
     .ACCU 16
-    and #$00FF.w
+    and #$0001.w
     tax
     sep #$20
     .ACCU 8
