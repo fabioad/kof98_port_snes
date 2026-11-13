@@ -55,9 +55,11 @@
 .DEFINE MSU_PHASE   $F072                 ; 0 = checking, 1 = result shown
 .DEFINE MSU_LEN     $F073                 ; number of blinking OBJ cells
 
-; MSU screen credit strip: BG3 2bpp font + 32x32 map (rows 20-27 visible).
-.DEFINE MSU_CRED_TILEW $7000              ; BG3 tile base (word)
-.DEFINE MSU_CRED_MAPW  $7800              ; BG3 map base (word)
+; MSU screen credit strip: BG1 4bpp font + 32x32 map (rows 20-27 visible),
+; drawn over the scrolling K.O.F. backdrop on BG2 (chr $0000, map $1C00).
+; OBJ owns $2000-$3FFF, so the map takes the old BG3 slot at $7800.
+.DEFINE MSU_CRED_TILEW $4000              ; BG1 tile base (word, MnLoadArt)
+.DEFINE MSU_CRED_MAPW  $7800              ; BG1 map base (word)
 .DEFINE MSU_CRED_ROWS  8
 
 .DEFINE G_MODE      $10C0                 ; 0 single VS, 1 single play, 2 team play,
@@ -922,7 +924,11 @@ MsuScreenEnter:
     .ACCU 8
     lda #$FF.b
     sta.w S_BLINK
-    jsr MsuPalette
+    lda #$80.b                             ; blank while the backdrop uploads
+    sta.l $2100
+    jsl SelBgLoadFar                       ; BG2: scrolling K.O.F. art + palette,
+                                           ;   same as the character select
+    jsr MsuPalette                         ; then the credit/OBJ colours
     jsr MsuDraw
     sep #$20
     .ACCU 8
@@ -1173,16 +1179,17 @@ MsuCreditsInit:
     rep #$30
     .ACCU 16
     .INDEX 16
-    ; --- font tiles -> BG3 tile base ---
-    lda #HudChr.w
+    ; --- font tiles -> BG1 tile base: MenuFont is the HUD charset already
+    ;     expanded to 4bpp (16 glyph bytes + 16 zero high-plane bytes) ---
+    lda #MenuFont.w
     sta.b I_SRC
     sep #$20
     .ACCU 8
-    lda #:HudChr
+    lda #:MenuFont
     sta.b I_SRC+2
     rep #$20
     .ACCU 16
-    lda #(HudChr_End-HudChr).w
+    lda #(MenuFont_End-MenuFont).w
     sta.b I_LEN
     ldx #MSU_CRED_TILEW.w
     jsr MnDma
@@ -1256,18 +1263,16 @@ MCI_chars:
     lda.b scr6
     cmp #MSU_CRED_ROWS.b
     bne MCI_row
-    ; --- BG3: tiles $7000, map $7800, no scroll ---
+    ; --- BG1: map $7800 (tiles $4000 from MnLoadArt), no scroll ---
     sep #$20
     .ACCU 8
-    lda #$07.b
-    sta.l $210C                           ; BG34NBA: BG3 tiles $7000
     lda #$78.b
-    sta.l $2109                           ; BG3SC: map $7800, 32x32
+    sta.l $2107                           ; BG1SC: map $7800, 32x32
     lda #0
-    sta.l $2111
-    sta.l $2111                           ; BG3HOFS
-    sta.l $2112
-    sta.l $2112                           ; BG3VOFS
+    sta.l $210D
+    sta.l $210D                           ; BG1HOFS
+    sta.l $210E
+    sta.l $210E                           ; BG1VOFS
     ; Stay blanked: MsuScreenEnter enables the display only after the
     ; palette and OAM are ready, so an old white backdrop can never show
     ; through for a frame.
@@ -1319,11 +1324,6 @@ MsuPalette:
     sta.l $2122
     lda #$08.b
     sta.l $2122
-    ; Keep only BG3 credits + OBJ visible over the black CGRAM backdrop.
-    lda #0.b
-    sta.l $2121
-    sta.l $2122
-    sta.l $2122
     ; BG3 palette 0: gray outline, light gray shade, white body.
     lda #1.b
     sta.l $2121
@@ -1339,8 +1339,8 @@ MsuPalette:
     sta.l $2122
     lda #$7F.b
     sta.l $2122
-    lda #$14.b
-    sta.l $212C
+    lda #$13.b                            ; TM = BG1 (credits) + BG2 (backdrop)
+    sta.l $212C                           ;   + OBJ (status line)
     lda #0.b
     sta.l $212D
     rts

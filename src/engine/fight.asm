@@ -23789,6 +23789,77 @@ HHNG_out:
 
 ; Gradient palette for BG3 palette 2: three HDMA channels rewrite CGRAM
 ; 9/10/11 on every scanline (CGRAM 0-7 are the portraits, 12-31 the HUD).  Enabled only while the fight HUD is up.
+; ShowSelect (forced blank, NMI off): upload the scrolling K.O.F. backdrop.
+; BG2 chr at VRAM word $0000 (below BG1's map at $1800), map at $1C00.
+SelBgLoadFar:
+    php
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    sep #$20
+    .ACCU 8
+    lda #$80.b
+    sta.l $002115                        ; word increment on $2119
+    rep #$20
+    .ACCU 16
+    lda #$0000.w
+    sta.l $002116
+    lda #$1801.w                         ; ch0: two regs, A->B, to $2118
+    sta.l $004300
+    lda #SelBgChr.w
+    sta.l $004302
+    lda #(SelBgChr_End-SelBgChr).w
+    sta.l $004305
+    sep #$20
+    .ACCU 8
+    lda #:SelBgChr
+    sta.l $004304
+    lda #$01.b
+    sta.l $00420B
+    rep #$20
+    .ACCU 16
+    lda #$1C00.w
+    sta.l $002116
+    lda #SelBgMap.w
+    sta.l $004302
+    lda #(SelBgMap_End-SelBgMap).w
+    sta.l $004305
+    sep #$20
+    .ACCU 8
+    lda #:SelBgMap
+    sta.l $004304
+    lda #$01.b
+    sta.l $00420B
+
+    ; palette 0: backdrop colours + gradient (same as ShowSelect); the MSU
+    ; status screen reuses this loader and overlays its credit colours.
+    rep #$20
+    .ACCU 16
+    lda #SelPal.w
+    sta.l $004302
+    lda #32.w
+    sta.l $004305
+    sep #$20
+    .ACCU 8
+    lda #:SelPal
+    sta.l $004304
+    lda #0
+    sta.l $002121                        ; CGADD 0
+    sta.l $004300                        ; A -> $2122, increment
+    lda #$22.b
+    sta.l $004301
+    lda #$01.b
+    sta.l $00420B                        ; start ch0
+    lda #$1C.b
+    sta.l $002108                        ; BG2SC: map word $1C00, 32x32
+    lda #0
+    sta.l $00210F
+    sta.l $00210F                        ; BG2HOFS 0
+    sta.l $002110
+    sta.l $002110                        ; BG2VOFS 0 (HudHdmaTick scrolls)
+    plp
+    rtl
+
 HudHdmaTick:
     php
     rep #$10
@@ -23796,6 +23867,21 @@ HudHdmaTick:
     sep #$20
     .ACCU 8
     lda gamestate
+    cmp #5.b
+    beq HHT_scroll
+    cmp #GS_MSUCHK.b
+    bne HHT_notsel
+HHT_scroll:
+    ; Character select and the boot MSU status screen: the K.O.F. backdrop
+    ; (BG2) climbs 1 px every two frames like the arcade.  Its pattern
+    ; repeats every 128 px, so the 8-bit framecnt/2 wraps seamlessly.
+    lda framecnt
+    lsr a
+    sta.l $002110
+    lda #0
+    sta.l $002110                        ; BG2VOFS = framecnt / 2
+    lda gamestate
+HHT_notsel:
     cmp #1.b
     beq HHT_on
     cmp #2.b
@@ -23843,57 +23929,6 @@ HHT_on:
     .ACCU 8
     lda #:HudHdma1.b
     sta.l $004314
-; ShowSelect (forced blank, NMI off): upload the scrolling K.O.F. backdrop.
-; BG2 chr at VRAM word $0000 (below BG1's map at $1800), map at $1C00.
-SelBgLoadFar:
-    php
-    rep #$30
-    .ACCU 16
-    .INDEX 16
-    sep #$20
-    .ACCU 8
-    lda #$80.b
-    sta.l $002115                        ; word increment on $2119
-    rep #$20
-    .ACCU 16
-    lda #$0000.w
-    sta.l $002116
-    lda #$1801.w                         ; ch0: two regs, A->B, to $2118
-    sta.l $004300
-    lda #SelBgChr.w
-    sta.l $004302
-    lda #(SelBgChr_End-SelBgChr).w
-    sta.l $004305
-    sep #$20
-    .ACCU 8
-    lda #:SelBgChr
-    sta.l $004304
-    lda #$01.b
-    sta.l $00420B
-    rep #$20
-    .ACCU 16
-    lda #$1C00.w
-    sta.l $002116
-    lda #SelBgMap.w
-    sta.l $004302
-    lda #(SelBgMap_End-SelBgMap).w
-    sta.l $004305
-    sep #$20
-    .ACCU 8
-    lda #:SelBgMap
-    sta.l $004304
-    lda #$01.b
-    sta.l $00420B
-    lda #$1C.b
-    sta.l $002108                        ; BG2SC: map word $1C00, 32x32
-    lda #0
-    sta.l $00210F
-    sta.l $00210F                        ; BG2HOFS 0
-    sta.l $002110
-    sta.l $002110                        ; BG2VOFS 0 (HudHdmaTick scrolls)
-    plp
-    rtl
-
     lda #:HudHdma2.b
     sta.l $004324
     lda #:HudHdma3.b
@@ -23901,18 +23936,6 @@ SelBgLoadFar:
     lda #$03.b                           ; two bytes to $21 + two to $22
     sta.l $004310
     sta.l $004320
-    cmp #5.b
-    bne HHT_notsel
-    ; Character select: the K.O.F. backdrop (BG2) climbs 1 px every two
-    ; frames like the arcade.  Its pattern repeats every 128 px, so the
-    ; 8-bit framecnt/2 wraps seamlessly.
-    lda framecnt
-    lsr a
-    sta.l $002110
-    lda #0
-    sta.l $002110                        ; BG2VOFS = framecnt / 2
-    lda gamestate
-HHT_notsel:
     sta.l $004330
     lda #$21.b
     sta.l $004311
