@@ -6655,28 +6655,7 @@ CT_human_scan:
 +   ldx fofs
     lda FP+F_HIST,x
     sta FP+F_LASTSCAN,x
-    lda FP+F_STATE,x
-    and #$00FF.w
-    cmp #S_CROUCH
-    beq CT_c
-    cmp #S_CDOWN
-    beq CT_c
-    cmp #S_CUP
-    beq CT_c
-    cmp #S_CPUNCH                       ; crouching attacks cancel with
-    bcc +                               ;   posture C
-    cmp #S_CSKICK+1
-    bcc CT_c
-+   lda FP+F_Y,x
-    beq +
-    lda #4                              ; airborne
-    bra CT_p
-+   lda #1                              ; standing
-    bra CT_p
-CT_c:
-    lda #2                              ; crouching
-CT_p:
-    sta ct_post                         ; 16-bit store also clears ct_ei (ok)
+    jsl CmdPostureFar                   ; ct_post (bank 126: no room here)
     sep #$20
     .ACCU 8
     jsr JoyRelDir
@@ -6736,6 +6715,8 @@ CT_rule:
     lda [boxp],y                      ; posture mask
     and ct_post
     bne +
+    jsl CmdRiseOkFar                  ; rising: stand-only specials pass
+    bcs +
     jmp CT_next
 +
     ; row+4 proximity byte (bit7 = victim must be throwable) and row+5
@@ -9429,8 +9410,11 @@ StJStart:                               ; takeoff squat; samples jump dir in
     .ACCU 16
     ldx fofs
     stz FP+F_VX,x
-    jsr JumpDirSample
-    jmp StateRet                          ; anim end -> JumpTakeoff
+    jsr CmdTry                          ; up-terminated commands (Kim's
+    ldx fofs                            ;   charge Hienzan) only see their
+    jsr JumpDirSample                   ;   button on the next tick, when the
+    jmp StateRet                        ;   squat already started: scan here
+                                        ;   too, as mugen's state -1 does
 
 ; Update the direction while a horizontal input is held.  Releasing a tapped
 ; diagonal during the takeoff animation keeps its launch direction.
@@ -24861,6 +24845,84 @@ TinySliceLookup:
     sta scr0                            ; src offset
     lda scr3
     sta scr4                            ; src bank
+    rtl
+.ENDS
+.ENDIF
+
+; ---------------------------------------------------------------------------
+; CmdTry posture, relocated to bank 126 (the Fight window is full).
+; CmdPostureFar: A16, X = fofs.  Stores ct_post (S=1 C=2 A=4; the 16-bit
+; store also clears ct_ei) and returns A16.
+; S_CUP (crouch -> stand) is statetype S in mugen's common1 (state 12), so a
+; stand-only special finished while rising from a D motion (Iori's HCB,F
+; Kuzukaze) must still see posture S.  It reports C plus bit 8; the posture
+; gate (CmdRiseOkFar) lets the rise through stand-only rows that target a
+; special, while the FF/BB run and backdash rows keep posture C and cannot
+; fire in the middle of a D,B,D,B / F,D,B,F motion.
+; ---------------------------------------------------------------------------
+.IFDEF PVSNESLIB
+.BASE $C0
+.BANK 126 SLOT 0
+.ORGA $C500                             ; free gap after PoseCatchUpFar;
+.SECTION "CmdPostureFar" FORCE          ;   only $8000+ is CPU-visible
+CmdPostureFar:
+    rep #$20
+    .ACCU 16
+    lda FP+F_STATE,x
+    and #$00FF.w
+    cmp #S_CROUCH
+    beq CPF_c
+    cmp #S_CDOWN
+    beq CPF_c
+    cmp #S_CUP
+    bne +
+    lda #10                             ; C + rising
+    bra CPF_p
++   cmp #S_CPUNCH                       ; crouching attacks cancel with
+    bcc +                               ;   posture C
+    cmp #S_CSKICK+1
+    bcc CPF_c
++   lda FP+F_Y,x
+    beq +
+    lda #4                              ; airborne
+    bra CPF_p
++   lda #1                              ; standing
+    bra CPF_p
+CPF_c:
+    lda #2                              ; crouching
+CPF_p:
+    sta ct_post
+    rtl
+
+; CmdRiseOkFar: the row's posture mask missed ct_post.  A8, Y = row+3.
+; Carry set when rising (ct_post bit 8) and the row is stand-only with a
+; real special/super target (48..69 and 85..89; 70..84 are throw, victim and
+; parry slots, and 90+ are poses, which must not fire while standing up).
+CmdRiseOkFar:
+    .ACCU 8
+    lda ct_post
+    and #8
+    beq CRF_no
+    lda [boxp],y
+    and #1
+    beq CRF_no
+    iny
+    iny
+    iny
+    lda [boxp],y
+    cmp #S_SPECIAL
+    bcc CRF_no                          ; below the special slots
+    cmp #70
+    bcc CRF_yes                         ; 48..69: specials / fast variants
+    cmp #S_SUPPER
+    bcc CRF_no                          ; 70..84: throw, victim, parry
+    cmp #90
+    bcs CRF_no                          ; 90+: poses, intro, counters
+CRF_yes:
+    sec
+    rtl
+CRF_no:
+    clc
     rtl
 .ENDS
 .ENDIF

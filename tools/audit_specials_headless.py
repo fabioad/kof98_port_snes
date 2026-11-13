@@ -19,7 +19,9 @@ from test_counter_grab_headless import boot_select, enter_fight
 import build_fight as bf
 
 P1, P2 = 0x4000, 0x4040
-BUTTONS = {1: 1, 2: 9, 4: 0, 8: 8, 16: 10, 32: 11, 64: 3}
+BUTTONS = {1: 1, 2: 9, 4: 0, 8: 8, 16: 10, 32: 11, 64: 2}
+# Token 64 is the pad's SELECT key (PushHist maps $2000 -> s), not START.
+# With 3 (START) the striker commands (Rugal 2899/7200) never entered.
 PAD_MASKS = {0x4000: 1, 0x0040: 9, 0x8000: 0, 0x0080: 8,
              0x0020: 10, 0x0010: 11}
 SYSTEM = set(range(69, 78)) | set(range(90, 98)) | {67}

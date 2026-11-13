@@ -7659,6 +7659,13 @@ def parse_command_defs(path):
         ok = True
         for token in value.split(","):
             token = token.strip()
+            # MUGEN's other charge spelling: ~$D (charged direction, then
+            # released) is the same input as the ~40D form Kim's SNES .cmd
+            # and the matcher use.  Left alone it became a "hold D" prefix,
+            # which can never coexist with the U/F finisher (Kim's
+            # Hienzan / Haki Kyaku never came out).
+            if re.match(r"^~\$[a-z]+$", token, re.I):
+                token = "~40" + token[2:]
             rel = False
             charge = re.match(r"^~(\d+)([a-z]+)$", token, re.I)
             if charge:
