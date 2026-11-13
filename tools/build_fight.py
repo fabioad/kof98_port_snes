@@ -3799,6 +3799,10 @@ if "joe" in CHARS:
         (114, 1310, 1400),     # Slash Kick strong (reuse the ground kick)
     ])
     _joe = POST_CAL_TWEAKS.setdefault("joe", {})
+    # Joe_SNES.cmd sends ~B,D,F+a to both 1050 and 1000, so 1050 (listed
+    # first) always won.  Joe.cmd fires 1000 + 50*(var(10)=1), and var(10)
+    # is only set on palettes 7-12 (EX mode, absent here): keep 1000.
+    _joe.setdefault("cmd_drop_states", []).append(1050)
     _joe.setdefault("slice_damage", {}).update({
         107: 20, 108: 35, 109: 15, 110: 25,
         111: 20, 112: 35, 113: 25, 114: 19})
@@ -4260,6 +4264,19 @@ if "choi" in CHARS:
          "state": 3200, "posture": 3, "time": 30,
          "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 12)]},
     ])
+    # Choi_SNES.cmd gave the air Toppa supers 3050/3060 the ground
+    # ~D,B,D,B command of 3000, and 3050 sat first, so 3000 never came
+    # out.  The source Choi.cmd fires 3050/3060 from the air on
+    # ~D,F,D,F + x/y (statetype = A).
+    _choi.setdefault("cmd_drop_states", []).extend([3050, 3060])
+    _choi.setdefault("cmd_extra", []).extend([
+        {"name": "TOPPA_L", "label": "TOPPA L",
+         "state": 3050, "posture": 4, "time": 22,
+         "elems": [(0x42, 0), (4, 0), (2, 0), (4, 0), (0, 1)]},
+        {"name": "TOPPA_S", "label": "TOPPA S",
+         "state": 3060, "posture": 4, "time": 22,
+         "elems": [(0x42, 0), (4, 0), (2, 0), (4, 0), (0, 2)]},
+    ])
 
 if "yashiro" in CHARS:
     POST_CAL_REACTIVATED.setdefault("yashiro", []).extend([
@@ -4560,6 +4577,11 @@ if "geese" in CHARS:
         (108, 1600, 1600),     # Shinkuu Nage
     ])
     _gee = POST_CAL_TWEAKS.setdefault("geese", {})
+    # Geese_SNES.cmd sends D,DF,F+a to both 1000 and 1050.  In the source
+    # the pair is 1000 + 50*(var(10)=0) and var(10)=1 only on palettes
+    # 7-12, but the helper-fired 1050 (the "ura" wave) cannot run here:
+    # the port compiles the Reppuken projectile onto 1000 (CHARS projs
+    # 48/49) and keeps 1050 as the EX variant.  Leave 1000 first.
     _gee.setdefault("slice_damage", {}).update({107: 25, 108: 30})
     _gee.setdefault("hitdef_override", {}).update({
         107: {"active": 1, "damage": 25, "gdamage": 2, "p2state": 0xFF,
@@ -5024,6 +5046,16 @@ if "billy" in CHARS:
     _bil.setdefault("slice_damage", {}).update({
         107: 25, 108: 30, 109: 35, 110: 45})
     _bil.setdefault("cmd_priority", []).extend(["MAX2", "HONGREN"])
+    # Two SNES .cmd command slots collide with real moves:
+    # - 1510 exists only in the conversion; the source BILLY.cmd has no
+    #   state 1510 and routes dp_y straight to 1520, so its identical
+    #   DP_Y rule always won and 1520 never came out.
+    # - 3000/3020 are the source's close-range hold throws (fwd_b/fwd_y,
+    #   `p2bodydist x <= 10`), but the SNES .cmd gave them the qcfhcb
+    #   super motion of 1800/1850 and listed them first.  The port's
+    #   standard throw (sid 74) already answers forward + button at
+    #   contact range, so the duplicates just go.
+    _bil.setdefault("cmd_drop_states", []).extend([1510, 3000, 3020])
     _bil.setdefault("cmd_extra", []).extend([
         {"name": "FLAMING", "label": "FLAMING STICK SPIN",
          "state": 1860, "posture": 3, "time": 26,
@@ -5102,6 +5134,16 @@ if "lucky" in CHARS:
         112: {"active": 1, "damage": 35, "gdamage": 2, "fall": 1},
     })
     _luc.setdefault("cmd_priority", []).extend(["AIR_SLAM", "FINGER"])
+    # The SNES .cmd gave "shoot1" (state 2099, D,D + punch in the source
+    # lucky.cmd) the same DP motion as the 1050 grab, and 2099 sits first,
+    # so it stole 1050 and the DP-shaped tail of both QCFx2 supers
+    # (3200/3300).  Restore the source input.
+    _luc.setdefault("cmd_drop_states", []).append(2099)
+    _luc.setdefault("cmd_extra", []).extend([
+        {"name": "SHOOT1", "label": "SHOOT 1",
+         "state": 2099, "posture": 3, "time": 15,
+         "elems": [(0x42, 0), (2, 0), (0, 1)]},
+    ])
     _luc.setdefault("cmd_extra", []).extend([
         {"name": "SHOOT2", "label": "SHOOT 2",
          "state": 2200, "posture": 3, "time": 22,

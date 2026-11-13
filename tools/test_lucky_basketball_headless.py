@@ -6,9 +6,11 @@ forward toward the opponent (the A version is higher, the C version lower).
 It is not a vertical drop from the sky: the source's sky/layup ball belongs to
 the separate Death Shoot (D,D+P).
 
-This port's basketball row (sid 87, state 2100) now spawns at hand height
+This port's basketball row (sid 66, state 2099) now spawns at hand height
 (120 px above the floor), moves 4 px/tick forward and curves down at
-11/16 px/tick^2.  It hits a victim about 60 px ahead for 22 damage and bounces
+11/16 px/tick^2.  The source lucky.cmd fires it from "shoot1" (~D, D, x);
+the SNES .cmd had given it the Alley Hoop DP motion, which made it swallow
+that command.  It hits a victim about 60 px ahead for 22 damage and bounces
 on the floor on a whiff.
 
 Run after a PVSnesLib build:
@@ -35,9 +37,9 @@ DOWN, LEFT, RIGHT = 5, 6, 7
 S_HIT = 9
 GROUND_Y = 190
 BALL_DAMAGE = 22
-# ~F, D, DF, a (a = SNES B on this port).
-DP_RIGHT = ((RIGHT,), (DOWN,), (DOWN, RIGHT), (RIGHT,))
-DP_LEFT = ((LEFT,), (DOWN,), (DOWN, LEFT), (LEFT,))
+# ~D, D, x (x = SNES Y / weak punch on this port).
+DD = ((DOWN,), (), (DOWN,))
+PUNCH_Y = 1
 
 
 def press(core, port, buttons, frames=3):
@@ -46,12 +48,12 @@ def press(core, port, buttons, frames=3):
     core.buttons[port] = set()
 
 
-def shoot(core, port, motion):
+def shoot(core, port, motion, button=PUNCH_Y):
     for direction in motion:
         core.buttons[port] = set(direction)
         core.step(2)
     core.step(1)
-    press(core, port, {B}, 3)
+    press(core, port, {button}, 3)
 
 
 def ball_slot(core, owner_p2):
@@ -165,11 +167,11 @@ def main(core_path, rom):
     try:
         select_state = boot_select(core)
         # P1 Lucky, victim at the landing spot.
-        case(core, select_state, "p1-hit", 1, DP_RIGHT, 166, True)
+        case(core, select_state, "p1-hit", 1, DD, 166, True)
         # P1 Lucky, victim far away: the ball must land and bounce, not fly on.
-        case(core, select_state, "p1-whiff", 1, DP_RIGHT, 232, False)
+        case(core, select_state, "p1-whiff", 1, DD, 232, False)
         # P2 Lucky facing left: the diagonal and bounce mirror correctly.
-        case(core, select_state, "p2-hit", 2, DP_LEFT, 20, True)
+        case(core, select_state, "p2-hit", 2, DD, 20, True)
     finally:
         core.close()
 
