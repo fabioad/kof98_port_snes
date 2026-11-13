@@ -1832,8 +1832,8 @@ TitleSprites:
     .ACCU 16
     lda #48.w                             ; centre the 20-cell prompt
     sta.b scr0
-    lda #136.w
-    sta.b scr1
+    lda #152.w                            ; middle of the gap between THE
+    sta.b scr1                            ;   SNESFEST (y<=134) and SNK (178)
     lda #StrStart.w
     sta.b scr2
     sep #$20
@@ -1847,9 +1847,9 @@ TitleSprites:
     ; baked-in SNK CORP OF AMERICA 1998 line.
     rep #$20
     .ACCU 16
-    lda #10.w
+    lda #16.w                             ; SNK logo's left edge
     sta.b scr0
-    lda #194.w
+    lda #206.w                            ; below the art's (C) SNK line (<=198)
     sta.b scr1
     lda #TitleCredit2.w
     sta.b scr2

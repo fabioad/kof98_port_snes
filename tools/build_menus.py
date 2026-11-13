@@ -112,10 +112,13 @@ def main():
     os.makedirs(INTRO_DST, exist_ok=True)
 
     total = 0
-    for base in ("title", "modes"):
-        for ext in ("tiles", "map", "pal"):
-            total += cp(f"{base}.{ext}")
+    for ext in ("tiles", "map", "pal"):
+        total += cp(f"modes.{ext}")
     total += cp("cur.tiles")
+    # title art: arcade frame converted here (tools/build_title.py)
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import build_title
+    build_title.main()
 
     # intro frames: full-screen stills + packed 16x14 mode-7 windows are
     # rebuilt from the reconstructed scene plates (tools/build_intro.py);
