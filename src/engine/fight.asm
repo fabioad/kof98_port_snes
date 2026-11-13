@@ -2446,12 +2446,12 @@ ShowSelect:
     sta.b I_LEN
     ldx #MENU_TILEW.w
     jsr MnDma
+    jsl SelBgLoadFar                      ; BG2 scrolling K.O.F. backdrop
     ; --- OBJ chr: menu font at idx0, cursor ring at SEL_CUR_TILE ---
     lda #MenuFont.w
     sta.b I_SRC
     sep #$20
     .ACCU 8
-    jsl SelBgLoadFar                      ; BG2 scrolling K.O.F. backdrop
     lda #:MenuFont
     sta.b I_SRC+2
     rep #$20
