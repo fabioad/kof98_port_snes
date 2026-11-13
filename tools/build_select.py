@@ -357,32 +357,93 @@ ICON_FIRST = 1 + len(CELL_COLORS)
 ICON_COLORS = 15 - len(CELL_COLORS)
 
 
-def arcade_background():
-    """Pixel-native K.O.F. outline pattern, sharing colors with icon tiles."""
-    bg = Image.new("RGB", (256, 224), CELL_COLORS[2])
-    dr = ImageDraw.Draw(bg)
-    dr.rectangle((128, 0, 255, 223), fill=CELL_COLORS[3])
-    # Polygon outlines keep the lettering crisp at the native resolution.
-    letters = [
-        [(0, 0), (5, 0), (5, 10), (17, 0), (24, 0), (10, 13),
-         (24, 28), (17, 28), (5, 16), (5, 28), (0, 28)],
-        [(0, 0), (24, 0), (24, 28), (0, 28)],
-        [(0, 0), (24, 0), (24, 5), (5, 5), (5, 12),
-         (20, 12), (20, 17), (5, 17), (5, 28), (0, 28)],
-    ]
-    for row, yy in enumerate(range(-10, 224, 43)):
-        for origin in (-27 + (row % 2) * 38, 91 + (row % 2) * 38,
-                       209 + (row % 2) * 38):
-            for i, poly in enumerate(letters):
-                xx = origin + i * 34
-                pts = [(xx + x, yy + y) for x, y in poly]
-                dr.line(pts + pts[:1], fill=CELL_COLORS[4], width=1)
-                if i == 1:
-                    dr.rectangle((xx + 5, yy + 5, xx + 19, yy + 23),
-                                 outline=CELL_COLORS[4])
-                dr.rectangle((xx + 28, yy + 24, xx + 30, yy + 28),
-                             outline=CELL_COLORS[4])
-    return bg
+# BG1 is transparent wherever the art shows this key; BG2 scrolls beneath.
+BG_KEY = (255, 0, 255)
+# pal0 idx 1-5 for the static BG1 art: cell frame/fill + label colors.
+ART_COLORS = CELL_COLORS[:2] + [(255, 238, 170), (2, 6, 20), (230, 180, 40)]
+# pal0 idx 6-15 (and CGRAM 0, the backdrop) hold the scrolling pattern.
+SELBG_SRC = os.path.join(KOF, "select_bg_arcade.png")
+SELBG_FIRST = 1 + len(ART_COLORS)
+SELBG_GRAD = 8                # gradient shades, incl. the black at idx 0
+SELBG_LETTER = 16 - SELBG_FIRST - (SELBG_GRAD - 1)
+
+
+def scroll_background():
+    """Arcade select backdrop (MAME capture, one 320x128 vertical period).
+
+    Returns (colors, idx): colors[0] is the backdrop/CGRAM 0 black, the rest
+    go to pal0 from SELBG_FIRST; idx is a 128x256 list of pal0 indices.
+    The centre 256 columns are kept 1:1 so the outlines stay crisp. The
+    arcade gradient is a two-row dither of ~29 shades; it is re-dithered
+    here with eight anchors (Bayer 4x4) and the letter outlines are reduced
+    to three colors.
+    """
+    src = Image.open(SELBG_SRC).convert("RGB")
+    sw, sh = src.size
+    x0 = (sw - 256) // 2
+    px = src.load()
+    rows = [[px[x0 + x, y] for x in range(256)] for y in range(sh)]
+    # rows 30/31 are letter-free; the gradient repeats every two rows
+    g2 = (rows[30], rows[31])
+    grad = [tuple((a[c] + b[c]) / 2 for c in range(3))
+            for a, b in zip(*g2)]
+    letter = [[rows[y][x] != g2[y % 2][x] for x in range(256)]
+              for y in range(sh)]
+
+    def dist(a, b):
+        return sum((a[c] - b[c]) ** 2 for c in range(3)) ** 0.5
+
+    # arc length along the gradient; anchors spaced evenly on both sides
+    # of the darkest column so the black centre survives exactly
+    arc = [0.0]
+    for x in range(1, 256):
+        arc.append(arc[-1] + dist(grad[x - 1], grad[x]))
+    xdark = min(range(256), key=lambda x: sum(grad[x]))
+    nb = SELBG_GRAD // 2                      # blue side anchors (excl. black)
+    nr = SELBG_GRAD - 1 - nb
+    pos = ([arc[xdark] * i / nb for i in range(nb)] + [arc[xdark]]
+           + [arc[xdark] + (arc[-1] - arc[xdark]) * i / nr
+              for i in range(1, nr + 1)])
+    anchors = [grad[min(range(256), key=lambda x: abs(arc[x] - p))]
+               for p in pos]
+    bayer = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]]
+
+    # letters: plain k-means over the outline pixels
+    lp = [rows[y][x] for y in range(sh) for x in range(256) if letter[y][x]]
+    cent = [lp[i * len(lp) // SELBG_LETTER] for i in range(SELBG_LETTER)]
+    for _ in range(40):
+        acc = [[0, 0, 0, 0] for _ in cent]
+        for p in lp:
+            k = min(range(len(cent)), key=lambda i: dist(p, cent[i]))
+            for c in range(3):
+                acc[k][c] += p[c]
+            acc[k][3] += 1
+        cent = [tuple(a[c] / a[3] for c in range(3)) if a[3] else cent[i]
+                for i, a in enumerate(acc)]
+
+    # palette slots: anchor `xdark` -> 0, other anchors, then letters
+    order = [nb] + [i for i in range(SELBG_GRAD) if i != nb]
+    slot = {a: (0 if j == 0 else SELBG_FIRST + j - 1)
+            for j, a in enumerate(order)}
+    colors = [tuple(round(v) for v in anchors[a]) for a in order]
+    colors += [tuple(round(v) for v in c) for c in cent]
+    idx = []
+    for y in range(sh):
+        out = []
+        for x in range(256):
+            if letter[y][x]:
+                k = min(range(len(cent)),
+                        key=lambda i: dist(rows[y][x], cent[i]))
+                out.append(SELBG_FIRST + SELBG_GRAD - 1 + k)
+                continue
+            p = arc[x]
+            k = max(i for i in range(SELBG_GRAD - 1) if pos[i] <= p) \
+                if p < pos[-1] else SELBG_GRAD - 2
+            t = (p - pos[k]) / (pos[k + 1] - pos[k])
+            hi = t * 16 > bayer[y % 4][x % 4] + 0.5
+            out.append(slot[k + 1 if hi else k])
+        idx.append(out)
+    return colors, idx
 
 
 def main():
@@ -425,7 +486,7 @@ def main():
         faces_px[cid] = face
 
     # Draw native one-pixel frames; rescaling the cell sprite blurred borders.
-    bgi = arcade_background()
+    bgi = Image.new("RGB", (256, 224), BG_KEY)
     dr = ImageDraw.Draw(bgi)
     for box in cells:
         dr.rectangle(box, fill=CELL_COLORS[1], outline=CELL_COLORS[0], width=1)
@@ -450,8 +511,10 @@ def main():
         dr.rectangle([x0, 194, x1, 212], outline=(230, 180, 40))
 
     # ---- palettes ------------------------------------------------------
-    # Pin the background colors in pal0 too, so tile boundaries are invisible.
-    art_pal = CELL_COLORS + quant(bgi, ICON_COLORS)[0]
+    # pal0: static art colors at idx 1-5, the scrolling BG2 pattern after.
+    sbg_colors, sbg_idx = scroll_background()
+    art_pal = ART_COLORS + sbg_colors[1:]
+    assert len(art_pal) == 15, len(art_pal)
 
     # icon pals: pals 1-7 (all free now that the face windows are gone)
     # groups are about six chars. Keep the final five portraits together so
@@ -513,15 +576,15 @@ def main():
 
     # art: whole composed frame quantized once to 15 colors -> pal0
     bpx = bgi.load()
-    art_lookup = {color: min(range(15), key=lambda i:
-                            sum((color[c] - art_pal[i][c]) ** 2
-                                for c in range(3)))
+    art_lookup = {color: 1 + min(range(len(ART_COLORS)), key=lambda i:
+                                sum((color[c] - ART_COLORS[i][c]) ** 2
+                                    for c in range(3)))
                   for color in set(bgi.getdata())}
-    # pixels of cell interiors that belong to a char pal get written later;
-    # art tiles see raw quantized indices +1 (index0 reserved transparent)
+    art_lookup[BG_KEY] = 0                  # transparent: BG2 shows through
+    # pixels of cell interiors that belong to a char pal get written later
     for ty in range(28):
         for tx in range(32):
-            px = [art_lookup[bpx[tx * 8 + x, ty * 8 + y]] + 1
+            px = [art_lookup[bpx[tx * 8 + x, ty * 8 + y]]
                   for y in range(8) for x in range(8)]
             mapw[ty * 32 + tx] = ts.append(px)
 
@@ -578,8 +641,11 @@ def main():
                         outpx.append(nearest + ICON_FIRST)
                 else:
                     p = bpx[gx, gy]
-                    # Keep the actual one-pixel border and background;
-                    # replacing the tile margin with navy made thick frames.
+                    if p == BG_KEY:
+                        outpx.append(0)      # scrolling backdrop
+                        continue
+                    # Keep the actual one-pixel border; replacing the tile
+                    # margin with a solid color made thick frames.
                     nearest = min(range(15), key=lambda i:
                                   sum((p[c] - pals[pidx][i][c]) ** 2
                                       for c in range(3)))
@@ -607,10 +673,24 @@ def main():
     map_b = b"".join(struct.pack("<H", w) for w in mapw)
 
     # BG palette file: pal0 art + pals 1-7 grouped icon pals (built above)
+    # CGRAM 0 (backdrop, i.e. BG2 color 0) is the gradient's black centre.
     pal_b = bytearray()
-    for p in pals:
-        pal_b += struct.pack("<H", 0)
+    for n, p in enumerate(pals):
+        pal_b += struct.pack("<H", snes_c(sbg_colors[0]) if n == 0 else 0)
         pal_b += b"".join(struct.pack("<H", snes_c(c)) for c in p[:15])
+
+    # ---- BG2: scrolling backdrop, 32x16 tiles repeated to a 32x32 map ---
+    bts = TileSet()
+    bg2_rows = []
+    for ty in range(len(sbg_idx) // 8):
+        bg2_rows.append([bts.append([sbg_idx[ty * 8 + y][tx * 8 + x]
+                                     for y in range(8) for x in range(8)])
+                         for tx in range(32)])
+    assert 32 % len(bg2_rows) == 0
+    bg2_map = b"".join(struct.pack("<H", t)
+                       for r in range(32)
+                       for t in bg2_rows[r % len(bg2_rows)])
+    bg2_chr = bts.blob()
 
     inc = []
     inc.append("; generated by tools/build_select.py -- do not edit")
@@ -714,11 +794,14 @@ def main():
     open(os.path.join(DST, "select.chr"), "wb").write(chr_b)
     open(os.path.join(DST, "select.map"), "wb").write(map_b)
     open(os.path.join(DST, "select.pal"), "wb").write(bytes(pal_b))
+    open(os.path.join(DST, "selbg.chr"), "wb").write(bg2_chr)
+    open(os.path.join(DST, "selbg.map"), "wb").write(bg2_map)
     open(os.path.join(DST, "selobj.chr"), "wb").write(obj_chr)
     open(os.path.join(DST, "selobj.pal"), "wb").write(opal_b)
     open(os.path.join(DST, "seldata.inc"), "w").write("\n".join(inc) + "\n")
     print(f"  select: {len(ts.tiles)} tiles ({len(chr_b)}B chr), "
-          f"{len(cells)} cells, {len(ROSTER)} chars")
+          f"{len(cells)} cells, {len(ROSTER)} chars; "
+          f"bg2 {len(bts.tiles)} tiles ({len(bg2_chr)}B chr)")
 
 
 def snes_c(c):

@@ -509,5 +509,18 @@ OrderArtChr_End:
 OrderArtMap: .INCBIN "gen_menu/order.map"
 OrderArtMap_End:
 OrderArtPal: .INCBIN "gen_menu/order.pal"
+.ENDS
+
+; Character select BG2: the arcade's scrolling K.O.F. backdrop (one 128 px
+; vertical period, repeated in a 32x32 map; pal0 colors live in SelPal).
+; SelArt (bank 46) would end ~64 bytes short of HudChr2 with this added;
+; MenuArtModes leaves bank 22 free above ~$6800.
+.BANK 22 SLOT 0
+.ORGA $8000
+.SECTION "SelBgArt" FORCE
+SelBgChr:       .INCBIN "gen_menu/selbg.chr"
+SelBgChr_End:
+SelBgMap:       .INCBIN "gen_menu/selbg.map"
+SelBgMap_End:
 
 .ENDS

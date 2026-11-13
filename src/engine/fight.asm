@@ -2460,6 +2460,7 @@ ShowSelect:
     sta.b I_SRC
     sep #$20
     .ACCU 8
+    jsl SelBgLoadFar                      ; BG2 scrolling K.O.F. backdrop
     lda #:MenuFont
     sta.b I_SRC+2
     rep #$20
@@ -2487,12 +2488,12 @@ ShowSelect:
     sta.l $2105                           ; BGMODE 1
     lda #$18.b
     sta.l $2107                           ; BG1SC: map word $1800, 32x32
-    lda #$34.b
-    sta.l $210B                           ; BG12NBA: BG1 tiles word $4000
+    lda #$04.b
+    sta.l $210B                           ; BG12NBA: BG1 $4000, BG2 $0000
     lda #$01.b
     sta.l $2101                           ; OBSEL: 8x8/32x32, table0 $2000
-    lda #$11.b
-    sta.l $212C                           ; TM = BG1 + OBJ
+    lda #$13.b
+    sta.l $212C                           ; TM = BG1 + BG2 + OBJ
     lda #0
     sta.l $212D
     sta.l $210D
@@ -23823,6 +23824,57 @@ HHT_arm:
     .ACCU 8
     lda #:HudHdma1.b
     sta.l $004314
+; ShowSelect (forced blank, NMI off): upload the scrolling K.O.F. backdrop.
+; BG2 chr at VRAM word $0000 (below BG1's map at $1800), map at $1C00.
+SelBgLoadFar:
+    php
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    sep #$20
+    .ACCU 8
+    lda #$80.b
+    sta.l $002115                        ; word increment on $2119
+    rep #$20
+    .ACCU 16
+    lda #$0000.w
+    sta.l $002116
+    lda #$1801.w                         ; ch0: two regs, A->B, to $2118
+    sta.l $004300
+    lda #SelBgChr.w
+    sta.l $004302
+    lda #(SelBgChr_End-SelBgChr).w
+    sta.l $004305
+    sep #$20
+    .ACCU 8
+    lda #:SelBgChr
+    sta.l $004304
+    lda #$01.b
+    sta.l $00420B
+    rep #$20
+    .ACCU 16
+    lda #$1C00.w
+    sta.l $002116
+    lda #SelBgMap.w
+    sta.l $004302
+    lda #(SelBgMap_End-SelBgMap).w
+    sta.l $004305
+    sep #$20
+    .ACCU 8
+    lda #:SelBgMap
+    sta.l $004304
+    lda #$01.b
+    sta.l $00420B
+    lda #$1C.b
+    sta.l $002108                        ; BG2SC: map word $1C00, 32x32
+    lda #0
+    sta.l $00210F
+    sta.l $00210F                        ; BG2HOFS 0
+    sta.l $002110
+    sta.l $002110                        ; BG2VOFS 0 (HudHdmaTick scrolls)
+    plp
+    rtl
+
     lda #:HudHdma2.b
     sta.l $004324
     lda #:HudHdma3.b
@@ -23830,6 +23882,18 @@ HHT_arm:
     lda #$03.b                           ; two bytes to $21 + two to $22
     sta.l $004310
     sta.l $004320
+    cmp #5.b
+    bne HHT_notsel
+    ; Character select: the K.O.F. backdrop (BG2) climbs 1 px every two
+    ; frames like the arcade.  Its pattern repeats every 128 px, so the
+    ; 8-bit framecnt/2 wraps seamlessly.
+    lda framecnt
+    lsr a
+    sta.l $002110
+    lda #0
+    sta.l $002110                        ; BG2VOFS = framecnt / 2
+    lda gamestate
+HHT_notsel:
     sta.l $004330
     lda #$21.b
     sta.l $004311
