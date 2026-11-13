@@ -5454,6 +5454,42 @@ if "yuki" in CHARS:
         1605: [(i, 3, -4, 0) for i in (2, 6, 10, 14, 18)]
               + [(20, 4, 821, 0)]})
 
+# Shermie 2150: after the 2160 hold the source jumps after the victim (2180),
+# catches it in the air (2185) and slams it (2190, -100/1000).  The port
+# stopped at the end of 2160.  The 103..116 window is full, so the finisher
+# uses the 60-69 range, which StVictimHeld also treats as a live grab owner:
+# the victim stays bound instead of the source's release + air re-grab.
+#   63 = 2180 (air jump, empty BindTab: the victim hangs where 2160 left it)
+#   66 = 2185 (air catch; VelSet y 0 until elem 6 keeps the source hover)
+#   64 = 2190 (ground slam; damage at the 2160 rate, then the 821 release)
+if "shermie" in CHARS:
+    POST_CAL_REACTIVATED.setdefault("shermie", []).extend([
+        (63, 2180, 2180), (66, 2185, 2185), (64, 2190, 2190)])
+    _sher = POST_CAL_TWEAKS.setdefault("shermie", {})
+    _sher.setdefault("extra_trans", []).extend([(103, 63, 0, 0), (63, 66, 0, 0)])
+    # 2180's air-throw HitDef is the source re-grab; the victim is still
+    # bound here, and a throw connect would snap Shermie back to the floor.
+    # F_Y is a signed 8.8 height: the source launch (-15 px/t, ~120 px)
+    # wraps past 127 px and Physics clamps it to the floor.  The bound
+    # victim sits 50 px above her and TrackBind has the same signed clamp,
+    # so -9 (peak ~61 px) keeps both under MAX_AIR_Y (112).
+    _sher.setdefault("state_vel", {})[63] = (1, -9)
+    _sher.setdefault("hitdef_override", {})[63] = {
+        "active": 0, "damage": 0, "gdamage": 0, "throw": 0, "p2state": 255}
+    # Shermie F,D,DF+K (1400/1450 -> 1405/1455): a jumping grab.  The port
+    # played the air clip on the ground with no launch and no landing rule,
+    # so a whiff froze on the t=255 last element for ~280 ticks instead of
+    # landing into 1410/1460 (~41/52 ticks in the source).  Launch with the
+    # source velset and land into S_LAND.
+    _sher.setdefault("state_vel", {}).update({54: (3, -7), 55: (3, -9)})
+    _sher["velset_sids"] = sorted(set(_sher.get("velset_sids", ())) | {54, 55})
+    # apply_profile replaces extra_trans, so the landing rows go late.
+    LATE_EXTRA_TRANS.setdefault("shermie", []).extend(
+        [(54, 17, 1, 0), (55, 17, 1, 0)])
+    POST_CAL_ACT_OVERRIDE.setdefault("shermie", {}).update({
+        2185: [(0x80 | t, 15, 0, 0) for t in range(0, 27)],
+        2190: [(0, 3, -10, 0), (1, 4, 821, 0)]})
+
 if "krauser" in CHARS:
     _krauser = CHARS["krauser"]
     # 3222's damage loop uses var(16)/Const(data.attack), which the extractor
