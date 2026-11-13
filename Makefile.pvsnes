@@ -186,7 +186,9 @@ assets: $(FIGHT_GEN) $(ORDER_GEN)
 
 audio: $(SOUNDBANK).asm $(AUDIO_GEN) validate-snesmod
 
-src/snes/fight_bridge.obj: src/engine/fight.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/msu_seek.asm src/engine/close_normals.asm src/engine/voice_queue.asm
+# fight.asm .INCBIN/.INCLUDEs the generated fight data (hud2/hudround/stages/...):
+# without this the object is not rebuilt when only those files change.
+src/snes/fight_bridge.obj: src/engine/fight.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/msu_seek.asm src/engine/close_normals.asm src/engine/voice_queue.asm $(FIGHT_GEN)
 
 # The SDK's snes_rules recipe replaces the local soundbank recipe below, so
 # validate every module explicitly before an oversized IT can freeze spcLoad.
