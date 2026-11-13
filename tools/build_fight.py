@@ -2655,6 +2655,13 @@ if "iori" in CHARS:
     ]
     _iori["act_override"] = dict(_iori.get("act_override", {}))
     _iori["act_override"][3021] = [(6, 8, 3, 0)]
+    # MAX Ya Otome (3050) is the two-stock version of 3000.  Its rush state
+    # 3060 keeps the victim in TargetState 3065/3066/3067 and drains it with
+    # TargetLifeAdd; those victim states are not wired, so the move stopped
+    # after the opening hit (1 damage for one stock).  Route the command to
+    # the normal Ya Otome, whose rush (3020/3021) is fully implemented.
+    POST_CAL_TWEAKS.setdefault("iori", {}).setdefault(
+        "cmd_remap", {}).update({3050: 3000})
 
 # Kyo's Orochinagi lives in 3000/3010 (charge) -> 3005 (attack) and a helper
 # flame (3020).  Neither the command rules nor the 3005 slot were wired.  Put
@@ -3442,6 +3449,12 @@ if "rugal" in CHARS:
         82: (0x0500, 14, 0x0A),
     })
     _rug = POST_CAL_TWEAKS.setdefault("rugal", {})
+    # MAX Gigantic Pressure (3050) is the three-stock version of 3000/3010;
+    # its follow-up chain (3052/3053/3054/3055) uses animations (1402, 3052,
+    # 3002, 3003) that the converted pack does not ship, so the state played
+    # a two-hit poke for one stock.  Send the command to the strong version,
+    # which is the same throw and is fully wired.
+    _rug.setdefault("cmd_remap", {}).update({3050: 3010})
     _rug.setdefault("slice_damage", {}).update({66: 14})
     _rug.setdefault("cmd_priority", []).extend([
         "MAX_SUPER", "EYE_BEAM", "BEADS_DESTRUCTION"])
