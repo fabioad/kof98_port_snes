@@ -1681,3 +1681,656 @@ MCF_gen1:
     iny
     bra MCF_gen1
 .ENDS
+
+; ---------------------------------------------------------------------------
+; Fighter OAM cache, far half (DrawFighterCache in fight.asm is the near
+; trampoline).  One cache per side at OAMC1/OAMC2 ($7E, = ENGINE_DB):
+;   +0  key: META.w X.w Y.w TILEPG XOFF YOFF FLAGS PFX(0/1) CHAR
+;   +12 OAM start, +14 entry count (padded to a 4-entry high-table byte)
+;   +16 OAM entries as drawn at OC_BASEX/OC_BASEY, +272 high-table bytes
+;   +OC_* facing, bbox state, unpadded count, bbox, base position
+; A hit means OAMBUF still holds last frame's draw at the same slot: only the
+; high-table bytes are restored.  A draw whose pose is unchanged but whose
+; pixel position or 16-byte-aligned slot moved is rebuilt from the stored
+; entries plus a (dx, dy) delta instead of re-running DrawCellsFar (~1 scan
+; line per cell at 64 cells in HI10).  The delta path only runs when every
+; entry stays inside 0..255 on both axes and none was clipped (X bit 8 or
+; the Y=$F0 parking), so it reproduces the full draw exactly.
+; In:  A16/X16, fofs.  Out: C=1 done (oamtop advanced), C=0 caller draws;
+;      DB = ENGINE_DB, A16/X16.
+.SECTION "OamCacheFast" FREE
+DfcTryFar:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    lda #OAMC1.w
+    ldx fofs
+    beq +
+    lda #OAMC2.w
++   sta.w OAMC_PTR
+    tay                                 ; Y = cache base (bank $7E = DB)
+.IFDEF DFC_CHECK
+    stz.w OAMC_MOVED
+.ENDIF
+    lda FP+F_META,x
+    sta.w OAMC_TMP
+    lda FP+F_X,x
+    sta.w OAMC_TMP+2
+    lda FP+F_Y,x
+    sta.w OAMC_TMP+4
+    lda FP+F_TILEPG,x                   ; TILEPG, XOFF
+    sta.w OAMC_TMP+6
+    lda FP+F_YOFF,x                     ; YOFF, FLAGS
+    sta.w OAMC_TMP+8
+    sep #$20
+    .ACCU 8
+    lda FP+F_PFX,x                      ; only "flash on" changes the palette
+    beq +
+    lda #1.b
++   sta.w OAMC_TMP+10
+    lda FP+F_CHAR,x
+    sta.w OAMC_TMP+11
+    lda FP+F_FACING+1,x                 ; facing flips the cel like FLAGS bit0
+    and #$80.b
+    sta.w OAMC_FACE
+    cmp.w OC_FACE,y
+    bne DTF_miss
+    rep #$20
+    .ACCU 16
+    lda.w OAMC_TMP
+    cmp.w $0000,y
+    bne DTF_miss
+    lda.w OAMC_TMP+6
+    cmp.w $0006,y
+    bne DTF_miss
+    lda.w OAMC_TMP+8
+    cmp.w $0008,y
+    bne DTF_miss
+    lda.w OAMC_TMP+10
+    cmp.w $000A,y
+    bne DTF_miss
+    ; Same pose.  Sub-pixels never reach OAM: whole pixels + slot decide.
+    sep #$20
+    .ACCU 8
+    lda.w OAMC_TMP+3
+    cmp.w $0003,y
+    bne DTF_move
+    lda.w OAMC_TMP+5
+    cmp.w $0005,y
+    bne DTF_move
+    rep #$20
+    .ACCU 16
+    lda oamtop
+    cmp.w $000C,y
+    bne DTF_move
+    lda.w $000E,y
+    sta scr4
+    jmp DTF_high
+DTF_miss:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    lda oamtop
+    sta.w OAMC_START
+    clc
+    rtl
+
+DTF_move:
+    rep #$20
+    .ACCU 16
+    lda oamtop                          ; high-table bytes move whole: both
+    and #$000F.w                        ;   slots must be 4-entry aligned
+    bne DTF_miss
+    lda.w $000C,y
+    and #$000F.w
+    bne DTF_miss
+    lda.w $000E,y
+    cmp #65.w
+    bcs DTF_miss
+    sta scr4                            ; padded entry count
+    asl a
+    asl a
+    clc
+    adc oamtop
+    cmp #513.w
+    bcs DTF_miss                        ; would not fit below the OAM cap
+    lda.w OC_REAL,y
+    asl a
+    asl a
+    clc
+    adc.w $000C,y
+    cmp #512.w
+    bcs DTF_miss                        ; stored draw may have hit the cap
+    sep #$20
+    .ACCU 8
+    lda.w OC_BBOX,y
+    bne +
+    jmp DTF_scan
++   cmp #1.b
+    bne DTF_miss                        ; clipped draw: always redraw
+DTF_bbox_ok:
+    rep #$20
+    .ACCU 16
+    lda.w OAMC_TMP+3                    ; dx = x - base x
+    and #$00FF.w
+    sta scr5
+    lda.w OC_BASEX,y
+    and #$00FF.w
+    sta scr6
+    lda scr5
+    sec
+    sbc scr6
+    sta.w OAMC_DX
+    lda.w OC_MINX,y
+    and #$00FF.w
+    clc
+    adc.w OAMC_DX
+    bmi DTF_miss
+    lda.w OC_MAXX,y
+    and #$00FF.w
+    clc
+    adc.w OAMC_DX
+    cmp #$0100.w
+    bcs DTF_miss
+    lda.w OC_BASEY,y                    ; dy = base y - y (screen y = GROUND_Y - y)
+    and #$00FF.w
+    sta scr5
+    lda.w OAMC_TMP+5
+    and #$00FF.w
+    sta scr6
+    lda scr5
+    sec
+    sbc scr6
+    sta.w OAMC_DY
+    lda.w OC_MINY,y
+    and #$00FF.w
+    clc
+    adc.w OAMC_DY
+    bmi DTF_miss2
+    lda.w OC_MAXY,y
+    and #$00FF.w
+    clc
+    adc.w OAMC_DY
+    cmp #$0100.w
+    bcs DTF_miss2
+    ; Both bytes stay in 0..255, so one 16-bit add moves X and Y at once.
+    lda.w OAMC_DY
+    xba
+    and #$FF00.w
+    clc
+    adc.w OAMC_DX
+    sta scr5                            ; scr5 = dy<<8 + dx
+    lda.w OC_REAL,y
+    sta scr6                            ; scr6 = entries to move
+    tya
+    clc
+    adc #16.w
+    tay                                 ; Y -> stored entries
+    ldx oamtop                          ; X -> OAMBUF slot
+    lda scr6
+    beq DTF_pads
+DTF_loop:
+    lda.w $0000,y
+    clc
+    adc scr5
+    sta.w OAMBUF,x
+    lda.w $0002,y
+    sta.w OAMBUF+2,x
+    iny
+    iny
+    iny
+    iny
+    inx
+    inx
+    inx
+    inx
+    dec scr6
+    bne DTF_loop
+DTF_pads:
+    ldy.w OAMC_PTR
+    lda scr4
+    sec
+    sbc.w OC_REAL,y
+    beq DTF_key
+    sta scr6
+    lda #$F0F0.w
+-   sta.w OAMBUF,x
+    sta.w OAMBUF+2,x
+    inx
+    inx
+    inx
+    inx
+    dec scr6
+    bne -
+DTF_key:
+.IFDEF DFC_CHECK
+    inc.w OAMC_MOVED
+.ENDIF
+    lda.w OAMC_TMP+2                    ; OAMBUF now matches this position
+    sta.w $0002,y
+    lda.w OAMC_TMP+4
+    sta.w $0004,y
+    lda oamtop
+    sta.w $000C,y
+    bra DTF_high
+DTF_miss2:
+    jmp DTF_miss
+
+; Hit or moved: high-table bytes (size bits; X bit 8 is clear on a move)
+; go to the slot's OAMHI bytes, then oamtop advances.  Y = cache base.
+DTF_high:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    lda scr4
+    lsr a
+    lsr a
+    sta scr0
+    beq DTF_adv
+    tya
+    clc
+    adc #(16+256).w
+    tax
+    lda oamtop
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    clc
+    adc #OAMHI.w
+    tay
+    lda scr0
+    dec a
+    mvn $7E,$7E
+DTF_adv:
+    rep #$20
+    .ACCU 16
+    lda scr4
+    asl a
+    asl a
+    clc
+    adc oamtop
+    sta oamtop
+    sep #$20
+    .ACCU 8
+    lda #ENGINE_DB.b
+    pha
+    plb
+    rep #$20
+    .ACCU 16
+    sec
+    rtl
+
+; First move of a stored pose: measure its bbox once.  A8, Y = cache base,
+; scr4 = padded count.  Any X bit 8 or Y=$F0 (parked/clipped) entry marks the
+; pose as clipped so later frames go straight to the full draw.
+DTF_scan:
+    .ACCU 8
+    lda #2.b
+    sta.w OC_BBOX,y
+    rep #$20
+    .ACCU 16
+    lda scr4
+    lsr a
+    lsr a
+    beq DTF_scan_cells
+    tax
+    tya
+    clc
+    adc #(16+256).w
+    tay
+    sep #$20
+    .ACCU 8
+-   lda.w $0000,y
+    and #$55.b
+    bne DTF_scan_bad
+    iny
+    dex
+    bne -
+DTF_scan_cells:
+    sep #$20
+    .ACCU 8
+    ldy.w OAMC_PTR
+    lda #$FF.b
+    sta scr5                            ; min x / max x
+    sta scr6                            ; min y / max y
+    stz scr5+1
+    stz scr6+1
+    rep #$20
+    .ACCU 16
+    lda.w OC_REAL,y
+    beq DTF_scan_done
+    tax
+    tya
+    clc
+    adc #16.w
+    tay
+    sep #$20
+    .ACCU 8
+DTF_scan_loop:
+    lda.w $0000,y
+    cmp scr5
+    bcs +
+    sta scr5
++   cmp scr5+1
+    bcc +
+    sta scr5+1
++   lda.w $0001,y
+    cmp #$F0.b
+    beq DTF_scan_bad
+    cmp scr6
+    bcs +
+    sta scr6
++   cmp scr6+1
+    bcc +
+    sta scr6+1
++   iny
+    iny
+    iny
+    iny
+    dex
+    bne DTF_scan_loop
+DTF_scan_done:
+    rep #$20
+    .ACCU 16
+    ldy.w OAMC_PTR
+    lda scr5
+    sta.w OC_MINX,y
+    lda scr6
+    sta.w OC_MINY,y
+    sep #$20
+    .ACCU 8
+    lda #1.b
+    sta.w OC_BBOX,y
+    jmp DTF_bbox_ok
+DTF_scan_bad:
+    ldy.w OAMC_PTR
+    jmp DTF_miss
+
+; After a full DrawFighter: pad to a high-table byte, then store key, base
+; position and the drawn entries.  In: OAMC_PTR, OAMC_START, OAMC_TMP,
+; OAMC_FACE.  Out: A16/X16, DB = ENGINE_DB.
+DfcStoreFar:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    ldy.w OAMC_PTR
+    lda oamtop
+    sec
+    sbc.w OAMC_START
+    lsr a
+    lsr a
+    sta.w OC_REAL,y
+DSF_pad:
+    lda oamtop
+    cmp #512.w
+    bcs DSF_pad_done
+    and #$000F.w
+    beq DSF_pad_done
+    ldx oamtop
+    lda #$F0F0.w
+    sta.w OAMBUF,x
+    sta.w OAMBUF+2,x
+    txa
+    clc
+    adc #4.w
+    sta oamtop
+    bra DSF_pad
+DSF_pad_done:
+    lda oamtop
+    sec
+    sbc.w OAMC_START
+    lsr a
+    lsr a
+    sta scr4
+    cmp #65.w
+    bcc DSF_fits
+    lda #0.w                            ; too big for the cache: invalidate
+    sta.w $0000,y                       ;   (META 0 only matches empty draws)
+    sta.w $000E,y
+    sta.w OC_REAL,y
+    jmp DSF_done
+DSF_fits:
+    sta.w $000E,y
+    lda.w OAMC_TMP
+    sta.w $0000,y
+    lda.w OAMC_TMP+2
+    sta.w $0002,y
+    lda.w OAMC_TMP+4
+    sta.w $0004,y
+    lda.w OAMC_TMP+6
+    sta.w $0006,y
+    lda.w OAMC_TMP+8
+    sta.w $0008,y
+    lda.w OAMC_TMP+10
+    sta.w $000A,y
+    lda.w OAMC_START
+    sta.w $000C,y
+    sep #$20
+    .ACCU 8
+    lda.w OAMC_FACE
+    sta.w OC_FACE,y
+    lda #0.b
+    sta.w OC_BBOX,y
+    lda.w OAMC_TMP+3
+    sta.w OC_BASEX,y
+    lda.w OAMC_TMP+5
+    sta.w OC_BASEY,y
+    rep #$20
+    .ACCU 16
+    lda scr4
+    asl a
+    asl a
+    beq DSF_done
+    dec a
+    pha
+    tya
+    clc
+    adc #16.w
+    tay
+    lda.w OAMC_START
+    clc
+    adc #OAMBUF.w
+    tax
+    pla
+    mvn $7E,$7E
+    ldy.w OAMC_PTR
+    lda scr4
+    lsr a
+    lsr a
+    beq DSF_done
+    dec a
+    pha
+    tya
+    clc
+    adc #(16+256).w
+    tay
+    lda.w OAMC_START
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    clc
+    adc #OAMHI.w
+    tax
+    pla
+    mvn $7E,$7E
+DSF_done:
+    sep #$20
+    .ACCU 8
+    lda #ENGINE_DB.b
+    pha
+    plb
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    rtl
+.IFDEF DFC_CHECK
+; Test build only.  After a translated draw: keep a copy, rewind oamtop and
+; clear the slot's high-table bytes so DrawFighter redraws it.  C=0 when the
+; draw was a plain hit (nothing to check).
+DfcCheckSaveFar:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    lda.w OAMC_MOVED
+    and #$00FF.w
+    bne +
+    sep #$20
+    .ACCU 8
+    lda #ENGINE_DB.b
+    pha
+    plb
+    rep #$20
+    .ACCU 16
+    clc
+    rtl
++   ldy.w OAMC_PTR
+    lda.w $000C,y
+    sta.w OAMC_START
+    lda.w $000E,y
+    sta.w OAMC_CHKN
+    asl a
+    asl a
+    beq DCS_rewind
+    dec a
+    pha
+    lda.w OAMC_START
+    clc
+    adc #OAMBUF.w
+    tax
+    ldy #OAMC_CHK.w
+    pla
+    mvn $7E,$7E
+    lda.w OAMC_CHKN
+    lsr a
+    lsr a
+    sta scr0
+    lda.w OAMC_START
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    tax
+    ldy #0.w
+    sep #$20
+    .ACCU 8
+-   cpy scr0
+    beq DCS_rewind
+    lda.w OAMHI,x
+    sta.w OAMC_CHK+256,y
+    stz.w OAMHI,x
+    inx
+    iny
+    bra -
+DCS_rewind:
+    rep #$20
+    .ACCU 16
+    lda.w OAMC_START
+    sta oamtop
+    sep #$20
+    .ACCU 8
+    lda #ENGINE_DB.b
+    pha
+    plb
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    inc.w OAMC_CHKCALLS
+    sec
+    rtl
+
+DfcCheckCmpFar:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+-   lda oamtop                          ; same padding as DfcStoreFar
+    cmp #512.w
+    bcs +
+    and #$000F.w
+    beq +
+    ldx oamtop
+    lda #$F0F0.w
+    sta.w OAMBUF,x
+    sta.w OAMBUF+2,x
+    txa
+    clc
+    adc #4.w
+    sta oamtop
+    bra -
++   lda oamtop
+    sec
+    sbc.w OAMC_START
+    lsr a
+    lsr a
+    cmp.w OAMC_CHKN
+    bne DCC_bad
+    asl a
+    asl a
+    beq DCC_done
+    tay                                 ; bytes to compare
+    ldx.w OAMC_START
+    lda #OAMC_CHK.w
+    sta scr0
+    sep #$20
+    .ACCU 8
+-   lda.w OAMBUF,x
+    cmp (scr0)
+    bne DCC_bad
+    rep #$20
+    .ACCU 16
+    inc scr0
+    sep #$20
+    .ACCU 8
+    inx
+    dey
+    bne -
+    rep #$20
+    .ACCU 16
+    lda.w OAMC_CHKN
+    lsr a
+    lsr a
+    beq DCC_done
+    tay
+    lda.w OAMC_START
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    tax
+    lda #(OAMC_CHK+256).w
+    sta scr0
+    sep #$20
+    .ACCU 8
+-   lda.w OAMHI,x
+    cmp (scr0)
+    bne DCC_bad
+    rep #$20
+    .ACCU 16
+    inc scr0
+    sep #$20
+    .ACCU 8
+    inx
+    dey
+    bne -
+    bra DCC_done
+DCC_bad:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    inc.w OAMC_CHKBAD
+DCC_done:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    sep #$20
+    .ACCU 8
+    lda #ENGINE_DB.b
+    pha
+    plb
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    rtl
+.ENDIF
+.ENDS

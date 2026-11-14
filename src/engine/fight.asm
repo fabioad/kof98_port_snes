@@ -371,6 +371,25 @@
 .DEFINE OAMC_TMP    $3C00
 .DEFINE OAMC_PTR    $3C10
 .DEFINE OAMC_START  $3C13
+.DEFINE OAMC_FACE   $3C15                ; facing sign byte of the current draw
+.DEFINE OAMC_DXY    $3C16                ; translate delta word (dy<<8 + dx)
+.DEFINE OAMC_DX     $3C18                ; signed screen dx (word)
+.DEFINE OAMC_DY     $3C1A                ; signed screen dy (word)
+.DEFINE OAMC_MOVED  $3C1C                ; DFC_CHECK: last draw was translated
+.DEFINE OAMC_CHKN   $3C1E                ; DFC_CHECK: translated entry count
+.DEFINE OAMC_CHKCALLS $3C20              ; DFC_CHECK: translated draws checked
+.DEFINE OAMC_CHKBAD $3C22                ; DFC_CHECK: mismatching redraws
+.DEFINE OAMC_CHK    $3D00                ; DFC_CHECK: 256 + 16 byte copy
+; Per-cache fields past the 16-byte key, 256-byte OAM copy and 16 high bytes.
+.DEFINE OC_FACE     $0120                ; facing sign at store time
+.DEFINE OC_BBOX     $0121                ; 0 unknown, 1 bbox valid, 2 clipped
+.DEFINE OC_REAL     $0122                ; entries before padding (word)
+.DEFINE OC_MINX     $0124                ; bbox of the stored entries
+.DEFINE OC_MAXX     $0125
+.DEFINE OC_MINY     $0126
+.DEFINE OC_MAXY     $0127
+.DEFINE OC_BASEX    $0128                ; X/Y pixels the stored entries used
+.DEFINE OC_BASEY    $0129
 .ENDIF
 
 .DEFINE JOY_B       $8000
@@ -19461,207 +19480,29 @@ CmdScanCap:
     sta ct_cut
 +   rts
 
+; Fighter OAM cache.  The key/hit/translate logic and the store pass live in
+; FastROM bank 31 (DfcTryFar/DfcStoreFar, fast_paths.asm); only the call to
+; the near DrawFighter stays here.
 DrawFighterCache:
+    jsl DfcTryFar                       ; C=1: hit or translated in place
+.IFDEF DFC_CHECK
+    bcc DFC_draw
+    jsl DfcCheckSaveFar                 ; test build: redraw moved poses and
+    bcc DFC_done                        ;   compare with the translated OAM
     rep #$20
     .ACCU 16
-    ldx fofs
-    bne +
-    lda #OAMC1
-    bra ++
-+   lda #OAMC2
-++  sta lptr
-    sep #$20
-    .ACCU 8
-    lda #$7E
-    sta lptr+2
-
-    rep #$20
-    .ACCU 16
-    ldx fofs
-    lda FP+F_META,x
-    sta OAMC_TMP
-    lda FP+F_X,x
-    sta OAMC_TMP+2
-    lda FP+F_Y,x
-    sta OAMC_TMP+4
-    sep #$20
-    .ACCU 8
-    lda FP+F_TILEPG,x
-    sta OAMC_TMP+6
-    lda FP+F_XOFF,x
-    sta OAMC_TMP+7
-    lda FP+F_YOFF,x
-    sta OAMC_TMP+8
-    lda FP+F_FLAGS,x
-    sta OAMC_TMP+9
-    lda FP+F_PFX,x
-    sta OAMC_TMP+10
-    lda FP+F_CHAR,x
-    sta OAMC_TMP+11
-
-    ldy #0
--   lda OAMC_TMP,y
-    cmp [lptr],y
-    bne DFC_miss
-    iny
-    cpy #12
-    bne -
-    rep #$20
-    .ACCU 16
-    ldy #12
-    lda [lptr],y
-    cmp oamtop
-    bne DFC_miss
-
-    ldy #14
-    lda [lptr],y
-    sta scr4
-DFC_hit_high:
-    rep #$20
-    .ACCU 16
-    lda scr4
-    lsr a
-    lsr a
-    sta scr0
-    beq DFC_adv
-    lda lptr
-    clc
-    adc #(16+256)
-    tax
-    lda oamtop
-    lsr a
-    lsr a
-    lsr a
-    lsr a
-    clc
-    adc #OAMHI.w
-    tay
-    lda scr0
-    dec a
-    mvn $7E,$7E
-DFC_adv:
-    rep #$20
-    .ACCU 16
-    lda scr4
-    asl a
-    asl a
-    clc
-    adc oamtop
-    sta oamtop
-    sep #$20
-    .ACCU 8
-    lda #ENGINE_DB.b
-    pha
-    plb
-    rep #$20
-    .ACCU 16
-    rts
-
-DFC_miss:
-    rep #$20
-    .ACCU 16
-    lda lptr
-    sta OAMC_PTR
-    sep #$20
-    .ACCU 8
-    lda lptr+2
-    sta OAMC_PTR+2
-    rep #$20
-    .ACCU 16
-    lda oamtop
-    sta OAMC_START
     jsr DrawFighter
+    jsl DfcCheckCmpFar
+    bra DFC_done
+DFC_draw:
+.ELSE
+    bcs DFC_done
+.ENDIF
     rep #$20
     .ACCU 16
-DFC_pad:
-    lda oamtop
-    cmp #512.w
-    bcs DFC_pad_done
-    and #$000F.w
-    beq DFC_pad_done
-    ldx oamtop
-    lda #$F0F0.w
-    sta.w OAMBUF,x
-    sta.w OAMBUF+2,x
-    lda oamtop
-    clc
-    adc #4
-    sta oamtop
-    bra DFC_pad
-DFC_pad_done:
-    lda oamtop
-    sec
-    sbc OAMC_START
-    lsr a
-    lsr a
-    sta scr4
-
-    lda OAMC_PTR
-    sta lptr
-    sep #$20
-    .ACCU 8
-    lda OAMC_PTR+2
-    sta lptr+2
-    ldy #0
--   lda OAMC_TMP,y
-    sta [lptr],y
-    iny
-    cpy #12
-    bne -
-    rep #$20
-    .ACCU 16
-    ldy #12
-    lda OAMC_START
-    sta [lptr],y
-    ldy #14
-    lda scr4
-    sta [lptr],y
-
-    lda OAMC_START
-    clc
-    adc #OAMBUF.w
-    tax
-    lda OAMC_PTR
-    clc
-    adc #16
-    tay
-    lda scr4
-    asl a
-    asl a
-    beq DFC_store_high
-    dec a
-    mvn $7E,$7E
-DFC_store_high:
-    rep #$20
-    .ACCU 16
-    lda scr4
-    lsr a
-    lsr a
-    sta scr0
-    beq DFC_store_done
-    lda OAMC_START
-    lsr a
-    lsr a
-    lsr a
-    lsr a
-    clc
-    adc #OAMHI.w
-    tax
-    lda OAMC_PTR
-    clc
-    adc #(16+256)
-    tay
-    lda scr0
-    dec a
-    mvn $7E,$7E
-DFC_store_done:
-    rep #$20
-    .ACCU 16
-    sep #$20
-    .ACCU 8
-    lda #ENGINE_DB.b
-    pha
-    plb
+    jsr DrawFighter
+    jsl DfcStoreFar
+DFC_done:
     rep #$20
     .ACCU 16
     rts
