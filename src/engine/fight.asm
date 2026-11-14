@@ -8825,6 +8825,9 @@ VT_anim:
 ; kind 4: distance gate -- arg.lo = max centre distance in px, arg.hi =
 ;         first animation frame (running grabs such as Takuma's Shouran
 ;         Kyaku, which grabs on contact after the run).
+; kind 5: button released -- none of the pad bits in arg is held (mugen
+;         `command != "holdx"`: Saisyu's Orochinagi charge).  Kinds 4/5
+;         share the low-bank helper; the battle window has no slack.
 TransAir:
     ldy #CH_TRANSTAB
     ldx #sptr
@@ -8848,7 +8851,7 @@ TA_row:
     cmp #3
     beq TA_hit
     cmp #4
-    beq TA_dist
+    bcs TA_dist                           ; 4 distance / 5 release
 TA_next:
     lda sptr
     clc
@@ -19670,6 +19673,17 @@ VoiceQueueReset:
 .ORGA $0D00
 .SECTION "TransDistGate" FORCE
 TransDistGate:
+    cmp #5.w                              ; A = kind (4 or 5)
+    bne TDG_dist
+    ldy #3
+    lda [sptr],y                          ; kind 5: pad mask that must be up
+    and FP+F_JOY,x
+    bne +
+    sec                                   ; released: fire the row
+    rts
++   clc                                   ; still held: keep charging
+    rts
+TDG_dist:
     ldy #3
     lda [sptr],y                          ; arg = (first frame << 8) | dist
     sta scr2
@@ -19700,16 +19714,17 @@ TransDistGate:
     rts                                   ; C=1: close enough to grab
 .ENDS
 
-; TransLive: A(16) != 0 when the current state still has a live (kind 1/2)
+; TransLive: A(16) != 0 when the current state still has a live (kind 1-4)
 ; TransTab row -- AnimTick freezes on the last frame while such a state
-; waits on its positional/input transition.  It lives in the low half of
+; waits on its positional/input transition.  Kind 5 (release) does not
+; freeze: its state still times out through the kind-0 row.  It lives in the low half of
 ; the Fight bank (same CPU bank) so the 32 KiB battle window keeps slack.
 .IFDEF PVSNESLIB
 .BANK 50 SLOT 0
 .ELSE
 .BANK 70 SLOT 0
 .ENDIF
-.ORGA $0E00
+.ORGA $0D80                             ; after TransDistGate ($0D00)
 .SECTION "TransLive" FORCE
 TransLive:
     ldy #CH_TRANSTAB
@@ -19728,6 +19743,8 @@ TL_row:
     lda [sptr],y
     and #$00FF.w
     beq TL_next                           ; kind 0 is AnimTick's business
+    cmp #5.w                              ; kind 5 (release) runs alongside
+    beq TL_next                           ;   the anim-end timeout: no freeze
     lda #1
     rts
 TL_next:
@@ -19742,7 +19759,7 @@ TL_no:
 .ENDS
 
 ; MoveHitReset helper: the Fight window is full, so the routine lives in
-; the free low-bank gap between TransLive ($0E36) and ProjClash ($0F00).
+; the free low-bank gap before ProjClash ($0F00).
 ; ActOp calls it with a 16-bit jsr (same 64K bank).
 .BANK 50 SLOT 0
 .ORGA $0E80

@@ -5833,8 +5833,13 @@ _tweak("omegarugal", "air_box_patch_frames", {
 # to the release state 3005.  The flame itself lives in a projectile helper
 # the native engine cannot follow, so give the release a real stationary
 # projectile row (the same fireball art Saisyu already streams).
+# 3001 is the hold-to-charge pose: the source leaves it as soon as the
+# button is let go (`command != "holdx"`) or after 90 ticks.  The kind-5
+# release row mirrors that; without it the charge always ran the full 90
+# ticks (1.5 s of meditation) even on a tap.  "x" is pad bit $4000.
 _wire_followups("saisyu", [(103, 3001, 3001), (104, 3005, 3005)],
-                [(85, 103, 0, 0), (103, 104, 0, 0)])
+                [(85, 103, 0, 0), (103, 104, 5, 0x4000),
+                 (103, 104, 0, 0)])
 POST_CAL_PROJS_FULL.setdefault("saisyu", {}).update({
     85: (0x0000, 14, 4, 0x0A),
     86: (0x0000, 18, 4, 0x0A),
@@ -8817,6 +8822,8 @@ def trans_rules(statedefs, headers, state_to_sid, buttons, state_to_sids=None):
       kind 4 = distance gate          (|p2.x - p1.x| <= arg.lo px and
                                        current frame >= arg.hi -- running
                                        grabs such as Shouran Kyaku)
+      kind 5 = button released        (no pad bit of arg held -- charge
+                                       states; extra_trans only)
     A lone `time > N` guard next to kind 1/2 is ignored (the ring only
     carries fresh presses anyway).  Controllers needing other trigger
     forms are skipped.
