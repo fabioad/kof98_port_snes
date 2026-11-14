@@ -135,8 +135,8 @@ pvsnes-hi10-clean:
 	$(MAKE) -f Makefile.pvsnes hi-clean
 
 # PRO: 1.0 art for every fighter except Chang (0.80), Sakura (0.95), Billy
-# (0.85), Chun-Li (0.99) and Omega Rugal (0.94).  Isolated artifacts:
-# kof98-snes-pro.sfc/.msu.
+# (0.85), Rugal (0.94), Chun-Li (0.99) and Omega Rugal (0.94).  Isolated
+# artifacts: kof98-snes-pro.sfc/.msu.
 pvsnes-pro:
 	$(MAKE) -f Makefile.pvsnes PRO=1
 

@@ -130,6 +130,7 @@ with per-character sizing.  Every fighter uses the full 1.0 art except:
 | Chang | 0.80 |
 | Sakura | 0.95 |
 | Billy | 0.85 |
+| Rugal | 0.94 |
 | Chun-Li | 0.99 |
 | Omega Rugal | 0.94 |
 
@@ -145,6 +146,9 @@ Billy at 0.85 uses 53,062 bytes of `SprData` and keeps every staged
 throw-victim held pose.  His hard ceiling is 0.88 (63,054 bytes): 0.89 grows
 to 65,683 bytes, already past the engine's 64 KiB `CH_MBANK` window, and
 0.90–0.95 reach 70–80 KiB.
+
+Rugal uses 0.94 by request to match Omega Rugal; at 1.0 his blob would fit
+(47,652 bytes), so this one is a design choice rather than a structural cap.
 
 Chun-Li and Omega Rugal cannot reach 1.0: their blobs would be 70,851 and
 72,325 bytes.  0.99 (65,466 bytes) and 0.94 (65,142 bytes) are the largest
