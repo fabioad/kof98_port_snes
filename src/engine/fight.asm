@@ -23983,6 +23983,10 @@ HudHdmaNmiGate:
     lda gamestate
     cmp #0.b
     bne HHNG_nog
+    lda.w DM_ON                          ; the attract demo starts from gs 0;
+    bne HHNG_title_done                  ;   its StartFight must keep the
+                                         ;   fight PPU setup, not the title
+                                         ;   ring layer (BG1 CHR base/BG3 map/TM)
     lda #65.b                            ; title: BG palette 4 colour 1 is the
     sta.l $002121                        ;   texts' black ring (BG2 layer)
     lda #0
@@ -24001,6 +24005,7 @@ HudHdmaNmiGate:
     sta.l $00210F                        ;   not scrolled; a preceding fight
     sta.l $002110                        ;   or the opening video can leave a
     sta.l $002110                        ;   stale scroll here
+HHNG_title_done:
     lda gamestate
 HHNG_nog:
     cmp #1.b
