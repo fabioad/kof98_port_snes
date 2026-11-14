@@ -130,6 +130,8 @@ with per-character sizing.  Every fighter uses the full 1.0 art except:
 | Chang | 0.80 |
 | Sakura | 0.95 |
 | Billy | 0.85 |
+| Chun-Li | 0.99 |
+| Omega Rugal | 0.94 |
 
 Artifacts: `kof98-snes-pro.sfc` + `kof98-snes-pro.msu`, generated in
 `build/pro/gen_fight/` with `build/pro/fight_bridge.obj` and
@@ -142,8 +144,12 @@ hashes stay valid.  The OAM/DMA truncation fallbacks stay enabled, as in HI10.
 Billy at 0.85 uses 53,062 bytes of `SprData` and keeps every staged
 throw-victim held pose.  His hard ceiling is 0.88 (63,054 bytes): 0.89 grows
 to 65,683 bytes, already past the engine's 64 KiB `CH_MBANK` window, and
-0.90–0.95 reach 70–80 KiB.  Sakura at 0.95 (26,133 bytes) and Chang at 0.80
-(64,844 bytes) also keep their held poses.
+0.90–0.95 reach 70–80 KiB.
+
+Chun-Li and Omega Rugal cannot reach 1.0: their blobs would be 70,851 and
+72,325 bytes.  0.99 (65,466 bytes) and 0.94 (65,142 bytes) are the largest
+values that fit, and Omega Rugal at 0.94 still keeps most held poses.  Sakura
+at 0.95 (26,133 bytes) and Chang at 0.80 (64,844 bytes) keep their held poses.
 
 ## Per-character caps
 

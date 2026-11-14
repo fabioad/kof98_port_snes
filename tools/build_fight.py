@@ -111,13 +111,15 @@ _FULL_SCALE_OVERRIDES = {
 # default 0.88 profile applies only this map; KOF_SCALE_CAPS=full keeps the
 # older aesthetic caps as well.
 _STRUCTURAL_SCALE_OVERRIDES = {"chang": 0.86}
-# PRO (make pro): full 1.0 art for every fighter except three requested
-# size exceptions: Chang 0.80, Sakura 0.95 and Billy 0.85.  Billy cannot go
-# above 0.88: his SprData is 63,054 bytes there and 65,683 at 0.89, past the
-# engine's 64 KiB CH_MBANK window.  Those three are absolute caps applied
-# only while scaling fighter sprites and collision boxes; no character cfg
-# is edited, so the calibration hashes stay valid.
-_PRO_SCALE_OVERRIDES = {"chang": 0.80, "sakura": 0.95, "billy": 0.85}
+# PRO (make pro): full 1.0 art for every fighter except a few size caps.
+# Requested: Chang 0.80, Sakura 0.95, Billy 0.85.  Chun-Li and Omega Rugal
+# cannot reach 1.0 at all: their metasprite blobs would be 70,851 and 72,325
+# bytes, past the engine's 64 KiB CH_MBANK window.  0.99 (65,466) and 0.94
+# (65,142) are the largest values that still fit.  These are absolute caps
+# applied only while scaling fighter sprites and collision boxes; no
+# character cfg is edited, so the calibration hashes stay valid.
+_PRO_SCALE_OVERRIDES = {"chang": 0.80, "sakura": 0.95, "billy": 0.85,
+                        "chunli": 0.99, "omegarugal": 0.94}
 # The 1.0 test profile only keeps the structural Billy cap (his 1.0 meta is
 # larger than one 64 KiB CH_MBANK).  It intentionally keeps every other pose
 # at 1.0 so the real-hardware test shows the full-scale art and its limits.

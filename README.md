@@ -226,7 +226,7 @@ A saída é `kof98-snes-hi.sfc` + `kof98-snes-hi.msu`; o build padrão 0.90
 não é alterado.
 
 Para gerar o perfil **PRO** (todos em escala 1.0, menos Chang 0.80, Sakura
-0.95 e Billy 0.85):
+0.95, Billy 0.85, Chun-Li 0.99 e Omega Rugal 0.94):
 
 ```sh
 make pvsnes-pro PVSNESLIB_HOME=/caminho/para/pvsneslib
@@ -489,7 +489,7 @@ Output is `kof98-snes-hi.sfc` + `kof98-snes-hi.msu`; the default 0.90 build
 is not modified.
 
 To build the **PRO** profile (every fighter at 1.0 except Chang 0.80, Sakura
-0.95 and Billy 0.85):
+0.95, Billy 0.85, Chun-Li 0.99 and Omega Rugal 0.94):
 
 ```sh
 make pvsnes-pro PVSNESLIB_HOME=/path/to/pvsneslib

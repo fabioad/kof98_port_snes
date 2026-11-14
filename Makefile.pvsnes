@@ -25,8 +25,8 @@ endif
 # Profiles:
 #   default        0.88 art (Chang structural 0.86) -> kof98-snes.sfc/.msu
 #   HI10=1         1.0 test build        -> kof98-snes-hi.sfc/.msu
-#   PRO=1          full 1.0 (Chang 0.80, Sakura 0.95, Billy 0.85)
-#                                        -> kof98-snes-pro.sfc/.msu
+#   PRO=1          full 1.0 (Chang 0.80, Sakura 0.95, Billy 0.85,
+#                  Chun-Li 0.99, Omega Rugal 0.94) -> kof98-snes-pro.sfc/.msu
 #   OLD=1          stable 0.81 layout    -> kof98-snes-old.sfc/.msu
 #   make -f Makefile.pvsnes            # kof98-snes.sfc/.msu (HI 0.88)
 #   make -f Makefile.pvsnes HI10=1     # kof98-snes-hi.sfc/.msu (1.0 test)
@@ -49,9 +49,10 @@ FIGHT_ENV := KOF_OUT_DIR=$(GEN_DIR) KOF_MSU_NAME=$(MSU_NAME) \
 	KOF_CHAR_SCALE=1.0 KOF_SCALE_CAPS=minimal KOF_SKIP_MANIFEST=1 \
 	KOF_OAM_TRUNCATE=1 KOF_SPRITE_BBOX_TRUNCATE=1
 else ifeq ($(PRO),1)
-# PRO: every fighter at 1.0 except Chang (0.80), Sakura (0.95) and Billy
-# (0.85).  Same isolated HI layout/streaming as HI10, but with its own ROM,
-# MSU file, generated tree and object so the default build is untouched.
+# PRO: every fighter at 1.0 except Chang (0.80), Sakura (0.95), Billy
+# (0.85), Chun-Li (0.99 structural) and Omega Rugal (0.94 structural).
+# Same isolated HI layout/streaming as HI10, but with its own ROM, MSU file,
+# generated tree and object so the default build is untouched.
 export ROMNAME := kof98-snes-pro
 export ROMTITLE := KOF98 SNESFEST PRO
 GEN_DIR := build/pro/gen_fight
