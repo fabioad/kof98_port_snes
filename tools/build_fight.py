@@ -116,10 +116,18 @@ _STRUCTURAL_SCALE_OVERRIDES = {"chang": 0.86}
 # at 1.0 so the real-hardware test shows the full-scale art and its limits.
 _SCALE_CAPS_MODE = os.environ.get("KOF_SCALE_CAPS", "")
 HI_SCALE_OVERRIDES = ({"billy": 0.90, "shingo": 0.95,
-                          "kyo": 0.95, "iori": 0.93, "benimaru": 0.94, "chang": 0.78,
-                          "omegarugal": 0.95, "robert": 0.92,
-                          "ralf": 0.92, "clark": 0.92, "ryo": 0.92,
-                          "joe": 0.92}
+                          "kyo": 0.95, "iori": 0.93, "benimaru": 0.94,
+                          "chang": 0.78, "omegarugal": 0.95,
+                          "robert": 0.92, "ralf": 0.92, "clark": 0.92,
+                          "ryo": 0.92, "joe": 0.92, "rugal": 0.95,
+                          "saisyu": 0.93, "sakura": 0.90,
+                          # Female fighters share one cap in the HI test;
+                          # Sakura keeps the deeper 0.90 structural cap.
+                          "athena": 0.94, "chizuru": 0.94, "chunli": 0.94,
+                          "kasumi": 0.94, "king": 0.94, "leona": 0.94,
+                          "mai": 0.94, "mary": 0.94, "mature": 0.94,
+                          "shermie": 0.94, "vice": 0.94, "yuki": 0.94,
+                          "yuri": 0.94}
                       if _SCALE_CAPS_MODE == "minimal"
                       else {} if _SCALE_CAPS_MODE == "none"
                       else dict(_STRUCTURAL_SCALE_OVERRIDES)
