@@ -21268,30 +21268,27 @@ CharPtr:
     .ACCU 16
     phx
     phy
-    jsr DataFighterX
-    lda FP+F_CHAR,x
+    ldx fofs                            ; DataFighterX, inlined and resolved
+    lda FP+F_GRAB,x                     ;   once for both the descriptor and
+    and #$0002.w                        ;   the table bank
+    beq +
+    lda FP+F_OWNER,x
+    and #$00FF.w
+    tax
++   lda FP+F_CHAR,x
     sta cptr
     sep #$20
     .ACCU 8
     lda tblbank
     sta cptr+2
-    rep #$20
-    .ACCU 16
-    ply
-    lda [cptr],y
-    plx
-    sta 0,x
-    sep #$20
-    .ACCU 8
-    phx
-    jsr DataFighterX
-    sep #$20                            ; DataFighterX returns with A in 16-bit mode
-    .ACCU 8
     lda FP+F_TBANK,x
+    ply
     plx
     sta 2,x
     rep #$20
     .ACCU 16
+    lda [cptr],y
+    sta 0,x
     lda.w CN_PROFILE
     ora.w CN_PROFILE+2
     beq +
