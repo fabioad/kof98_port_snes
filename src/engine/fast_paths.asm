@@ -8,9 +8,23 @@
 .ORG 0
 .SECTION "FightFastPaths" FREE
 
+.IFDEF DCP_CHECK
+.DEFINE DCPK_PREHI  $7F6800
+.DEFINE DCPK_OLD    $7F6820
+.DEFINE DCPK_OLDHI  $7F6A20
+.DEFINE DCPK_TOP    $7F6A40
+.DEFINE DCPK_DROP   $7F6A42
+.DEFINE DCPK_FORCE  $7F6A44
+.DEFINE DCPK_CALLS  $7F6A46
+.DEFINE DCPK_BAD    $7F6A48
+.DEFINE DCPK_SAVE   $7F6A50
+.ENDIF
 DrawCellsFar:
 .IFDEF KOF_PERF_VERIFY
     jmp DCF_verify
+.ENDIF
+.IFDEF DCP_CHECK
+    jmp DCPK_run
 .ENDIF
 DrawCellsFastBody:
     rep #$30
@@ -53,7 +67,14 @@ DrawCellsFastBody:
     clc
     adc #($0080-16).w
     sta scr1
-    bra DCF_cell
+    lda scr0
+    cmp #$0001.w
+    bne DCF_cell                        ; H+V flip: generic loop
+.IFDEF DCP_CHECK
+    lda.l DCPK_FORCE
+    bne DCF_cell
+.ENDIF
+    jmp DrawCellsHflip
 DCF_setup_plain:
     rep #$20
     .ACCU 16
@@ -64,6 +85,12 @@ DCF_setup_plain:
     lda scr0
     and #$0002.w
     sta scr0
+    bne DCF_cell                        ; V flip: generic loop
+.IFDEF DCP_CHECK
+    lda.l DCPK_FORCE
+    bne DCF_cell
+.ENDIF
+    jmp DrawCellsPlain
 DCF_cell:
     cpx #512.w
     bcc DCF_in_range
@@ -234,6 +261,386 @@ DCF_done:
     pla
     sta scr0
     rtl
+
+.IFDEF DCP_CHECK
+; TEMP test build: draw each call with the generic loop, keep the result,
+; poison the written range, redraw with the specialised loops and compare.
+DCPK_run:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    phx
+    phy
+    lda scr4
+    sta.l DCPK_SAVE
+    lda scr5
+    sta.l DCPK_SAVE+2
+    lda lptr
+    sta.l DCPK_SAVE+4
+    lda lptr+2
+    sta.l DCPK_SAVE+6
+    lda aofs
+    sta.l DCPK_SAVE+8
+    lda pbase
+    sta.l DCPK_SAVE+10
+    lda oamtop
+    sta.l DCPK_SAVE+12
+    lda.w RT_OAMDROP
+    sta.l DCPK_DROP
+    ldx #30.w
+-   lda.w OAMHI,x
+    sta.l DCPK_PREHI,x
+    dex
+    dex
+    bpl -
+    lda #1.w
+    sta.l DCPK_FORCE
+    lda 3,s
+    tax
+    lda 1,s
+    tay
+    jsl DrawCellsFastBody
+    rep #$30
+    lda #0.w
+    sta.l DCPK_FORCE
+    lda oamtop
+    sta.l DCPK_TOP
+    ldx #510.w
+-   lda.w OAMBUF,x
+    sta.l DCPK_OLD,x
+    dex
+    dex
+    bpl -
+    ldx #30.w
+-   lda.w OAMHI,x
+    sta.l DCPK_OLDHI,x
+    lda.l DCPK_PREHI,x
+    sta.w OAMHI,x
+    dex
+    dex
+    bpl -
+    lda 3,s                             ; poison what the reference wrote
+    tax
+-   cpx oamtop
+    bcs +
+    lda #$5A5A.w
+    sta.w OAMBUF,x
+    inx
+    inx
+    bra -
++   lda.l DCPK_SAVE
+    sta scr4
+    lda.l DCPK_SAVE+2
+    sta scr5
+    lda.l DCPK_SAVE+4
+    sta lptr
+    lda.l DCPK_SAVE+6
+    sep #$20
+    .ACCU 8
+    sta lptr+2
+    lda.l DCPK_SAVE+8
+    sta aofs
+    rep #$20
+    .ACCU 16
+    lda.l DCPK_SAVE+10
+    sta pbase
+    lda.l DCPK_SAVE+12
+    sta oamtop
+    lda.l DCPK_DROP
+    sta.w RT_OAMDROP
+    ply
+    plx
+    jsl DrawCellsFastBody
+    rep #$30
+    lda.l DCPK_CALLS
+    inc a
+    sta.l DCPK_CALLS
+    lda oamtop
+    cmp.l DCPK_TOP
+    bne DCPK_bad
+    ldx #510.w
+-   lda.w OAMBUF,x
+    cmp.l DCPK_OLD,x
+    bne DCPK_bad
+    dex
+    dex
+    bpl -
+    ldx #30.w
+-   lda.w OAMHI,x
+    cmp.l DCPK_OLDHI,x
+    bne DCPK_bad
+    dex
+    dex
+    bpl -
+    rtl
+DCPK_bad:
+    lda.l DCPK_BAD
+    inc a
+    sta.l DCPK_BAD
+    rtl
+.ENDIF
+
+; Specialised DrawCellsFastBody loops for the two common orientations
+; (no flip, H flip only).  They stay in 16-bit A, store X/Y and tile/attr as
+; words, and gather the OAMHI pairs in scr0 (restored by DCF_done) with the
+; size bit inverted; `eor #$AA00` fixes it at flush time.  The $AAAA seed
+; makes positions below the first entry of an unaligned group flush as 0.
+DrawCellsPlain:
+    .ACCU 16
+    .INDEX 16
+    lda scr5
+    xba
+    and #$FF00.w
+    clc
+    adc pbase
+    sta scr5                            ; attribute<<8 + tile base (bit 8 =
+    lda #$AAAA.w                        ;   name select carries into attr)
+    sta scr0                            ; OAMHI bits, size stored inverted
+    txa                                 ; room = (512 - X) / 4 entries; the
+    eor #$FFFF.w                        ;   count is clamped once instead of
+    sec                                 ;   testing X on every cell
+    adc #512.w
+    lsr a
+    lsr a
+    bne +
+    jmp DCF_over
++   sta scr3
+    lda scr4
+    and #$00FF.w
+    cmp scr3
+    bcc +
+    beq +
+    lda scr3
+    sta scr4
+    pea $0001.w                         ; ran out of OAM: count the drop
+    bra DrawCellsPlain_cell
++   sta scr4                            ; 16-bit cell count
+    pea $0000.w
+DrawCellsPlain_cell:
+    lda [lptr],y
+    sta scr3
+    iny
+    iny
+    and #$00FF.w
+    eor #$0080.w
+    clc
+    adc scr1
+    sta.w OAMBUF,x                      ; X (byte +1 is rewritten below)
+    cmp #$0100.w
+    ror scr0                            ; X bit 8
+    lda scr3
+    xba
+    and #$00FF.w
+    eor #$0080.w
+    clc
+    adc scr2
+    bpl +
+    lda #$00F0.w
++   sta.w OAMBUF+1,x                    ; Y (byte +2 is rewritten below)
+    lda [lptr],y
+    iny
+    iny
+    asl a
+    ror scr0                            ; 8x8 flag = inverted size bit
+    lsr a                               ; carry = 0 (bit 0 came from asl)
+    adc scr5
+    sta.w OAMBUF+2,x
+    inx
+    inx
+    inx
+    inx
+    txa
+    and #$000C.w
+    beq DrawCellsPlain_flush
+DrawCellsPlain_next:
+    dec scr4
+    bne DrawCellsPlain_cell
+    pla
+    beq +
+    jmp DCF_over                        ; X = 512: every group already flushed
++
+    txa
+    and #$000C.w
+    beq DrawCellsPlain_done
+    lda scr0
+    eor #$AA00.w
+    sta scr0
+    txa
+    and #$000C.w
+-   lsr scr0
+    lsr scr0
+    clc
+    adc #4.w
+    cmp #16.w
+    bne -
+    phx
+    txa
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    tax
+    sep #$20
+    .ACCU 8
+    lda scr0+1
+    ora.w OAMHI,x
+    sta.w OAMHI,x
+    rep #$20
+    .ACCU 16
+    plx
+DrawCellsPlain_done:
+    jmp DCF_done
+DrawCellsPlain_flush:
+    phx
+    txa
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    tax
+    lda scr0
+    eor #$AA00.w
+    xba
+    sep #$20
+    .ACCU 8
+    ora.w OAMHI-1,x
+    sta.w OAMHI-1,x
+    rep #$20
+    .ACCU 16
+    plx
+    bra DrawCellsPlain_next
+
+DrawCellsHflip:
+    .ACCU 16
+    .INDEX 16
+    lda scr5
+    xba
+    and #$FF00.w
+    clc
+    adc pbase
+    sta scr5                            ; attribute<<8 + tile base (bit 8 =
+    lda #$AAAA.w                        ;   name select carries into attr)
+    sta scr0                            ; OAMHI bits, size stored inverted
+    txa                                 ; room = (512 - X) / 4 entries; the
+    eor #$FFFF.w                        ;   count is clamped once instead of
+    sec                                 ;   testing X on every cell
+    adc #512.w
+    lsr a
+    lsr a
+    bne +
+    jmp DCF_over
++   sta scr3
+    lda scr4
+    and #$00FF.w
+    cmp scr3
+    bcc +
+    beq +
+    lda scr3
+    sta scr4
+    pea $0001.w                         ; ran out of OAM: count the drop
+    bra DrawCellsHflip_cell
++   sta scr4                            ; 16-bit cell count
+    pea $0000.w
+DrawCellsHflip_cell:
+    lda [lptr],y
+    sta scr3
+    iny
+    iny
+    lda [lptr],y
+    sta scr6
+    iny
+    iny
+    lda scr3
+    and #$00FF.w
+    eor #$FF7F.w
+    sec
+    adc scr1
+    bit scr6
+    bpl +
+    clc
+    adc #8.w
++   sta.w OAMBUF,x                      ; X (byte +1 is rewritten below)
+    cmp #$0100.w
+    ror scr0                            ; X bit 8
+    lda scr3
+    xba
+    and #$00FF.w
+    eor #$0080.w
+    clc
+    adc scr2
+    bpl +
+    lda #$00F0.w
++   sta.w OAMBUF+1,x                    ; Y (byte +2 is rewritten below)
+    lda scr6
+    asl a
+    ror scr0                            ; 8x8 flag = inverted size bit
+    lsr a                               ; carry = 0 (bit 0 came from asl)
+    adc scr5
+    sta.w OAMBUF+2,x
+    inx
+    inx
+    inx
+    inx
+    txa
+    and #$000C.w
+    beq DrawCellsHflip_flush
+DrawCellsHflip_next:
+    dec scr4
+    bne DrawCellsHflip_cell
+    pla
+    beq +
+    jmp DCF_over                        ; X = 512: every group already flushed
++
+    txa
+    and #$000C.w
+    beq DrawCellsHflip_done
+    lda scr0
+    eor #$AA00.w
+    sta scr0
+    txa
+    and #$000C.w
+-   lsr scr0
+    lsr scr0
+    clc
+    adc #4.w
+    cmp #16.w
+    bne -
+    phx
+    txa
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    tax
+    sep #$20
+    .ACCU 8
+    lda scr0+1
+    ora.w OAMHI,x
+    sta.w OAMHI,x
+    rep #$20
+    .ACCU 16
+    plx
+DrawCellsHflip_done:
+    jmp DCF_done
+DrawCellsHflip_flush:
+    phx
+    txa
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    tax
+    lda scr0
+    eor #$AA00.w
+    xba
+    sep #$20
+    .ACCU 8
+    ora.w OAMHI-1,x
+    sta.w OAMHI-1,x
+    rep #$20
+    .ACCU 16
+    plx
+    bra DrawCellsHflip_next
 
 .IFDEF KOF_PERF_VERIFY
 DCF_verify:
@@ -1853,6 +2260,10 @@ DTF_bbox_ok:
     adc.w OAMC_DY
     cmp #$0100.w
     bcs DTF_miss2
+    bra +
+DTF_miss2:
+    jmp DTF_miss
++
     ; Both bytes stay in 0..255, so one 16-bit add moves X and Y at once.
     lda.w OAMC_DY
     xba
@@ -1860,32 +2271,89 @@ DTF_bbox_ok:
     clc
     adc.w OAMC_DX
     sta scr5                            ; scr5 = dy<<8 + dx
-    lda.w OC_REAL,y
-    sta scr6                            ; scr6 = entries to move
+    ; Four entries per pass over the padded count (a multiple of 4: both
+    ; slots are aligned); the pads are parked again afterwards.  When the
+    ; slot did not change, OAMBUF already holds this pose's tile/attribute
+    ; words (same key, drawn there last frame), so only X/Y are rewritten.
+    lda scr4
+    lsr a
+    lsr a
+    bne +
+    jmp DTF_pads
++   sta scr6                            ; scr6 = 4-entry groups
+    lda oamtop
+    cmp.w $000C,y
+    php
     tya
     clc
     adc #16.w
     tay                                 ; Y -> stored entries
     ldx oamtop                          ; X -> OAMBUF slot
-    lda scr6
-    beq DTF_pads
+    plp
+    beq DTF_loop_xy
 DTF_loop:
     lda.w $0000,y
     clc
     adc scr5
-    sta.w OAMBUF,x
+    sta.w OAMBUF+0,x
     lda.w $0002,y
     sta.w OAMBUF+2,x
-    iny
-    iny
-    iny
-    iny
-    inx
-    inx
-    inx
-    inx
+    lda.w $0004,y
+    clc
+    adc scr5
+    sta.w OAMBUF+4,x
+    lda.w $0006,y
+    sta.w OAMBUF+6,x
+    lda.w $0008,y
+    clc
+    adc scr5
+    sta.w OAMBUF+8,x
+    lda.w $000A,y
+    sta.w OAMBUF+10,x
+    lda.w $000C,y
+    clc
+    adc scr5
+    sta.w OAMBUF+12,x
+    lda.w $000E,y
+    sta.w OAMBUF+14,x
+    tya
+    clc
+    adc #16.w
+    tay
+    txa
+    clc
+    adc #16.w
+    tax
     dec scr6
-    bne DTF_loop
+    beq DTF_pads
+    jmp DTF_loop
+DTF_loop_xy:
+    lda.w $0000,y
+    clc
+    adc scr5
+    sta.w OAMBUF+0,x
+    lda.w $0004,y
+    clc
+    adc scr5
+    sta.w OAMBUF+4,x
+    lda.w $0008,y
+    clc
+    adc scr5
+    sta.w OAMBUF+8,x
+    lda.w $000C,y
+    clc
+    adc scr5
+    sta.w OAMBUF+12,x
+    tya
+    clc
+    adc #16.w
+    tay
+    txa
+    clc
+    adc #16.w
+    tax
+    dec scr6
+    bne DTF_loop_xy
 DTF_pads:
     ldy.w OAMC_PTR
     lda scr4
@@ -1893,6 +2361,12 @@ DTF_pads:
     sbc.w OC_REAL,y
     beq DTF_key
     sta scr6
+    lda.w OC_REAL,y
+    asl a
+    asl a
+    clc
+    adc oamtop
+    tax                                 ; X -> first pad entry
     lda #$F0F0.w
 -   sta.w OAMBUF,x
     sta.w OAMBUF+2,x
@@ -1913,8 +2387,6 @@ DTF_key:
     lda oamtop
     sta.w $000C,y
     bra DTF_high
-DTF_miss2:
-    jmp DTF_miss
 
 ; Hit or moved: high-table bytes (size bits; X bit 8 is clear on a move)
 ; go to the slot's OAMHI bytes, then oamtop advances.  Y = cache base.
