@@ -25,11 +25,15 @@ endif
 # Profiles:
 #   default        0.88 art (Chang structural 0.86) -> kof98-snes.sfc/.msu
 #   HI10=1         1.0 test build        -> kof98-snes-hi.sfc/.msu
+#   PRO=1          full 1.0 (Chang 0.80, Sakura 0.95, Billy 0.85)
+#                                        -> kof98-snes-pro.sfc/.msu
 #   OLD=1          stable 0.81 layout    -> kof98-snes-old.sfc/.msu
 #   make -f Makefile.pvsnes            # kof98-snes.sfc/.msu (HI 0.88)
 #   make -f Makefile.pvsnes HI10=1     # kof98-snes-hi.sfc/.msu (1.0 test)
+#   make -f Makefile.pvsnes PRO=1      # kof98-snes-pro.sfc/.msu (per-char 1.0)
 #   make -f Makefile.pvsnes OLD=1      # kof98-snes-old.sfc/.msu (0.81)
 HI10 ?= 0
+PRO ?= 0
 OLD ?= 0
 TINY ?= 0
 HI_BASE_SCALE ?= 0.88
@@ -43,6 +47,20 @@ PROFILE_DEFINE :=
 CUSTOM_OBJECT := 1
 FIGHT_ENV := KOF_OUT_DIR=$(GEN_DIR) KOF_MSU_NAME=$(MSU_NAME) \
 	KOF_CHAR_SCALE=1.0 KOF_SCALE_CAPS=minimal KOF_SKIP_MANIFEST=1 \
+	KOF_OAM_TRUNCATE=1 KOF_SPRITE_BBOX_TRUNCATE=1
+else ifeq ($(PRO),1)
+# PRO: every fighter at 1.0 except Chang (0.80), Sakura (0.95) and Billy
+# (0.85).  Same isolated HI layout/streaming as HI10, but with its own ROM,
+# MSU file, generated tree and object so the default build is untouched.
+export ROMNAME := kof98-snes-pro
+export ROMTITLE := KOF98 SNESFEST PRO
+GEN_DIR := build/pro/gen_fight
+MSU_NAME := kof98-snes-pro
+BUILD_INC := build/pro
+PROFILE_DEFINE :=
+CUSTOM_OBJECT := 1
+FIGHT_ENV := KOF_OUT_DIR=$(GEN_DIR) KOF_MSU_NAME=$(MSU_NAME) \
+	KOF_CHAR_SCALE=1.0 KOF_SCALE_CAPS=pro KOF_SKIP_MANIFEST=1 \
 	KOF_OAM_TRUNCATE=1 KOF_SPRITE_BBOX_TRUNCATE=1
 else ifeq ($(OLD),1)
 export ROMNAME := kof98-snes-old
@@ -153,6 +171,7 @@ include $(PVSNESLIB_HOME)/devkitsnes/snes_rules
 
 .PHONY: all assets audio validate-snesmod verify clean cleanSpcAudio \
 	hi hi-verify hi-clean hi10 hi10-verify hi10-clean \
+	pro pro-verify pro-clean \
 	old old-verify old-clean
 
 all: assets audio $(ROMNAME).sfc $(ROMNAME).msu
@@ -201,7 +220,7 @@ validate-snesmod: $(AUDIOFILES) tools/validate_snesmod.py tools/it_pattern_limit
 ifneq ($(TINY),1)
 $(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json assets/characters/*/*_SNES.cns assets/characters/*/*_SNES.cmd assets/characters/*/*.air assets/data/quotes/*.json) \
 	tools/build_fight.py tools/normal_throws.py tools/close_normals.py tools/remaining_specials.py tools/runtime_abi.py assets/runtime_abi.json tools/newroster.py tools/build_spc_neogeo.py \
-	Makefile.pvsnes $(wildcard Makefile.hi Makefile.old) \
+	Makefile.pvsnes $(wildcard Makefile.hi Makefile.old Makefile.pro) \
 	tools/build_stages.py tools/build_hud_arcade.py tools/sff.py tools/build_endings.py \
 	$(wildcard assets/survival_ending/*.png) \
 	$(wildcard assets/characters/*/*.snd) \
@@ -327,7 +346,8 @@ cleanSpcAudio:
 
 clean: cleanBuildRes cleanRom cleanGfx cleanAudio cleanSpcAudio
 
-# `hi`/`hi10` build the 1.0 test profile; the default `make` stays at 0.88.
+# `hi`/`hi10` build the 1.0 test profile; `pro` builds the 1.0 profile with
+# the Chang/Sakura/Billy caps; the default `make` stays at 0.88.
 # `old` builds the stable 0.81 layout under kof98-snes-old.*.
 hi hi10:
 	@$(MAKE) -f Makefile.pvsnes HI10=1
@@ -339,6 +359,17 @@ hi-clean hi10-clean:
 	rm -rf build/hi10 build/hi build/gen_fight-hi
 	rm -f kof98-snes-hi.sfc kof98-snes-hi.msu \
 		kof98-snes-hi.sym kof98-snes-hi.symfull kof98-snes-hi.log
+
+pro:
+	@$(MAKE) -f Makefile.pvsnes PRO=1
+
+pro-verify:
+	@$(MAKE) -f Makefile.pvsnes PRO=1 verify
+
+pro-clean:
+	rm -rf build/pro
+	rm -f kof98-snes-pro.sfc kof98-snes-pro.msu \
+		kof98-snes-pro.sym kof98-snes-pro.symfull kof98-snes-pro.log
 
 old:
 	@$(MAKE) -f Makefile.pvsnes OLD=1

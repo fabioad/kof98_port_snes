@@ -225,6 +225,18 @@ make pvsnes-hi PVSNESLIB_HOME=/caminho/para/pvsneslib
 A saída é `kof98-snes-hi.sfc` + `kof98-snes-hi.msu`; o build padrão 0.90
 não é alterado.
 
+Para gerar o perfil **PRO** (todos em escala 1.0, menos Chang 0.80, Sakura
+0.95 e Billy 0.85):
+
+```sh
+make pvsnes-pro PVSNESLIB_HOME=/caminho/para/pvsneslib
+make pvsnes-pro-verify PVSNESLIB_HOME=/caminho/para/pvsneslib
+```
+
+A saída é `kof98-snes-pro.sfc` + `kof98-snes-pro.msu`, gerados em
+`build/pro/gen_fight/` sem tocar no build padrão nem no HI10. Veja
+`docs/HI_BUILD.md`, seção “PRO profile”.
+
 ### Por dentro
 
 - `src/engine/fight.asm` — núcleo do motor de luta em 65816.
@@ -475,6 +487,18 @@ make pvsnes-hi PVSNESLIB_HOME=/path/to/pvsneslib
 
 Output is `kof98-snes-hi.sfc` + `kof98-snes-hi.msu`; the default 0.90 build
 is not modified.
+
+To build the **PRO** profile (every fighter at 1.0 except Chang 0.80, Sakura
+0.95 and Billy 0.85):
+
+```sh
+make pvsnes-pro PVSNESLIB_HOME=/path/to/pvsneslib
+make pvsnes-pro-verify PVSNESLIB_HOME=/path/to/pvsneslib
+```
+
+Output is `kof98-snes-pro.sfc` + `kof98-snes-pro.msu`, generated in
+`build/pro/gen_fight/` without touching the default or HI10 builds. See
+`docs/HI_BUILD.md`, “PRO profile”.
 
 ### Under the hood
 

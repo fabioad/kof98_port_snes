@@ -26,10 +26,17 @@ make -f Makefile.old               # same as OLD=1
 
 make -f Makefile.pvsnes old        # build the 0.81 variant
 make -f Makefile.pvsnes old-clean  # remove only the OLD outputs
+
+make -f Makefile.pvsnes PRO=1      # kof98-snes-pro.sfc/.msu (PRO scale)
+make -f Makefile.pvsnes PRO=1 verify
+make -f Makefile.pro               # same as PRO=1
+make -f Makefile.pvsnes pro        # same as PRO=1
+make -f Makefile.pvsnes pro-clean  # remove only the PRO outputs
 ```
 
 From the repository root: `make pvsnes` (default 0.90), `make pvsnes-hi`
-(1.0 test), `make pvsnes-old` (0.81), plus their `-verify` variants.
+(1.0 test), `make pvsnes-pro` (per-character PRO profile) and `make
+pvsnes-old` (0.81), plus their `-verify` variants.
 
 The default HI build supports `HI_BASE_SCALE`:
 
@@ -40,14 +47,14 @@ The dedicated 1.0 test profile is `HI10=1` / `make -f Makefile.hi`.
 
 ## Profiles and isolated artifacts
 
-| | default (HI 0.90) | HI10=1 (1.0 test) | OLD=1 (0.81) |
-|---|---|---|---|
-| ROM | `kof98-snes.sfc` | `kof98-snes-hi.sfc` | `kof98-snes-old.sfc` |
-| MSU-1 | `kof98-snes.msu` | `kof98-snes-hi.msu` | `kof98-snes-old.msu` |
-| generated data | `build/gen_fight/` | `build/hi10/gen_fight/` | `build/old/gen_fight/` |
-| fight object | `src/snes/fight_bridge.obj` | `build/hi10/fight_bridge.obj` | `build/old/fight_bridge.obj` |
-| linker input | `linkfile` | `build/hi10/linkfile` | `build/old/linkfile` |
-| include root | `build/` | `build/hi10/` | `build/old/` |
+| | default (HI 0.90) | HI10=1 (1.0 test) | PRO=1 (1.0 per-char) | OLD=1 (0.81) |
+|---|---|---|---|---|
+| ROM | `kof98-snes.sfc` | `kof98-snes-hi.sfc` | `kof98-snes-pro.sfc` | `kof98-snes-old.sfc` |
+| MSU-1 | `kof98-snes.msu` | `kof98-snes-hi.msu` | `kof98-snes-pro.msu` | `kof98-snes-old.msu` |
+| generated data | `build/gen_fight/` | `build/hi10/gen_fight/` | `build/pro/gen_fight/` | `build/old/gen_fight/` |
+| fight object | `src/snes/fight_bridge.obj` | `build/hi10/fight_bridge.obj` | `build/pro/fight_bridge.obj` | `build/old/fight_bridge.obj` |
+| linker input | `linkfile` | `build/hi10/linkfile` | `build/pro/linkfile` | `build/old/linkfile` |
+| include root | `build/` | `build/hi10/` | `build/pro/` | `build/old/` |
 
 The OLD build never overwrites the default ROM/MSU or `build/gen_fight`.
 The video manifest (`assets/video/Wmva3m93t34/manifest.json`) is updated by
@@ -112,6 +119,31 @@ Artifacts: `kof98-snes-hi.sfc` + `kof98-snes-hi.msu`, in
 The default 0.90 artifact is not rebuilt by this profile.  The heaviest
 MSU-vs-MSU pairs are still the first candidates for real-hardware pacing
 checks.
+
+## PRO profile (PRO=1)
+
+`PRO=1` (or `make -f Makefile.pro` / `make pvsnes-pro`) is the 1.0 profile
+with per-character sizing.  Every fighter uses the full 1.0 art except:
+
+| Character | Scale |
+|---|---|
+| Chang | 0.80 |
+| Sakura | 0.95 |
+| Billy | 0.85 |
+
+Artifacts: `kof98-snes-pro.sfc` + `kof98-snes-pro.msu`, generated in
+`build/pro/gen_fight/` with `build/pro/fight_bridge.obj` and
+`build/pro/linkfile`.  The default build and the HI10 tree are not touched.
+
+The scale caps are builder-level overrides (`KOF_SCALE_CAPS=pro`); no
+character cfg or `assets/calibration/*.json` value changes, so the calibration
+hashes stay valid.  The OAM/DMA truncation fallbacks stay enabled, as in HI10.
+
+Billy at 0.85 uses 53,062 bytes of `SprData` and keeps every staged
+throw-victim held pose.  His hard ceiling is 0.88 (63,054 bytes): 0.89 grows
+to 65,683 bytes, already past the engine's 64 KiB `CH_MBANK` window, and
+0.90–0.95 reach 70–80 KiB.  Sakura at 0.95 (26,133 bytes) and Chang at 0.80
+(64,844 bytes) also keep their held poses.
 
 ## Per-character caps
 

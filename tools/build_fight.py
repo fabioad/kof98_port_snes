@@ -111,6 +111,13 @@ _FULL_SCALE_OVERRIDES = {
 # default 0.88 profile applies only this map; KOF_SCALE_CAPS=full keeps the
 # older aesthetic caps as well.
 _STRUCTURAL_SCALE_OVERRIDES = {"chang": 0.86}
+# PRO (make pro): full 1.0 art for every fighter except three requested
+# size exceptions: Chang 0.80, Sakura 0.95 and Billy 0.85.  Billy cannot go
+# above 0.88: his SprData is 63,054 bytes there and 65,683 at 0.89, past the
+# engine's 64 KiB CH_MBANK window.  Those three are absolute caps applied
+# only while scaling fighter sprites and collision boxes; no character cfg
+# is edited, so the calibration hashes stay valid.
+_PRO_SCALE_OVERRIDES = {"chang": 0.80, "sakura": 0.95, "billy": 0.85}
 # The 1.0 test profile only keeps the structural Billy cap (his 1.0 meta is
 # larger than one 64 KiB CH_MBANK).  It intentionally keeps every other pose
 # at 1.0 so the real-hardware test shows the full-scale art and its limits.
@@ -130,6 +137,8 @@ HI_SCALE_OVERRIDES = ({"billy": 0.88, "shingo": 0.95,
                           "yuri": 0.94}
                       if _SCALE_CAPS_MODE == "minimal"
                       else {} if _SCALE_CAPS_MODE == "none"
+                      else dict(_PRO_SCALE_OVERRIDES)
+                      if _SCALE_CAPS_MODE == "pro"
                       else dict(_STRUCTURAL_SCALE_OVERRIDES)
                       if _SCALE_CAPS_MODE == "structural"
                       else dict(_FULL_SCALE_OVERRIDES))

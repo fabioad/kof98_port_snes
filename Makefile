@@ -56,6 +56,7 @@ endif
 .PHONY: all colors clean verify pvsnes pvsnes-verify pvsnes-clean \
 	pvsnes-hi pvsnes-hi-verify pvsnes-hi-clean \
 	pvsnes-hi10 pvsnes-hi10-verify pvsnes-hi10-clean \
+	pvsnes-pro pvsnes-pro-verify pvsnes-pro-clean \
 	pvsnes-old pvsnes-old-verify pvsnes-old-clean
 
 all: $(ROM)
@@ -132,6 +133,17 @@ pvsnes-hi10-verify:
 
 pvsnes-hi10-clean:
 	$(MAKE) -f Makefile.pvsnes hi-clean
+
+# PRO: 1.0 art for every fighter except Chang (0.80), Sakura (0.95) and
+# Billy (0.85).  Isolated artifacts: kof98-snes-pro.sfc/.msu.
+pvsnes-pro:
+	$(MAKE) -f Makefile.pvsnes PRO=1
+
+pvsnes-pro-verify:
+	$(MAKE) -f Makefile.pvsnes PRO=1 verify
+
+pvsnes-pro-clean:
+	$(MAKE) -f Makefile.pvsnes pro-clean
 
 pvsnes-old:
 	$(MAKE) -f Makefile.pvsnes OLD=1
