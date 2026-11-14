@@ -43,6 +43,14 @@ MAX_TILES = 512                     # BG1CHR $0000-$1FFF = 16 KiB
 STAGE_BG_PALETTE = 2                # BG3 HUD uses CGRAM colours 12-31
 STAGE_NPAL = 3                      # StagePick uploads BG palettes 2-4
 STAGE_NCOL = 15                     # 15 art colours + transparent per group
+# Per-stage vertical placement inside the 64x32 BG1 map, in 8 px rows.  A
+# positive value moves the stage art down so its floor meets the engine's
+# fixed GROUND_Y (the fighters themselves are not moved).  China's boat deck
+# sat ~24 px above the fighters, so they looked like they stood on the outer
+# hull.  The map is 32 rows tall and the art uses 28, so up to 4 rows fit.
+STAGE_YOFS = {
+    "KOF98-ChinaStage": 3,          # 24 px: deck floor under the feet
+}
 # file banks >= 64 map into the CPU $00-$3D:$8000 windows under ExHiROM;
 # 45-49 stay free for the SNESMOD soundbank (it wants banks < 64).
 FREE_BANKS = [65, 66, 67, 68, 69, 90, 91, 92, 93, 94]
@@ -153,7 +161,21 @@ def emit_stage(path):
                 flipset[tile] = hit[0]   # stored orientation, unflipped
             tiles[ty * 64 + tx] = (hit[0] | ((STAGE_BG_PALETTE + grp) << 10) |
                                    FLIPBITS[hit[1]])
-    tiles += [0] * (32 * 64 - len(tiles))        # rows 28-31 stay blank
+    # Per-stage vertical placement.  The art is 28 rows; the BG1 map is 32.
+    # Shift the whole image down by `yofs` rows so the deck/floor meets the
+    # engine's fixed GROUND_Y, extending the first/last art rows into the
+    # spare rows (the top band sits behind the HUD).
+    name = os.path.splitext(os.path.basename(path))[0]
+    yofs = STAGE_YOFS.get(name, 0)
+    if yofs:
+        assert 0 <= yofs <= 32 - 28, f"{path}: yofs {yofs} exceeds map"
+        shifted = []
+        for ty in range(32):
+            src = min(27, max(0, ty - yofs))
+            shifted.extend(tiles[src * 64:(src + 1) * 64])
+        tiles = shifted
+    else:
+        tiles += [0] * (32 * 64 - len(tiles))    # rows 28-31 stay blank
     tilemap = struct.pack("<%dH" % len(tiles), *tiles)
     assert len(order) <= MAX_TILES, \
         f"{path}: {len(order)} tiles > BG1 budget {MAX_TILES}"
@@ -209,6 +231,7 @@ def build_anims(stage_names, pix_by_stage):
             assert len(ticks) == nposes and max(ticks) < 65536
             phase = t.get("start_phase_ticks60", 0)
             pix, rgbpal = pix_by_stage[sname]
+            yofs = STAGE_YOFS.get(sname, 0)
             pal = [tuple(rgbpal[i * 3:i * 3 + 3])
                    for i in range(STAGE_NCOL * STAGE_NPAL)]
             cells = []
@@ -257,7 +280,8 @@ def build_anims(stage_names, pix_by_stage):
                         for r in range(8)), 8, 8)[0]
                     tws.append((tile_no + pose) |
                                ((STAGE_BG_PALETTE + grp) << 10))
-                mapidx = (tx // 32) * 1024 + ty * 32 + tx % 32
+                mapidx = ((tx // 32) * 1024 + (ty + yofs) * 32
+                          + tx % 32)
                 entries.append([mapidx] + tws)
                 tile_no += nposes
             flat = [w for e in entries for w in e]
