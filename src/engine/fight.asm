@@ -13476,7 +13476,8 @@ ProjReflect:
     beq +
     ldy #0                              ; owner P2 -> reflector is P1
     bra ++
-+   ldy #FP2OFS.b                       ; owner P1 -> reflector is P2
++   ldy #FP2OFS.w                       ; owner P1 -> reflector is P2 (16-bit
+                                        ;   index: a .b operand ate sty fofs)
 ++  sty fofs
     stz fofs+1
     txa                                 ; keep the spark slot in a word
