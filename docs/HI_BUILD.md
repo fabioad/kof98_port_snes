@@ -190,7 +190,7 @@ uses 2560), which removes the dropped-cell artifacts on their largest poses.
 The default PRO build:
 
 - `kof98-snes.sfc`: 8 MiB image with ~2.9 MB free.
-- `kof98-snes.msu`: ~56 MB.
+- `kof98-snes.msu`: ~58 MB.
 - Chun-Li 0.99 and Omega Rugal 0.94 are the only structural caps needed by
   the 64 KiB `CH_MBANK` window; the other PRO caps are deliberate.
 - No `dma_cap_cell`, `oam_cell_truncate` or `sprite_bbox_crop` events remain.
@@ -201,7 +201,7 @@ The default PRO build:
   sentinel).  This fixes Terry's missing first idle frame.
 
 The MID build (`kof98-snes-mid.sfc` / `.msu`) keeps the previous 0.88
-artifact: 8 MiB ROM with ~4 MB free and a ~48 MB MSU file.
+artifact: 8 MiB ROM with ~3.7 MB free and a ~55 MB MSU file.
 
 ## Known runtime risks
 

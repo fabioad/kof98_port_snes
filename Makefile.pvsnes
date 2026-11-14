@@ -39,6 +39,7 @@ MID ?= 0
 OLD ?= 0
 TINY ?= 0
 HI_BASE_SCALE ?= 0.88
+PROFILE_INCLUDE ?=
 ifeq ($(HI10),1)
 export ROMNAME := kof98-snes-hi
 export ROMTITLE := KOF98 SNESFEST HI
@@ -74,14 +75,18 @@ CUSTOM_OBJECT := 1
 FIGHT_ENV := KOF_OUT_DIR=$(GEN_DIR) KOF_MSU_NAME=$(MSU_NAME) \
 	KOF_SKIP_MANIFEST=1
 else ifeq ($(TINY),1)
-# Reduced-ROM profile: nine characters keep a uniform 0.56 ROM copy; the MID
-# 0.88 layout leaves 143 free 32 KiB halves and the nine need 138.  The MID
+# Reduced-ROM profile: nine characters keep a uniform 0.50 ROM copy.  The
+# current MID 0.88 layout leaves 126 free 32 KiB halves and the nine need
+# 123 (the old 0.56 target no longer fits after the roster grew).  The MID
 # kof98-snes-mid.msu still provides the 0.88 versions of the eight dual-scale
 # fighters plus Mature/Vice.
-export KOF_TINY_SCALE ?= 0.56
+export KOF_TINY_SCALE ?= 0.50
 export KOF_TINY_TRAD ?= build/mid/gen_fight
 export KOF_TINY_ROM ?= kof98-snes-mid.sfc
 export KOF_TINY_MSU ?= kof98-snes-mid.msu
+# Dropped TINY files fall back to the MID tree, never to the PRO default at
+# build/gen_fight (the metas differ above 0.88 and would overflow banks).
+PROFILE_INCLUDE := -I build/mid
 export ROMNAME := kof98-snes-tiny
 export ROMTITLE := KOF98 SNESFEST TINY
 GEN_DIR := build/tiny/gen_fight
@@ -279,7 +284,7 @@ $(PROFILE_FIGHT_OBJ): src/snes/fight_bridge.asm $(ORDER_GEN) src/engine/fight.as
 	$(AS) -d -s -x $(PROFILE_DEFINE) \
 		$(if $(filter 1,$(BIGROM)),-D BIGROM -D FULL12) \
 		$(if $(filter 1,$(BASE4)),-D BASE4) \
-		-I $(BUILD_INC) -I src -I build -o $@ $<
+		-I $(BUILD_INC) -I src $(PROFILE_INCLUDE) -I build -o $@ $<
 
 # Link the profile ROM from its own object, leaving src/snes/fight_bridge.obj
 # and the default kof98-snes.sfc untouched.  Mirrors the SDK's %.sfc recipe.

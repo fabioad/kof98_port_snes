@@ -2,14 +2,14 @@
 """Build the TINY profile data for kof98-snes-tiny.sfc.
 
 The MID build (kof98-snes-mid.sfc / kof98-snes-mid.msu) stays untouched.
-The TINY ROM reuses the MID tables/MSU slice map and adds a 0.56 ROM
-copy for the nine-character roster (all nine at 0.56):
+The TINY ROM reuses the MID tables/MSU slice map and adds a 0.50 ROM
+copy for the nine-character roster (all nine at 0.50):
 
     Terry, Andy, Joe, Kyo, Benimaru, Daimon, Iori, Shingo, Omega Rugal
 
 Without MSU those nine use the ROM copies.  With MSU the eight non-Terry
 characters switch to their MSU descriptors at boot; Terry always uses his
-0.56 ROM copy.  Mature and Vice are MSU-only additions.  The MSU-1
+0.50 ROM copy.  Mature and Vice are MSU-only additions.  The MSU-1
 layout CRC is copied from the MID kof98-snes-mid.msu, so renaming that
 file to kof98-snes-tiny.msu is enough.
 
@@ -40,9 +40,9 @@ MSU = Path(os.environ.get("KOF_TINY_MSU", ROOT / "kof98-snes.msu"))
 
 CHOSEN = ["terry", "andy", "joe", "kyo", "benimaru", "daimon",
           "iori", "shingo", "omegarugal"]
-# The 0.88 traditional layout leaves 143 free 32 KiB halves after the throw
-# victim poses; all nine at 0.56 need 138, so the roster keeps the uniform
-# 0.56 ceiling.  Override with KOF_TINY_SCALES=name:scale,...
+# The current MID 0.88 layout leaves 126 free 32 KiB halves; all nine at
+# 0.50 need 123, so 0.50 is the largest uniform scale that fits after the
+# roster grew.  Override with KOF_TINY_SCALES=name:scale,...
 TINY_SCALE_CAPS = {}
 # The TINY roster: the nine chosen characters are selectable in both modes.
 # Mature and Vice are MSU-only: their cells stay visible and selectable when
@@ -932,7 +932,7 @@ def main() -> int:
     if not MSU.exists():
         raise SystemExit(f"run the MID build first ({MSU.name})")
 
-    base = float(os.environ.get("KOF_TINY_SCALE", "0.56"))
+    base = float(os.environ.get("KOF_TINY_SCALE", "0.50"))
     plan = {n: base for n in CHOSEN}
     if base >= 0.56:
         for n, scale_cap in TINY_SCALE_CAPS.items():
@@ -985,7 +985,7 @@ def main() -> int:
         alias.append(f".DEFINE {LABEL.get(n, 'Char' + cap(n))} CharTinyStub\n")
     (OUT / "tiny_alias.inc").write_text("".join(alias))
     (OUT / "terry_chr.inc").write_text(
-        "; TINY: Terry's 0.88 CHR is replaced by the 0.56 ROM copy\n")
+        "; TINY: Terry's 0.88 CHR is replaced by the 0.50 ROM copy\n")
     (OUT / "tiny.stamp").write_text("ok\n")
     return 0
 

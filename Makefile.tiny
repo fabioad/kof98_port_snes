@@ -4,7 +4,7 @@
 #
 # 1. Build (or reuse) kof98-snes-mid.sfc + kof98-snes-mid.msu (MID 0.88).
 # 2. Build kof98-snes-tiny.sfc, reusing the MID data/MSU layout and adding
-#    the nine uniform 0.56 ROM copies (override with KOF_TINY_SCALE=x or
+#    the nine uniform 0.50 ROM copies (override with KOF_TINY_SCALE=x or
 #    KOF_TINY_SCALES=name:scale,...).
 # 3. Verify the tiny ROM's MSU detector CRC against kof98-snes-mid.msu.
 #

@@ -56,7 +56,7 @@ próprio em **65816 + PVSnesLib**, com assets convertidos de pacotes MUGEN/KOF
 | IA | Níveis **1 a 9** |
 | Resolução | 256×224, padrão SNES |
 | ROM | **8 MiB** (`kof98-snes.sfc`) |
-| Dados MSU-1 | **~28 MB** opcionais (`kof98-snes.msu`) |
+| Dados MSU-1 | **~58 MB** opcionais (`kof98-snes.msu`) |
 
 ### Lutadores
 
@@ -202,7 +202,7 @@ Billy 0.85, Rugal 0.94, Chun-Li 0.99 e Omega Rugal 0.94):
 
 ```text
 kof98-snes.sfc   # ROM de 8 MiB
-kof98-snes.msu   # dados MSU-1 (~56 MB)
+kof98-snes.msu   # dados MSU-1 (~58 MB)
 ```
 
 Para jogar com o roster completo, mantenha os dois arquivos juntos. Para jogar
@@ -320,7 +320,7 @@ emulator).
 | AI | Levels **1 to 9** |
 | Resolution | 256×224, standard SNES |
 | ROM | **8 MiB** (`kof98-snes.sfc`) |
-| MSU-1 data | **~28 MB** optional (`kof98-snes.msu`) |
+| MSU-1 data | **~58 MB** optional (`kof98-snes.msu`) |
 
 ### Fighters
 
@@ -465,7 +465,7 @@ with per-character exceptions (Chang 0.80, Sakura 0.95, Billy 0.85, Rugal
 
 ```text
 kof98-snes.sfc   # 8 MiB ROM
-kof98-snes.msu   # MSU-1 data (~56 MB)
+kof98-snes.msu   # MSU-1 data (~58 MB)
 ```
 
 To play with the full roster, keep both files together. To play without
