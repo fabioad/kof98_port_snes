@@ -69,3 +69,17 @@ desktop.ini
 /JULES_REPORT.md
 .aws
 *.log
+
+# ---------------------------------------------------------------------------
+# Backups, previas e exportacoes locais
+# ---------------------------------------------------------------------------
+*-backup-*.tar.gz
+music/ffg_energy/integration-backup.json
+music/ffg_energy/before/
+music/ffg_energy/candidates/
+music/ffg_energy/previews/
+music/ffg_energy/reference/
+music/ffg_energy/ouvir.html
+/kof98-arcade-title*.png
+/kof98-intro-cipher-snes.mp3
+/port_snes_tecnica/
