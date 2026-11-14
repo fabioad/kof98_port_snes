@@ -14,6 +14,17 @@ def _table_path(name):
     return os.path.join(bf.OUT, name + "_cmdlist.inc")
 
 
+# Command supers parked outside 85-89 by the post-calibration reactivation
+# (their imported slots are category SPECIAL).  Their source poweradd is an
+# expression, so the plain-int parser needs an explicit pow_override.
+SPECIAL_SLOT_SUPERS = {
+    "shermie": (110, 113, 114),     # Carnival, Shukumei, Ankoku Raikouken
+    "ralf": (58, 59, 60),
+    "daimon": (60,),
+    "leona": (59,),
+}
+
+
 def _parse_table(name):
     path = _table_path(name)
     with open(path, encoding="utf-8") as fh:
@@ -161,8 +172,10 @@ class CommandListTests(unittest.TestCase):
                     # 3 = SUP, 4 = MAX.  The generic super flash/dim trigger
                     # keys off a one-stock (or larger) PowTab cost, so every
                     # command-list super must carry one, including the extra
-                    # supers parked in special slots (Ralf 58-60, Daimon 60).
-                    if 85 <= sid <= 89 or cat in (3, 4):
+                    # supers parked in special slots (Ralf 58-60, Daimon 60,
+                    # Shermie 110/113/114).
+                    if (85 <= sid <= 89 or cat in (3, 4)
+                            or sid in SPECIAL_SLOT_SUPERS.get(name, ())):
                         self.assertLessEqual(
                             powtab[sid], -1000,
                             (name, sid, move, powtab[sid]))

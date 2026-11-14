@@ -4369,6 +4369,16 @@ if "shermie" in CHARS:
         114: (0x0500, 25, 0x0A),
     })
     _sher = POST_CAL_TWEAKS.setdefault("shermie", {})
+    # The source charges these command supers with an expression
+    # (poweradd = IfElse(Life <= 150, 0, -1000)), which the plain-int parser
+    # cannot read.  They sit in special slots (110/113/114), so the 85-89
+    # super fallback does not apply either: they stayed free and skipped the
+    # EnterState super flash/dim.  One stock matches the normal-life branch.
+    _sher.setdefault("pow_override", {}).update({
+        110: -1000,     # Shermie Carnival (2100)
+        113: -1000,     # Shukumei (8000)
+        114: -1000,     # Ankoku Raikouken (8100)
+    })
     _sher.setdefault("slice_damage", {}).update({
         107: 15, 108: 20, 109: 25, 110: 30,
         111: 25, 112: 30, 113: 40, 114: 0})
