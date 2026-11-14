@@ -46,10 +46,10 @@ STAGE_NCOL = 15                     # 15 art colours + transparent per group
 # Per-stage vertical placement inside the 64x32 BG1 map, in 8 px rows.  A
 # positive value moves the stage art down so its floor meets the engine's
 # fixed GROUND_Y (the fighters themselves are not moved).  China's boat deck
-# sat ~24 px above the fighters, so they looked like they stood on the outer
+# sat ~32 px above the fighters, so they looked like they stood on the outer
 # hull.  The map is 32 rows tall and the art uses 28, so up to 4 rows fit.
 STAGE_YOFS = {
-    "KOF98-ChinaStage": 3,          # 24 px: deck floor under the feet
+    "KOF98-ChinaStage": 4,          # 32 px: deck surface under the feet
 }
 # file banks >= 64 map into the CPU $00-$3D:$8000 windows under ExHiROM;
 # 45-49 stay free for the SNESMOD soundbank (it wants banks < 64).
