@@ -56,7 +56,7 @@ endif
 .PHONY: all colors clean verify pvsnes pvsnes-verify pvsnes-clean \
 	pvsnes-hi pvsnes-hi-verify pvsnes-hi-clean \
 	pvsnes-hi10 pvsnes-hi10-verify pvsnes-hi10-clean \
-	pvsnes-pro pvsnes-pro-verify pvsnes-pro-clean \
+	pvsnes-mid pvsnes-mid-verify pvsnes-mid-clean \
 	pvsnes-old pvsnes-old-verify pvsnes-old-clean
 
 all: $(ROM)
@@ -114,8 +114,9 @@ pvsnes-verify:
 pvsnes-clean:
 	$(MAKE) -f Makefile.pvsnes clean
 
-# The tuned 0.90 HI build is the default `pvsnes` target.  `pvsnes-hi`/`-hi10`
-# build the full 1.0 test profile; `pvsnes-old` builds the stable 0.81 layout.
+# The default `pvsnes` target builds the PRO scale profile.  `pvsnes-mid`
+# builds the previous 0.88 default; `pvsnes-hi`/`-hi10` build the 1.0 test
+# profile and `pvsnes-old` the stable 0.81 layout.
 pvsnes-hi:
 	$(MAKE) -f Makefile.pvsnes HI10=1
 
@@ -134,17 +135,15 @@ pvsnes-hi10-verify:
 pvsnes-hi10-clean:
 	$(MAKE) -f Makefile.pvsnes hi-clean
 
-# PRO: 1.0 art for every fighter except Chang (0.80), Sakura (0.95), Billy
-# (0.85), Rugal (0.94), Chun-Li (0.99) and Omega Rugal (0.94).  Isolated
-# artifacts: kof98-snes-pro.sfc/.msu.
-pvsnes-pro:
-	$(MAKE) -f Makefile.pvsnes PRO=1
+# MID: previous default (tuned HI 0.88).  Artifacts: kof98-snes-mid.sfc/.msu.
+pvsnes-mid:
+	$(MAKE) -f Makefile.pvsnes MID=1
 
-pvsnes-pro-verify:
-	$(MAKE) -f Makefile.pvsnes PRO=1 verify
+pvsnes-mid-verify:
+	$(MAKE) -f Makefile.pvsnes MID=1 verify
 
-pvsnes-pro-clean:
-	$(MAKE) -f Makefile.pvsnes pro-clean
+pvsnes-mid-clean:
+	$(MAKE) -f Makefile.pvsnes mid-clean
 
 pvsnes-old:
 	$(MAKE) -f Makefile.pvsnes OLD=1

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Build the TINY profile data for kof98-snes-tiny.sfc.
 
-The traditional build (kof98-snes.sfc / kof98-snes.msu) stays untouched.  The
-TINY ROM reuses the traditional tables/MSU slice map and adds a 0.56 ROM
+The MID build (kof98-snes-mid.sfc / kof98-snes-mid.msu) stays untouched.
+The TINY ROM reuses the MID tables/MSU slice map and adds a 0.56 ROM
 copy for the nine-character roster (all nine at 0.56):
 
     Terry, Andy, Joe, Kyo, Benimaru, Daimon, Iori, Shingo, Omega Rugal
@@ -10,7 +10,7 @@ copy for the nine-character roster (all nine at 0.56):
 Without MSU those nine use the ROM copies.  With MSU the eight non-Terry
 characters switch to their MSU descriptors at boot; Terry always uses his
 0.56 ROM copy.  Mature and Vice are MSU-only additions.  The MSU-1
-layout CRC is copied from the traditional kof98-snes.msu, so renaming that
+layout CRC is copied from the MID kof98-snes-mid.msu, so renaming that
 file to kof98-snes-tiny.msu is enough.
 
 The script writes build/tiny/gen_fight/{newchars_tabs.inc,tiny_variants.inc}
@@ -29,10 +29,14 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-TRAD = ROOT / "build" / "gen_fight"
+TRAD = Path(os.environ.get("KOF_TINY_TRAD",
+                           ROOT / "build" / "gen_fight"))
 OUT = ROOT / "build" / "tiny" / "gen_fight"
 VAR = ROOT / "build" / "tiny" / "variants" / "gen_fight"
-ROM = ROOT / "kof98-snes.sfc"
+ROM = Path(os.environ.get("KOF_TINY_ROM", ROOT / "kof98-snes.sfc"))
+SYM = Path(os.environ.get("KOF_TINY_SYM",
+                          str(ROM.with_name(ROM.stem + ".symfull"))))
+MSU = Path(os.environ.get("KOF_TINY_MSU", ROOT / "kof98-snes.msu"))
 
 CHOSEN = ["terry", "andy", "joe", "kyo", "benimaru", "daimon",
           "iori", "shingo", "omegarugal"]
@@ -310,10 +314,10 @@ def _take_block(blocks: list[tuple[int, int]],
 
 
 def sym_used() -> list[tuple[int, int]]:
-    """Used [start,end) file ranges from the traditional .symfull sections."""
-    sym = ROOT / "kof98-snes.symfull"
+    """Used [start,end) file ranges from the source build's .symfull sections."""
+    sym = SYM
     if not sym.exists():
-        raise SystemExit("missing kof98-snes.symfull (run the traditional build)")
+        raise SystemExit(f"missing {sym.name} (run the MID build)")
     starts: dict[str, int] = {}
     ends: dict[str, int] = {}
     for line in sym.read_text(errors="ignore").splitlines():
@@ -922,11 +926,11 @@ def allocate(chosen: list[str]) -> dict:
 
 def main() -> int:
     if not (TRAD / "newchars_tabs.inc").exists():
-        raise SystemExit("run the traditional build first (build/gen_fight)")
-    if not (ROOT / "kof98-snes.sfc").exists():
-        raise SystemExit("run the traditional build first (kof98-snes.sfc)")
-    if not (ROOT / "kof98-snes.msu").exists():
-        raise SystemExit("run the traditional build first (kof98-snes.msu)")
+        raise SystemExit(f"run the MID build first ({TRAD})")
+    if not ROM.exists():
+        raise SystemExit(f"run the MID build first ({ROM.name})")
+    if not MSU.exists():
+        raise SystemExit(f"run the MID build first ({MSU.name})")
 
     base = float(os.environ.get("KOF_TINY_SCALE", "0.56"))
     plan = {n: base for n in CHOSEN}
@@ -950,7 +954,7 @@ def main() -> int:
     write_tiny_seldata()
     write_tabs()
     slices = slice_counts(CHOSEN)
-    rom = (ROOT / "kof98-snes.sfc").read_bytes()
+    rom = ROM.read_bytes()
     blocks = [(b, o) for b, o in free_blocks(rom)
               if b not in (0, 48, 126, 127)]
     spr_blocks: dict[str, tuple[int, int]] = {}

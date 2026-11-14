@@ -1,5 +1,5 @@
-# Full 1.0 test build.  The default `make` stays at 0.90; this profile writes
-# kof98-snes-hi.sfc / .msu for comparison on real hardware:
+# Full 1.0 test build.  The default `make` is the PRO profile; this profile
+# writes kof98-snes-hi.sfc / .msu for comparison on real hardware:
 #
 #   make -f Makefile.hi
 #   make -f Makefile.hi verify

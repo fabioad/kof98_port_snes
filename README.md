@@ -196,15 +196,28 @@ make pvsnes PVSNESLIB_HOME=/caminho/para/pvsneslib
 make pvsnes-verify PVSNESLIB_HOME=/caminho/para/pvsneslib
 ```
 
-A saída é a build principal com arte HI ajustada (base 0.90):
+A saída é a build principal, agora no perfil **PRO**: arte em escala 1.0 para
+quase todo o elenco, com exceções por personagem (Chang 0.80, Sakura 0.95,
+Billy 0.85, Rugal 0.94, Chun-Li 0.99 e Omega Rugal 0.94):
 
 ```text
 kof98-snes.sfc   # ROM de 8 MiB
-kof98-snes.msu   # dados MSU-1 (~48 MB)
+kof98-snes.msu   # dados MSU-1 (~56 MB)
 ```
 
 Para jogar com o roster completo, mantenha os dois arquivos juntos. Para jogar
 sem MSU-1, use apenas o `.sfc`.
+
+O perfil **MID** é o antigo default: arte HI ajustada com base 0.88. Ele tem
+artefatos próprios e não altera o build principal:
+
+```sh
+make pvsnes-mid PVSNESLIB_HOME=/caminho/para/pvsneslib
+make pvsnes-mid-verify PVSNESLIB_HOME=/caminho/para/pvsneslib
+```
+
+A saída é `kof98-snes-mid.sfc` + `kof98-snes-mid.msu`. Veja
+`docs/HI_BUILD.md` para escala, isolamento e riscos.
 
 A build estável 0.81 continua disponível como variante:
 
@@ -213,8 +226,7 @@ make pvsnes-old PVSNESLIB_HOME=/caminho/para/pvsneslib
 make pvsnes-old-verify PVSNESLIB_HOME=/caminho/para/pvsneslib
 ```
 
-A saída é `kof98-snes-old.sfc` + `kof98-snes-old.msu`. Veja
-`docs/HI_BUILD.md` para escala, isolamento e riscos.
+A saída é `kof98-snes-old.sfc` + `kof98-snes-old.msu`.
 
 Para testar a arte HI em escala 1.0 no hardware:
 
@@ -222,20 +234,8 @@ Para testar a arte HI em escala 1.0 no hardware:
 make pvsnes-hi PVSNESLIB_HOME=/caminho/para/pvsneslib
 ```
 
-A saída é `kof98-snes-hi.sfc` + `kof98-snes-hi.msu`; o build padrão 0.90
-não é alterado.
-
-Para gerar o perfil **PRO** (todos em escala 1.0, menos Chang 0.80, Sakura
-0.95, Billy 0.85, Rugal 0.94, Chun-Li 0.99 e Omega Rugal 0.94):
-
-```sh
-make pvsnes-pro PVSNESLIB_HOME=/caminho/para/pvsneslib
-make pvsnes-pro-verify PVSNESLIB_HOME=/caminho/para/pvsneslib
-```
-
-A saída é `kof98-snes-pro.sfc` + `kof98-snes-pro.msu`, gerados em
-`build/pro/gen_fight/` sem tocar no build padrão nem no HI10. Veja
-`docs/HI_BUILD.md`, seção “PRO profile”.
+A saída é `kof98-snes-hi.sfc` + `kof98-snes-hi.msu`; os builds PRO e MID não
+são alterados.
 
 ### Por dentro
 
@@ -459,15 +459,28 @@ make pvsnes PVSNESLIB_HOME=/path/to/pvsneslib
 make pvsnes-verify PVSNESLIB_HOME=/path/to/pvsneslib
 ```
 
-Output is the default tuned-HI build (0.90 base):
+Output is the main **PRO** build: 1.0-scale art for almost the whole roster,
+with per-character exceptions (Chang 0.80, Sakura 0.95, Billy 0.85, Rugal
+0.94, Chun-Li 0.99 and Omega Rugal 0.94):
 
 ```text
 kof98-snes.sfc   # 8 MiB ROM
-kof98-snes.msu   # MSU-1 data (~48 MB)
+kof98-snes.msu   # MSU-1 data (~56 MB)
 ```
 
 To play with the full roster, keep both files together. To play without
 MSU-1, use only the `.sfc`.
+
+The **MID** profile is the previous default: tuned HI art at a 0.88 base.  It
+has its own artifacts and does not modify the main build:
+
+```sh
+make pvsnes-mid PVSNESLIB_HOME=/path/to/pvsneslib
+make pvsnes-mid-verify PVSNESLIB_HOME=/path/to/pvsneslib
+```
+
+Output is `kof98-snes-mid.sfc` + `kof98-snes-mid.msu`. See
+`docs/HI_BUILD.md` for scale, isolation and known risks.
 
 The stable 0.81 build is still available as a variant:
 
@@ -476,8 +489,7 @@ make pvsnes-old PVSNESLIB_HOME=/path/to/pvsneslib
 make pvsnes-old-verify PVSNESLIB_HOME=/path/to/pvsneslib
 ```
 
-Output is `kof98-snes-old.sfc` + `kof98-snes-old.msu`. See
-`docs/HI_BUILD.md` for scale, isolation and known risks.
+Output is `kof98-snes-old.sfc` + `kof98-snes-old.msu`.
 
 To test the HI art at 1.0 on hardware:
 
@@ -485,20 +497,8 @@ To test the HI art at 1.0 on hardware:
 make pvsnes-hi PVSNESLIB_HOME=/path/to/pvsneslib
 ```
 
-Output is `kof98-snes-hi.sfc` + `kof98-snes-hi.msu`; the default 0.90 build
-is not modified.
-
-To build the **PRO** profile (every fighter at 1.0 except Chang 0.80, Sakura
-0.95, Billy 0.85, Rugal 0.94, Chun-Li 0.99 and Omega Rugal 0.94):
-
-```sh
-make pvsnes-pro PVSNESLIB_HOME=/path/to/pvsneslib
-make pvsnes-pro-verify PVSNESLIB_HOME=/path/to/pvsneslib
-```
-
-Output is `kof98-snes-pro.sfc` + `kof98-snes-pro.msu`, generated in
-`build/pro/gen_fight/` without touching the default or HI10 builds. See
-`docs/HI_BUILD.md`, “PRO profile”.
+Output is `kof98-snes-hi.sfc` + `kof98-snes-hi.msu`; the PRO and MID builds
+are not modified.
 
 ### Under the hood
 

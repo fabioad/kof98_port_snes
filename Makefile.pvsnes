@@ -23,18 +23,19 @@ $(error PVSnesLib 4.6+ is required (found '$(PVSNESLIB_VERSION)' at $(PVSNESLIB_
 endif
 
 # Profiles:
-#   default        0.88 art (Chang structural 0.86) -> kof98-snes.sfc/.msu
+#   default        PRO scale: 1.0 except Chang 0.80, Sakura 0.95, Billy 0.85,
+#                  Rugal/Omega Rugal 0.94 and Chun-Li 0.99
+#                                        -> kof98-snes.sfc/.msu
+#   MID=1          previous default: tuned HI 0.88 art
+#                                        -> kof98-snes-mid.sfc/.msu
 #   HI10=1         1.0 test build        -> kof98-snes-hi.sfc/.msu
-#   PRO=1          full 1.0 (Chang 0.80, Sakura 0.95, Billy 0.85,
-#                  Rugal 0.94, Chun-Li 0.99, Omega Rugal 0.94)
-#                                        -> kof98-snes-pro.sfc/.msu
 #   OLD=1          stable 0.81 layout    -> kof98-snes-old.sfc/.msu
-#   make -f Makefile.pvsnes            # kof98-snes.sfc/.msu (HI 0.88)
+#   make -f Makefile.pvsnes            # kof98-snes.sfc/.msu (PRO scale)
+#   make -f Makefile.pvsnes MID=1      # kof98-snes-mid.sfc/.msu (HI 0.88)
 #   make -f Makefile.pvsnes HI10=1     # kof98-snes-hi.sfc/.msu (1.0 test)
-#   make -f Makefile.pvsnes PRO=1      # kof98-snes-pro.sfc/.msu (per-char 1.0)
 #   make -f Makefile.pvsnes OLD=1      # kof98-snes-old.sfc/.msu (0.81)
 HI10 ?= 0
-PRO ?= 0
+MID ?= 0
 OLD ?= 0
 TINY ?= 0
 HI_BASE_SCALE ?= 0.88
@@ -49,21 +50,19 @@ CUSTOM_OBJECT := 1
 FIGHT_ENV := KOF_OUT_DIR=$(GEN_DIR) KOF_MSU_NAME=$(MSU_NAME) \
 	KOF_CHAR_SCALE=1.0 KOF_SCALE_CAPS=minimal KOF_SKIP_MANIFEST=1 \
 	KOF_OAM_TRUNCATE=1 KOF_SPRITE_BBOX_TRUNCATE=1
-else ifeq ($(PRO),1)
-# PRO: every fighter at 1.0 except Chang (0.80), Sakura (0.95), Billy
-# (0.85), Rugal and Omega Rugal (0.94) and Chun-Li (0.99 structural).
-# Same isolated HI layout/streaming as HI10, but with its own ROM, MSU file,
-# generated tree and object so the default build is untouched.
-export ROMNAME := kof98-snes-pro
-export ROMTITLE := KOF98 SNESFEST PRO
-GEN_DIR := build/pro/gen_fight
-MSU_NAME := kof98-snes-pro
-BUILD_INC := build/pro
+else ifeq ($(MID),1)
+# MID: the tuned HI 0.88 profile that used to be the default.  It has its own
+# ROM, MSU file, generated tree and object so the PRO default is untouched.
+export ROMNAME := kof98-snes-mid
+export ROMTITLE := KOF98 SNESFEST MID
+GEN_DIR := build/mid/gen_fight
+MSU_NAME := kof98-snes-mid
+BUILD_INC := build/mid
 PROFILE_DEFINE :=
 CUSTOM_OBJECT := 1
 FIGHT_ENV := KOF_OUT_DIR=$(GEN_DIR) KOF_MSU_NAME=$(MSU_NAME) \
-	KOF_CHAR_SCALE=1.0 KOF_SCALE_CAPS=pro KOF_SKIP_MANIFEST=1 \
-	KOF_OAM_TRUNCATE=1 KOF_SPRITE_BBOX_TRUNCATE=1
+	KOF_CHAR_SCALE=$(HI_BASE_SCALE) KOF_SCALE_CAPS=structural \
+	KOF_SKIP_MANIFEST=1 KOF_OAM_TRUNCATE=1 KOF_SPRITE_BBOX_TRUNCATE=1
 else ifeq ($(OLD),1)
 export ROMNAME := kof98-snes-old
 export ROMTITLE := KOF98 SNESFEST OLD
@@ -75,20 +74,26 @@ CUSTOM_OBJECT := 1
 FIGHT_ENV := KOF_OUT_DIR=$(GEN_DIR) KOF_MSU_NAME=$(MSU_NAME) \
 	KOF_SKIP_MANIFEST=1
 else ifeq ($(TINY),1)
-# Reduced-ROM profile: nine characters keep a uniform 0.56 ROM copy; the
-# 0.88 layout leaves 143 free 32 KiB halves and the nine need 138.  The
-# traditional kof98-snes.msu still provides the 0.88 versions of the eight
-# dual-scale fighters plus Mature/Vice.
+# Reduced-ROM profile: nine characters keep a uniform 0.56 ROM copy; the MID
+# 0.88 layout leaves 143 free 32 KiB halves and the nine need 138.  The MID
+# kof98-snes-mid.msu still provides the 0.88 versions of the eight dual-scale
+# fighters plus Mature/Vice.
 export KOF_TINY_SCALE ?= 0.56
+export KOF_TINY_TRAD ?= build/mid/gen_fight
+export KOF_TINY_ROM ?= kof98-snes-mid.sfc
+export KOF_TINY_MSU ?= kof98-snes-mid.msu
 export ROMNAME := kof98-snes-tiny
 export ROMTITLE := KOF98 SNESFEST TINY
 GEN_DIR := build/tiny/gen_fight
-MSU_NAME := kof98-snes
+MSU_NAME := kof98-snes-mid
 BUILD_INC := build/tiny
 PROFILE_DEFINE := -D KOF_TINY
 CUSTOM_OBJECT := 1
 FIGHT_ENV := KOF_TINY=1
 else
+# Default profile: PRO scale.  Full 1.0 art except the documented per-char
+# caps (see KOF_SCALE_CAPS=pro in tools/build_fight.py).  It is the main
+# artifact and still updates the video manifest.
 export ROMNAME := kof98-snes
 export ROMTITLE := KOF SNESFEST
 GEN_DIR := build/gen_fight
@@ -97,7 +102,7 @@ BUILD_INC := build
 PROFILE_DEFINE :=
 CUSTOM_OBJECT := 0
 FIGHT_ENV := KOF_OUT_DIR=$(GEN_DIR) KOF_MSU_NAME=$(MSU_NAME) \
-	KOF_CHAR_SCALE=$(HI_BASE_SCALE) KOF_SCALE_CAPS=structural \
+	KOF_CHAR_SCALE=1.0 KOF_SCALE_CAPS=pro \
 	KOF_OAM_TRUNCATE=1 KOF_SPRITE_BBOX_TRUNCATE=1
 endif
 
@@ -173,7 +178,7 @@ include $(PVSNESLIB_HOME)/devkitsnes/snes_rules
 
 .PHONY: all assets audio validate-snesmod verify clean cleanSpcAudio \
 	hi hi-verify hi-clean hi10 hi10-verify hi10-clean \
-	pro pro-verify pro-clean \
+	mid mid-verify mid-clean \
 	old old-verify old-clean
 
 all: assets audio $(ROMNAME).sfc $(ROMNAME).msu
@@ -222,7 +227,7 @@ validate-snesmod: $(AUDIOFILES) tools/validate_snesmod.py tools/it_pattern_limit
 ifneq ($(TINY),1)
 $(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json assets/characters/*/*_SNES.cns assets/characters/*/*_SNES.cmd assets/characters/*/*.air assets/data/quotes/*.json) \
 	tools/build_fight.py tools/normal_throws.py tools/close_normals.py tools/remaining_specials.py tools/runtime_abi.py assets/runtime_abi.json tools/newroster.py tools/build_spc_neogeo.py \
-	Makefile.pvsnes $(wildcard Makefile.hi Makefile.old Makefile.pro) \
+	Makefile.pvsnes $(wildcard Makefile.hi Makefile.old Makefile.mid) \
 	tools/build_stages.py tools/build_hud_arcade.py tools/sff.py tools/build_endings.py \
 	$(wildcard assets/survival_ending/*.png) \
 	$(wildcard assets/characters/*/*.snd) \
@@ -242,13 +247,14 @@ $(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json asse
 	$(FIGHT_ENV) python3 tools/build_fight.py
 endif
 
-# TINY: reuse the traditional build's 0.88 data and MSU layout, then add
-# the eleven 0.42-0.45 ROM copies.  build_tiny.py never writes into
-# build/gen_fight or kof98-snes.msu.
+# TINY: reuse the MID build's 0.88 data and MSU layout, then add the
+# eleven 0.42-0.45 ROM copies.  build_tiny.py never writes into
+# build/mid/gen_fight or kof98-snes-mid.msu.
 ifeq ($(TINY),1)
 $(GEN_DIR)/tiny.stamp: tools/build_tiny.py \
-	build/gen_fight/newchars_tabs.inc build/gen_fight/newchars_banks.inc \
-	build/gen_fight/newchars_desc.inc build/gen_fight/msu1_bases.inc
+	$(KOF_TINY_TRAD)/newchars_tabs.inc $(KOF_TINY_TRAD)/newchars_banks.inc \
+	$(KOF_TINY_TRAD)/newchars_desc.inc $(KOF_TINY_TRAD)/msu1_bases.inc \
+	$(KOF_TINY_ROM) $(KOF_TINY_MSU)
 	@mkdir -p $(GEN_DIR)
 	python3 tools/build_tiny.py
 endif
@@ -348,8 +354,8 @@ cleanSpcAudio:
 
 clean: cleanBuildRes cleanRom cleanGfx cleanAudio cleanSpcAudio
 
-# `hi`/`hi10` build the 1.0 test profile; `pro` builds the 1.0 profile with
-# the Chang/Sakura/Billy caps; the default `make` stays at 0.88.
+# `hi`/`hi10` build the 1.0 test profile; `mid` builds the previous default
+# tuned-HI 0.88 layout.  The default `make` is the PRO scale profile.
 # `old` builds the stable 0.81 layout under kof98-snes-old.*.
 hi hi10:
 	@$(MAKE) -f Makefile.pvsnes HI10=1
@@ -362,16 +368,16 @@ hi-clean hi10-clean:
 	rm -f kof98-snes-hi.sfc kof98-snes-hi.msu \
 		kof98-snes-hi.sym kof98-snes-hi.symfull kof98-snes-hi.log
 
-pro:
-	@$(MAKE) -f Makefile.pvsnes PRO=1
+mid:
+	@$(MAKE) -f Makefile.pvsnes MID=1
 
-pro-verify:
-	@$(MAKE) -f Makefile.pvsnes PRO=1 verify
+mid-verify:
+	@$(MAKE) -f Makefile.pvsnes MID=1 verify
 
-pro-clean:
-	rm -rf build/pro
-	rm -f kof98-snes-pro.sfc kof98-snes-pro.msu \
-		kof98-snes-pro.sym kof98-snes-pro.symfull kof98-snes-pro.log
+mid-clean:
+	rm -rf build/mid
+	rm -f kof98-snes-mid.sfc kof98-snes-mid.msu \
+		kof98-snes-mid.sym kof98-snes-mid.symfull kof98-snes-mid.log
 
 old:
 	@$(MAKE) -f Makefile.pvsnes OLD=1
@@ -380,7 +386,8 @@ old-verify:
 	@$(MAKE) -f Makefile.pvsnes OLD=1 verify
 
 tiny:
-	$(MAKE) -f Makefile.pvsnes TINY=1 kof98-snes-tiny.sfc
+	@$(MAKE) -f Makefile.pvsnes MID=1
+	@$(MAKE) -f Makefile.pvsnes TINY=1 kof98-snes-tiny.sfc
 
 tiny-clean:
 	rm -rf build/tiny

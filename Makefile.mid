@@ -1,0 +1,9 @@
+# MID scale build: the previous default, tuned HI art at a 0.88 base with the
+# structural/aesthetic caps.  Writes its own artifacts without touching the
+# PRO default build:
+#
+#   make -f Makefile.mid
+#   make -f Makefile.mid verify
+#   make -f Makefile.mid mid-clean
+MID := 1
+include Makefile.pvsnes
