@@ -15418,8 +15418,13 @@ def emit_newchars_inc(new_keys, msu_slices):
                 continue
             free[:] = state
             return alloc
+        need = sum(sz_map.values()) + guard * len(sz_map)
+        have = sum(s[2] for s in base)
+        biggest = sorted((s[2] for s in base), reverse=True)[:6]
         raise ValueError(f"{last and last[0] or '?'}: no free PVS bank "
-                         f"window for {last and last[1] or 0} bytes")
+                         f"window for {last and last[1] or 0} bytes "
+                         f"(need {need}, free {have}, "
+                         f"largest windows {biggest})")
     # Animation records share one bank; 2x frame pages are scattered into
     # free ROM windows and carry their own bank byte for DMA.
     proj_order = [k for k in CHARS if k in PROJECTILE_BLOBS]
