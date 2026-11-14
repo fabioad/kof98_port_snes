@@ -574,6 +574,23 @@
 .DEFINE CINE_TIMER  $7E51F2             ; cinematic black-screen ticks
 .DEFINE CINE_ACTIVE $7E51F3             ; 1 while the saved backdrop is black
 .DEFINE CINE_BGCOL  $7E51F4             ; saved CGRAM colour 0 (word)
+; Mr. Big intro girlfriend cell loop.  The vblank NMI can land inside the
+; list and clobber the DP scratch, truncating the overlay for that frame.
+; Keep the pointer/count/base in high WRAM, outside every engine/NMI block.
+.DEFINE TITLE_RELOAD $92                 ; DP: reload title art next tick
+.DEFINE GIRL_PTR    $7E5270             ; 3-byte cell-list pointer
+.DEFINE GIRL_CNT    $7E5273             ; remaining cells (byte)
+.DEFINE GIRL_BX     $7E5274             ; word: Mr. Big screen X
+.DEFINE GIRL_BY     $7E5276             ; word: ground-screen Y
+.DEFINE GIRL_OAM    $7E5278             ; word: OAM cursor
+.DEFINE GIRL_CX     $7E527A             ; cached Big X (word)
+.DEFINE GIRL_CY     $7E527C             ; cached ground Y (word)
+.DEFINE GIRL_CF     $7E527E             ; cached facing byte
+.DEFINE GIRL_CP     $7E527F             ; cached palette byte
+.DEFINE GIRL_VALID  $7E5280             ; 1 = replay buffer is built
+.DEFINE GIRL_START  $7E5281             ; word: OAM byte offset of the build
+.DEFINE GIRL_BOAM   $5600               ; 42 cells * 4 bytes (bank $7E)
+.DEFINE GIRL_BHI    $56B0               ; 11 high-table bytes (bank $7E)
 .DEFINE SELPZ_OAM   CL_VARS+$7E        ; oamtop saved when the select pauses
 .DEFINE SUPERFX_TICKS 32                ; 4 flash + 28 dim (Kyo helper 7000)
 .DEFINE SUPERFX_FLASH 4
@@ -7367,7 +7384,7 @@ PT_exit:
     stz.b wins2
     lda #1
     sta.b roundno
-    jsr CampReset
+    ; jsr CampReset
     jmp TitleEnter
 PT_sel:
     jmp TT_free                          ; versus: back to character select
@@ -8541,6 +8558,7 @@ RollRecover:                            ; tail call: fofs = victim, acc16
 .DEFINE THROWPUSH   $0300               ; back throw: victim keeps 3 px/tick
                                         ;   horizontally away from the thrower
 .DEFINE THROWLIFTV  $0580               ; -5.5 px/tick launch (source 816)
+.DEFINE THROWDROPV  $0300               ; +3 px/tick initial drop from overhead
 .DEFINE THROWPUSHV  $0480               ; 4.5 px/tick away from the thrower
 .DEFINE THROWCORNER 16                  ; keep the lying body off the screen edge
 .DEFINE MINTHROWSEP 24                  ; wrong-side re-seat distance (px)
@@ -15559,7 +15577,16 @@ FP_hud_room:
 FP_present_top:
     jsr FlushHudTop
 FP_present_vis_done:
-    jsl StageAnimPresentFar               ; crowd patches only with time left
+    ; The title screen (gs0, nextflag=0) does not own the stage map/CHR, but
+    ; the last fight's crowd animation is still alive and would write its
+    ; dynamic tiles into the title's BG1 CHR.  Skip it for the title only;
+    ; the ROUND intermission (gs0 + nextflag=1) keeps the animation.
+    lda gamestate
+    bne +
+    lda nextflag
+    beq FP_no_stageanim
++   jsl StageAnimPresentFar               ; crowd patches only with time left
+FP_no_stageanim:
     jsl ShakeScrollFar                    ; EnvShake on BG1 (stage)
     lda gamestate                         ; intro/ending screens take over
     cmp #7.b                              ;   mode/M7 regs + palette fades;
@@ -20444,9 +20471,17 @@ SuperFxApplyNmi:
 
 ; Mr. Big's round-1 intro girlfriend overlay lives outside the full Fight
 ; bank and is reached with jsl from BuildOam.  Internal helpers stay in this
-; bank so their jsr/rts calls remain short.
+; bank so their jsr/rts calls remain short.  The PVSnesLib build moves the
+; section to a free ROM bank: bank 126 is full.  Bank 30's window above
+; $9000 is handed to the packed-data pool by tools/build_fight.py, which
+; reserves $8000-$8FFF for this code.
+.IFDEF PVSNESLIB
+.BANK 30 SLOT 0
+.ORGA $8000
+.ELSE
 .BANK 126 SLOT 0
 .ORGA $E000
+.ENDIF
 .SECTION "IntroGirlCode" FORCE
 ; Draw Mr. Big's two girlfriends during his round-1 intro.  The source
 ; Statedef 191 spawns them as static Explods 165/166 (sprites 192,0 and
@@ -20853,22 +20888,25 @@ DIG_side:
     ldx fofs
     lda FP+F_STATE,x
     cmp #S_INTRO.w
-    bne DIG_s_out
-    sep #$20
+    beq +
+    jmp DIG_s_out
++   sep #$20
     .ACCU 8
     lda.b roundno
     dec a
-    bne DIG_s_out8
-    rep #$20
+    beq +
+    jmp DIG_s_out8
++   rep #$20
     .ACCU 16
     ldx fofs
     lda FP+F_CHAR,x
     cmp #CharMrbig.w
-    bne DIG_s_out
-    lda FP+F_X,x                       ; feet origin, 8.8 -> px
+    beq +
+    jmp DIG_s_out
++   lda FP+F_X,x                       ; feet origin, 8.8 -> px
     xba
     and #$00FF.w
-    sta scr1
+    sta.l GIRL_BX
     lda FP+F_Y,x
     xba
     and #$00FF.w
@@ -20876,7 +20914,9 @@ DIG_side:
     lda #GROUND_Y.w
     sec
     sbc scr2
-    sta scr2
+    sta.l GIRL_BY
+    lda oamtop
+    sta.l GIRL_OAM
     sep #$20
     .ACCU 8
     lda FP+F_FACING,x                  ; low byte: +1 right / $FF left
@@ -20886,24 +20926,129 @@ DIG_side:
     beq +
     lda #$32.b                        ; P2: palette 1
 +   sta girlpal
+    ; Reuse the cached overlay unless Mr. Big's base/facing/palette changed.
+    ; The OAM high table is only byte-aligned when oamtop is a multiple of
+    ; four cells; the fighter cache pads to that boundary.
+    sep #$20
+    .ACCU 8
+    lda.l GIRL_VALID
+    beq DIG_build
+    lda.l GIRL_CF
+    cmp girlface
+    bne DIG_build
+    lda.l GIRL_CP
+    cmp girlpal
+    bne DIG_build
+    rep #$20
+    .ACCU 16
+    lda.l GIRL_BX
+    sta scr3
+    lda.l GIRL_CX
+    cmp scr3
+    bne DIG_build
+    lda.l GIRL_BY
+    sta scr3
+    lda.l GIRL_CY
+    cmp scr3
+    bne DIG_build
+    lda oamtop
+    and #$000F.w
+    bne DIG_build
+    jmp DIG_replay
+DIG_build:
+    lda oamtop
+    sta.l GIRL_START
     rep #$20
     .ACCU 16
     lda #GirlACells.w
-    sta lptr
+    sta.l GIRL_PTR
     sep #$20
     .ACCU 8
     lda #:GirlACells
-    sta lptr+2
+    sta.l GIRL_PTR+2
     jsr DIG_cells
     rep #$20
     .ACCU 16
     lda #GirlBCells.w
-    sta lptr
+    sta.l GIRL_PTR
     sep #$20
     .ACCU 8
     lda #:GirlBCells
-    sta lptr+2
+    sta.l GIRL_PTR+2
     jsr DIG_cells
+    ; Cache the finished 42-cell list for the following frames.  A build
+    ; interrupted by vblank leaves a short delta; invalidate and retry.
+    rep #$20
+    .ACCU 16
+    lda oamtop
+    sec
+    sbc.l GIRL_START
+    cmp #168.w
+    bne DIG_invalid
+    lda #GIRL_BOAM.w
+    sta lptr
+    sep #$20
+    .ACCU 8
+    lda #$7E
+    sta lptr+2
+    rep #$20
+    .ACCU 16
+    lda.l GIRL_START
+    tax
+    ldy #0
+-   lda.w OAMBUF,x
+    sta [lptr],y
+    iny
+    iny
+    lda.w OAMBUF+2,x
+    sta [lptr],y
+    iny
+    iny
+    inx
+    inx
+    inx
+    inx
+    cpy #168
+    bne -
+    lda #GIRL_BHI.w
+    sta lptr
+    sep #$20
+    .ACCU 8
+    lda #$7E
+    sta lptr+2
+    rep #$20
+    .ACCU 16
+    lda.l GIRL_START
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    tax
+    ldy #0
+-   lda.w OAMHI,x
+    sta [lptr],y
+    inx
+    iny
+    cpy #11
+    bne -
+    lda.l GIRL_BX
+    sta.l GIRL_CX
+    lda.l GIRL_BY
+    sta.l GIRL_CY
+    sep #$20
+    .ACCU 8
+    lda girlface
+    sta.l GIRL_CF
+    lda girlpal
+    sta.l GIRL_CP
+    lda #1
+    sta.l GIRL_VALID
+    bra DIG_s_out8
+DIG_invalid:
+    sep #$20
+    .ACCU 8
+    lda #0
+    sta.l GIRL_VALID
 DIG_s_out8:
     rep #$20
     .ACCU 16
@@ -20913,16 +21058,47 @@ DIG_s_out:
 DIG_cells:
     rep #$20
     .ACCU 16
+    lda.l GIRL_PTR
+    sta lptr
+    sep #$20
+    .ACCU 8
+    lda.l GIRL_PTR+2
+    sta lptr+2
     lda [lptr]                         ; ncells
-    and #$00FF.w
+    sta.l GIRL_CNT
     bne +
-    rts                                ; empty cell list
-+   sta scr4
-    inc lptr
-    bne +
-    inc lptr+2
-+   ldy #0
+    jmp DIG_c_stop                     ; empty cell list
++   rep #$20
+    .ACCU 16
+    lda.l GIRL_PTR
+    inc a                              ; skip the count byte (same bank)
+    sta.l GIRL_PTR
+    lda.l GIRL_BX
+    sta scr1
+    lda.l GIRL_BY
+    sta scr2
+    rep #$20
+    .ACCU 16
 DIG_c_loop:
+    ; The pointer is reloaded from the NMI-safe copy once per cell; the base
+    ; stays in scr1/scr2 (the vblank path does not touch the girl geometry).
+    lda.l GIRL_PTR
+    sta lptr
+    rep #$20
+    .ACCU 16
+    lda.l GIRL_PTR
+    inc a
+    inc a
+    inc a
+    inc a                              ; +4-byte cell record
+    sta.l GIRL_PTR
+    sep #$20
+    lda.l GIRL_CNT
+    dec a
+    sta.l GIRL_CNT
+    rep #$20
+    .ACCU 16
+    ldy #0
     sep #$20
     .ACCU 8
     lda [lptr],y                      ; dx
@@ -21001,7 +21177,8 @@ DIG_c_flip:
     sta girlflags
 +   rep #$20
     .ACCU 16
-    ldx oamtop
+    lda.l GIRL_OAM
+    tax
     cpx #512.w
     bcc +
     jmp DIG_c_stop                     ; OAM full
@@ -21047,7 +21224,7 @@ DIG_c_flip:
     sta scr0
     rep #$20
     .ACCU 16
-    lda oamtop
+    lda.l GIRL_OAM
     lsr a
     lsr a
     sta scr6                          ; sprite index
@@ -21072,18 +21249,161 @@ DIG_c_flip:
     sta.w OAMHI,x
     rep #$20
     .ACCU 16
-    lda oamtop
-    clc
-    adc #4.w
+    lda.l GIRL_OAM
+    inc a
+    inc a
+    inc a
+    inc a
+    sta.l GIRL_OAM
     sta oamtop
-    dec scr4
-    beq DIG_c_stop
+    sep #$20
+    lda.l GIRL_CNT
+    bne +
+    jmp DIG_c_stop
++   rep #$20
+    .ACCU 16
     jmp DIG_c_loop
 DIG_c_stop:
     rep #$20
     .ACCU 16
 DIG_c_done:
     rts
+
+; Replay the cached girlfriend OAM list.  The 42 cells were committed once
+; into GIRL_BOAM/GIRL_BHI; copying them is far shorter than rebuilding the
+; per-cell math and keeps the loop clear of the vblank boundary.
+DIG_replay:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    lda oamtop
+    clc
+    adc #168.w
+    cmp #513.w
+    bcs DIG_rep_out                    ; not enough OAM room this frame
+    lda #GIRL_BOAM.w
+    sta lptr
+    sep #$20
+    .ACCU 8
+    lda #$7E
+    sta lptr+2
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    lda oamtop
+    tax
+    ldy #0
+-   lda [lptr],y
+    sta.w OAMBUF,x
+    iny
+    iny
+    lda [lptr],y
+    sta.w OAMBUF+2,x
+    iny
+    iny
+    inx
+    inx
+    inx
+    inx
+    cpy #168
+    bne -
+    lda #GIRL_BHI.w
+    sta lptr
+    sep #$20
+    .ACCU 8
+    lda #$7E
+    sta lptr+2
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    lda oamtop
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    tax
+    ldy #0
+-   lda [lptr],y
+    sta.w OAMHI,x
+    inx
+    iny
+    cpy #11
+    bne -
+    lda oamtop
+    clc
+    adc #168.w
+    sta oamtop
+DIG_rep_out:
+    rep #$20
+    .ACCU 16
+    rts
+
+.IFDEF PVSNESLIB
+; Drop the fight's pending VRAM uploads before TitleEnter loads the logo.
+; The title art overlaps the fighter CHR ($6000/$7000) and effect pages
+; ($6C00/$7C00); a late spark or staged sprite chunk would scramble it.
+TitleClearFightFx:
+    sep #$20
+    .ACCU 8
+    lda #0
+    sta.l $420B                           ; stop a staged fight/HUD DMA
+    sta.l $420C
+    stz.b nextflag
+    stz.b framecnt
+    stz.w FX_CACHE
+    stz.w FX_CACHE+2
+    stz.w FX_CACHEBANK
+    stz.w FX_CACHEBANK+2
+    stz.w SPARKS+SPK_ANIM
+    stz.w SPARKS+SPK_ANIM+SPK_SIZE
+    stz.w SP_KIND
+    stz.w SP_KIND+2
+    stz.w RT_FXUPLOAD
+    stz.w RT_HUDFULL
+    lda #1
+    sta.b TITLE_RELOAD
+    lda #0
+    rtl
+.ENDIF
+
+; Force the complete title PPU layout.  A fight or the pause menu can leave
+; BG1SC/BGMODE/SETINI/window or color-math bits behind; the title art is then
+; displayed through the stage's map/CHR.  Runs from the vblank gate in gs0.
+TitleFixPpu:
+    sep #$20
+    .ACCU 8
+    lda #65.b                            ; BG palette 4 colour 1: black ring
+    sta.l $002121
+    lda #0
+    sta.l $002122
+    sta.l $002122
+    lda #$01.b                           ; Mode 1
+    sta.l $002105
+    lda #$18.b                           ; BG1 map $1800
+    sta.l $002107
+    lda #$14.b                           ; BG2 map $1400 (ring)
+    sta.l $002109
+    lda #$04.b                           ; BG1 chr $4000, BG2 chr $0000
+    sta.l $00210B
+    lda #$13.b                           ; BG1+BG2+OBJ
+    sta.l $00212C
+    lda #0
+    sta.l $00212D                        ; no subscreen
+    sta.l $002106                        ; no mosaic
+    sta.l $002133                        ; no interlace/overscan
+    sta.l $002130                        ; no color math
+    sta.l $002131
+    sta.l $00212E                        ; no window masks
+    sta.l $00212F
+    sta.l $00210D                        ; BG1 scroll zero
+    sta.l $00210D
+    sta.l $00210E
+    sta.l $00210E
+    sta.l $00210F                        ; BG2 scroll zero
+    sta.l $00210F
+    sta.l $002110
+    sta.l $002110
+    rtl
 
 .ENDS
 
@@ -23992,24 +24312,6 @@ HudHdmaNmiGate:
     bne HHNG_title_done                  ;   its StartFight must keep the
                                          ;   fight PPU setup, not the title
                                          ;   ring layer (BG1 CHR base/BG3 map/TM)
-    lda #65.b                            ; title: BG palette 4 colour 1 is the
-    sta.l $002121                        ;   texts' black ring (BG2 layer)
-    lda #0
-    sta.l $002122
-    sta.l $002122
-    lda #$01.b                           ; a late opening-video vblank can
-    sta.l $002105                        ;   re-assert the video's BG2 mode:
-    lda #$14.b                           ;   keep the title's ring layer
-    sta.l $002109                        ;   (map $1400, chr $0000) on top
-    lda #$04.b
-    sta.l $00210B
-    lda #$13.b
-    sta.l $00212C
-    lda #0
-    sta.l $00210F                        ; BG2 HOFS/ VOFS: the outline layer is
-    sta.l $00210F                        ;   not scrolled; a preceding fight
-    sta.l $002110                        ;   or the opening video can leave a
-    sta.l $002110                        ;   stale scroll here
 HHNG_title_done:
     lda gamestate
 HHNG_nog:

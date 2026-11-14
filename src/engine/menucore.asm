@@ -1794,7 +1794,16 @@ TitleEnter:
     stz.w FP+F_X+FP2OFS+1
     sep #$20
     .ACCU 8
+    ; The title art's 757 tiles occupy $4000-$6F4F in VRAM, overlapping the
+    ; fight's P1/P2 CHR ($6000/$7000) and both effect pages ($6C00/$7C00).
+    ; A spark or an in-flight sprite chunk left by the fight/demo would be
+    ; uploaded over the logo after the art load, leaving it scrambled.
+.IFDEF PVSNESLIB
+    jsl TitleClearFightFx
+    ; A = 0 from the helper: which screen = title
+.ELSE
     lda #0
+.ENDIF
     jsr MnLoadArt
     jsr MtClear
     jsr TitleSprites
@@ -1806,8 +1815,6 @@ TitleEnter:
     sep #$20
     .ACCU 8
     stz.w S_BLINK
-    stz.b nextflag
-    stz.b framecnt
     stz FP+F_DMAREQ                       ; kill stale sprite uploads
     stz FP+F_DMAREQ+FP2OFS
     lda #SONG_CIPHERB.b
@@ -1876,7 +1883,12 @@ TitleSprites:
 TitleTickNew:
     sep #$20
     .ACCU 8
-    rep #$20
+    lda.b TITLE_RELOAD
+    beq +
+    dec a                                 ; A=1 -> 0 (title art selector)
+    sta.b TITLE_RELOAD
+    jsr MnLoadArt
++   rep #$20
     .ACCU 16
     lda FP+F_JOYPR.w                      ; either pad's edges
     ora FP+F_JOYPR+FP2OFS.w
@@ -3196,7 +3208,8 @@ LaunchVictim:
     bcc +
     lda #$0080.w                        ; block the victim's own 3027 VelSet
     sta FP+F_STIME,x                    ;   (otherwise he is tossed back up)
-    stz FP+F_VY,x                       ;   and drop the entry velocity too
+    lda #THROWDROPV.w                   ; and drop fast from the overhead hold
+    sta FP+F_VY,x
     bra ++
 +   lda #-THROWLIFTV.w                  ; released low: arc up and away
     sta FP+F_VY,x

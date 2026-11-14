@@ -12,6 +12,7 @@ Run after a PVSnesLib build:
     python3 tools/test_mrbig_intro_girls.py
 """
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -58,6 +59,13 @@ def girl_cells(core):
     return out
 
 
+def expected_girl_cells():
+    """Cell count emitted by build_intro_girls (8x8 + packed 16x16)."""
+    text = (ROOT / "build/gen_fight/intro_girls.inc").read_text()
+    return sum(int(m.group(1)) for m in re.finditer(
+        r"Girl[AB]Cells:\s*\n\s*\.db (\d+)", text))
+
+
 def main(core_path, rom):
     core = Core(core_path, rom)
     try:
@@ -67,9 +75,10 @@ def main(core_path, rom):
              "intro")
         core.step(20)
         cells = girl_cells(core)
-        if len(cells) < 60:
+        expected = expected_girl_cells()
+        if len(cells) < expected:
             raise AssertionError(
-                f"only {len(cells)} girlfriend cells during the intro")
+                f"only {len(cells)}/{expected} girlfriend cells during the intro")
         big_x = core.word(F_X) >> 8
         if not any(x < big_x for x, *_ in cells):
             raise AssertionError("no girlfriend cell left of Mr. Big")
