@@ -2540,6 +2540,11 @@ ShowSelect:
     sta.w SCPUT1
     lda #150.b
     sta.w SCPUT2
+.IFDEF PVSNESLIB
+.IFNDEF KOF_TINY
+    jsl SelNoMsuSetupFar                  ; no .msu: Terry + blinking notice
+.ENDIF
+.ENDIF
     jsr SelFaceSync                       ; name anchors off the seeded cells
     jsr MtClear
     jsr SelDrawOam
@@ -24114,6 +24119,15 @@ HHT_scroll:
     sta.l $002110
     lda #0
     sta.l $002110                        ; BG2VOFS = framecnt / 2
+.IFDEF PVSNESLIB
+.IFNDEF KOF_TINY
+    lda gamestate
+    cmp #5.b
+    bne +
+    jsl SelNoMsuBlinkFar                 ; no .msu: blink the BG3 notice
++
+.ENDIF
+.ENDIF
     lda gamestate
 HHT_notsel:
     cmp #1.b

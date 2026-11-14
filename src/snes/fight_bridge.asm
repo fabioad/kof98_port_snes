@@ -179,6 +179,9 @@ MsuVideoStage dsb $1900
 .INCLUDE "engine/team_order.asm"
 .INCLUDE "engine/frame_present.asm"
 .INCLUDE "engine/fast_paths.asm"
+.IFNDEF KOF_TINY
+.INCLUDE "engine/sel_nomsu.asm"        ; select screen without the .msu
+.ENDIF
 .INCLUDE "engine/msu_seek.asm"
 .INCLUDE "engine/close_normals.asm"
 .IFDEF MSU_DIAG
