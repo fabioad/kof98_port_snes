@@ -90,6 +90,40 @@ MsuIntroEnterFar:
     stz.w MV_LOCK
     lda #1.w
     jsr MI_BeginStream                     ; stream frame 1 into buffer B
+    ; Arcade voice layer: MSU-1 audio track 1 (kof98-snes-1.pcm) plays over
+    ; the Cipher SPC theme.  We only get here when msuok was set, and a
+    ; missing .pcm just leaves the track silent ($2000 bit 3), so the intro
+    ; is unchanged without the file.
+    sep #$20
+    .ACCU 8
+    lda #$FF.b
+    sta.l $002006                          ; volume
+    lda #1.b
+    sta.l $002004                          ; track 1 (low)
+    lda #0
+    sta.l $002005                          ; track 1 (high)
+    ; Real hardware (FXPAK/SD2SNES) keeps $2000 bit 6 (audio busy) set while
+    ; it opens the track file; a play written meanwhile is ignored.  Emulators
+    ; finish instantly, which hid this.  Wait (bounded) for busy to clear,
+    ; then skip the play if the file is missing (bit 3 = audio error).
+    rep #$10
+    .INDEX 16
+    ldx #$0000
+MIV_waitaud:
+    lda.l $002000
+    and #$40.b
+    beq MIV_audready
+    dex
+    bne MIV_waitaud                        ; 65536 polls (~0.15 s) max
+MIV_audready:
+    lda.l $002000
+    and #$48.b                             ; busy still set or track missing
+    bne MIV_noplay
+    lda #1.b
+    sta.l $002007                          ; play, no repeat
+MIV_noplay:
+    rep #$20
+    .ACCU 16
     jml OpnMsuReady
 
 ; One MainLoop tick.  The vblank hook (MsuVideoVblank) performs the buffer
@@ -128,6 +162,8 @@ MI_Handoff:
     sta.l $4200                            ; NMI off until TitleEnter re-enables
     lda #$80.b
     sta.l INIDISP                          ; blank before the handoff
+    lda #0
+    sta.l $002007                          ; stop the voice track (START skip)
     rep #$20
     .ACCU 16
     stz.w MV_STAGED                        ; no chunk left for a late vblank

@@ -1,11 +1,14 @@
 ; Incremental MSU voice loader. Kept outside the full Fight bank.
 ; $C300 no longer works: FightData (bank 126, $8000) grew to 17,172 bytes and
-; now ends at $C314.  The replacement must stay in the $8000-$FFFF half: on
-; ExHiROM the low half of the high banks is a WRAM mirror, so code placed at
-; $4000 never executes (the boot died right after gamestate 9).
+; now ends at $C314.  $DA60 no longer works either: the arcade-voice layer
+; grew MsuIntroVideo ($D300) past $DA60.  The replacement must stay in
+; the $8000-$FFFF half: on ExHiROM the low half of the high banks is a WRAM
+; mirror, so code placed at $4000 never executes (the boot died right after
+; gamestate 9).  $F500 is the free tail shared by every profile (TINY's
+; TinyHelpers end at $F4BE), well clear of the intro player and SuperFx.
 .BASE $C0
 .BANK 126 SLOT 0
-.ORGA $DA60
+.ORGA $F500
 .SECTION "VoiceQueueCode" FORCE
 
 VoiceQueueAddFar:
