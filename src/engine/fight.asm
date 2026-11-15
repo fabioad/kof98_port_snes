@@ -14772,7 +14772,9 @@ TS_nohit:
     sep #$20
     .ACCU 8
     dec.w SPARKS+SPK_FTIM,x
-    bne TS_next8
+    beq TS_frame_step
+    jmp TS_next8
+TS_frame_step:
     inc.w SPARKS+SPK_FIDX,x             ; next frame
     rep #$20
     .ACCU 16
@@ -14804,14 +14806,21 @@ TS_anim_end:
     cpx #SPK_SIZE                       ; multi-hit super: hold its last
     bcs +                               ;   frame until the sequence ends
     lda.w RT_PROJHITS
-    bne TS_multi_hold
+    bne TS_multi_chk
     bra ++
 +   lda.w RT_PROJHITS+1
-    bne TS_multi_hold
+    bne TS_multi_chk
+    bra ++
+TS_multi_chk:
+    lda.w RT_PROJHIT,x                  ; held only after a contact: a missed
+    bne TS_multi_hold                   ;   Power Geyser must end with its clip
 ++  stz.w SPARKS+SPK_ANIM,x             ; animation finished
     stz.w SPARKS+SPK_ANIM+1,x
     jmp TS_next8
 TS_multi_hold:
+    dec.w SPARKS+SPK_FIDX,x             ; stay on the last valid frame (the
+    lda #1                              ;   index had stepped past the table)
+    sta.w SPARKS+SPK_FTIM,x
     jmp TS_next8
 TS_frame_load:
     rep #$20
