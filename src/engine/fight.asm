@@ -8573,10 +8573,10 @@ RollRecover:                            ; tail call: fofs = victim, acc16
 ; the bound victim every tick from the generated BindTab windows; the
 ; elem-gated ActTab rows (turn/posadd/target facing+life+state) fire
 ; inside AnimSetFrame alongside the PosTab timeline.
-.DEFINE THROWGRAV   $0066               ;  0.4 px/tick^2 (state 821 VelAdd)
+.DEFINE THROWGRAV   $0080               ;  0.5 px/tick^2 (Kyo 816 VelAdd y=.5)
 .DEFINE THROWPUSH   $0300               ; back throw: victim keeps 3 px/tick
                                         ;   horizontally away from the thrower
-.DEFINE THROWLIFTV  $0580               ; -5.5 px/tick launch (source 816)
+.DEFINE THROWLIFTV  $0680               ; -6.5 px/tick launch (Kyo 816 VelSet y)
 .DEFINE THROWDROPV  $0300               ; +3 px/tick initial drop from overhead
 .DEFINE THROWPUSHV  $0480               ; 4.5 px/tick away from the thrower
 .DEFINE THROWCORNER 16                  ; keep the lying body off the screen edge

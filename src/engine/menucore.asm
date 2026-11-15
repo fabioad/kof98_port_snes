@@ -3079,7 +3079,7 @@ KHD_out:
 ; ---- throw release helpers (FightMenuTail: same bank, near calls) ----------
 ; A normal throw that ends naturally used to drop the victim straight into
 ; the neutral/lying path because the source 816 flight state is not a runtime
-; state.  LaunchVictim reproduces its VelSet (5.5 px/tick up, 4.5 px/tick
+; state.  LaunchVictim reproduces its VelSet (6.5 px/tick up, 0.5 gravity, 4.5 px/tick
 ; away, thrower-facing relative) and ThrowRelease picks between that and the
 ; old plain drop when the thrower was interrupted.
 ThrowRelease:

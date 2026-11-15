@@ -9545,6 +9545,10 @@ def legacy_quote_lines(name, cfg):
     return out
 
 
+# name -> max ticks of the final bind element (slam damage lands on it)
+THROW_TAIL_CAP = {"ralf": 8}
+
+
 def wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers,
                      cns_statedefs=None, cns_acts=None, cns_binds=None):
     """Wire the source throw bind + victim poses for every fighter.
@@ -9674,6 +9678,22 @@ def wire_throw_chain(name, cfg, anims, air, cns_moves, cns_headers,
             anims[75] = bind_anim
         else:
             anims[75] = cur
+        # The victim is held until the bind clip ends.  Ralf's source clip
+        # parks 36 ticks on the damage element while the real victim has
+        # already been released, so the port left the opponent hanging in
+        # the air.  Trim that trailing hold so the release happens right
+        # after the slam damage.
+        cap = THROW_TAIL_CAP.get(name)
+        a75 = anims.get(75)
+        if cap and a75 in air and air[a75][0]:
+            tframes, tloop = air[a75]
+            last = tframes[-1]
+            if last[4] > cap:
+                trimmed = list(tframes[:-1]) + [
+                    (*last[:4], cap, *last[5:])]
+                air[65006] = (trimmed, tloop)
+                cfg["anims"][75] = 65006
+                anims[75] = 65006
     def first(*actions):
         for a in actions:
             if a in air and air[a][0]:
@@ -12676,6 +12696,13 @@ def build_char(name, cfg, global_pal=None):
     act_sids = {}
     for sid in range(nsid):
         rows = _slice_rows(cns_acts, sid)
+        if sid == 75 and cfg.get("moves", {}).get(75) is not None:
+            # Generic grab-connect sound.  Kyo's 810 plays s1,1 (medium
+            # impact) on the first bind elements; give every normal throw
+            # the same cue unless the source already plays one at frame 0.
+            rows = list(rows or ())
+            if not any(r[1] == 7 and r[0] == 0 for r in rows):
+                rows.insert(0, (0, 7, 5, 0))   # SFX_HIT_MED
         out = []
         for frame, op, arg, cond in (rows or ()):
             if sid == 75 and op == 3 and not -128 <= arg <= 127:
