@@ -82,4 +82,12 @@ music/ffg_energy/reference/
 music/ffg_energy/ouvir.html
 /kof98-arcade-title*.png
 /kof98-intro-cipher-snes.mp3
+/kof98-intro-arcade*.mp3
+/kof98-intro-port-mix.mp3
+/kof98-snes-1.pcm
 /port_snes_tecnica/
+
+# ---------------------------------------------------------------------------
+# Ferramentas locais de engenharia reversa (nao fazem parte do jogo)
+# ---------------------------------------------------------------------------
+/tools/ghidra/
