@@ -1,5 +1,12 @@
 # Known Issues — build de 04/11/2026
 
+> **15/11 — auditoria de especiais na ROM atual:**
+> [1.234 casos, 3 abertos](AUDITORIA_ESPECIAIS_2026-11-15.md). Saisyu
+> Kamukakari (1200/1210) e Mary Spinfall (1160) avançam e passam pelo
+> adversário sem acertar o alvo colado; Chizuru 1004/1300 seguem
+> condicionais à postura. Todo o resto dos casos de 12/11 virou
+> `hit_and_recovered`.
+
 > **Correção em andamento:** [captura dos counters ajustada no fonte](SPECIALS_SUPERS_FIX_PROGRESS_2026-11-06.md).
 > Validação na próxima ROM pendente; continuações ofensivas ainda pendentes.
 
