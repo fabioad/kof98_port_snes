@@ -356,6 +356,10 @@ CASE_SETUPS = {
     ("lucky", 2600): [_s(distance=100, hold=2)],
     # air specials: low jump-in at close range
     ("benimaru", 1100): [_s(air_height=16, distance=48, opponent_air=True)],
+    # The strong aerial shot is the same helper as the weak one: it connects
+    # with a victim already in the air (20 at 48-64 px).  Without this row
+    # the 24 px / idle-Kyo default reported a whiff that does not exist.
+    ("benimaru", 1110): [_s(air_height=16, distance=48, opponent_air=True)],
     ("yuri", 450): [_s(air_height=16, distance=24)],
     ("kim", 1200): [_s(natural_jump=True, air_height=16, distance=24)],
     ("mai", 1043): [_s(air_height=16, distance=24)],
