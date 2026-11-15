@@ -4566,6 +4566,20 @@ if "mary" in CHARS:
         (68, 3800, 3800),      # Mary's Typhoon / Infinity Rose
     ])
     _mary = POST_CAL_TWEAKS.setdefault("mary", {})
+    # Spinfall (1150/1160) launches with a statedef velset and no friction
+    # (physics N): StSpecial pinned F_VX to zero after the first tick, so
+    # Mary rose and fell in place.  Mark both sids VelSet-driven so the
+    # entry velocity (6 / 3.5 px/tick) survives until the landing rule.
+    _mary.setdefault("velset_sids", []).extend([59, 60])
+    # Straight Slicer (1600/1610): the source dashes 7 px/tick through the
+    # 1601/1611 air phase (elements 2-4), nudges +10 at element 4 and then
+    # bleeds speed (VelMul .85) until the clip ends.  The port slice had no
+    # motion, so the lunge never closed distance.  Stepped VelSet rows
+    # (frame = zero-based element) approximate that decay.
+    POST_CAL_ACT_OVERRIDE.setdefault("mary", {}).update({
+        1600: [(1, 5, 5, 0), (4, 5, 3, 0), (7, 5, 2, 0), (11, 5, 0, 0)],
+        1610: [(1, 5, 6, 0), (4, 5, 4, 0), (8, 5, 2, 0), (12, 5, 0, 0)],
+    })
     _mary.setdefault("slice_damage", {}).update({
         112: 20, 113: 22, 114: 30, 58: 40,
         62: 25, 64: 25, 66: 30, 68: 30})
