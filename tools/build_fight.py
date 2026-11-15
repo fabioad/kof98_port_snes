@@ -10599,6 +10599,24 @@ def build_char(name, cfg, global_pal=None):
         cns_binds, cns_acts, cns_posadds)
     if _remaining:
         print(f"{name}: restored special phase timelines {_remaining}")
+    # Chang's Tekkyuu Day-Kaiten: draw the orbiting ball as a 3-tick Explod
+    # per spin element (the source ball is a Helper the engine lacks).
+    # Must run after the repair, which rewrites cns_acts for these states.
+    from remaining_specials import BALL_ELEMS, BALL_ORBIT
+    for (_bname, _broot), _belems in BALL_ELEMS.items():
+        if _bname != name or "ChangBall" not in EXPLODS_IDX:
+            continue
+        _brows = {}
+        for _el, _ph in _belems:
+            if _ph not in _brows:
+                _bx, _by = BALL_ORBIT[_ph]
+                _brows[_ph] = len(cns_exprows)
+                cns_exprows.append((
+                    EXPLODS_IDX["ChangBall"],
+                    int(round(_bx / coord_scale * char_scale)),
+                    int(round(_by / coord_scale * char_scale)),
+                    0, 0, 0, 3, EXPLODS["ChangBall"][3]))
+            cns_acts.setdefault(_broot, []).append((_el, 14, _brows[_ph], 0))
 
     # Which super slots are MAX/SDM versions?  Stored in a descriptor byte
     # (CH_MAXMASK) so the matcher no longer guesses from the sid number.
@@ -13040,6 +13058,12 @@ EXPLODS = {
     "Bottle": ("assets/characters/chin-kofa/Chin-KOFM.sff", 4,
                [(1005, 0, 10)],
                0x3E),
+    # Chang's iron ball (Chang.sff 1005,0, 39x39) at 2/5 = 16x16: one
+    # block.  Tekkyuu Day-Kaiten drops one of these every 3 ticks along the
+    # orbit (see remaining_specials.BALL_ORBIT).
+    "ChangBall": ("assets/characters/chang-kofa/Chang.sff", (2, 5),
+                  [(1005, 0, 3)],
+                  0x3E),
 }
 # mugen explod anim id -> compiled clip label.  Kyo's flames ride AIR
 # actions 1120/1121; Iori's (identical art) ride 1101/1102.  KFM's two intro
@@ -13098,7 +13122,10 @@ EXPLODS_IDX = {label: i for i, label in enumerate(
 # Others are resolved from their Projectile controllers first.
 def spark_sprite(s, scale):
     """Downscale by integer factor keeping the axis like scale_sprite(),
-    but tolerating non-divisible axes."""
+    but tolerating non-divisible axes.  A (num, den) tuple resizes by that
+    ratio instead (Chang's 39 px ball at 4/5 fits one 16x16 cell)."""
+    if isinstance(scale, tuple):
+        return resize_projectile(s, scale[0], scale[1])
     if scale == 1:
         return s
     ns = Sprite()

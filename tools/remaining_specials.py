@@ -76,6 +76,49 @@ HIT_SOURCES = {('leona',1200):1210,('leona',1201):1211,
                ('omegarugal',3000):3002,('omegarugal',6000):6004}
 
 
+# Helper-ball specials (Chang's Tekkyuu Day-Kaiten 1000/1010).  The source
+# attack is the orbiting "Bola" helper (state 1005), which the native engine
+# cannot run.  The body's own AIR has no Clsn1, so the flattened timeline used
+# to get one box on the very last (standing) frame: the move whiffed almost
+# always and no ball was drawn.  Instead the spin loop (sprites 1000,0-3) is
+# re-cut into 3-tick elements, each carrying (a) a box around the ball's
+# position for that phase of the orbit and (b) a fixed zone over the ball's
+# forward arc, so the hit is active for the whole spin.  build_fight then
+# schedules one short ball Explod per element at BALL_ORBIT[phase].
+BALL_SPIN = {('chang',1000),('chang',1010)}
+BALL_TICKS = 3
+# Source-unit ball centre (x forward, y up negative) every 3 ticks.  The
+# helper's BindToParent table has an ~18-tick period around (9,-119).
+BALL_ORBIT = [(73,-95),(42,-79),(-21,-102),(-55,-141),(-26,-159),(35,-137)]
+BALL_HALF = 36                      # source helper Clsn1 is +-32
+BALL_FRONT = (0,-125,105,-47)       # forward arc, covers stand and crouch
+BALL_ELEMS = {}                     # (name, root) -> [(element, phase)]
+
+
+def ball_spin_frames(frames):
+    """Re-cut the spin frames (1000,0-3) into BALL_TICKS-tick elements."""
+    spin=[i for i,f in enumerate(frames) if f[0]==1000 and f[1] in (0,1,2,3)]
+    if not spin:return frames,None,[]
+    lo,hi=spin[0],spin[-1]
+    block=frames[lo:hi+1]
+    total=sum(f[4] for f in block)
+    count=max(1,round(total/BALL_TICKS))
+    bounds=[];acc=0
+    for f in block:
+        acc+=f[4];bounds.append(acc)
+    cut=[];elems=[]
+    for k in range(count):
+        pos=k*total/count
+        src=next(f for f,b in zip(block,bounds) if pos<b)
+        phase=k%len(BALL_ORBIT)
+        bx,by=BALL_ORBIT[phase]
+        box=(bx-BALL_HALF,by-BALL_HALF,bx+BALL_HALF,by+BALL_HALF)
+        g,n,x,y,_t,flip,_atk,hurt=src
+        cut.append((g,n,x,y,BALL_TICKS,flip,[box,BALL_FRONT],hurt))
+        elems.append((lo+k,phase))
+    return frames[:lo]+cut+frames[hi+1:],lo,elems
+
+
 def repair(name,cfg,anims,air,moves,headers,states,binds,acts,posadds):
     if name not in STRIKES and name not in GRABS:
         return []
@@ -145,6 +188,11 @@ def repair(name,cfg,anims,air,moves,headers,states,binds,acts,posadds):
         resident=anims[sid];frames,windows,hit=timeline(phases,resident,held)
         anum=65100+counter;counter+=1
         if anum in air:raise ValueError('special synthetic action collision')
+        BALL_ELEMS.pop((name,root),None)
+        if not held and (name,root) in BALL_SPIN:
+            frames,first,elems=ball_spin_frames(frames)
+            if first is not None:
+                hit=first;BALL_ELEMS[(name,root)]=elems
         if not held and hit is None:
             # Helper-only attacks use the actor's own visible strike pose.
             hit=max(0,len(frames)-2)
