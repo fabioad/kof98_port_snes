@@ -1782,8 +1782,11 @@ PROJECTILE_EXCLUDE = {
     # the melee super.
     "mrbig": (48, 49, 52, 85, 86),
     # Eiji: keep the super shot (85/86); special_52/53 are teleport/dash
-    # follow-ups.
-    "eiji": (52, 53),
+    # follow-ups.  108 (1600 Mukuro Nui) is compiled as a travelling shot
+    # because the source spawns helper 1610 with the real Projectile, but the
+    # port reuses the 3100 sword clip on that slot, so the shot plus the
+    # slice hit the victim twice (14 + 25).  Keep the melee slice only.
+    "eiji": (52, 53, 108),
     # Geese: 53 (state 1210) is the HCB+P dash whose follow-up HitDef was
     # inferred as a travelling shot; the move itself is melee.  The air
     # Shippuu Ken (58/state 1100) is a real helper projectile (1103) and must
@@ -4114,14 +4117,25 @@ if "eiji" in CHARS:
     ])
     PROJECTILE_RELEASE.setdefault("eiji", {}).update({107: 0})
     POST_CAL_PROJS.setdefault("eiji", {}).update({
-        107: (0x0500, 14, 0x0A),
+        # 1000 Kikouhou: the source's ifelse(var(6),25,20) never parses, so
+        # the row kept the 14 placeholder.  Weak x2 (damage_scale) = 40; the
+        # strong button shares this row.
+        107: (0x0500, 40, 0x0A),
+        # 3000/3010/3020 land in the engine's five-contact super sequence,
+        # so the ProjTab byte is the damage per contact.  Source totals are
+        # 38 / 48 / 2x40, doubled by damage_scale: 75 / 95 / 160.
+        85: (0x0400, 15, 0x0A),     # Zantetsuha weak
+        86: (0x0400, 19, 0x0A),     # Zantetsuha strong
+        87: (0x1100, 32, 0x0A),     # MAX Zantetsuha (two 40-damage waves)
     })
     _eiji = POST_CAL_TWEAKS.setdefault("eiji", {})
     _eiji.setdefault("slice_damage", {}).update({
-        107: 14, 108: 25, 109: 20, 110: 30, 111: 35})
+        # Source totals x damage_scale 2: Kikouhou 20, Mukuro Nui 11 (the
+        # port maps it to a ground sword slice), 3105 25, 3126 38, 3200 17x4.
+        107: 40, 108: 22, 109: 50, 110: 76, 111: 136})
     _eiji.setdefault("hitdef_override", {}).update({
-        108: {"active": 7, "damage": 25, "gdamage": 2, "fall": 1},
-        111: {"active": 1, "damage": 35, "gdamage": 2, "p2state": 0xFF,
+        108: {"active": 7, "damage": 22, "gdamage": 2, "fall": 1},
+        111: {"active": 1, "damage": 136, "gdamage": 2, "p2state": 0xFF,
               "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
     })
     _eiji.setdefault("cmd_extra", []).extend([
@@ -6183,8 +6197,9 @@ _wire_followups("eiji", [(58, 1201, 1201), (60, 1202, 1202)],
                 [(50, 58, 0, 0), (51, 58, 0, 0),
                  (58, 60, 3, 0), (58, 60, 0, 0), (60, 0, 0, 0)])
 _tweak("eiji", "tail_ticks", {1201: 21})
+# Source 1201 deals 16 (19 strong) x damage_scale 2; 22 was under the scale.
 _tweak("eiji", "hitdef_override", {
-    58: {"active": 1, "damage": 22, "gdamage": 2, "fall": 1}})
+    58: {"active": 1, "damage": 32, "gdamage": 2, "fall": 1}})
 
 # Mai's air Musasabi (1043) is the hover before the dive: 1045 is the
 # diagonal dive (VelSet 7.8, 8.2, the HitDef) and 1047 the landing.  Only

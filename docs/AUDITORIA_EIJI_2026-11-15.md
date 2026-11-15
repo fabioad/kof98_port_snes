@@ -1,8 +1,8 @@
-# Auditoria do Eiji (2026-11-15)
+# Auditoria do Eiji — correções (2026-11-15)
 
-Escopo: comparar o fonte MUGEN (`assets/characters/Eiji-KOF98/Eiji-S.cns`, `Eiji-H.cns`, `Eiji.cmd`) com o que o port liga em `tools/build_fight.py`, `tools/newroster.py` e `Eiji_SNES.cmd`.
+Escopo: comparar o fonte MUGEN (`assets/characters/Eiji-KOF98/Eiji-S.cns`, `Eiji-H.cns`, `Eiji.cmd`) com o que o port liga em `tools/build_fight.py`, medir o comportamento na ROM e corrigir o que estava errado.
 
-**Nada foi compilado, rodado em ROM ou commitado nesta rodada.** Tudo abaixo vem da leitura do fonte e do resultado headless já existente (`build/specials_recheck_20261113/shard6.json`). Itens marcados "a confirmar" são inferências.
+Medições feitas por *headless* (Snes9x libretro) sobre a build de 15/11 15:08 (`kof98-snes.sfc`, sha256 `e6b2a65140cd08a5…`), com log de HP por tick. **Nenhuma ROM foi recompilada nesta rodada**: o código foi corrigido, mas os números pós-correção precisam de um novo build.
 
 ## 1. Mapa de slots
 
@@ -11,7 +11,7 @@ Escopo: comparar o fonte MUGEN (`assets/characters/Eiji-KOF98/Eiji-S.cns`, `Eiji
 | 48/49 | 1300/1310 (dash → 1305 via slot 59) | Kotsu Hazaki |
 | 50/51 | 1200/1210 | Ryuuei-jin |
 | 52/53 | 1400/1410 (encadeado em 103–106/112) | Tenmakyaku |
-| 54/55 | 1500/1510 | Kageutsushi (`by_design`, sem ataque) |
+| 54/55 | 1500/1510 | Kageutsushi (teleporte, sem ataque) |
 | 56/57 | 1100/1110 | Kasumi-giri |
 | 85/86/87 | 3000/3010/3020 | Zantetsuha / rápida / MAX |
 | 107 | 1000 | Kikouhou |
@@ -19,70 +19,102 @@ Escopo: comparar o fonte MUGEN (`assets/characters/Eiji-KOF98/Eiji-S.cns`, `Eiji
 | 109/110 | 3100/3120 | Zantetsu Tourouken |
 | 111 | 3200 | Yamikari |
 
-## 2. Resultado headless (dano no Kyo parado a 24 px; tudo `hit_and_recovered`)
+## 2. Como o port calcula dano (para ler as tabelas)
 
-1300/1310=40, 1200/1210=22, 1400/1410=22, 1100/1110=34, 3000/3010/3020=70 cada, 1000=14, 1600=14, 3100=20, 3120=30, 3200=35, 1500/1510=0 (by_design).
-A auditoria só checa "acerta e recupera"; não compara com `meta.damage`.
+- `damage_scale = 2.0` para o Eiji: tudo que vem do CNS é multiplicado por 2 na compilação. Confirmado nas normais: soco fraco fonte 7 → port 14, soco forte 11 → 22, chute fraco 4 → 8, chute forte 16 → 32.
+- Especiais que já estavam certos seguem a mesma regra: 1305 fonte 20 → 40; 1100 fonte 17 → 34.
+- Projéteis usam o byte de dano do `ProjTab`, **não** o `DamageTab`. Quando a expressão do fonte tem `ifelse(var(6),…)` o compilador não avalia e grava o *default* **14**. Era o caso do Kikouhou e dos três Zantetsuha.
+- Slots 85–89 caem no sequencial de **5 contatos** do motor (`fight.asm`, `S_SUPPER`), então o byte do `ProjTab` é **dano por contato** (5 × valor = total).
 
-## 3. Divergências de comando
+## 3. Medição antes das correções
 
-- **Kikouhou (1000)**: fonte QCF+x/y; port QCF×2 (`KIKOUHOU`, `cmd_extra`, `QCF2`).
-- **Mukuro Nui (1600)**: fonte QCF+x/y **no ar**; port DP+A/B no chão.
-- **Zantetsu Tourouken (3100/3120)**: fonte usa botões a/b/a+b; port usa QCB×2 + x ou x+y (`ZANTETSU_W (0,1)`, MAX `(0,3)`).
-- **Yamikari (3200)**: fonte x/y/x+y; port mapeia A/B com `HCB2`.
-- Conferidos e iguais: Kotsu, Ryuuei, Tenmakyaku, Kageutsushi, Kasumi-giri, Zantetsuha (x/y/x+y).
+| Golpe | Fonte | Antes no port | Situação |
+|---|---|---|---|
+| 1000 Kikouhou | 20 (forte 25) | 14, 1 contato | default do compilador |
+| 1600 Mukuro Nui | 11 (projétil) | **39** (14 + 25), 2 acertos | acerto duplo |
+| 3100 Tourouken | 4+4+4+13 = 25 | 20, 1 acerto | fatia fixa |
+| 3120 Tourouken forte | 6×4+14 = 38 | 30, 1 acerto | fatia fixa |
+| 3200 Yamikari | 17×4 = 68 (agarrão) | 35, 1 acerto | vira golpe simples |
+| 3000 Zantetsuha | 38 | 14 × 5 = 70 | default × 5 contatos |
+| 3010 Zantetsuha forte | 48 | 14 × 5 = 70 | default × 5 contatos |
+| 3020 MAX Zantetsuha | 2 × 40 = 80 | 14 × 5 = 70 | default × 5 contatos |
+| 1201 Ryuuei | 16 (forte 19) | 22 | abaixo da escala |
+| 1300/1310 Kotsu | 1305 = 20 | 40 | correto |
+| 1100/1110 Kasumi-giri | 17 | 34 | correto |
+| 1400/1410 Tenmakyaku | 12+12 | 22 (12+10) | ver §5 |
 
-## 4. Divergências funcionais
+Os três Zantetsuha entregavam exatamente o mesmo dano, apesar de custos diferentes: 1000 para o 3000/3010 e 3000 para o 3020 fora do MAX.
 
-1. **Mukuro Nui**: fonte é aéreo e solta o helper 1610 (Projectile dano 11, `hitflag MAFD`, VelSet 6,6 diagonal). O port reaproveita o clipe de espada 3100 com override `active 7 / damage 25`. Medido 14 (esperado 25; `projectile=True`), ou seja, o dano vem de um projétil inferido, não do corte.
-2. **Ryuuei rush (1200/1210)**: fonte tem `tail_ticks` 21 após 1200 e 41 após 1210; o port usa `_tweak("eiji","tail_ticks",{1201: 21})` para ambos, então o forte fica com hold curto. O helper 1200→1220 tem `HitOverride` de projéteis (→1221→helper 1225, Projectile 12/16), um contra-projétil que provavelmente não existe no port (a confirmar).
-3. **MAX Zantetsuha (3020)**: fonte dispara dois projéteis (helpers 3025 e 3026, dano 40 cada, o segundo `Diagup`); o port mede 70, igual aos de tiro único. Provavelmente um projétil só (a confirmar).
-4. **Supers de vários hits** reduzidos a uma fatia fixa por `slice_damage`: 3105 (3 janelas×4 + final 13), 3126 (4 janelas×6 + final 14), 3200 (TargetLifeAdd 17×4+, via 3210). Somar e comparar com 20/30/35.
-5. **Tenmakyaku**: conexão depende de `air_box_patch_frames` em 1401/1411 (fonte sai por MoveContact). Hitdefs 104/112 usam dano 10 contra 12 do fonte.
-6. **Custo de barra**: fonte gasta 1000 em 3000/3010 e 2000 (1000 em MAX) em 3020/3120/3200. Não verificado no port (`max_masks.inc`, `COMMAND_LIST`).
+## 4. Correções aplicadas (`tools/build_fight.py`)
 
-## 5. Escala de dano (port vs. base do fonte)
+1. **Kikouhou (107)**: `ProjTab` de 14 → **40** (fonte 20 × 2). O forte (fonte 25) compartilha a linha; ficou no valor fraco.
+2. **Zantetsuha (85/86/87)**: dano por contato **15 / 19 / 32** → totais **75 / 95 / 160**, contra 38 / 48 / 80 da fonte × 2.
+3. **Mukuro Nui (108)**: entrou em `PROJECTILE_EXCLUDE` — o estado disparava o projétil inferido *e* a fatia de espada. Agora é só a fatia, com dano **22** (fonte 11 × 2), em vez dos 39 de antes.
+4. **Tourouken/Yamikari (109/110/111)**: `slice_damage` 20/30/35 → **50/76/136**; o override do 111 acompanha (35 → 136).
+5. **Ryuuei (58 / estado 1201)**: dano 22 → **32** (fonte 16 × 2).
 
-| Golpe | Port | Fonte |
+Nenhuma transição, comando ou animação mudou — só bytes de dano e a exclusão de um projétil inferido.
+
+## 5. O que foi verificado e NÃO mudou
+
+- **Custo de barra está certo.** Medido com 3000 de barra: 3100 gasta 1000; 3120 e 3200 gastam 3000 (fora do MAX), como no fonte (`poweradd` + `PowerAdd` com `var(40) = 0`). O 3020 é detectado como MAX (`PowTab` −1000 dentro do MAX, 3000 fora). Única diferença conhecida: dentro do MAX, 3120/3200 não ganham o desconto de 1000 porque não foram marcados como `max_sids`. Só afeta a janela de MAX.
+- **MAX Zantetsuha não perdeu o segundo projétil.** O motor entrega 5 contatos independentemente do número de helpers do fonte; o que estava errado era o dano por contato, agora corrigido.
+- **Tenmakyaku (1400/1410)**: os dois hits (12+10) continuam. O fonte tem dois HitDefs de `12/var(23)` em 1402/1412 e `var(23)` é divisor de golpes; com o encadeamento por `air_box_patch_frames` o 10 pode ser compensação. Só mediria em jogo real.
+- **Ryuuei forte com `tail_ticks` curto**: 1200 e 1210 dividem o slot 58 e a animação 1201; o `tail_ticks` é por animação, então separar o hold de 41 exigiria um slot novo. Fica como pendência.
+- **Comandos**: mantidos. Comparação com o `Eiji.cmd` do fonte:
+
+  | Golpe | Fonte | Port |
+  |---|---|---|
+  | 1300/1310 Kotsu (弱/強骨破斬り) | `~F,DF,D,DB,B,a/b` | igual (HCB) |
+  | 1200/1210 Ryuuei (流影陣) | `~F,D,DF,x/y` | igual (DP) |
+  | 1400/1410 Tenmakyaku (天馬脚) | `~B,D,DB,a/b` | igual (RDP) |
+  | 1500/1510 Kageutsushi (影移し) | `~D,DF,F,a/b` | igual (QCF) |
+  | 1100/1110 Kasumi-giri (霞み斬り) | `~D,DB,B,x/y` | igual (QCB) |
+  | 1000 Kikouhou (気孔砲) | `~D,DF,F,x/y` | **QCF×2** |
+  | 1600 Mukuro Nui (骸縫い) | `~D,DF,F,x/y` **no ar** | **DP no chão** |
+  | 3000/3010/3020 Zantetsuha (斬鉄波) | `~D,DF,F,DF,D,DB,B,x/y/x+y` | igual |
+  | 3100/3120 Tourouken (斬鉄蟷螂拳) | `~D,DF,F,DF,D,DB,B,a/b/a+b` | **QCB×2 + x/x+y** |
+  | 3200 Yamikari (闇狩り) | `~F,DF,D,DB,B,F,DF,D,DB,B,x/y/x+y` | **HCB×2** |
+
+  Mudar isso mexe em prioridade de comando e na lista de comandos do PRACTICE.
+- **`char_scale`**: o build usa 1.0 (`build/gen_fight/build_profile.json`) porque é o perfil de escala cheia; o `0.81` do `newroster.py` é configuração legada e não entra no build.
+- **`Eiji.air` vs `Eiji.air.orig`**: 2302 linhas de diferença (Clsn2 removidos nas poses 41/120/121/182, durações trocadas). Não foi tocado; precisa de conferência visual.
+
+## 6. Teste novo
+
+`tools/test_eiji_specials_headless.py` cobre os 13 golpes que não tinham teste nenhum (48–57 e 85–87). Rodado contra a build de 15/11 antes das correções:
+
+```
+1300/1310 Kotsu Hazaki      40/40
+1200/1210 Ryuuei-jin        22/22
+1400/1410 Tenmakyaku        22/22
+1500/1510 Kageutsushi        0/0   (teleporte)
+1100/1110 Kasumi-giri       34/34
+3000/3010/3020 Zantetsuha   70/70/70
+```
+
+O teste valida o estado entrado e um piso de dano (não o valor exato), para não quebrar a cada ajuste de calibração.
+
+## 7. Valores esperados no próximo build
+
+| Golpe | Antes | Esperado |
 |---|---|---|
-| Kikouhou | 14 | 20 |
-| Kasumi-giri 1100 | 34 | 17 |
-| Kotsu 1305 | 40 | 20 |
-| Ryuuei 1201 | 22 | 16 |
-| Zantetsuha 3005 | 70 | 38 |
-| Tenmakyaku | 12+10 | 12+12 |
+| 1000 Kikouhou | 14 | 40 |
+| 1600 Mukuro Nui | 39 | 22 |
+| 3100 Tourouken | 20 | 50 |
+| 3120 Tourouken forte | 30 | 76 |
+| 3200 Yamikari | 35 | 136 |
+| 3000 Zantetsuha | 70 | 75 |
+| 3010 Zantetsuha forte | 70 | 95 |
+| 3020 MAX Zantetsuha | 70 | 160 |
+| 1200/1210 Ryuuei | 22 | 32 |
 
-O 14 do Kikouhou parece o valor genérico de projétil (também usado em Yuki e Ryo). A escala não é uniforme; decidir se é intencional (balanceamento do port) ou resíduo.
+O 3020 é a maior mudança de comportamento: com 160 de dano ele passa a ser o super mais forte do elenco (acima do 140 do Kasumi e do 105 do Clark). Se ficar exagerado em jogo, baixar só o byte do `ProjTab` do slot 87 (cada ponto equivale a 5 de dano).
 
-## 6. Arte
+## 8. Pendências
 
-`Eiji.air` difere de `Eiji.air.orig` (2302 linhas, alterado em 23/10): vários Clsn2 removidos nas poses 41/120/121/182 e durações trocadas. Risco de hurtbox ausente. **Não avaliado.**
-
-## 7. Cobertura de teste
-
-Apenas `tools/test_category_d_batch2_headless.py` (107–111) e `test_projectile_calibration.py:57` (projétil 3002). Sem teste para 48/49, 50/51, 52/53, 56/57, 85–87.
-
-Observação: `newroster.py` ainda diz `char_scale: 0.81`, enquanto o build usa 1.0 (`char_scales.eiji`).
-
-## 7b. Rodada de correção (2026-11-15): nenhum código alterado
-
-Revisei cada item contra `build_fight.py` e decidi não editar código às cegas, porque nada pode ser compilado nem medido em ROM nesta rodada:
-
-- **Tenmakyaku 104/112 (dano 10 vs 12)**: no fonte, 1402 e 1412 têm dois HitDefs de `12/var(23)` cada, e `var(23)` é divisor de hits. O 10 pode ser compensação deliberada do port. Mudar sem medir arrisca estourar a soma. Não alterado.
-- **Ryuuei `tail_ticks` (21 vs 41)**: 1200 e 1210 compartilham o slot 58 e a animação de 1201. `tail_ticks` é por animação, então separar exige um slot novo para o forte (mudança estrutural). Não alterado.
-- **MAX Zantetsuha (dois projéteis)**, **Mukuro Nui** e **supers com `slice_damage`**: dependem de medir hits na ROM.
-- **Comandos (Kikouhou, Zantetsu, Yamikari)**: podem ser escolha de design para não colidir com outros inputs; decidir antes de trocar.
-- **`char_scale: 0.81` em `newroster.py`**: todos os personagens têm esse valor, então é resíduo geral, não do Eiji. Não alterado.
-
-Quando houver build disponível, aplicar na ordem da seção 8, medindo cada item no headless.
-
-## 8. Recomendações (por prioridade)
-
-1. Mukuro Nui: decidir entre fidelidade (aéreo + helper 1610) e manter o atalho; documentar o dano real (14 vs 25).
-2. MAX Zantetsuha: verificar se há dois projéteis; senão ligar o segundo ou ajustar o dano.
-3. Somar os hits das supers 3100/3120/3200 e calibrar `slice_damage`.
-4. Corrigir `tail_ticks` do 1210 (41) separado do 1200 (21).
-5. Revisar comandos de Zantetsu Tourouken e Yamikari contra o `Eiji.cmd` ou registrar como decisão de design.
-6. Checar custo de barra no port.
-7. Comparar `Eiji.air` com `.orig` quanto a hurtbox.
-8. Adicionar testes headless para 48/49, 50/51, 52/53, 56/57 e 85–87, comparando com `meta.damage`.
+1. Recompilar, rodar `tools/test_eiji_specials_headless.py` e repetir a varredura de especiais para confirmar a tabela da §7.
+2. Decidir o comando do Kikouhou/Mukuro Nui/Tourouken/Yamikari (fonte vs. port).
+3. Dar ao Ryuuei forte um slot próprio para o `tail_ticks` de 41.
+4. Conferir `Eiji.air` contra `.orig` (hurtbox das poses 41/120/121/182).
+5. Marcar 3120/3200 como `max_sids` se o desconto dentro do MAX for desejado.
