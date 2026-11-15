@@ -1962,6 +1962,49 @@ LATE_HITDEF_OVERRIDES = {
                   "avx": 0, "avy": 0}},
 }
 POST_CAL_ACT_OVERRIDE = {}
+# Timed step-in for specials/supers whose source travels through
+# VelSet/VelAdd/VelMul or through a PosAdd trigger that the static extractor
+# could not represent (Time=[a,b], AnimElem ranges, formulas).  A PosAdd row
+# would fire again on every loop of the animation (Choi 1600 and Yashiro
+# 2200 accumulated 5x the source distance), so the movement is expressed as
+# a bounded velocity instead.  sid -> (vx px/tick, ticks): ActTab op5 sets
+# the velocity on entry and op5 0 stops it after the active window.  The same
+# ActTab also carries op23 (StepInOn), which latches F_TFLAGS bit4; BodySep
+# steps aside for exactly this state while the velocity is live, instead of
+# undoing the step at point-blank.  For imported grabs the command actually
+# enters the synthetic follow-up slot (103-114), not the root state, so those
+# sids are the ones listed.  Negative vx is a retreat (Leona's
+# X-Caliber/Slasher).
+POST_CAL_VEL = {
+    "athena":   {54: (3, 5), 53: (4, 5)},                # Psycho Reflect
+    "brian":    {88: (4, 5), 108: (4, 6)},               # 3210 / 3400
+    "chizuru":  {87: (3, 5)},                            # super 2200
+    "choi":     {111: (4, 6)},                           # 1600
+    "chunli":   {57: (4, 6)},                            # Hyakuretsu Kyaku
+    "daimon":   {113: (3, 5), 112: (3, 5), 110: (3, 5)},
+    "heavyd":   {50: (3, 5), 51: (3, 5)},                # 1100 / 1150
+    "iori":     {85: (5, 6)},                            # Ya Otome 3000
+    "kim":      {85: (3, 6), 86: (5, 6), 87: (5, 6)},    # Phoenix Kick
+    "king":     {54: (4, 5), 55: (4, 5)},                # Mirage Kick
+    "kyo":      {58: (4, 4), 59: (4, 4)},                # R.E.D. Kick
+    "kyoash":   {58: (4, 4), 59: (4, 4)},
+    "kyonests": {58: (4, 4), 59: (4, 4)},
+    "leona":    {52: (-4, 4), 53: (-4, 4),
+                 54: (-3, 4), 55: (-4, 5)},             # X-Caliber / Ice Slasher
+    "mai":      {107: (3, 4)},                           # 1038
+    "mature":   {54: (3, 6)},                            # Despair 1300
+    "rugal":    {113: (4, 5), 112: (4, 5), 109: (4, 5),
+                 110: (4, 5), 111: (4, 5),
+                 103: (3, 4), 104: (3, 4), 105: (3, 4), 106: (3, 4)},
+    "shermie":  {109: (4, 5)},                           # 1300
+    "shingo":   {48: (2, 4), 87: (4, 6), 52: (4, 7)},    # Aragami / Kakehourin / Burning
+    "takuma":   {113: (2, 4), 88: (2, 4)},               # Ryuuko Ranbu
+    "yamazaki": {111: (3, 4)},                           # 3151 MAX Drill
+    "yashiro":  {107: (5, 6), 85: (5, 6), 86: (5, 6),
+                 110: (2, 4)},                           # 2200 / Million Bash / 3100
+    "yuki":     {52: (4, 5), 53: (4, 6)},                # 1400 / 1500
+    "chris":    {60: (2, 4), 61: (2, 4)},                # 7100 / 7150
+}
 # Existing low special slots that are intentionally retargeted from a held
 # follow-up to the close-range grab attempt (the source CMD's "strong"
 # commands enter the held state otherwise).
@@ -10638,6 +10681,29 @@ def build_char(name, cfg, global_pal=None):
         cns_binds, cns_acts, cns_posadds)
     if _remaining:
         print(f"{name}: restored special phase timelines {_remaining}")
+    # Timed step-in (POST_CAL_VEL).  Runs after repair_remaining_specials,
+    # which rewrites cns_acts for the flattened timelines.  ActTab op5 sets
+    # the velocity; a matching Time row clears it, so the fighter closes a
+    # bounded distance instead of carrying the velocity through recovery.
+    for _sid, (_vx, _ticks) in POST_CAL_VEL.get(name, {}).items():
+        _state = cfg.get("moves", {}).get(_sid)
+        if _state is None:
+            continue
+        # Drop the source/extractor op5 rows for this state first.  Choi's
+        # 1600 carries an AnimElem-5 VelSet that the extractor emits as a
+        # frame row; on a looping animation it re-armed the velocity every
+        # loop and accumulated 128 px (5x the source).  The timed pair below
+        # replaces every horizontal-velocity change for the move.
+        cns_acts[_state] = [row for row in cns_acts.get(_state, ())
+                            if row[1] != 5]
+        # op23 = StepInOn (F_TFLAGS bit4): BodySep steps aside for exactly
+        # this state while the velocity below is non-zero.
+        cns_acts[_state].append((0, 23, 0, 0))
+        cns_acts[_state].append((0, 5, int(_vx) & 0xFF, 0))
+        cns_acts[_state].append((0x80 | max(1, min(0x7F, int(_ticks))),
+                                 5, 0, 0))
+        cns_acts[_state] = sorted(set(cns_acts[_state]))
+
     # Chang's Tekkyuu Day-Kaiten: draw the orbiting ball as a 3-tick Explod
     # per spin element (the source ball is a Helper the engine lacks).
     # Must run after the repair, which rewrites cns_acts for these states.

@@ -6012,7 +6012,16 @@ ActOp:
 +   cmp #22
     bne +
     jmp AO_ttoss
++   cmp #23
+    bne +
+    jmp AO_stepin
 +   rts
+AO_stepin:                              ; StepInOn: BodySep lets this state
+    ldx fofs                            ;   close the gap while F_VX is live
+    lda FP+F_TFLAGS,x
+    ora #$10.b
+    sta FP+F_TFLAGS,x
+    rts
 AO_pfx:                                 ; PalFX: arg = bright-flash ticks
     ldx fofs
     lda scr6+1
@@ -8197,15 +8206,24 @@ BodySep:
     .ACCU 16
     lda FP+F_Y.w
     ora FP+F_Y+FP2OFS.w
-    beq +
-    jmp BS_done                           ; airborne pass-through
-+   sep #$20
-    .ACCU 8
+    bne BS_exit                           ; airborne pass-through
     lda FP+F_GRAB.w
     ora FP+F_GRAB+FP2OFS.w
+    bne BS_exit                           ; throw/victim overlap is scripted
+    ; Step-in specials latch F_TFLAGS bit4 through ActTab op23: the source
+    ; closes the gap with VelSet/PosAdd while the hitbox is active.  Keeping
+    ; BODY_SEP here undid every advance at point-blank.  The latch is only
+    ; honoured while a non-zero horizontal velocity is live.
+    lda FP+F_VX.w
+    ora FP+F_VX+FP2OFS.w
     beq +
-    jmp BS_done                           ; throw/victim overlap is scripted
-+   stz scr3                              ; pin flags: bit0 p1, bit1 p2
+    lda FP+F_TFLAGS.w
+    ora FP+F_TFLAGS+FP2OFS.w
+    and #$10.w
+    bne BS_exit
++   sep #$20
+    .ACCU 8
+    stz scr3                              ; pin flags: bit0 p1, bit1 p2
     lda FP+F_STATE.w
     jsr BS_pin
     beq +
@@ -8219,9 +8237,11 @@ BodySep:
 +   lda scr3
     and #3
     cmp #3
-    bne +
-    jmp BS_done                           ; nobody can move
-+
+    beq BS_done                           ; nobody can move
+    bra BS_run
+BS_exit:                                  ; one far jump for the three
+    jmp BS_done                           ;   early pass-through gates
+BS_run:
     rep #$20
     .ACCU 16
     lda FP+F_X+FP2OFS.w
