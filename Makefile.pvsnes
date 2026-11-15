@@ -135,7 +135,7 @@ FIGHT_GEN := $(GEN_DIR)/iori.chr $(GEN_DIR)/iori_pal.bin \
 	$(GEN_DIR)/hud.inc $(GEN_DIR)/hud2.inc \
 	$(GEN_DIR)/portraits.chr $(GEN_DIR)/portraits.inc \
 	$(GEN_DIR)/portrait_pal.bin \
-	$(GEN_DIR)/spark.chr $(GEN_DIR)/spark_pal.bin \
+	$(GEN_DIR)/spark.chr $(GEN_DIR)/spark_b.chr $(GEN_DIR)/spark_pal.bin \
 	$(GEN_DIR)/spark.inc \
 	$(GEN_DIR)/stage_anim.inc $(GEN_DIR)/stage_anim.chr \
 	$(GEN_DIR)/stages.inc $(GEN_DIR)/stages_tab.inc \

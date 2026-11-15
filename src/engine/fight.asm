@@ -5126,10 +5126,23 @@ FXP_slot:
     bmi FXP_projectile
     rep #$20
     .ACCU 16
-    lda #$FFFF.w                        ; sentinel: shared sparks/explods
+    lda #$FFFF.w                        ; sentinel: hit/guard page (A)
     sta scr6
-    lda #(:SparkChr & $FF).w
+    lda #SparkChr.w
+    sta scr0
+    lda sptr                            ; anim record >= SparkMiscStart: page B
+    cmp #SparkMiscStart.w
+    bcc +
+    lda #$FFFE.w                        ; sentinel: explod page (B)
+    sta scr6
+    lda #SparkChrB.w
+    sta scr0
+    lda #(:SparkChrB & $FF).w
     sta scr3
+    bra FXP_pgdone
++   lda #(:SparkChr & $FF).w
+    sta scr3
+FXP_pgdone:
     ldy gk
     lda scr6
     cmp.w FX_CACHE,y
@@ -5139,12 +5152,8 @@ FXP_slot:
     cmp scr3
     bne +
     jmp FXP_next
-+   lda #SparkChr.w
-    sta scr0
-    sep #$20
++   sep #$20
     .ACCU 8
-    lda #:SparkChr
-    sta scr3
     rep #$20
     .ACCU 16
     lda #2048.w
@@ -15166,9 +15175,17 @@ DS_bank_ready:
     bmi DS_cache_projectile
     rep #$20
     .ACCU 16
-    lda #$FFFF.w
+    lda #$FFFF.w                        ; page A (hit/guard)
     sta scr5
-    lda #(:SparkChr & $FF).w
+    lda.w SPARKS+SPK_ANIM,x
+    cmp #SparkMiscStart.w
+    bcc +
+    lda #$FFFE.w                        ; page B (explods)
+    sta scr5
+    lda #(:SparkChrB & $FF).w
+    sta scr3
+    bra DS_cache_check
++   lda #(:SparkChr & $FF).w
     sta scr3
     bra DS_cache_check
 DS_cache_projectile:
@@ -22832,6 +22849,9 @@ OmegaRugalPalDim: .INCBIN "gen_fight/omegarugal_pal_dim.bin"
 OmegaRugalPalHi: .INCBIN "gen_fight/omegarugal_pal_hi.bin"
 .ENDIF
 SparkChr:   .INCBIN "gen_fight/spark.chr"
+.IFNDEF PVSNESLIB
+SparkChrB:  .INCBIN "gen_fight/spark_b.chr"
+.ENDIF
 SparkPal:   .INCBIN "gen_fight/spark_pal.bin"
 WoodPal:    .INCBIN "gen_fight/wood_pal.bin"
 
@@ -22853,6 +22873,18 @@ UiSrc:      .db 4, 13, 12, 3            ; select, move, back, winner voice
 ; mass-import descriptors + palettes (F_TBANK-resident)
 .INCLUDE "gen_fight/newchars_desc.inc"
 .ENDS
+
+; Explod page (B) of the static effect atlas.  Bank 126 has no room for a
+; second 2 KiB page, so it lives in FastROM bank 31 beside the fast paths.
+; FxPrepareBoth/DrawSparks carry its bank separately from SparkChr's.
+.IFDEF PVSNESLIB
+.BASE $C0
+.BANK 31 SLOT 0
+.ORG 0
+.SECTION "SparkPageB" FREE
+SparkChrB:  .INCBIN "gen_fight/spark_b.chr"
+.ENDS
+.ENDIF
 
 ; P2 mirror-match palettes + AltPalRow live in the AltPals bank window.
 .INCLUDE "gen_fight/alt_pals.inc"
