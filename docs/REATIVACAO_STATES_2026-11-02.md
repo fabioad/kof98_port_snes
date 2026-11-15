@@ -147,6 +147,10 @@ Build/verify: checksum `$34A5`, layout MSU `0x01EE`. Copie `.sfc` e
 Ralf (states 400/401, sids 48/49) e Clark (states 1000/1010, sids 48/49)
 agora acertam cinco contatos antes de derrubar:
 
+> Atualização (15/11/2026): o knockdown forçado no quinto contato foi
+> removido. Os golpes agora mantêm a vítima no chão em hitstun e aplicam
+> pushback por acerto. Ver `VULCAN_PUNCH_HITSTUN_2026-11-15.md`.
+
 - `hit_soft_resets` rearma o HitDef em cada uma das cinco janelas de
   ataque do CNS (Ralf 3/6/9/12/15 e 5/8/11/14/17; Clark 4/7/10/13/16 e
   3/5/7/9/11);

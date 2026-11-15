@@ -1200,12 +1200,16 @@ CHARS = {
         # slam-pose flag and applies the bounce velocity.
         "act_extra": {3016: [(9, 4, 3027, 0)]},
         "pow_override": {96: -1000},
-        # Vulcan Punch: five contacts of 6 points; the fifth contact is
-        # the forced knockdown.  The source's later hits would otherwise
-        # launch the victim out of range.
-        "hit_soft_resets": {
+        # Vulcan Punch: the source re-issues the HitDef on every contact.
+        # Hard-reset the per-move counter at each window so the native
+        # MoveHitFinisher never converts the flurry into a launcher: the
+        # victim takes every hit in standing hitstun and is pushed back.
+        # 1010 lists ten source windows; keep the first five so the strong
+        # variant stays at the port's five contacts instead of doubling its
+        # damage once the forced finisher is gone.
+        "hit_resets": {
             1000: [4, 7, 10, 13, 16],
-            1010: [3, 5, 7, 9, 11, 13, 15, 17, 19, 21],
+            1010: [3, 5, 7, 9, 11],
         },
         # Grab-command support: the close-range attempts are gated at the
         # same distance the source uses (body <= 8 px, widened for centre
@@ -1226,10 +1230,19 @@ CHARS = {
             1200: {1: [(1, -80, 80, -1)]},
         },
         "hitdef_override": {
-            48: {"damage": 6, "gvx": 0, "gvy": 0, "fall": 0,
-                 "gdamage": 1},
-            49: {"damage": 6, "gvx": 0, "gvy": 0, "fall": 0,
-                 "gdamage": 1},
+            # Vulcan Punch (1000/1010): keep the victim standing and in
+            # hitstun on every contact.  The source ground velocity is
+            # -4.5 px/tick, but the native hit path applies the full slide
+            # until the slide window expires (the source state multiplies it
+            # by stand friction after hitpause).  2 px/tick keeps all the
+            # contacts in range while still pushing the victim back.  The
+            # source air velocity stays so an airborne victim can be juggled.
+            48: {"damage": 6, "gvx": 2 * 256, "gvy": 0,
+                 "avx": int(4.5 * 256), "avy": int(-6.5 * 256),
+                 "fall": 0, "gdamage": 1},
+            49: {"damage": 6, "gvx": 2 * 256, "gvy": 0,
+                 "avx": int(4.5 * 256), "avy": int(-6.5 * 256),
+                 "fall": 0, "gdamage": 1},
         },
         "display": "CLARK",
     },
@@ -1307,12 +1320,19 @@ CHARS = {
             # state has one final HitDef.  Keep it as a single 80-point
             # finisher instead of the old 130-point one-hit.
             60: {"damage": 80, "gdamage": 1},
-            # Vulcan Punch weak/strong: five 4-point contacts, no early
-            # knockdown (MoveHitFinisher handles the fifth).
-            48: {"damage": 4, "gvx": 0, "gvy": 0, "fall": 0,
-                 "gdamage": 1},
-            49: {"damage": 4, "gvx": 0, "gvy": 0, "fall": 0,
-                 "gdamage": 1},
+            # Vulcan Punch weak/strong: keep the victim standing and in
+            # hitstun per contact.  The source ground velocity is -3 px/tick;
+            # 2 px/tick compensates for the native slide window so the later
+            # contacts still connect while each hit visibly pushes back.
+            # Dropping only the vertical launch and knockdown keeps the
+            # flurry from becoming a launcher.  Airborne victims keep the
+            # source -3,-8 velocity for the juggle.
+            48: {"damage": 4, "gvx": 2 * 256, "gvy": 0,
+                 "avx": 3 * 256, "avy": -8 * 256,
+                 "fall": 0, "gdamage": 1},
+            49: {"damage": 4, "gvx": 2 * 256, "gvy": 0,
+                 "avx": 3 * 256, "avy": -8 * 256,
+                 "fall": 0, "gdamage": 1},
             # Keep the victim inside the 224-line field.  The source
             # Galactica/ranbu finishers launch at -16/-18 px per tick,
             # which wraps the OAM Y (the "goes up, appears below" effect).
@@ -1331,15 +1351,16 @@ CHARS = {
             520: [(4, 5, 12, 0), (5, 5, 6, 0), (6, 5, 3, 0)],
             521: [(4, 5, 12, 0), (5, 5, 6, 0), (6, 5, 3, 0)],
         },
-        # Vulcan Punch: five attack windows.  Soft-reset the per-move
-        # counter at each window so MoveHitFinisher forces the knockdown
-        # on the fifth contact; the HitDef itself must not knockdown early.
-        "hit_soft_resets": {
+        # Vulcan Punch: the source re-issues the HitDef on every contact.
+        # Hard-reset the per-move counter at each window so MoveHitFinisher
+        # cannot force a knockdown on the fifth hit.  Every contact applies
+        # damage, hitstun and pushback; only an airborne victim is juggled.
+        "hit_resets": {
             400: [3, 6, 9, 12, 15],
             401: [5, 8, 11, 14, 17],
         },
         # The final source box misses some hit animations; a wider/taller
-        # box on the last contact guarantees the fifth hit and knockdown.
+        # box on each window keeps the later contacts from dropping out.
         "air_box_patch_frames": {
             400: {2: [(-30, -130, 90, 0)], 5: [(-30, -130, 90, 0)], 8: [(-30, -130, 90, 0)],
                   11: [(-30, -130, 90, 0)], 14: [(-30, -130, 90, 0)]},
@@ -10259,9 +10280,9 @@ def build_char(name, cfg, global_pal=None):
         _frames, _loop = air[5050]
         air[5050] = ([_frames[0]], 0)
     # Per-frame Clsn1 patches for ports that need the last contact of a
-    # multi-hit move to land on every victim build.  The source's final
-    # Vulcan Punch box misses shorter/lower hit animations, so the fifth
-    # contact (and MoveHitFinisher's knockdown) never fires.
+    # multi-hit move to land on every victim build.  The source's Vulcan
+    # Punch boxes miss shorter/lower hit animations, so later contacts
+    # would otherwise drop out of the flurry.
     for anum, frame_patch in (cfg.get("air_box_patch_frames") or {}).items():
         if anum not in air:
             continue
