@@ -5881,15 +5881,39 @@ _tweak("omegarugal", "air_box_patch_frames", {
 # button is let go (`command != "holdx"`) or after 90 ticks.  The kind-5
 # release row mirrors that; without it the charge always ran the full 90
 # ticks (1.5 s of meditation) even on a tap.  "x" is pad bit $4000.
-_wire_followups("saisyu", [(103, 3001, 3001), (104, 3005, 3005)],
+#
+# The flame used to spawn from the root states (85-87) as a stationary shot,
+# i.e. during the meditation and before the lunge: it only touched a
+# point-blank opponent, and the strong/MAX roots never reached the lunge at
+# all.  Now all three strengths chain root -> hold -> release, and the shot
+# is released from the lunge itself (source: Helper 3020 at AnimElem 7 of
+# 3005) travelling forward, so it connects at any range.
+#   103/104 weak (X)   105/107 strong (Y)   106/108 MAX (X, Y or X+Y)
+# 3015 reuses the 3001/3002 cels of 3005; MAX keeps anim 3005 because 3055
+# would pull the unloaded 3002/0-3 cels into the MSU layout.
+_wire_followups("saisyu", [(103, 3001, 3001), (104, 3005, 3005),
+                           (105, 3011, 3011), (106, 3051, 3011),
+                           (107, 3005, 3015), (108, 3055, 3005)],
                 [(85, 103, 0, 0), (103, 104, 5, 0x4000),
-                 (103, 104, 0, 0)])
+                 (103, 104, 0, 0),
+                 (86, 105, 0, 0), (105, 107, 5, 0x0040),
+                 (105, 107, 0, 0),
+                 (87, 106, 0, 0), (106, 108, 5, 0x4040),
+                 (106, 108, 0, 0)])
 POST_CAL_PROJS_FULL.setdefault("saisyu", {}).update({
-    85: (0x0000, 14, 4, 0x0A),
-    86: (0x0000, 18, 4, 0x0A),
-    87: (0x0000, 24, 4, 0x0A),
+    104: (0x0A00, 40, 4, 0x0A),
+    107: (0x0A00, 48, 4, 0x0A),
+    108: (0x0A00, 70, 4, 0x0A),
 })
-PROJECTILE_RELEASE.setdefault("saisyu", {}).update({85: 6, 86: 6, 87: 6})
+PROJECTILE_RELEASE.setdefault("saisyu", {}).update({104: 6, 107: 6, 108: 6})
+# Tsumugari (3100/3110): the source advances 8 px on every element 2-8 and
+# backs off 8 px on 11-13, written as `AnimElem = 2 || AnimElem = 3 ...`
+# triggers that the extractor read as a single element (only +8, +8, -8 made
+# it through, so the dash was 16 px and the slash whiffed at mid range).
+_tweak("saisyu", "posadd_override", {
+    3100: [(i, 8) for i in range(1, 8)] + [(i, -8) for i in range(10, 13)],
+    3110: [(i, 8) for i in range(1, 8)] + [(i, -8) for i in range(10, 13)],
+})
 
 # Heidern: Final Bringer's root (3000) enters 3001, whose MoveHit opens the
 # 3020->3023 bind/life-add chain.  3022/3023 use damage expressions the

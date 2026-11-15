@@ -38,6 +38,18 @@ STRIKES = {
  'mrbig': {1300:((1300,1301),20),1310:((1310,1311,1312),28),
            3200:((3200,3201,3202),38),3210:((3210,3201,3202),44)},
 }
+# Moves whose source travels through VelSet/PosAdd in the first phase; the
+# flattened timeline would otherwise stand still.  (name, root) ->
+# (start frame, vx px/tick, vy quarter-px/tick, stop frame, advance rows).
+# Kamukakari hops forward at AnimElem 3 (5.5,-4.5 / 7,-6 with yaccel .65) and
+# lands when the next phase starts; the port gravity is 0.44, so vy is set to
+# keep the source flight time.  Tsumugari MAX (3150) dashes +8 px on each of
+# the first 7 elements after the first.
+LUNGES = {
+ ('saisyu',1200): (2, 6, -12, 4, ()),
+ ('saisyu',1210): (2, 7, -17, 5, ()),
+ ('saisyu',3150): (None, 0, 0, None, tuple((i,8) for i in range(1,8))),
+}
 # Root command -> (capture HitDef source, held source sequence, damage).
 GRABS = {
  'rugal': {1400:(1400,(1402,),24),1410:(1410,(1402,),28),
@@ -150,6 +162,13 @@ def repair(name,cfg,anims,air,moves,headers,states,binds,acts,posadds):
         headers[root]=dict(headers.get(root,{}),anim=str(anum),velset='0,0')
         posadds[root]=[]
         acts[root]=[(0,5,0,0),(0,15,0,0)]
+        lunge=LUNGES.get((name,root))
+        if lunge and not held:
+            start,vx,vy,stop,advance=lunge
+            if start is not None:
+                acts[root]+=[(start,5,vx&0xFF,0),(start,15,vy&0xFF,0),
+                             (stop,5,0,0),(stop,15,0,0)]
+            posadds[root]=list(advance)
         if held:
             # Single impact replaces source life expressions on a 1000/1500
             # life bar. It can only execute with a successfully held victim.
