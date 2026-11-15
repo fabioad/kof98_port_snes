@@ -5910,10 +5910,13 @@ PROJECTILE_RELEASE.setdefault("saisyu", {}).update({104: 6, 107: 6, 108: 6})
 # backs off 8 px on 11-13, written as `AnimElem = 2 || AnimElem = 3 ...`
 # triggers that the extractor read as a single element (only +8, +8, -8 made
 # it through, so the dash was 16 px and the slash whiffed at mid range).
-_tweak("saisyu", "posadd_override", {
-    3100: [(i, 8) for i in range(1, 8)] + [(i, -8) for i in range(10, 13)],
-    3110: [(i, 8) for i in range(1, 8)] + [(i, -8) for i in range(10, 13)],
-})
+# This must land on cfg before build_char consumes posadd_override; the
+# POST_CAL_TWEAKS merge runs after that pass, so _tweak would be a no-op.
+if "saisyu" in CHARS:
+    _sai_pos = CHARS["saisyu"].setdefault("posadd_override", {})
+    for _st in (3100, 3110):
+        _sai_pos[_st] = ([(i, 8) for i in range(1, 8)]
+                         + [(i, -8) for i in range(10, 13)])
 
 # Heidern: Final Bringer's root (3000) enters 3001, whose MoveHit opens the
 # 3020->3023 bind/life-add chain.  3022/3023 use damage expressions the
