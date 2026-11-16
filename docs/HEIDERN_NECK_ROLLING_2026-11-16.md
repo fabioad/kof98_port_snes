@@ -52,20 +52,18 @@ elemento, embora o fonte avance 8 px em cada um dos três.
     44 frames;
   - Neck Rolling forte: pico de ~16 px, caminho `53 -> 17 -> 0`, dano 26,
     44 frames;
-  - Final Bringer fraco: pico de ~16 px, caminho `85 -> 103 -> 17 -> 0`,
-    dano 35, 97 frames (85 no whiff; a cadeia 104-107 não roda mais);
-  - Final Bringer forte: caminho `86 -> 17 -> 0`, 51 frames, dano 38
-    (MAX 48);
+  - Final Bringer fraco: caminho `85 -> 103 -> 104..107 -> 0`, dano 35;
+  - Final Bringer forte: caminho `86 -> 104..107 -> 0`, dano 42 (MAX 50);
   - Moon Slasher: avanço de 24 px (fraco) e 18 px no forte por separação de
     corpo, dano 34/74.
-- Build: `make -f Makefile.pvsnes verify` OK, checksum `$6BCF`.
+- Build: `make -f Makefile.pvsnes verify` OK, checksum `$8F39` (ver `HEIDERN_GRABS_2026-11-16.md`).
 
 ## Ainda incompleto (auditoria dos especiais/supers)
 
 | Golpe | Estado atual | Pendência |
 |---|---|---|
-| Heidern End 3100/3110/3150 | acerta e recupera (28/28/46) | falta a fase 3120/3125/3126 (e 3160/3161/3162 no MAX): o dano final e a cinemática de perfuração não estão ligados |
-| Final Bringer 3000/3010/3050 | salto + 35/38/48 de dano | a cadeia 3020-3023 (agarrão/dreno) não segura a vítima; o `MoveHit 103->104` do fraco foi desligado para não gastar ~4 s sem dano |
+| Heidern End 3100/3110/3150 | implementado (84/84/102) | fase 3120/3160 com bind, dois drenos de 28 e arremesso em S_VTHROW; ver `HEIDERN_GRABS_2026-11-16.md` |
+| Final Bringer 3000/3010/3050 | implementado (35/42/50) | cadeia 3020-3023 prende a vítima, drena e arremessa; ver `HEIDERN_GRABS_2026-11-16.md` |
 | Storm Bringer 1300 | agarrão + 25 de dano | só pega a ~16 px; o fonte usa `p2bodydist X <= 29` e dreno em vários ticks |
 | Killing Bringer 1400/1410 | contra-ataque + 32 de dano | OK no `test_counter_grab_headless` |
 | Cross Cutter 1000/1010 | projétil 14/18 | OK |

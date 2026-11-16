@@ -5733,6 +5733,9 @@ def charge_frames(name, air, default_action):
 # space. These four form the fast-palm victim chain (1025 -> 1028).
 VICTIM_STATE_IDS = {1025: 70, 1026: 71, 1027: 72, 1028: 73,
                     820: 76, 821: 77,
+                    # Explicit runtime slots (ActTab op4 rows authored by the
+                    # port after the source parser): pass them through.
+                    76: 76, 77: 77,
                     # Clark Ultra Argentine victim states (3020..3026):
                     # the attacker owns the pose through its bind windows,
                     # so the victim stays in the generic held slot.
@@ -6310,10 +6313,10 @@ if "saisyu" in CHARS:
         _sai_pos[_st] = ([(i, 8) for i in range(1, 8)]
                          + [(i, -8) for i in range(10, 13)])
 
-# Heidern: the weak Final Bringer's root (3000) enters 3001, the leap that
-# carries the damage; the source's 3020-3023 grab chain is not wired (see the
-# comment at the _wire_followups call).  3022/3023 use damage expressions the
-# extractor cannot evaluate, so pin port-scale values.
+# Heidern: Final Bringer's leap (3001/3011/3051) now hands the victim to the
+# native held-victim state and chains into the source 3020-3023 grab/drain.
+# Heidern End (3100/3110/3150) gets its missing 3120/3160 finish on the free
+# extended slots 115/116 (StVictimHeld accepts the 103-118 owner range).
 #
 # Moon Slasher advances 8 px on each of source elements 5-7.  The extractor
 # reads `AnimElem = 5 || AnimElem = 6 || AnimElem = 7` as a single element, so
@@ -6323,19 +6326,29 @@ if "heidern" in CHARS:
     _hei_pos = CHARS["heidern"].setdefault("posadd_override", {})
     for _st in (1100, 1110):
         _hei_pos[_st] = [(4, 8), (5, 8), (6, 8)]
+    # The source 3021 starts with a Turn, but the native bind is
+    # facing-relative: after the turn the 48/76/56 px holds put the victim
+    # behind Heidern.  Keep him facing the victim for the whole grab.
+    _hei_drop = CHARS["heidern"].setdefault("act_drop", {})
+    _hei_drop.setdefault(3021, []).append(0)
+POST_CAL_REACTIVATED.setdefault("heidern", []).extend([
+    (115, 3120, 3120), (116, 3160, 3120)])
 _wire_followups("heidern", [
     (103, 3001, 1201), (104, 3020, 3020), (105, 3021, 3021),
     (106, 3022, 1311), (107, 3023, 3023),
 ], [(106, 107, 0, 0)])
-# The weak Final Bringer's 3020-3023 chain is the source's neck-grab
-# follow-up, but its TargetState 3030 has no native held-victim mapping: the
-# attacker plays the whole chain alone (no bind, no extra damage, ~4 s of
-# recovery).  Keep the leap strike and land like the strong/MAX forms; the
-# states stay compiled for a future held-victim implementation, but the
-# MoveHit transition 103->104 is intentionally not wired.
+# The initial strikes stay normal HitDefs (so they still catch airborne
+# victims); the TargetTab row sends the victim to S_VHELD and redirects the
+# attacker to the source follow-up.  Contact damage is reduced because the
+# 3022/3023 drain now actually executes.
 _tweak("heidern", "hitdef_override", {
-    103: {"damage": 35, "gdamage": 2, "fall": 1}})
-_tweak("heidern", "slice_damage", {103: 35})
+    103: {"damage": 5, "gdamage": 0, "fall": 0, "target_flags": 1,
+          "p2state": 76, "p1mugen": 3020},
+    88: {"fall": 0, "p2state": 76, "p1mugen": 3120, "target_flags": 1},
+    89: {"fall": 0, "p2state": 76, "p1mugen": 3120, "target_flags": 1},
+    66: {"fall": 0, "p2state": 76, "p1mugen": 3160, "target_flags": 1},
+})
+_tweak("heidern", "slice_damage", {103: 5})
 # 1201 is the shared leap clip for Neck Rolling (states 1200/1210) and the
 # Final Bringer follow-ups (3001/3011/3051); the source arms its HitDef only
 # after the close-range ChangeAnim, which the native engine cannot evaluate.
@@ -6343,18 +6356,26 @@ _tweak("heidern", "slice_damage", {103: 35})
 # way up instead of only at the last ground frame.
 _tweak("heidern", "air_box_patch_frames", {
     1201: {i: [(-20, -110, 60, 0)] for i in range(4)}})
-# 3001 is the weak Final Bringer's leap.  It kept the source 255-tick hold
-# without the VelSet y=-8, so the body never left the floor and a whiff sat in
-# the clip for four seconds.  Launch it with the same 4 px/tick rise as the
-# flattened strong/MAX versions in remaining_specials.LUNGES; Physics lands it
-# through the existing (103,17,1) TransTab row.
+# The source 3022 clip is 13 ticks, so the drain rows at 20-56 never ran.
+# Hold its last pose for 110 ticks (source 3022 lasts ~120).
+_tweak("heidern", "tail_ticks", {1311: 110})
+# 3001: weak Final Bringer leap.  3022: five drain ticks.  3023: final
+# damage + throw the victim (77 = generic thrown flight).  3120/3160: two
+# source life adds and the throw at element 132.
 _late_act("heidern", {
     3001: [(0, 5, 2, 0), (0, 15, (-16) & 0xFF, 0)],
-    # 3022's two life-add controllers use a ceil(Target,LifeMax) expression
-    # the extractor drops entirely, so schedule the hold's ticks explicitly.
-    3022: [(0x80 | t, 3, -4, 0) for t in (8, 20, 32, 44, 56)],
+    3022: [(0x80 | t, 3, -3, 0) for t in (8, 20, 32, 44, 56)],
+    3023: [(4, 4, 77, 0)],
+    3120: [(0x80 | 64, 3, -28, 0), (0x80 | 120, 3, -28, 0),
+           (0x80 | 121, 4, 77, 0)],
+    3160: [(0x80 | 64, 3, -28, 0), (0x80 | 120, 3, -28, 0),
+           (0x80 | 121, 4, 77, 0)],
 })
-_late_life("heidern", {3023: -20})
+_late_life("heidern", {3023: -15})
+# Pin the source 3120/3160 bind (88 px in front, chest height) in case the
+# extractor drops the TargetBind rows for these cinematic states.
+_tweak("heidern", "bind_extra", {
+    3120: [(0, 131, 88, -88)], 3160: [(0, 131, 88, -88)]})
 
 # Clark: the strong command points straight at 1110, which is the follow-up
 # pose of the weak grab (no HitDef).  Route the command through the real
@@ -12807,8 +12828,12 @@ def build_char(name, cfg, global_pal=None):
     inc.append(f"{name}TargetTab:\n")
     for move in move_rows:
         p1 = state_to_sid.get(move.get("p1mugen", -1), 0xFF)
+        # The flags byte is normally the throw flag (own victim sprites).  A
+        # normal hit can also claim the victim via p2state/p1mugen; allow it
+        # to request own sprites without taking the throw gate.
+        target_flags = move.get("target_flags", move['throw'])
         inc.append(f"    .db ${move['p2state']:02X},{move['p2pause']},"
-                   f"${p1:02X},{move['throw']}\n")
+                   f"${p1:02X},{target_flags}\n")
     inc.append(f"{name}ButtonTab:\n")
     for mask, sid in button_rows["stand"]:
         inc.append(f"    .dw ${mask:04X},{sid}\n")

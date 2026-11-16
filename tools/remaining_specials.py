@@ -38,6 +38,15 @@ STRIKES = {
  'mrbig': {1300:((1300,1301),20),1310:((1310,1311,1312),28),
            3200:((3200,3201,3202),38),3210:((3210,3201,3202),44)},
 }
+# Flattened strikes that must end in a held-victim follow-up instead of a
+# knockdown.  The HitDef keeps its normal (non-throw) path so it still hits
+# airborne victims, but the TargetTab row sends the victim to S_VHELD (76) and
+# redirects the attacker to the follow-up sid on contact.
+# (name, root) -> (follow-up sid, contact damage)
+STRIKE_GRABS = {
+    ('heidern', 3010): (3020, 12),
+    ('heidern', 3050): (3020, 20),
+}
 # Moves whose source travels through VelSet/PosAdd in the first phase; the
 # flattened timeline would otherwise stand still.  (name, root) ->
 # (start frame, vx px/tick, vy quarter-px/tick, stop frame, advance rows
@@ -252,6 +261,14 @@ def repair(name,cfg,anims,air,moves,headers,states,binds,acts,posadds):
             row=next((dict(moves[st]) for st in candidates if st in moves),{})
             row.update(active=hit+1,damage=damage,gdamage=2,fall=1,
                        p1mugen=-1,p2state=255,throw=0,gvx=512,gvy=-1024)
+            grab=STRIKE_GRABS.get((name,root))
+            if grab is not None:
+                follow,damage=grab
+                # Normal strike path (still hits airborne victims), but the
+                # TargetTab row hands the victim to S_VHELD and sends the
+                # attacker to the source grab/drain follow-up.
+                row.update(damage=damage,gdamage=0,fall=0,
+                           p2state=76,p1mugen=follow,target_flags=1)
         cfg.setdefault('hitdef_override',{})[sid]=row
         cfg.setdefault('slice_damage',{})[sid]=0 if held else damage
         # Do not retain source flurry resets or full-width super projectiles
