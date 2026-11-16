@@ -5247,6 +5247,38 @@ if "heavyd" in CHARS:
         "name": "D_SHADOW", "label": "D. SHADOW",
         "state": 2200, "posture": 3, "time": 30,
         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 4)]})
+    # Shadow strong (D,D + strong, state 1950).  The source arms one HitDef
+    # on animelem 3/8/13/19 (four pinning contacts: ground.velocity = 0,
+    # damage = 1,20) and a second one on animelem 24 (fall = 1, the
+    # launcher).  The state table used to keep a single row and the
+    # `air.fall = 1` of the first HitDef made the very first contact knock
+    # the victim down, so only 1 of the 5 contacts landed.  Split the
+    # 35-frame clip into two runtime sids: 59 plays elems 1-23 with the
+    # pinning hit re-armed at each window, 62 plays the launcher and its
+    # recovery.  The calibration profile for Heavy D stays valid because
+    # these keys are merged after apply_profile.
+    _heav.setdefault("moves", {}).update({62: 1950})
+    _heav.setdefault("anims", {}).update({62: 1950})
+    _heav.setdefault("slices", {}).update({
+        59: (1950, 0, 22),              # elems 1-23: the four pinning hits
+        62: (1950, 23, None),           # elem 24 onward: launcher + recovery
+    })
+    _heav.setdefault("slice_hits", {}).update({
+        59: (0, 62),                    # HitDef 1, chains into the finisher
+        62: (1, 0),                     # HitDef 2 (fall = 1), back to stand
+    })
+    _heav.setdefault("hit_resets", {}).update({1950: [8, 13, 19]})
+    # ground.velocity is 0 for the four pinning contacts; the parser
+    # substitutes 1.5 px/tick for a zero, which would drift the victim out
+    # of the last window before the launcher.
+    _heav.setdefault("hitdef_override", {}).update({
+        59: {"gvx": 0, "gvy": 0},
+    })
+    # The authored swoosh on element 24 (state-time row 53) sits on the
+    # slice boundary and stays with sid 59, so the launcher is silent apart
+    # from the HitDef hit sound.  The four pinning contacts keep their
+    # source cues; restoring the fifth would need slice-aware PlaySnd rows,
+    # which no other sliced move has today.
 
 if "brian" in CHARS:
     POST_CAL_REACTIVATED.setdefault("brian", []).extend([
@@ -10669,6 +10701,11 @@ def build_char(name, cfg, global_pal=None):
     # config.  The only values read earlier in build_char are the source
     # animations (handled above) and the air-box patches.
     for _key, _value in POST_CAL_TWEAKS.get(name, {}).items():
+        if _key == "anims":
+            # AnimTab is generated from a copy taken before this merge, so a
+            # post-calibration move that brings its own clip must also land
+            # in the local dict (Heavy D's sliced Shadow finisher).
+            anims.update(_value)
         if isinstance(_value, dict):
             cfg.setdefault(_key, {}).update(_value)
         elif isinstance(_value, (list, tuple, set)):

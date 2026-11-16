@@ -163,5 +163,124 @@ class InvisibleMoveAnimationTests(unittest.TestCase):
                              [(last[0], last[1])] * len(frames))
 
 
+def _effective_cfg(name):
+    """Character config with the late POST_CAL_TWEAKS merged in.
+
+    POST_CAL_TWEAKS is applied inside build_char after apply_profile; the
+    table tests need the same view of moves/anims/slices.
+    """
+    cfg = {key: (dict(value) if isinstance(value, dict) else value)
+           for key, value in _cfg(name).items()}
+    for key, value in bf.POST_CAL_TWEAKS.get(name, {}).items():
+        if isinstance(value, dict):
+            cfg.setdefault(key, {}).update(value)
+        elif isinstance(value, (list, tuple, set)):
+            current = list(cfg.get(key, ()))
+            current += [item for item in value if item not in current]
+            cfg[key] = current
+        else:
+            cfg[key] = value
+    return cfg
+
+
+def _table_text(name):
+    path = ROOT / "build" / "gen_fight" / f"{name}_spr.inc"
+    if not path.exists():
+        raise unittest.SkipTest("run tools/build_fight.py first")
+    return path.read_text()
+
+
+def _section(text, label):
+    lines = text.splitlines()
+    try:
+        start = next(i for i, line in enumerate(lines)
+                     if line.startswith(label + ":"))
+    except StopIteration:
+        return []
+    body = []
+    for line in lines[start + 1:]:
+        if line and not line.startswith(" "):
+            break
+        body.append(line)
+    return body
+
+
+def _words(text, label):
+    out = []
+    for line in _section(text, label):
+        if ".dw" in line:
+            body = line.split(".dw", 1)[1].split(";", 1)[0]
+            out += [int(v.strip().replace("$", "0x"), 0)
+                    for v in body.split(",")]
+    return out
+
+
+def _db_rows(text, label):
+    rows = []
+    for line in _section(text, label):
+        if ".db" not in line:
+            continue
+        body = line.split(".db", 1)[1].strip()
+        if body.startswith("$FF"):
+            break
+        rows.append(tuple(int(v.strip().replace("$", "0x"), 0)
+                          for v in body.split(",")))
+    return rows
+
+
+class ShadowStrongTests(unittest.TestCase):
+    """D,D + strong (state 1950) must land four pins and a launcher.
+
+    The source re-arms one HitDef on animelem 3/8/13/19 (ground.velocity 0,
+    no knockdown) and uses a second, fall=1 HitDef on animelem 24.  Taking
+    the state-level row alone applied the launcher's fall flag to the first
+    contact, so the move dealt 1 damage instead of 5.
+    """
+
+    def test_config_splits_the_clip_and_keeps_the_finisher(self):
+        cfg = _effective_cfg("heavyd")
+        self.assertEqual(cfg["moves"][59], 1950)
+        self.assertEqual(cfg["moves"][62], 1950)
+        self.assertEqual(cfg["anims"][62], 1950)
+        self.assertEqual(cfg["slices"][59], (1950, 0, 22))
+        self.assertEqual(cfg["slices"][62], (1950, 23, None))
+        self.assertEqual(cfg["slice_hits"], {59: (0, 62), 62: (1, 0)})
+        self.assertEqual(cfg["hit_resets"][1950], [8, 13, 19])
+        self.assertEqual(cfg["hitdef_override"][59]["gvx"], 0)
+        self.assertEqual(cfg["hitdef_override"][59]["gvy"], 0)
+
+    def test_tables_expose_four_pins_and_one_knockdown(self):
+        text = _table_text("heavyd")
+        active = _words(text, "heavydActiveTab")
+        flags = _words(text, "heavydFlagsTab")
+        damage = _words(text, "heavydDamageTab")
+        vel = _words(text, "heavydHitVelTab")
+        self.assertEqual(active[59], 3)          # element 3 hit window
+        self.assertEqual(active[62], 1)          # element 24, local frame 0
+        self.assertFalse(flags[59] & 0x0001)     # pins never knock down
+        self.assertTrue(flags[62] & 0x0001)      # launcher falls
+        self.assertEqual(damage[59], 1)
+        self.assertEqual(damage[62], 1)
+        # Pins hold the victim in place; the launcher keeps -4, -6.8.
+        self.assertEqual(vel[59 * 4:59 * 4 + 2], [0, 0])
+        self.assertEqual(vel[62 * 4], 4 << 8)
+        self.assertEqual(vel[62 * 4 + 1] & 0xFFFF,
+                         (-1741) & 0xFFFF)
+
+    def test_act_rows_rearm_each_pin_and_chain_the_launcher(self):
+        text = _table_text("heavyd")
+        rows = _db_rows(text, "heavydAct59")
+        resets = [frame for frame, op, _arg, _cond in rows if op == 18]
+        self.assertEqual(resets, [7, 12, 18])
+        trans = []
+        lines = _section(text, "heavydTransTab")
+        for i, line in enumerate(lines):
+            if ".db" in line and i + 1 < len(lines) and ".dw" in lines[i + 1]:
+                trans.append(tuple(int(v.strip().replace("$", "0x"), 0)
+                                   for v in line.split(".db", 1)[1].split(",")))
+        self.assertIn((59, 62, 0), trans)
+        self.assertIn((62, 0, 0), trans)
+
+
 if __name__ == "__main__":
     unittest.main()

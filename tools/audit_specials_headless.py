@@ -302,9 +302,9 @@ BY_DESIGN = {
     ("chin", 1460): "counter wait window (hit lives in 1400/1401)",
     ("chin", 1461): "counter wait window (hit lives in 1400/1401)",
     ("billy", 3100): "power charge (3101 PowerAdd), no attack",
-    ("heavyd", 1950): "partial: source deals 1 per contact (4 hits + a "
-                      "falling 5th); one flags row per state, so the first "
-                      "contact already knocks down",
+    # Heavy D 1950 used to live here as a partial (1 of 5 contacts).  The
+    # move is now split into four pinning contacts and the launcher, so a
+    # low total means a regression and must be reported as no_impact_review.
 }
 
 

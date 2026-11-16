@@ -104,8 +104,9 @@ anteriores:
 - **Omega Rugal** — 7200 (striker) sem estado equivalente; o comando RE usa
   o clipe do Gravity Smash.
 - **Chizuru** — sprite do clone, PalFX e AfterImage ausentes.
-- **Heavy D 1950** — 1 de 5 contatos; classificado `by_design` porque o
-  próprio fonte dá 1 de dano por contato.
+- ~~**Heavy D 1950** — 1 de 5 contatos~~ **corrigido**: o estado foi
+  dividido em quatro contatos que prendem a vítima + o launcher
+  ([HEAVYD_SHADOW_2026-11-15](HEAVYD_SHADOW_2026-11-15.md)).
 - **Efeitos** (Explod/PalFX/AfterImage) e animações aproximadas (Ralf,
   Clark, Iori) não são medidos aqui.
 
