@@ -541,3 +541,23 @@ SelBgMap:       .INCBIN "gen_menu/selbg.map"
 SelBgMap_End:
 
 .ENDS
+
+; Secret Mr. Karate flash card (occasional attract-demo -> intro transition).
+; Bank 82's upper half is free in the default/MID/HI layouts: Shermie's packed
+; data ends before $7FE5 and Clark's one-byte projectile tile sits at $7FE5.
+; This section starts at $8000, so it cannot collide with either.  The TINY and
+; OLD layouts reuse bank 82's upper half for character CHR, so the card is
+; disabled there (see DemoToIntro).
+.IFNDEF KOF_TINY
+.IFNDEF KOF_OLD
+.BASE $00
+.BANK 82 SLOT 0
+.ORGA $8000
+.SECTION "ThunderArt" FORCE
+ThunderChr:     .INCBIN "gen_menu/thunder.chr"
+ThunderChr_End:
+ThunderMap:     .INCBIN "gen_menu/thunder.map"
+ThunderPal:     .INCBIN "gen_menu/thunder.pal"
+.ENDS
+.ENDIF
+.ENDIF

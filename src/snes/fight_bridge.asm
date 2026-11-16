@@ -683,3 +683,5 @@ MsuChrPageClamp:
 .INCLUDE "engine/mrkarate.asm"
 
 .INCLUDE "engine/mrkarate_combat.asm"
+
+.INCLUDE "engine/thunder.asm"

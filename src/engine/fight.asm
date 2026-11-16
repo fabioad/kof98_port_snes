@@ -474,6 +474,7 @@
                                         ;   unreachable (frozen cursor).
 .DEFINE GS_BOSS_FADE 13                ; final KO -> black -> ending1
 .DEFINE GS_MK_SCENE 16                 ; MSU-only secret boss still
+.DEFINE GS_THUNDER 17                  ; occasional MSU-only demo -> intro card
 .DEFINE GS_TEAM_ORDER 15               ; TEAM PLAY pre-stage fighter order
 .DEFINE GS_INTRO_MSU 14                ; MSU-1 full-screen opening video
 .DEFINE nmiflag     $22
@@ -1258,6 +1259,8 @@ ML_sp_next:
     beq ML_youlose
     cmp #GS_BOSS_FADE.b
     beq ML_bossfade
+    cmp #GS_THUNDER.b
+    beq ML_thunder
 .IFDEF PVSNESLIB
 .IF MSU_VIDEO_FRAMES > 0
     cmp #GS_INTRO_MSU.b
@@ -1299,6 +1302,9 @@ ML_youlose:
     jmp MainLoop
 ML_bossfade:
     jsl BossFadeTickFar                   ; Omega KO -> ending1
+    jmp MainLoop
+ML_thunder:
+    jsl ThunderTickFar                     ; secret demo -> intro flash card
     jmp MainLoop
 .IFDEF PVSNESLIB
 .IF MSU_VIDEO_FRAMES > 0
@@ -15431,7 +15437,9 @@ FP_no_stageanim:
     cmp #8.b                              ;   over the fight setup
     beq FP_present_opn
     cmp #10.b                             ; SURVIVOR ending also uses the
-    bne FP_present_on                     ;   shared fade/palette flush
+    beq FP_present_opn                    ;   shared fade/palette flush
+    cmp #GS_THUNDER.b                     ; secret demo -> intro flash card
+    bne FP_present_on                     ;   (IN_FX=6: flush its palette)
 FP_present_opn:
     jsr OpnApply                          ;   (IN_FX==6 -> OpnFade flush)
 FP_present_on:
@@ -19170,6 +19178,20 @@ MkCall_InCgRam:
 MkCall_InM1Regs:
     jsr InM1Regs
     rtl
+MkCall_VoiceQueueClear:
+    jsr VoiceQueueClear
+    rtl
+MkCall_MtClear:
+    jsr MtClear
+    rtl
+MkCall_InFadeInit:
+    jsr InFadeInit
+    rtl
+MkCall_InFadeStep:
+    jsr InFadeStep
+    rtl
+MkCall_OpnEnter:
+    jmp OpnEnter
 
 .INCLUDE "engine/menucore.asm"
 

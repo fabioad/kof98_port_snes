@@ -52,6 +52,7 @@
 .DEFINE M_WHICH     $F077
 .DEFINE DM_TICK     $F068                 ; .w attract-demo frames left
 .DEFINE DM_ON       $F06A                 ; 1 while the title attract fight runs
+.DEFINE TH_TICK     $F2C0                 ; .w secret flash-card frame counter
 .DEFINE MSU_PHASE   $F072                 ; 0 = checking, 1 = result shown
 .DEFINE MSU_LEN     $F073                 ; number of blinking OBJ cells
 
@@ -1972,7 +1973,8 @@ TTN_out:
 ; fight first: both pads are AI-driven, the pair and the stage are re-rolled at
 ; random, and the deadline is enforced from MainLoop so a long entrance never
 ; stretches it.  When a fighter wins (KO or time-over), the KO fall is allowed
-; to play and the demo then cuts to the opening intro just like the deadline.
+; to play and the demo then cuts to the opening intro just like the deadline
+; (occasionally through the secret Mr. Karate flash card, MSU-1 only).
 ; Without a valid .msu only RomFlags=1 fighters are eligible (their tiles live
 ; in the ROM), matching the select screen's rule and avoiding streamed garbage
 ; on the attract fight.
@@ -2871,7 +2873,7 @@ SVE_advance:
 
 ; ---- attract-demo helpers (FightMenuTail: same bank, near calls) ----------
 ; MainLoop calls this once per frame while the demo runs.  Zeroing the clock
-; cuts straight into the opening intro.
+; cuts into the opening intro (or the occasional MSU-only flash card).
 DemoClock:
     sep #$20
     .ACCU 8
@@ -2890,8 +2892,7 @@ DemoClock:
     bne +
     sep #$20
     .ACCU 8
-    stz.w DM_ON
-    jmp OpnEnter
+    jmp DemoToIntro
 +   sep #$20
     .ACCU 8
 DC_out:
@@ -2903,8 +2904,9 @@ DC_skip:
     jmp TitleEnter
 
 ; Tail of KoTick: after the KO fall has played, leave the exhibition.  A
-; decided round (roundwin 1/2) returns to the opening intro; a draw keeps the
-; old reroll behaviour.  DM_TICK still runs in MainLoop as the deadline.
+; decided round (roundwin 1/2) returns to the opening intro (or the occasional
+; MSU-only flash card); a draw keeps the old reroll behaviour.  DM_TICK still
+; runs in MainLoop as the deadline.
 DemoKoTick:
     sep #$20
     .ACCU 8
@@ -2917,10 +2919,44 @@ DemoKoTick:
     bne DK_winner
     jmp DemoRestart
 DK_winner:
-    stz.w DM_ON
-    jmp OpnEnter
+    jmp DemoToIntro
 DK_out:
     rts
+
+; ---- secret Mr. Karate card: occasional demo -> opening-intro transition ---
+; Only an MSU-1 build can afford this extra art, and the free-running RNG
+; picks it roughly once every four demo endings so it stays a surprise.
+; The card starts pure white (a thunder flash), drops to the art quickly,
+; holds, then fades slowly to black before the opening intro loads.
+.DEFINE TH_FAST_END   10                 ; fast white -> art frames
+.DEFINE TH_FADE_START 120                ; hold ends, slow art -> black begins
+.DEFINE TH_DONE       248                ; fade finished: hand off to OpnEnter
+DemoToIntro:
+    sep #$20
+    .ACCU 8
+    stz.w DM_ON
+.IFDEF KOF_TINY
+    jmp OpnEnter                          ; bank 82 is character CHR here
+.ELSE
+.IFDEF KOF_OLD
+    jmp OpnEnter                          ; bank 82 is character CHR here
+.ELSE
+    lda.b msuok
+    beq DTI_intro
+    lda.b rng
+    and #$03.b
+    beq DTI_thunder
+DTI_intro:
+    jmp OpnEnter
+DTI_thunder:
+    jsl ThunderEnterFar
+    rts
+.ENDIF
+.ENDIF
+
+; The heavy flash-card code lives in engine/thunder.asm (bank 122's free
+; tail); the demo tail only pays for the MSU/random gate above.
+
 
 ; A -> A mod NPOOL, acc8 in/out.
 ModPool:

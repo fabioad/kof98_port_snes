@@ -208,13 +208,18 @@ $(ROMNAME).msu: $(ROMNAME).sfc $(GEN_DIR)/$(MSU_NAME).msu
 	mv -f $@.tmp $@
 
 ORDER_GEN := src/gen_menu/order.chr src/gen_menu/order.map src/gen_menu/order.pal
+THUNDER_GEN := src/gen_menu/thunder.chr src/gen_menu/thunder.map \
+	src/gen_menu/thunder.pal
 
 $(ORDER_GEN) &: tools/build_order.py tools/build_select.py tools/sff.py
 	python3 tools/build_order.py
 
-src/snes/fight_bridge.obj: $(ORDER_GEN)
+$(THUNDER_GEN) &: tools/build_thunder.py tools/build_endings.py mr_karate.png
+	python3 tools/build_thunder.py
 
-assets: $(FIGHT_GEN) $(ORDER_GEN)
+src/snes/fight_bridge.obj: $(ORDER_GEN) $(THUNDER_GEN)
+
+assets: $(FIGHT_GEN) $(ORDER_GEN) $(THUNDER_GEN)
 
 audio: $(SOUNDBANK).asm $(AUDIO_GEN) validate-snesmod
 
@@ -222,7 +227,7 @@ audio: $(SOUNDBANK).asm $(AUDIO_GEN) validate-snesmod
 # without this the object is not rebuilt when only those files change.
 # fight_bridge.asm also .INCLUDEs these, so they must be dependencies too:
 # editing one alone used to leave the old code in the ROM.
-src/snes/fight_bridge.obj: src/engine/fight.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/msu_seek.asm src/engine/close_normals.asm src/engine/mrkarate.asm src/engine/mrkarate_combat.asm src/engine/voice_queue.asm src/engine/menucore.asm src/engine/menus.asm src/engine/options.asm src/engine/select_far.asm src/engine/fast_paths.asm src/engine/sel_nomsu.asm $(FIGHT_GEN) \
+src/snes/fight_bridge.obj: src/engine/fight.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/msu_seek.asm src/engine/close_normals.asm src/engine/mrkarate.asm src/engine/mrkarate_combat.asm src/engine/thunder.asm src/engine/voice_queue.asm src/engine/menucore.asm src/engine/menus.asm src/engine/options.asm src/engine/select_far.asm src/engine/fast_paths.asm src/engine/sel_nomsu.asm $(FIGHT_GEN) \
 	$(wildcard src/gen_menu/*) $(wildcard src/gen_menu/intro/*)
 
 # The SDK's snes_rules recipe replaces the local soundbank recipe below, so
@@ -278,7 +283,7 @@ PROFILE_OFILES := $(filter-out src/snes/fight_bridge.obj,$(OFILES)) $(PROFILE_FI
 
 $(PROFILE_FIGHT_OBJ): src/snes/fight_bridge.asm $(ORDER_GEN) src/engine/fight.asm \
 	src/engine/voice_queue.asm src/engine/menucore.asm src/engine/menus.asm \
-	src/engine/options.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/fast_paths.asm src/engine/msu_seek.asm src/engine/close_normals.asm src/engine/mrkarate.asm src/engine/mrkarate_combat.asm src/engine/msu_intro.asm src/engine/cancel_gate.asm src/engine/sel_nomsu.asm \
+	src/engine/options.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/fast_paths.asm src/engine/msu_seek.asm src/engine/close_normals.asm src/engine/mrkarate.asm src/engine/mrkarate_combat.asm src/engine/thunder.asm src/engine/msu_intro.asm src/engine/cancel_gate.asm src/engine/sel_nomsu.asm \
 	$(wildcard src/gen_menu/*) $(wildcard src/gen_menu/intro/*) \
 	$(FIGHT_GEN) $(AUDIO_GEN) $(SOUNDBANK).asm | $(GEN_DIR)
 	@mkdir -p $(dir $@)
@@ -342,7 +347,7 @@ $(SOUNDBANK).asm: $(AUDIOFILES)
 	  grep -o '^SOUNDBANK__[0-9]*:' $@ | tr -d ':' | sed 's/^/	.DL /'; } > build/gen_audio/sbkeep.inc
 
 src/snes/fight_bridge.obj: src/snes/fight_bridge.asm src/engine/fight.asm \
-	src/engine/menucore.asm src/engine/menus.asm src/engine/options.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/fast_paths.asm src/engine/msu_seek.asm src/engine/close_normals.asm src/engine/mrkarate.asm src/engine/mrkarate_combat.asm \
+	src/engine/menucore.asm src/engine/menus.asm src/engine/options.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/fast_paths.asm src/engine/msu_seek.asm src/engine/close_normals.asm src/engine/mrkarate.asm src/engine/mrkarate_combat.asm src/engine/thunder.asm \
 	src/engine/msu_intro.asm src/engine/cancel_gate.asm src/engine/sel_nomsu.asm \
 	$(wildcard src/gen_menu/*) $(wildcard src/gen_menu/intro/*) \
 	$(FIGHT_GEN) $(AUDIO_GEN) $(SOUNDBANK).asm
