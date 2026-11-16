@@ -40,15 +40,27 @@ STRIKES = {
 }
 # Moves whose source travels through VelSet/PosAdd in the first phase; the
 # flattened timeline would otherwise stand still.  (name, root) ->
-# (start frame, vx px/tick, vy quarter-px/tick, stop frame, advance rows).
+# (start frame, vx px/tick, vy quarter-px/tick, stop frame, advance rows
+#  [, land]).
 # Kamukakari hops forward at AnimElem 3 (5.5,-4.5 / 7,-6 with yaccel .65) and
 # lands when the next phase starts; the port gravity is 0.44, so vy is set to
 # keep the source flight time.  Tsumugari MAX (3150) dashes +8 px on each of
 # the first 7 elements after the first.
+#
+# The optional `land` flag turns the flattened clip into a real jump: the last
+# element is held (255) instead of ending the move mid-air, and the state exits
+# through S_LAND (sid 17) when Physics brings it down.  Heidern's Neck Rolling
+# and Final Bringer leap at the first element of their 1201 phase (the second
+# source state); without the flag the body stayed glued to the floor and the
+# whole recovery ran on the ground.
 LUNGES = {
  ('saisyu',1200): (2, 6, -12, 4, ()),
  ('saisyu',1210): (2, 7, -17, 5, ()),
  ('saisyu',3150): (None, 0, 0, None, tuple((i,8) for i in range(1,8))),
+ ('heidern',1200): (2, 2, -16, None, (), True),
+ ('heidern',1210): (2, 3, -16, None, (), True),
+ ('heidern',3010): (3, 2, -16, None, (), True),
+ ('heidern',3050): (3, 3, -16, None, (), True),
 }
 # Root command -> (capture HitDef source, held source sequence, damage).
 GRABS = {
@@ -197,6 +209,17 @@ def repair(name,cfg,anims,air,moves,headers,states,binds,acts,posadds):
             # Helper-only attacks use the actor's own visible strike pose.
             hit=max(0,len(frames)-2)
             f=frames[hit];frames[hit]=(*f[:6],[(-12,-100,70,0)],f[7])
+        lunge=LUNGES.get((name,root))
+        land=False
+        if lunge and not held:
+            start,vx,vy,stop,advance,*ext=lunge
+            land=bool(ext and ext[0])
+            if land and frames:
+                # Keep the airborne pose until Physics lands the fighter;
+                # the old bounded last element would end the move mid-air and
+                # the anim-end row would snap the body back to the floor.
+                f=frames[-1]
+                frames[-1]=(*f[:4],255,*f[5:])
         air[anum]=(frames,-1);anims[sid]=cfg.setdefault('anims',{})[sid]=anum
         cfg.get('slices',{}).pop(sid,None);cfg.get('frame_cap',{}).pop(sid,None)
         cfg.get('state_vel',{}).pop(sid,None)
@@ -204,18 +227,17 @@ def repair(name,cfg,anims,air,moves,headers,states,binds,acts,posadds):
         # jump back into an old/incomplete runtime sequence.
         cfg.setdefault('trans_drop',[]).append((sid,0))
         cfg['extra_trans']=[t for t in cfg.get('extra_trans',[]) if t[0]!=sid]
-        cfg['extra_trans'].append((sid,0,0,0))
+        cfg['extra_trans'].append((sid,17,1,0) if land else (sid,0,0,0))
         cfg.get('slice_hits',{}).pop(sid,None)
         states[root]=finish(root)
         headers[root]=dict(headers.get(root,{}),anim=str(anum),velset='0,0')
         posadds[root]=[]
         acts[root]=[(0,5,0,0),(0,15,0,0)]
-        lunge=LUNGES.get((name,root))
         if lunge and not held:
-            start,vx,vy,stop,advance=lunge
             if start is not None:
-                acts[root]+=[(start,5,vx&0xFF,0),(start,15,vy&0xFF,0),
-                             (stop,5,0,0),(stop,15,0,0)]
+                acts[root]+=[(start,5,vx&0xFF,0),(start,15,vy&0xFF,0)]
+                if stop is not None:
+                    acts[root]+=[(stop,5,0,0),(stop,15,0,0)]
             posadds[root]=list(advance)
         if held:
             # Single impact replaces source life expressions on a 1000/1500

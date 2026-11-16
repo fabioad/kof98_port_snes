@@ -6310,25 +6310,50 @@ if "saisyu" in CHARS:
         _sai_pos[_st] = ([(i, 8) for i in range(1, 8)]
                          + [(i, -8) for i in range(10, 13)])
 
-# Heidern: Final Bringer's root (3000) enters 3001, whose MoveHit opens the
-# 3020->3023 bind/life-add chain.  3022/3023 use damage expressions the
+# Heidern: the weak Final Bringer's root (3000) enters 3001, the leap that
+# carries the damage; the source's 3020-3023 grab chain is not wired (see the
+# comment at the _wire_followups call).  3022/3023 use damage expressions the
 # extractor cannot evaluate, so pin port-scale values.
+#
+# Moon Slasher advances 8 px on each of source elements 5-7.  The extractor
+# reads `AnimElem = 5 || AnimElem = 6 || AnimElem = 7` as a single element, so
+# the move only stepped 8 px and whiffed from its real range.  Restore the
+# three steps (0-based frames 4-6) before build_char consumes the override.
+if "heidern" in CHARS:
+    _hei_pos = CHARS["heidern"].setdefault("posadd_override", {})
+    for _st in (1100, 1110):
+        _hei_pos[_st] = [(4, 8), (5, 8), (6, 8)]
 _wire_followups("heidern", [
     (103, 3001, 1201), (104, 3020, 3020), (105, 3021, 3021),
     (106, 3022, 1311), (107, 3023, 3023),
-], [(103, 104, 3, 0), (106, 107, 0, 0)])
+], [(106, 107, 0, 0)])
+# The weak Final Bringer's 3020-3023 chain is the source's neck-grab
+# follow-up, but its TargetState 3030 has no native held-victim mapping: the
+# attacker plays the whole chain alone (no bind, no extra damage, ~4 s of
+# recovery).  Keep the leap strike and land like the strong/MAX forms; the
+# states stay compiled for a future held-victim implementation, but the
+# MoveHit transition 103->104 is intentionally not wired.
 _tweak("heidern", "hitdef_override", {
     103: {"damage": 35, "gdamage": 2, "fall": 1}})
 _tweak("heidern", "slice_damage", {103: 35})
-# 1201 is the source's throw-hold animation and has no Clsn1 of its own.
-# Without a body box the 3001 HitDef never contacts, so the 3020 bind chain
-# never opens.
+# 1201 is the shared leap clip for Neck Rolling (states 1200/1210) and the
+# Final Bringer follow-ups (3001/3011/3051); the source arms its HitDef only
+# after the close-range ChangeAnim, which the native engine cannot evaluate.
+# Cover the whole flight with the grab/strike box so the move connects on the
+# way up instead of only at the last ground frame.
 _tweak("heidern", "air_box_patch_frames", {
-    1201: {0: [(-20, -110, 60, 0)], 1: [(-20, -110, 60, 0)]}})
-# 3022's two life-add controllers use a ceil(Target,LifeMax) expression the
-# extractor drops entirely, so schedule the hold's ticks explicitly.
-_late_act("heidern", {3022: [
-    (0x80 | t, 3, -4, 0) for t in (8, 20, 32, 44, 56)]})
+    1201: {i: [(-20, -110, 60, 0)] for i in range(4)}})
+# 3001 is the weak Final Bringer's leap.  It kept the source 255-tick hold
+# without the VelSet y=-8, so the body never left the floor and a whiff sat in
+# the clip for four seconds.  Launch it with the same 4 px/tick rise as the
+# flattened strong/MAX versions in remaining_specials.LUNGES; Physics lands it
+# through the existing (103,17,1) TransTab row.
+_late_act("heidern", {
+    3001: [(0, 5, 2, 0), (0, 15, (-16) & 0xFF, 0)],
+    # 3022's two life-add controllers use a ceil(Target,LifeMax) expression
+    # the extractor drops entirely, so schedule the hold's ticks explicitly.
+    3022: [(0x80 | t, 3, -4, 0) for t in (8, 20, 32, 44, 56)],
+})
 _late_life("heidern", {3023: -20})
 
 # Clark: the strong command points straight at 1110, which is the follow-up
