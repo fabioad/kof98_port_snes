@@ -200,6 +200,10 @@ Constantes clássicas relevantes:
   o estado 92. Os dois cels cabem numa página OBJ de 64 tiles carregada em
   SPK2CHR; a página SPK1CHR fica livre para os Explods da intro do oponente.
   As cores entram na paleta do Mr. Big, e o overlay some quando a luta começa.
+  O OAM é 128 células e as duas poses de intro em escala PRO chegam a usar 88,
+  então a lista final tem 36 células (as franjas de 1 px do contorno não viram
+  sprite) e é replicada de um cache; sem isso o overlay não cabia e sumia
+  assim que os dois lutadores apareciam.
 - especiais e supers que conectam cinco vezes com o **mesmo** golpe derrubam
   no quinto contato. O contador é por sid de runtime e reinicia quando um
   combo novo começa ou o golpe muda, então combos livres de golpes

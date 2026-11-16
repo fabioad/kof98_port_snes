@@ -44,16 +44,33 @@ class MrBigIntroTests(unittest.TestCase):
         self.assertEqual(n_b, len(cells_b))
         self.assertGreater(n_a, 0)
         self.assertGreater(n_b, 0)
-        self.assertLessEqual(n_a + n_b, 100)
+        total = n_a + n_b
+        # OAM is 128 cells.  Two PRO-scale fighters spend 88 on their intro
+        # poses, so the overlay must fit the remaining 40 or it disappears
+        # once both are drawn (the bug that hid the girls on the right side).
+        self.assertLessEqual(total, 40)
+        self.assertEqual(total % 4, 0, "OAM high table is 4 cells per byte")
         tiles = set()
         for _dx, _dy, tile in cells_a + cells_b:
-            self.assertTrue(tile & 0x8000, "girl cells must be 8x8 OAM sprites")
             page_tile = tile & 0x7FFF
             self.assertGreaterEqual(page_tile, 448)
             self.assertLessEqual(page_tile, 511)
-            tiles.add(page_tile)
+            base = page_tile - 448
+            if tile & 0x8000:              # 8x8 sprite: one atlas slot
+                tiles.add(base)
+            else:                          # 16x16: base, base+1, +16, +17
+                tiles.update((base, base + 1, base + 16, base + 17))
         self.assertLessEqual(len(tiles), 64)
         self.assertEqual(CHR.stat().st_size, 2048)
+
+    def test_engine_cell_count_matches_generated_overlay(self):
+        text = INC.read_text()
+        total = sum(int(m.group(1)) for m in
+                    re.finditer(r"Girl[AB]Cells:\s*\n\s*\.db\s+(\d+)", text))
+        cfg = ROOT / "build/gen_fight/intro_girls_cfg.inc"
+        self.assertIn(f".DEFINE GIRL_CELLS {total}", cfg.read_text())
+        self.assertIn('.INCLUDE "gen_fight/intro_girls_cfg.inc"',
+                      FIGHT.read_text())
 
     def test_engine_wiring(self):
         text = FIGHT.read_text()

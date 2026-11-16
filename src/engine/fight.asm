@@ -626,8 +626,9 @@
 .DEFINE GIRL_CP     $7E527F             ; cached palette byte
 .DEFINE GIRL_VALID  $7E5280             ; 1 = replay buffer is built
 .DEFINE GIRL_START  $7E5281             ; word: OAM byte offset of the build
-.DEFINE GIRL_BOAM   $5600               ; 42 cells * 4 bytes (bank $7E)
-.DEFINE GIRL_BHI    $56B0               ; 11 high-table bytes (bank $7E)
+.INCLUDE "gen_fight/intro_girls_cfg.inc" ; GIRL_CELLS from build_fight.py
+.DEFINE GIRL_BOAM   $5600               ; GIRL_CELLS * 4 bytes (bank $7E)
+.DEFINE GIRL_BHI    $56B0               ; GIRL_CELLS / 4 high-table bytes
 .DEFINE SELPZ_OAM   CL_VARS+$7E        ; oamtop saved when the select pauses
 .DEFINE SUPERFX_TICKS 32                ; 4 flash + 28 dim (Kyo helper 7000)
 .DEFINE SUPERFX_FLASH 4
@@ -21294,7 +21295,7 @@ DIG_build:
     inx
     inx
     inx
-    cpy #168
+    cpy #(GIRL_CELLS*4)
     bne -
     lda #GIRL_BHI.w
     sta lptr
@@ -21315,7 +21316,7 @@ DIG_build:
     sta [lptr],y
     inx
     iny
-    cpy #11
+    cpy #(GIRL_CELLS/4)
     bne -
     lda.l GIRL_BX
     sta.l GIRL_CX
@@ -21555,8 +21556,8 @@ DIG_c_stop:
 DIG_c_done:
     rts
 
-; Replay the cached girlfriend OAM list.  The 42 cells were committed once
-; into GIRL_BOAM/GIRL_BHI; copying them is far shorter than rebuilding the
+; Replay the cached girlfriend OAM list.  The GIRL_CELLS cells were committed
+; once into GIRL_BOAM/GIRL_BHI; copying them is far shorter than rebuilding the
 ; per-cell math and keeps the loop clear of the vblank boundary.
 DIG_replay:
     rep #$30
@@ -21564,7 +21565,7 @@ DIG_replay:
     .INDEX 16
     lda oamtop
     clc
-    adc #168.w
+    adc #(GIRL_CELLS*4).w
     cmp #513.w
     bcs DIG_rep_out                    ; not enough OAM room this frame
     lda #GIRL_BOAM.w
@@ -21591,7 +21592,7 @@ DIG_replay:
     inx
     inx
     inx
-    cpy #168
+    cpy #(GIRL_CELLS*4)
     bne -
     lda #GIRL_BHI.w
     sta lptr
@@ -21613,11 +21614,11 @@ DIG_replay:
     sta.w OAMHI,x
     inx
     iny
-    cpy #11
+    cpy #(GIRL_CELLS/4)
     bne -
     lda oamtop
     clc
-    adc #168.w
+    adc #(GIRL_CELLS*4).w
     sta oamtop
 DIG_rep_out:
     rep #$20

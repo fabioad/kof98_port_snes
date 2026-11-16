@@ -3,9 +3,13 @@
 
 The girls are not helpers in this engine: they ride a dedicated OAM overlay
 loaded into the second effect page.  This headless check enters Mr. Big vs
-Kyo, waits for the intro state and verifies that OAM contains cells from
-that page on both sides of Big.  After the intro the cells must be gone so
-they cannot linger over the fight.
+Kyo with Big on each side, waits for the intro state and verifies that OAM
+contains cells from that page on both sides of Big.  After the intro the
+cells must be gone so they cannot linger over the fight.
+
+The right-side pass is the regression that mattered: the overlay was 42
+cells, two PRO-scale intro poses take 88 of the 128 OAM cells, and the replay
+path silently skipped the girls when the sum did not fit.
 
 Run after a PVSnesLib build:
 
@@ -66,35 +70,46 @@ def expected_girl_cells():
         r"Girl[AB]Cells:\s*\n\s*\.db (\d+)", text))
 
 
+def check_side(core, select_state, p1, p2, bigside, expected):
+    enter_fight(core, select_state, p1, p2)
+    wait(core, lambda: core.word(GS) == 4 and
+         core.ram[F_STATE + bigside * FP2] == 92, "intro")
+    # The fighters' sprite CHR streams in over the first frames; sample once
+    # both bodies and the girls share the OAM buffer.
+    core.step(20)
+    cells = girl_cells(core)
+    if len(cells) < expected:
+        raise AssertionError(
+            f"{p1} vs {p2}: only {len(cells)}/{expected} girlfriend cells "
+            "during the intro")
+    big_x = core.word(F_X + bigside * FP2) >> 8
+    if not any(x < big_x for x, *_ in cells):
+        raise AssertionError(f"{p1} vs {p2}: no girlfriend cell left of Big")
+    if not any(x > big_x for x, *_ in cells):
+        raise AssertionError(f"{p1} vs {p2}: no girlfriend cell right of Big")
+
+    wait(core, lambda: core.word(GS) == 1 and
+         core.ram[F_STATE] == 0 and core.ram[F_STATE + FP2] == 0,
+         "round start")
+    core.step(30)
+    left = girl_cells(core)
+    if left:
+        raise AssertionError(
+            f"{p1} vs {p2}: {len(left)} girlfriend cells survived the intro")
+    return len(cells)
+
+
 def main(core_path, rom):
     core = Core(core_path, rom)
     try:
         select_state = boot_select(core)
-        enter_fight(core, select_state, "mrbig", "kyo")
-        wait(core, lambda: core.word(GS) == 4 and core.ram[F_STATE] == 92,
-             "intro")
-        core.step(20)
-        cells = girl_cells(core)
         expected = expected_girl_cells()
-        if len(cells) < expected:
-            raise AssertionError(
-                f"only {len(cells)}/{expected} girlfriend cells during the intro")
-        big_x = core.word(F_X) >> 8
-        if not any(x < big_x for x, *_ in cells):
-            raise AssertionError("no girlfriend cell left of Mr. Big")
-        if not any(x > big_x for x, *_ in cells):
-            raise AssertionError("no girlfriend cell right of Mr. Big")
-
-        wait(core, lambda: core.word(GS) == 1 and
-             core.ram[F_STATE] == 0 and core.ram[F_STATE + FP2] == 0,
-             "round start")
-        core.step(30)
-        left = girl_cells(core)
-        if left:
-            raise AssertionError(
-                f"{len(left)} girlfriend cells survived the intro")
-        print(f"PASS Mr. Big intro: {len(cells)} girlfriend cells, "
-              "cleared for the round", flush=True)
+        counts = [
+            check_side(core, select_state, "mrbig", "kyo", 0, expected),
+            check_side(core, select_state, "kyo", "mrbig", 1, expected),
+        ]
+        print(f"PASS Mr. Big intro: {counts[0]} cells (P1) and {counts[1]} "
+              "cells (P2), cleared for the round", flush=True)
     finally:
         core.close()
 
