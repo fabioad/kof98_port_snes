@@ -4175,12 +4175,37 @@ if "mrbig" in CHARS:
         {"name": "CRAZY_DRUM", "label": "CRAZY DRUM",
          "state": 1100, "posture": 3, "time": 22,
          "elems": [(2, 0), (6, 0), (4, 0), (0, 4)]},
+        # The source Crazy Drum is a punch mash (x,x,x,x / y,y,y,y).  QCF with
+        # either kick reaches it, so the pad-only player is not forced to
+        # mash; without this row the strong kick fell through to stand HK.
+        {"name": "CRAZY_DRUM_S", "label": "CRAZY DRUM",
+         "state": 1100, "posture": 3, "time": 22,
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 8)]},
         {"name": "DRUM_SHOT", "label": "DRUM SHOT",
          "state": 1500, "posture": 3, "time": 22,
          "elems": [(2, 0), (10, 0), (8, 0), (0, 1)]},
         {"name": "BLASTER_MAX", "label": "MAX BLASTER WAVE",
          "state": 3050, "posture": 3, "time": 30,
          "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 3)]},
+        # Supers also accept the weak kick.  The 7/8-element super motions
+        # sort ahead of the 4-element QCF/DP specials, so these win before
+        # Crazy Drum or Spinning Lancer consume the same input tail.
+        {"name": "BRASTER_WAVE_WK", "label": "BRASTER WAVE W",
+         "state": 3000, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 4)]},
+        {"name": "BOU_SPIN_WK", "label": "BOU DOTSUKI SPIN",
+         "state": 3200, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (6, 0), (2, 0), (10, 0),
+                   (8, 0), (0, 4)]},
+        # Both weak buttons (weak punch + weak kick) are the MAX shortcut,
+        # mirroring the source's weak+strong punch pair.
+        {"name": "BLASTER_MAX_WK", "label": "MAX BLASTER WAVE",
+         "state": 3050, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 5)]},
+        {"name": "BOU_SPIN_MAX_WK", "label": "BOU DOTSUKI SPIN",
+         "state": 3250, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (6, 0), (2, 0), (10, 0),
+                   (8, 0), (0, 5)]},
         {"name": "RISING_SPEAR_W", "label": "RISING SPEAR",
          "state": 3100, "posture": 3, "time": 22,
          "elems": [(4, 0), (2, 0), (6, 0), (0, 4)]},
@@ -4188,6 +4213,13 @@ if "mrbig" in CHARS:
          "state": 3100, "posture": 3, "time": 22,
          "elems": [(4, 0), (2, 0), (6, 0), (0, 8)]},
     ])
+    # Show both accepted buttons instead of only the rule that sorted last.
+    # A/B are the SNES kick buttons, Y the weak punch.  DP+Y is California
+    # Romance, so the Rising Spear row advertises its kick inputs only.
+    _big["cmd_text"] = {
+        107: "QCF+B/A", 87: "QCFX2+Y/B", 85: "QCF,HCB+Y/B",
+        110: "QCFX2+Y+B", 89: "QCF,HCB+Y+B", 111: "DP+B/A",
+    }
 
 if "eiji" in CHARS:
     POST_CAL_REACTIVATED.setdefault("eiji", []).extend([

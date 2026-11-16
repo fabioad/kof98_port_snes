@@ -67,6 +67,14 @@ class ProjectileCalibrationTests(unittest.TestCase):
         self.assertEqual(projectiles.PROJECTILE_FX_ALIAS["saisyu"], "kyo")
         self.assertEqual(CHARS["saisyu"]["projfx_alias"], "kyo")
 
+    def test_mrbig_compiles_his_own_ground_blaster(self):
+        # The Heavy D beam alias left the streaky source's transparent gaps
+        # visible as coloured speckles over the white core.  Mr. Big's own
+        # action 1020 is the flame wave and now gets its own atlas.
+        self.assertNotIn("mrbig", projectiles.PROJECTILE_FX_ALIAS)
+        self.assertNotIn("projfx_alias", CHARS["mrbig"])
+        self.assertEqual(projectiles.PROJECTILE_ACTIONS["mrbig"], 1020)
+
     def test_false_positive_shots_are_excluded(self):
         # These source helpers are melee follow-ups, dives or teleports; the
         # generator used to turn their dash HitDefs into invisible shots.

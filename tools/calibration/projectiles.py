@@ -201,7 +201,10 @@ PROJECTILE_FX_ALIAS = {
     "andy": "yuri",         # Hishou Ken reuses the compiled Ko'ou Ken orb
     "geese": "terry",       # ground wave
     "leona": "terry",       # ground wave
-    "mrbig": "heavyd",      # beam
+    # Mr. Big's own Ground Blaster (action 1020) is a flame wave.  The old
+    # Heavy D beam alias was a streaky horizontal beam: shrunk into the
+    # 16-cell effect page its transparent gaps turned into coloured
+    # speckles ("chuviscos") over the white core.
     "daimon": "terry",      # ground shockwave
     "ralf": "terry",        # Galactica shockwave
     "shermie": "athena",    # orb

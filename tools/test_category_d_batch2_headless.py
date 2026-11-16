@@ -33,6 +33,7 @@ QCF = (D, DF, F)
 QCB = (D, DB, BACK)
 DP = (F, D, DF)
 QCF2 = (D, DF, F, D, DF, F)
+QCFHCB = (D, DF, F, DF, D, DB, BACK)
 QCB2 = (D, DB, BACK, D, DB, BACK)
 HCB2 = (F, DF, D, DB, BACK, F, DF, D, DB, BACK)
 
@@ -77,6 +78,14 @@ CASES = (
     ("yuri", "560 MAX Ryuuko", QCF2, {A, B_BTN}, {108}, 8),
     # Mr. Big
     ("mrbig", "1100 Crazy Drum", QCF, {A, B_BTN}, {107}, 8),
+    # QCF also accepts the strong kick alone (the old row only had weak
+    # kick), and the weak kick reaches both supers.  The 7/8-element super
+    # motions must win over Crazy Drum / Spinning Lancer's 4-element tail.
+    ("mrbig", "1100 Crazy Drum S", QCF, {B_BTN}, {107}, 8),
+    ("mrbig", "3000 Blaster Wave WK", QCF2, {A}, {87}, 10),
+    ("mrbig", "3050 MAX Blaster Wave WK", QCF2, {X, A}, {110}, 12),
+    ("mrbig", "3200 Bou Dotsuki Spin WK", QCFHCB, {A}, {85}, 10),
+    ("mrbig", "3250 Bou Dotsuki Spin MAX WK", QCFHCB, {X, A}, {89}, 12),
     ("mrbig", "1500 Drum Shot", QCB, {X, Y}, {109}, 8),
     ("mrbig", "3050 MAX Blaster Wave", QCF2, {X, Y}, {110}, 12),
     ("mrbig", "3100 Rising Spear", DP, {A, B_BTN}, {111}, 10),

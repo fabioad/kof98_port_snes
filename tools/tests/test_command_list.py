@@ -108,7 +108,11 @@ class CommandListTests(unittest.TestCase):
                     continue
                 with self.subTest(char=name, sid=sid):
                     last = command.split("+")[-1].strip()
-                    self.assertIn(last, buttons, (name, sid, move, command))
+                    # A row may show the weak/strong alternates together
+                    # ("QCF+B/A"); both halves still have to be buttons.
+                    parts = last.split("/")
+                    self.assertTrue(parts and all(p in buttons for p in parts),
+                                    (name, sid, move, command))
 
     def test_known_kof98_commands(self):
         kyo = {row[0]: row for row in _parse_table("kyo")}
@@ -130,7 +134,10 @@ class CommandListTests(unittest.TestCase):
         self.assertEqual(3, iori[88][1])                 # ordinary finisher
         # Composed super: the list keeps the full QCBHCF notation even
         # though the matcher also accepts the diagonal-free HCF portion.
-        self.assertEqual("QCBHCF + X", iori[85][3])
+        # Sid 85 is the MAX Ya Otome slot, so the row advertises both punch
+        # buttons; the weak-only input still reaches it through the other
+        # rule for the same slot.
+        self.assertEqual("QCBHCF+Y+X", iori[85][3])
 
         heavyd = {row[0]: row for row in _parse_table("heavyd")}
         self.assertEqual(4, heavyd[86][1])               # MAX D. Crazy
