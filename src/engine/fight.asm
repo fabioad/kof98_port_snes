@@ -7208,7 +7208,8 @@ CMC_take:
     sep #$20                          ; a projectile cancel keeps the victim
     .ACCU 8                           ;   in hitstun until the shot arrives
     lda ct_cancel
-    beq +
+    cmp #1
+    bne +
     jsr ProjComboStun
     sep #$20
     .ACCU 8

@@ -2727,6 +2727,52 @@ if "iori" in CHARS:
     _iori["hitdef_override"][87] = {
         "damage": 6, "gdamage": 1, "gvx": 0, "gvy": 0,
     }
+    # --- Aoi Hana (QCB+P): three-part rekka -----------------------------
+    # Source states 1200/1201/1210/1211 mark the victim as knocked down
+    # (fall/air.fall), so the native hit path sent it to S_DOWN on the first
+    # contact and the later parts never connected.  Keep parts 1 and 2 in
+    # hitstun with a short pushback, then require a fresh QCB+P (weak or
+    # strong) for each follow-up, like KOF98.  The final jumping palm
+    # (1202/1212) keeps fall=1 and knocks the victim down.
+    _iori["slice_no_fall"] = sorted(
+        set(_iori.get("slice_no_fall", ())) | {61, 63, 66, 68})
+    for _sid in (61, 63, 66, 68):
+        _iori["hitdef_override"].setdefault(_sid, {})
+        _iori["hitdef_override"][_sid].update(
+            {"gvx": 1 * 256, "gvy": 0, "grvx": 1 * 256})
+    # The source MoveHit rows auto-chained the parts for humans too.  Drop
+    # them: human players must re-input the command (kind 6 below), while
+    # the CHAINTAB CPU target preserves the automatic handoff for the CPU.
+    _iori["trans_drop"] = sorted(
+        set(_iori.get("trans_drop", ())) |
+        {(61, 3), (63, 3), (66, 3), (68, 3)})
+    _iori["extra_trans"].extend([
+        (61, 0, 6, 0), (66, 0, 6, 0),      # human QCB+P follow-up
+        (63, 0, 6, 0), (68, 0, 6, 0),
+        (62, 17, 1, 0),                    # third palm lands -> S_LAND
+    ])
+    # CHAINTAB rows: from-state -> weak / strong command target and the
+    # automatic CPU handoff target.  The QCB+P commands below are selected
+    # by the target filter inside CmdTryChain, so an ordinary scan can
+    # never start a mid-rekka state.
+    _iori["rekka"] = [(61, 63, 68, 63), (66, 63, 68, 68),
+                      (63, 62, 64, 62), (68, 62, 64, 64)]
+    _iori.setdefault("cmd_extra", []).extend([
+        {"name": "QCB_R2W", "hidden": True, "elems": [(2, 0), (10, 0), (8, 0), (0, 1)],
+         "time": 18, "state": 1201, "posture": 3},
+        {"name": "QCB_R2S", "hidden": True, "elems": [(2, 0), (10, 0), (8, 0), (0, 2)],
+         "time": 18, "state": 1211, "posture": 3},
+        {"name": "QCB_R3W", "hidden": True, "elems": [(2, 0), (10, 0), (8, 0), (0, 1)],
+         "time": 18, "state": 1202, "posture": 3},
+        {"name": "QCB_R3S", "hidden": True, "elems": [(2, 0), (10, 0), (8, 0), (0, 2)],
+         "time": 18, "state": 1212, "posture": 3},
+    ])
+    # The jumping palm's Clsn1 sits high on the outstretched hands; union
+    # a lower box so a victim still in hitstun cannot slip underneath.
+    _iori.setdefault("air_box_patch_frames", {})
+    _iori["air_box_patch_frames"][1202] = {
+        4: [(8, -100, 71, -61), (0, -90, 70, -20)],
+    }
     # Ya Otome explosive finish (source 3021).  The rush ends into it; the
     # source holds the victim (TargetState 3025/TargetBind), flashes, spawns
     # Explod 6021/6112 and applies a final TargetLifeAdd.  StVictimHeld and
