@@ -12970,6 +12970,115 @@ def build_char(name, cfg, global_pal=None):
                 inc.append(f"    .db {lo},{hi},{dx & 0xFF},{dy & 0xFF}\n")
             inc.append("    .db $FF\n")
 
+    # Grab audio.  Every bind state that can be entered straight from a
+    # successful throw (the root of a ChangeState chain) gets the same
+    # grab-connect cue the normal throw already uses (SFX_HIT_MED on the
+    # first bind element).  When the hold opens on a strike (the source
+    # HitDef already carries damage) the cue becomes that impact instead;
+    # when it closes on one (Clark's Ultra Argentine elbow, Iori's 3021
+    # explosion) the last TargetLifeAdd row of the chain plays the hit SFX.
+    # A frame that already carries a hit/grab sound keeps it; voices and
+    # swishes do not suppress the cue, which is appended after them so the
+    # engine dispatches it last.
+    _GRAB_CUE = 5                       # SFX_HIT_MED (normal-throw cue)
+    _GRAB_HIT = 18                      # SFX_HIT_HEAVY (strike/slam)
+    _bind_sids = set()
+    for _sid, _st in move_ids.items():
+        if _sid < 48 or 74 <= _sid <= 77:
+            continue
+        if cfg.get("moves", {}).get(_sid) is None:
+            continue
+        if cns_binds.get(_st) or (_bind_extra.get(_st)):
+            _bind_sids.add(_sid)
+    # A MUGEN state can be wired to more than one runtime sid (reactivated
+    # and alias slots).  Keep every alias so the cue follows whichever slot
+    # the command/TransTab reaches.
+    _state_sids = {}
+    for _sid in _bind_sids:
+        _state_sids.setdefault(move_ids.get(_sid, -1), []).append(_sid)
+    _grab_edges = {_sid: set() for _sid in _bind_sids}
+    for _sid in _bind_sids:
+        for _ctrl in (cns_statedefs or {}).get(move_ids.get(_sid, -1), ()):
+            if _ctrl.get("type", "").lower() != "changestate":
+                continue
+            # Command-gated ChangeStates (Mary 1121 -> 3810 "typhoon_d")
+            # select a different move, not the next phase of this hold.
+            if any("command" in _t.lower()
+                   for _t in _ctrl.get("triggers", ())):
+                continue
+            _raw = _ctrl.get("value", "").split(",")[0].strip()
+            try:
+                _nxt = int(float(_raw))
+            except ValueError:
+                continue
+            for _dst in _state_sids.get(_nxt, ()):
+                if _dst != _sid:
+                    _grab_edges[_sid].add(_dst)
+    for _row in list(cfg.get("extra_trans") or ()) + list(
+            LATE_EXTRA_TRANS.get(name, ())):
+        _fsid, _tsid, _kind = _row[0], _row[1], _row[2]
+        if _fsid not in _grab_edges or _kind not in (0, 3):
+            continue
+        for _dst in _state_sids.get(move_ids.get(_tsid, -1), ()):
+            _grab_edges[_fsid].add(_dst)
+    _grab_parents = {_dst for _src in _grab_edges
+                     for _dst in _grab_edges[_src]}
+    _grab_extra = {}
+
+    def _grab_row(sid, frame, sfx):
+        _rows = _grab_extra.setdefault(sid, [])
+        if (frame, 7, sfx, 0) not in _rows:
+            _rows.append((frame, 7, sfx, 0))
+
+    for _root in sorted(_bind_sids):
+        if _root in _grab_parents:
+            continue                    # mid-chain phase, not the capture
+        _order = {_root: 0}
+        _todo = [_root]
+        while _todo:
+            _cur = _todo.pop(0)
+            for _nxt in _grab_edges.get(_cur, ()):
+                if _nxt not in _order:
+                    _order[_nxt] = _order[_cur] + 1
+                    _todo.append(_nxt)
+        _root_state = move_ids.get(_root, -1)
+        # Sliced sids replay one timeline across two tables; only the first
+        # slice fires at state entry.
+        _slice_lo = slices[_root][1] if _root in slices else 0
+        _root_rows = list(cns_acts.get(_root_state, ()))
+        # A hold that opens on a strike: the throw HitDef already deals
+        # damage, or the first bind element applies a TargetLifeAdd.
+        _opens_hit = any(
+            _r.get("throw") and _r.get("p1mugen", -1) == _root_state
+            and float(_r.get("damage", 0) or 0) > 0
+            for _r in cns_moves.values())
+        _opens_hit = _opens_hit or any(
+            _op == 3 and _arg < 0 and _f == 0
+            for _f, _op, _arg, _c in _root_rows)
+        _start_frame = 0
+        if _slice_lo == 0:
+            if _opens_hit:
+                _grab_row(_root, _start_frame, _GRAB_HIT)
+            else:
+                _grab_row(_root, _start_frame, _GRAB_CUE)
+        # Close on a strike: the chain's last damaging element.  Aliases of
+        # the final state get the same row.
+        _dmg = []
+        for _sid in _bind_sids:
+            if _sid not in _order:
+                continue
+            for _f, _op, _arg, _c in _slice_rows(cns_acts, _sid):
+                if _op == 3 and _arg < 0 and not (_f & 0x80):
+                    _dmg.append((_order[_sid], _f, _sid))
+        if _dmg:
+            _depth, _frame, _best = max(_dmg)
+            _best_state = move_ids.get(_best, -1)
+            for _d, _f, _sid in _dmg:
+                if _d == _depth and _f == _frame \
+                        and move_ids.get(_sid, -1) == _best_state \
+                        and (_sid, _f) != (_root, _start_frame):
+                    _grab_row(_sid, _f, _GRAB_HIT)
+
     # Actions: ActTab[sid] -> {trigger.b, op.b, arg.b, cond.b}*, $FF.
     # trigger bit7 selects exact state time; clear values select anim elems.
     # op 0=turn self, 1=posadd x (facing-relative), 2=target facing *=arg,
@@ -12989,6 +13098,22 @@ def build_char(name, cfg, global_pal=None):
             rows = list(rows or ())
             if not any(r[1] == 7 and r[0] == 0 for r in rows):
                 rows.insert(0, (0, 7, 5, 0))   # SFX_HIT_MED
+        if sid in _grab_extra:
+            rows = list(rows or ())
+            rows.sort()
+            for _frame, _op, _arg, _cond in _grab_extra[sid]:
+                _same = [r for r in rows
+                         if r[0] == _frame and r[1] == 7]
+                if _arg == _GRAB_CUE:
+                    if any(r[2] in (4, 5, 6, 14, 15, 18, 19, 20)
+                           for r in _same):
+                        continue        # source already plays the grab cue
+                elif any(r[2] in (4, 5, 6, 18, 19) for r in _same):
+                    continue            # source already plays a hit sound
+                # Append (do not re-sort): the engine scans rows in order,
+                # so the impact is dispatched after any authored swish or
+                # voice on the same frame and is not cut off.
+                rows.append((_frame, _op, _arg, _cond))
         out = []
         for frame, op, arg, cond in (rows or ()):
             if sid == 75 and op == 3 and not -128 <= arg <= 127:
