@@ -3151,10 +3151,30 @@ SpawnProjImpact:
     sec
     sbc #24.w
     sta scr1
+    ; Impact spark tier comes from the launch-state bits set by ProjTrySpawn
+    ; (SPK_GRD bit1 super, bit2 MAX); SparkSuper wins when both are set.
+    sep #$20
+    .ACCU 8
+    lda.w SPARKS+SPK_GRD,x
+    and #$02.b
+    beq +
+    lda.b #SPARK_ANIM_SUPER
+    bra SPI_have
++   lda.w SPARKS+SPK_GRD,x
+    and #$04.b
+    beq +
+    lda.b #SPARK_ANIM_MAX
+    bra SPI_have
++   lda.b #SPARK_ANIM_HIT
+SPI_have:
+    rep #$20
+    .ACCU 16
+    and #$00FF.w                        ; B may still hold scratch from the
+    pha                                 ;   8-bit reads: keep just the index
     stz.w SPARKS+SPK_ANIM,x
     stz.w SPARKS+SPK_ANIM+1,x
     phx
-    lda #0                              ; generic impact spark
+    pla
     jsr SparkSpawnAt
     plx
     rts

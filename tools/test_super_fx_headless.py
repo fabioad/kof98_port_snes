@@ -30,6 +30,7 @@ F_X = 0x4000
 F_POWER = 0x4030
 SUPERFX = 0x51F0
 SUPERFX_MODE = 0x51F1
+SUPERFX_BLUE = 0x51F8
 FLASH_REGION = (140, 20, 220, 60)
 
 
@@ -66,6 +67,18 @@ def brightness(im, box):
             r, g, b = px[x, y]
             total += r + g + b
     return total / (3 * (x1 - x0) * (y1 - y0))
+
+
+def blueness(im, box):
+    """Positive when the region leans blue (MAX aura) instead of white."""
+    px = im.load()
+    x0, y0, x1, y1 = box
+    total = 0
+    for y in range(y0, y1):
+        for x in range(x0, x1):
+            r, g, b = px[x, y]
+            total += b - (r + g) / 2
+    return total / ((x1 - x0) * (y1 - y0))
 
 
 def press(core, buttons, frames=2):
@@ -126,8 +139,70 @@ def main(core_path, rom):
         assert core.ram[SUPERFX] == 0 and core.ram[SUPERFX_MODE] == 0
         assert flash_value > pre + 50, (pre, flash_value)
         assert dark_value < pre * 0.75, (pre, dark_value)
+        assert core.ram[SUPERFX_BLUE] == 0, \
+            "a normal super must not use the MAX aura"
         print(f"PASS super FX: pre={pre:.1f} flash={flash_value:.1f} "
               f"dark={dark_value:.1f}")
+
+        # MAX activation uses the blue arcade aura instead of the white
+        # flash.  The stage/OBJ tint must lean blue during both phases.
+        enter_fight(core, select_state, "kyo", "iori")
+        core.ram[0x1090] = core.ram[0x1091] = 0
+        core.put(F_X, 80 << 8)
+        core.put(0x4040, 120 << 8)
+        core.put(F_POWER, 2000)
+        core.step(30)
+        pre_blue = blueness(shot(core, "/tmp/max_aura_pre.png"), FLASH_REGION)
+        core.buttons[0] = {Y, B, X}
+        core.step(2)
+        core.buttons[0] = set()
+        blue_flash = blue_dim = None
+        saw_blue_flash = saw_blue_dim = False
+        for _ in range(80):
+            core.step()
+            fx = core.ram[SUPERFX]
+            mode = core.ram[SUPERFX_MODE]
+            blue = core.ram[SUPERFX_BLUE]
+            if fx and mode == 1 and blue_flash is None:
+                assert blue == 1, "MAX flash missing the blue flag"
+                saw_blue_flash = True
+                blue_flash = blueness(
+                    shot(core, "/tmp/max_aura_flash.png"), FLASH_REGION)
+            if fx and mode == 2 and blue_dim is None:
+                assert blue == 1, "MAX dim missing the blue flag"
+                saw_blue_dim = True
+                blue_dim = blueness(
+                    shot(core, "/tmp/max_aura_dim.png"), FLASH_REGION)
+            if saw_blue_dim and not fx:
+                break
+        else:
+            raise AssertionError(
+                f"MAX aura did not finish: fx={core.ram[SUPERFX]} "
+                f"mode={core.ram[SUPERFX_MODE]} state={core.ram[F_STATE]}")
+        assert saw_blue_flash and saw_blue_dim
+        assert blue_flash > pre_blue + 15, (pre_blue, blue_flash)
+        assert core.ram[SUPERFX_BLUE] == 0
+        print(f"PASS MAX aura: pre={pre_blue:.1f} "
+              f"flash-blue={blue_flash:.1f} dim-blue={blue_dim:.1f}")
+
+        # A super performed inside the MAX window keeps the blue aura.
+        for _ in range(80):
+            if core.ram[F_STATE] == 0:
+                break
+            core.step()
+        assert core.ram[0x403B] > 150, core.ram[0x403B]
+        motion(core, ((DOWN,), (DOWN, RIGHT), (RIGHT,),
+                      (DOWN,), (DOWN, RIGHT), (RIGHT,)), (X,))
+        saw_max_super = False
+        for _ in range(80):
+            core.step()
+            if core.ram[SUPERFX] and core.ram[SUPERFX_MODE] == 1:
+                assert core.ram[SUPERFX_BLUE] == 1, \
+                    "MAX super missing the blue aura"
+                saw_max_super = True
+                break
+        assert saw_max_super, "MAX super did not trigger the super effect"
+        print("PASS MAX super aura")
     finally:
         core.close()
 

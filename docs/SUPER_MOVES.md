@@ -150,8 +150,33 @@ com color math do SNES:
   caminho standalone. O estado fica em `$7E51F0`/`$7E51F1`, fora do
   save/restore de DP do NMI.
 
+### Aura azul do MAX
+
+A ativação do MAX (96) e qualquer super executado com `F_MAX` ativo usam
+uma variante azul do mesmo efeito (`SUPERFX_BLUE`, `$7E51F8`):
+
+- no flash, o color math soma azul-branco em BG1/BG2 **e OBJ**
+  (`CGADSUB $33`), então a tela e os lutadores ganham o brilho azul do
+  arcade;
+- na escurecida, o fundo esfria para azul e o OBJ fica fora do subtract,
+  deixando os lutadores brilhando contra o fundo azul-escuro;
+- supers normais continuam com o flash branco e a escurecida cinza.
+
+O teste `tools/test_super_fx_headless.py` cobre os três casos: super
+normal (sem azul), ativação MAX e super durante o MAX.
+
 Build/verify: checksum `$A872`, layout MSU `0x01EE`. O teste
 `tools/test_super_fx_headless.py` dispara o QCFx2+X do Kyo e confere as
 fases de flash/escuro pela luminosidade do fundo. O
 `test_command_list` também exige custo de pelo menos um estoque para toda
 linha de comando com categoria SUP/MAX.
+
+## 8. Sparks de super e MAX
+
+Além do escurecimento, o arcade troca o spark de impacto: `s6001` no
+acerto normal, `s6004` durante o MAX e a família `s6002`/`s6005` nos
+supers. O motor escolhe entre `SparkHit`, `SparkMax` e `SparkSuper` em
+`SparkPick`, usando a marca `SUPERCHAIN` (PowTab delta <= -1000) e o
+`F_MAX`. Projéteis guardam a origem em `SPK_GRD` bits 1-2 para o impacto
+não depender do estado do atacante. Detalhes, orçamento do atlas e teste:
+`docs/SUPER_SPARKS_2026-11-16.md`.

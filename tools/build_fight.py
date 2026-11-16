@@ -13762,13 +13762,25 @@ SPARK_SLOTS = ([192 + 2 * k for k in range(8)] +
 # anim label -> (SFF path, AIR path, action, downscale, frame indices).
 # Kyo-N.cns uses s6001 for regular HitDefs; this generic impact is shared by
 # every fighter.  Guard and character-specific Explods retain their sources.
+# The source adds three at s6001: +3 for a normal hit during MAX, and the
+# s6002/s6005 family for super hits.  SparkSuper/SparkMax use the single
+# burst frame of 6002/6004 (the sparse tail is left out to keep both pages
+# inside the 16-cell VRAM budget); a MAX super uses SparkSuper, the bigger
+# of the two.  The engine indexes this table by position, so keep the order:
+# 0 Hit, 1 Guard, 2 Super, 3 Max (SPARK_ANIM_* in fight.asm).
 SPARK_ANIMS = {
     "SparkHit":   ("assets/characters/Kyo-KOF98/Kyo.sff",
                    "assets/characters/Kyo-KOF98/Kyo.air",
-                   6001, 2, [2, 3, 5, 7]),
+                   6001, 2, [2, 3, 5]),
     "SparkGuard": ("assets/data/fightfx.sff",
                    "assets/data/fightfx.air",
                    40, 3, [3]),
+    "SparkSuper": ("assets/characters/Kyo-KOF98/Kyo.sff",
+                   "assets/characters/Kyo-KOF98/Kyo.air",
+                   6002, 2, [0]),
+    "SparkMax":   ("assets/characters/Kyo-KOF98/Kyo.sff",
+                   "assets/characters/Kyo-KOF98/Kyo.air",
+                   6004, 2, [0]),
 }
 
 # Explod effects compiled from the char SFFs: the intro's flying wood pieces.
