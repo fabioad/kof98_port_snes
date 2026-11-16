@@ -308,9 +308,17 @@ PROJECTILE_X_OFFSET = {
     # Terry's Power Geyser must erupt in front of his ground-punch sprite;
     # the engine default (14 px) hides the short pillar behind his body.
     "terry": {85: 48, 86: 48, 87: 48},
-    # Kasumi's palm burst sits ahead of her hands; the supers spawn the
-    # larger wave a little farther out.
-    "kasumi": {52: 40, 53: 40, 56: 40, 57: 40,
+    # Kasumi's Kasane Ate helper paints the wave at its own origin but moves
+    # the Clsn1 from x=60 to x=131 (source AIR 1020).  Centering the native
+    # shot at 40 px with the ordinary 24 px radius only covered 16..64, so
+    # the burst whiffed at the spacing where the move is actually used.
+    # Codes 8-15 select the 48 px burst radius (and the source's ~10-tick
+    # active window).  Use 88 px for the ground specials (40..136, covering
+    # the 60..131 source box) and 72 px for the anti-air rows, which need to
+    # catch a victim almost directly overhead (source box starts at x=20).
+    # Both codes are odd, which keeps SPK_GRD bit0 set: the tall-pillar
+    # height test that lets the anti-air version hit airborne victims.
+    "kasumi": {52: 88, 53: 88, 56: 72, 57: 72,
                 85: 56, 86: 56, 87: 56},
 }
 
