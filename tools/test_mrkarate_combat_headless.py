@@ -4,6 +4,8 @@
 Uses real generated motions/pad inputs, not forced attack states. The engine
 telemetry counts actual successful launches and contacts independently of
 HUD rendering. Output includes per-move paths for diagnosing input misses.
+A third pass enters each move from a 96 px hold so an air cast cannot hide
+behind the harness's natural descent.
 """
 import argparse
 import copy
@@ -35,18 +37,19 @@ def run(all_moves=False):
         enter_fight(c,sel,'mrkarate','iori')
         c.ram[0x403b]=255
         base=c.save()
-        for air in (False,True):
+        for air, altitude, pin in ((False, 36, False), (True, 36, False),
+                                   (True, 96, True)):
             for sid in cases:
                 if sid not in rules:continue
                 rule=copy.deepcopy(rules[sid])
                 if air:rule['row'][3]=4   # harness jump; ROM row stays ground-only
                 result=audit.attempt(c,base,info,rule,distance=26,hold=2,
-                    limit=700,power=3000,air_height=36)
-                result.update(sid=sid,air=air,hits=c.ram[HITS],
+                    limit=700,power=3000,air_height=altitude,hold_air=pin)
+                result.update(sid=sid,air=air,altitude=altitude,hits=c.ram[HITS],
                     budget_damage=c.word(DAMAGE),shots=c.word(SHOTS),
                     active=c.ram[ACTIVE],height=c.word(0x4002))
                 records.append(result)
-                print(json.dumps({k:result[k] for k in ('sid','air','entered','hits','budget_damage','shots','active','height','last_states','path') }),flush=True)
+                print(json.dumps({k:result[k] for k in ('sid','air','altitude','entered','hits','budget_damage','shots','active','height','last_states','path') }),flush=True)
         out=ROOT/'build/mrkarate_regression/combat.json'
         out.parent.mkdir(parents=True,exist_ok=True)
         out.write_text(json.dumps(records,indent=2)+'\n')
@@ -65,7 +68,14 @@ def run(all_moves=False):
         assert any(r['hits']==50 for r in records),'no real super contact'
         assert any(r['shots']==3 for r in records),'no three-shot volley'
         assert any(r['air'] and r['entered'] for r in records),'no airborne ground cast'
-        print('PASS Mr. Karate: 5/50 contacts, 9/48 HP budgets, three shots, aerial landing',flush=True)
+        high=[r for r in records if r['altitude']==96]
+        if not all_moves:
+            assert high and all(r['entered'] and r['hits'] for r in high), \
+                'air cast from a high jump missed'
+            assert any(r['altitude']==96 and r['shots']==3 for r in high), \
+                'high air projectile volley never launched'
+        print('PASS Mr. Karate: 5/50 contacts, 9/48 HP budgets, three shots, '
+              'aerial landing, high-air casts connect',flush=True)
     finally:c.close()
 
 if __name__=='__main__':

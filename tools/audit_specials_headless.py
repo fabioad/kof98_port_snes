@@ -101,7 +101,7 @@ def attempt(core, base, info, rule, distance=24, hold=2, keep_direction=True,
             limit=700, complement=False, opponent_attack=False,
             power=5000, opponent_air=False, air_height=72, combine_finish=False,
             input_game_ticks=False, opponent_at=3, opponent_button=1,
-            natural_jump=False):
+            natural_jump=False, hold_air=False):
     core.load(base)
     core.buttons = [set(), set()]
     core.ram[0x1090] = core.ram[0x1091] = 0
@@ -159,6 +159,12 @@ def attempt(core, base, info, rule, distance=24, hold=2, keep_direction=True,
             if not victim_path or victim_path[-1] != victim:
                 victim_path.append(victim)
             entered |= st in expected
+            if hold_air and airborne and not entered:
+                # Worst case: the player inputs the motion without losing
+                # altitude.  The engine must still bring the cast into a
+                # hittable band when the special starts.
+                core.put(P1 + 2, air_height << 8)
+                core.put(P1 + 6, 0)
             held_seen |= victim in (76, 100, 102)
             hp = core.word(P2 + 16)
             healed |= hp > last_hp
@@ -268,7 +274,8 @@ def attempt(core, base, info, rule, distance=24, hold=2, keep_direction=True,
                       "input_game_ticks": input_game_ticks,
                       "opponent_at": opponent_at,
                       "opponent_button": opponent_button,
-                      "natural_jump": natural_jump}}
+                      "natural_jump": natural_jump,
+                      "hold_air": hold_air}}
 
 
 # States that are entered but, by the source's own design, deal no damage in

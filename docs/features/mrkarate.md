@@ -8,6 +8,10 @@ Variante oculta de Robert, com os sprites mascarados de
   integra um trio e ainda não entrou na luta.
 - Fica fora dos sorteios de adversários, inclusive do roster de oponentes
   do Survivor e das demonstrações. Nas lutas CPU vs CPU, qualquer seleção residual é substituída por Robert.
+- Especiais terrestres iniciados no ar executam a 16 px do chão. A altura do
+  pulo não afasta mais os hitboxes nem o ponto de saída dos projéteis, então
+  projéteis e golpes de contato acertam adversários em pé ou agachados mesmo
+  quando o comando é feito no ápice de um pulo alto.
 - Apenas Single Play e Team Play recebem a rota secreta de boss. Chegue
   ao confronto final sem perder rounds, ou segure L+R+A durante
   a passagem para esse confronto. Continues não apagam derrotas anteriores.

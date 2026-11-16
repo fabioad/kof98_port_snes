@@ -15,6 +15,7 @@
 .DEFINE MKB_SERIAL  $F1F2
 .DEFINE MKA_FLAG    $F200                ; fields indexed by fofs (0/$40)
 .DEFINE MKA_HEIGHT  $F202                ; word, airborne cast height
+.DEFINE MKA_HOLD    $1000                ; 16 px: highest safe air-cast altitude
 .DEFINE MKQ_LEFT    $F204
 .DEFINE MKQ_CD      $F205
 .DEFINE MKQ_SID     $F206                ; native launch state
@@ -101,8 +102,18 @@ MKK_none:
     rts
 
 ; Called before EnterState commits A16. A ground cast made in the air
-; holds its launch height, then returns through the ordinary jump/landing
+; holds a low altitude, then returns through the ordinary jump/landing
 ; state machine. Knockback and KO always cancel the hold.
+;
+; The source animations are ground clips, so every hitbox and projectile
+; leaves at the fighter's feet altitude.  Holding the actual jump height
+; (up to 125 px on a D,U jump) put the attacks over a standing victim and
+; made the air Ryuu Geki Ken fly above everybody: the projectile vertical
+; window is only +/-36 px around the torso, and the melee Clsn1 leaves the
+; fighter's axis.  Clamp the latched altitude to 16 px, the highest value
+; that still connects against both standing and crouching victims.  The
+; cast keeps hovering above the floor (still an air move) and lands
+; normally when the animation ends.
 MkCombatEnterFar:
     rep #$30
     .ACCU 16
@@ -131,6 +142,11 @@ MkCombatEnterFar:
     rep #$20
     .ACCU 16
     lda FP+F_Y,x
+    cmp #MKA_HOLD.w
+    bcc MKEN_latch                      ; already low: keep the real height
+    lda #MKA_HOLD.w                     ; high cast: operate at a hittable
+    sta FP+F_Y,x                        ;   altitude instead of the apex
+MKEN_latch:
     sta.w MKA_HEIGHT,x
     stz FP+F_VY,x
     bra MKEN_restore
