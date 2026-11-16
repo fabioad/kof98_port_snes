@@ -7,8 +7,8 @@ hitstun, so the combo counter reaches 2.  This covers the shoto-style QCF+P
 fighters (Ryu, Ken, Sakura, Ryo, Robert, Takuma and Yuri) with both the weak
 and the strong projectile button.
 
-The shot must also leave on the third frame and sit at the caster's torso
-height, not at the floor.
+The shot must also leave on the extended-arm release frame and sit at the
+caster's torso height, not at the floor.
 
 Run after a PVSnesLib build:
 
@@ -27,6 +27,7 @@ from test_counter_grab_headless import boot_select, enter_fight  # noqa: E402
 
 CORE = "/usr/lib/x86_64-linux-gnu/libretro/snes9x_libretro.so"
 F_STATE, F_HITDONE = 0x4008, 0x401A
+F_FRAME = 0x400A
 F_X, F_HP = 0x4000, 0x4010
 FP2 = 0x40
 COMBO = 0x4FC0
@@ -156,6 +157,10 @@ def check_release_timing(core, select_state):
     if shot_y != GROUND_Y - 40:
         raise AssertionError(
             f"Hadouken y={shot_y}, wanted {GROUND_Y - 40}")
+    if core.ram[F_FRAME] != 3:
+        raise AssertionError(
+            f"Hadouken left on body frame {core.ram[F_FRAME]}, "
+            "wanted the compacted extended-arm frame 3")
     # qcf_p itself spends eleven frames on the motion/button
     if shot > 18:
         raise AssertionError(

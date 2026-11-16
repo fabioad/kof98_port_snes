@@ -3752,6 +3752,15 @@ if "robert" in CHARS:
         (110, 3010, 3010),     # Haoh Shikou Ken strong
         (111, 3020, 3020),     # MAX Haoh Shikou Ken
     ])
+    # The Haoh rows reuse Yuri's compact Ko'ou Ken clip (the source 2070/2100
+    # blast needs a 96x155 cel, past the 16-cell effect page/OAM budget).
+    # They are single-contact shots because they live on sids 109-111, so
+    # the per-hit damage carries the whole super: 22%/25%/30% of the bar.
+    POST_CAL_PROJS.setdefault("robert", {}).update({
+        109: (0x0400, 44, 0x0A),
+        110: (0x0400, 50, 0x0A),
+        111: (0x1100, 60, 0x0A),
+    })
     _btw = POST_CAL_TWEAKS.setdefault("robert", {})
     _btw.setdefault("slice_damage", {}).update({107: 4, 108: 4})
     _btw["slice_no_fall"] = sorted(
@@ -3814,23 +3823,30 @@ if "takuma" in CHARS:
         (108, 1600, 1600),     # Koho (DP+K)
         (109, 1050, 1050),     # Ko'ou Ken ura weak
         (110, 1060, 1060),     # Ko'ou Ken ura strong
-        (111, 1500, 1500),     # Haoh Shikou Ken weak (QCFx2+P)
+        # The Haoh chain is 1500 (charge) -> 1501 -> 1502 (palm thrust +
+        # helper 1505).  The port has no room for the three slices, so play
+        # the thrust clip directly: the shot leaves on element 3 instead of
+        # firing under the super flash at frame 0 of 1500.
+        (111, 1502, 1502),     # Haoh Shikou Ken weak (QCFx2+P)
         (113, 3100, 3105),     # Shin Kishin Geki (reuse the flurry clip)
         (114, 3300, 3300),     # Kyokugen Koho weak/strong/MAX
     ])
     # The Haoh/Ko'ou ura shots live in helpers the native engine does not
     # run; spawn them from the root state's release element instead.
     PROJECTILE_RELEASE.setdefault("takuma", {}).update(
-        {109: 6, 110: 6, 111: 0})
+        {109: 6, 110: 6, 111: 2})
     POST_CAL_PROJS.setdefault("takuma", {}).update({
         109: (0x0600, 14, 0x0A),
         110: (0x0600, 18, 0x0A),
-        111: (0x0500, 20, 0x0A),
+        111: (0x0500, 56, 0x0A),
     })
     _tak = POST_CAL_TWEAKS.setdefault("takuma", {})
+    # 1502's source header has no meter cost (the -1000 lives in the shared
+    # 1500 charge); charge a stock and light the super flash on the slot.
+    _tak.setdefault("pow_override", {}).update({111: -1000})
     _tak.setdefault("slice_damage", {}).update({
         107: 13, 108: 13, 109: 14, 110: 18,
-        111: 20, 113: 32, 114: 22})
+        111: 56, 113: 32, 114: 22})
     # 3100's source damage lives in the helper grab state and its own clip
     # has no attack boxes; reuse the flurry clip and give the body a real
     # super-sized hit with a normal knockdown (3106 is not ported).
@@ -3838,10 +3854,11 @@ if "takuma" in CHARS:
         113: {"active": 3, "damage": 32, "gdamage": 2, "p2state": 0xFF,
               "fall": 1, "gvx": 0, "gvy": 0, "throw": 0},
     })
-    # QCFx2+P is also the existing Ryuuko shortcut (sid 88); keep Haoh on
-    # the same-length tie.
+    # QCFx2+P is also the existing Ryuuko shortcut (sid 88).  Haoh must win
+    # the shared motion: with Ryuuko first the super never entered 1502 and
+    # the projectile never appeared.  Ryuuko keeps its original 632146+P.
     _tak.setdefault("cmd_priority", []).extend(
-        ["QQCF_X", "QQCF_Y", "HAOH_W", "HAOH_S"])
+        ["HAOH_W", "HAOH_S", "QQCF_X", "QQCF_Y"])
     _tak.setdefault("cmd_extra", []).extend([
         {"name": "MOUKO_W", "label": "MOUKO BURAI GAN",
          "state": 1400, "posture": 3, "time": 22,
@@ -3862,10 +3879,10 @@ if "takuma" in CHARS:
          "state": 1060, "posture": 3, "time": 22,
          "elems": [(2, 0), (6, 0), (4, 0), (0, 12)]},
         {"name": "HAOH_W", "label": "HAOH SHIKOU KEN",
-         "state": 1500, "posture": 3, "time": 30,
+         "state": 1502, "posture": 3, "time": 30,
          "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 1)]},
         {"name": "HAOH_S", "label": "HAOH SHIKOU KEN S",
-         "state": 1500, "posture": 3, "time": 30,
+         "state": 1502, "posture": 3, "time": 30,
          "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 2)]},
         {"name": "SHIN_W", "label": "SHIN KISHIN GEKI",
          "state": 3100, "posture": 3, "time": 30,
@@ -4081,9 +4098,10 @@ if "yuri" in CHARS:
         (108, 560, 560),       # MAX Ryuuko Ranbu
         (109, 561, 561),       # ... rush
     ])
-    PROJECTILE_RELEASE.setdefault("yuri", {}).update({107: 0})
+    # The MAX Haoh now releases on the palm pose (frame 7) like the weak and
+    # strong variants, instead of firing on frame 0 under the super flash.
     POST_CAL_PROJS.setdefault("yuri", {}).update({
-        107: (0x0500, 20, 0x0A),
+        107: (0x0500, 60, 0x0A),
     })
     _yuri = POST_CAL_TWEAKS.setdefault("yuri", {})
     _yuri.setdefault("slice_damage", {}).update({
@@ -9628,6 +9646,112 @@ def projectile_rules(statedefs, headers, move_ids, damage_scale):
     return out
 
 
+# Fireball launches whose imported wind-up is too slow for the SNES.  The
+# sids are the runtime projectile slots; PROJECTILE_RELEASE pins the frame
+# where the arms reach the extended throw pose.  The builder drops redundant
+# in-between poses and runs the survivors at the upload minimum, so the shot
+# leaves at the old third-frame timing (or one/two ticks later) while the
+# visible sprite really has the arm extended.  Only the listed normal
+# projectile specials are touched; supers and other characters keep their
+# source timing.
+PROJECTILE_STARTUP_SPEEDUP = {
+    "ryu": frozenset((48, 49, 52, 53)),      # Hadouken / Shakunetsu
+    "ken": frozenset((54, 55)),              # Hadouken
+    "ryo": frozenset((60, 61)),              # Ko'ou Ken weak/strong
+    "robert": frozenset((58, 59)),           # Ryuu Geki Ken
+    "takuma": frozenset((48, 49)),           # Ko'ou Ken weak/strong
+    "yuri": frozenset((48, 49)),             # Ko'ou Ken weak/strong
+}
+# Keep at most this many poses before the extended-arm release.  The upload
+# budget already forces 2 ticks on these large cels, so shortening the tick
+# count alone cannot compensate for a source wind-up that takes 10-12 ticks;
+# dropping redundant in-between poses is what actually restores the old shot
+# timing while every remaining pose still gets its full upload window.
+PROJECTILE_STARTUP_KEEP = 3
+
+
+def projectile_startup_keyframes(release, keep=PROJECTILE_STARTUP_KEEP):
+    """Source frame indices to keep before ``release`` (0-based)."""
+    release = max(0, int(release))
+    if release <= keep:
+        return list(range(release))
+    return [(i * (release - 1) + (keep - 1) // 2) // (keep - 1)
+            for i in range(keep)]
+
+
+def compact_projectile_startup(frames, release, keep=PROJECTILE_STARTUP_KEEP):
+    """Drop redundant wind-up poses without touching the release or tail.
+
+    Returns ``(compacted_frames, frame_map, drop)``.  ``frame_map`` maps each
+    surviving old frame index to its new index and ``drop`` is the number of
+    removed prefix frames (subtract it from every index at/after the release).
+    """
+    if not frames:
+        return frames, {}, 0
+    release = max(0, min(int(release), len(frames) - 1))
+    key = projectile_startup_keyframes(release, keep)
+    if len(key) == release:
+        return frames, {}, 0
+    frame_map = {old: new for new, old in enumerate(key)}
+    drop = release - len(key)
+    compacted = [frames[i] for i in key] + frames[release:]
+    return compacted, frame_map, drop
+
+
+def speed_up_projectile_startup(frames, release):
+    """Play the launch wind-up at one tick per pose.
+
+    ``release`` is the 0-based frame where the shot leaves the hands.  Only
+    the poses before it are compressed; the release pose and the recovery tail
+    keep their timing.  A 255 hold or an attack box in the prefix is gameplay,
+    not wind-up, so those clips are returned unchanged.
+    """
+    if not frames:
+        return frames
+    release = max(0, min(int(release), len(frames) - 1))
+    prefix = frames[:release]
+    if not prefix or any(f[4] == 255 or f[6] for f in prefix):
+        return frames
+    faster = [(*f[:4], 1, *f[5:]) if f[4] > 1 else f for f in prefix]
+    if faster == prefix:
+        return frames
+    return faster + frames[release:]
+
+
+def remap_startup_timeline(state, frame_map, old_release, new_release,
+                           cns_acts, cns_posadds):
+    """Move ActTab/PosTab rows from source frames to the compacted timeline."""
+    drop = old_release - new_release
+
+    def mapped(frame):
+        if frame < old_release:
+            if frame in frame_map:
+                return frame_map[frame]
+            later = [frame_map[f] for f in sorted(frame_map) if f > frame]
+            return later[0] if later else new_release
+        return frame - drop
+
+    if state in cns_acts:
+        rows = []
+        for frame, op, arg, cond in cns_acts[state]:
+            rows.append((mapped(frame) if frame < 0x80 else frame,
+                         op, arg, cond))
+        cns_acts[state] = sorted(set(rows))
+
+    if state in cns_posadds:
+        rows = []
+        pending = 0
+        for frame, dx in cns_posadds[state]:
+            if frame < old_release and frame not in frame_map:
+                pending += dx
+                continue
+            rows.append((mapped(frame), dx + pending))
+            pending = 0
+        if pending:
+            rows.append((new_release, pending))
+        cns_posadds[state] = rows
+
+
 def cap_projectile_recovery(frames, release, cap):
     """Shorten the follow-through tail of a projectile launch animation.
 
@@ -11169,15 +11293,23 @@ def build_char(name, cfg, global_pal=None):
         pose_sprites[_pose] = {(g, n) for g, n, *_rest in _frames}
 
     # Imported projectile specials keep the source's long follow-through.
-    # Rescale only the tail after the release frame (ProjTrySpawn fires on
-    # element 3) so the fighter can act again without changing startup or
-    # the shot's flight.  Skip airborne clips (they end on landing), the
+    # Rescale only the tail after the release frame (PROJECTILE_RELEASE for
+    # the audited shots, otherwise the engine default third frame) so the
+    # fighter can act again without changing startup or the shot's flight.
+    # Skip airborne clips (they end on landing), the
     # landing-placeholder anim 47 and any animation shared with a normal
     # state -- shortening those would affect movement or recovery poses.
     recovery = PROJECTILE_RECOVERY.get(name, PROJECTILE_RECOVERY_TICKS)
     anim_sharing = {}
     for sid, anum in anims.items():
         anim_sharing.setdefault(anum, []).append(sid)
+    # ProjTab release indices after the wind-up compaction, keyed by sid, and
+    # the per-state frame remap used by the ActTab/PosTab emitters.
+    release_override = {}
+    startup_remap = {}
+    state_sids = {}
+    for s, st in cfg["moves"].items():
+        state_sids.setdefault(st, set()).add(s)
     seen_anims = set()
     for sid in projs:
         anum = anims.get(sid)
@@ -11196,11 +11328,41 @@ def build_char(name, cfg, global_pal=None):
         cap = recovery.get(sid, PROJECTILE_RECOVERY_TICKS) \
             if isinstance(recovery, dict) else recovery
         frames, loopstart = anim_tables[sids[0]]
-        release = min(2, len(frames) - 1)
+        # Shoto-style fireballs: run the wind-up at one tick per pose and
+        # release on the extended-arm frame the source uses.  sids sharing
+        # one clip must all be in the speed-up set and agree on the frame.
+        arm_sids = PROJECTILE_STARTUP_SPEEDUP.get(name, ())
+        arm_releases = {PROJECTILE_RELEASE.get(name, {}).get(s)
+                        for s in sids}
+        if (arm_sids and all(s in arm_sids for s in sids)
+                and len(arm_releases) == 1 and None not in arm_releases):
+            source_release = min(arm_releases.pop(), len(frames) - 1)
+            frames, frame_map, _drop = compact_projectile_startup(
+                frames, source_release)
+            release = len(frame_map) if frame_map else source_release
+            release = min(release, len(frames) - 1)
+            frames = speed_up_projectile_startup(frames, release)
+            for s in sids:
+                release_override[s] = release
+                state = cfg["moves"].get(s)
+                if state is not None and all(
+                        other in arm_sids
+                        for other in state_sids.get(state, (s,))):
+                    startup_remap.setdefault(
+                        state, (frame_map, source_release, release))
+        else:
+            release = min(2, len(frames) - 1)
         capped = cap_projectile_recovery(frames, release, cap)
         if capped is not frames:
             for s in sids:
                 anim_tables[s] = (capped, loopstart)
+        elif frames is not anim_tables[sids[0]][0]:
+            for s in sids:
+                anim_tables[s] = (frames, loopstart)
+
+    for state, (frame_map, old_release, new_release) in startup_remap.items():
+        remap_startup_timeline(state, frame_map, old_release, new_release,
+                               cns_acts, cns_posadds)
     blank = None
 
     def sprite_or_blank(key):
@@ -12778,10 +12940,21 @@ def build_char(name, cfg, global_pal=None):
             present |= 0x02             # per-shot upper-torso spawn height
         if sid in PROJECTILE_ALT_SIDS.get(name, ()):
             present |= 0x04             # select the alternate ProjFx clip
-        release = PROJECTILE_RELEASE.get(name, {}).get(sid)
+        # Compaction changes the compiled frame index, so the ProjTab must
+        # carry the new index instead of the source AnimElem.
+        release = release_override.get(sid)
+        if release is None:
+            release = PROJECTILE_RELEASE.get(name, {}).get(sid)
         if release is None:
             release = PROJECTILE_ALT_RELEASE.get(name, {}).get(sid)
         if release is not None:
+            # A configured release must exist in the compiled clip; a stale
+            # AnimElem from the source (or a state remap) would otherwise
+            # make ProjTrySpawn wait forever and the super would look like
+            # it never fired.  Hold the release on the last available pose.
+            _rel_frames = anim_tables.get(sid, ((), 0))[0]
+            if _rel_frames and release >= len(_rel_frames):
+                release = len(_rel_frames) - 1
             # Bits 3-7 carry a 1-based release frame (0 = engine default).
             present |= ((release + 1) & 0x1F) << 3
         # The guard byte's low nibble carries a per-shot forward spawn

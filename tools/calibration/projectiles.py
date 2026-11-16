@@ -283,7 +283,13 @@ PROJECTILE_TORSO_SIDS = {
 # rescales that tail; element indices and hit windows are preserved.
 # A character may override the default with an int or a {sid: ticks} dict.
 PROJECTILE_RECOVERY_TICKS = 24
-PROJECTILE_RECOVERY = {}
+PROJECTILE_RECOVERY = {
+    # Takuma/Yuri compact their Ko'ou Ken wind-up and release two ticks
+    # later than before; trim the same amount from the follow-through so the
+    # whole special keeps its original duration.
+    "takuma": {48: 20, 49: 20},
+    "yuri": {48: 22, 49: 22},
+}
 
 # Per-shot forward spawn offset in pixels (multiples of 8, 0-120).  The low
 # nibble of the ProjTab guard byte carries the code (px / 8); ProjSpawn uses
@@ -320,6 +326,90 @@ PROJECTILE_RELEASE = {
     # last pose, so launch on frame 4.
     "kasumi": {52: 6, 53: 6, 56: 7, 57: 7, 85: 4, 86: 4, 87: 4},
 }
+
+# Source-aligned release frames (audit 2026-11-15).
+#
+# The engine used to spawn every unlisted shot on the launch clip's third
+# frame.  Imported KOF98 animations usually reach the actual throw much
+# later, so the fireball appeared while the fighter was still winding up.
+# These rows use the root animation frame where the source CNS starts the
+# projectile (direct controller, projectile helper, or a travelling HitDef
+# helper the port stores in the shared shot pool).  Helper-internal delays
+# are not added: the port does not render helper bodies, so the visible
+# launch is the root helper/controller.
+#
+# Regenerate the evidence with:
+#     python3 tools/audit_projectile_release.py
+#
+# Kept separate from the older per-character rows above so the origin of
+# each value (manual fix vs. source audit) stays clear.
+_PROJECTILE_RELEASE_AUDIT = {
+    "iori": {48: 3, 49: 3},
+    "kyo": {48: 4, 49: 4},
+    "kyonests": {48: 4, 49: 4},
+    "kyoash": {48: 4, 49: 4},
+    "saisyu": {48: 4, 49: 4},
+    "heidern": {48: 5, 49: 5},
+    "takuma": {48: 5, 49: 5},
+    "daimon": {58: 4},
+    # Power Wave / Power Geyser helpers leave the hands on element 7.
+    "terry": {58: 6, 59: 6, 60: 6},
+    # Hishou Ken travelling versions (QCF+c and the air follow-up).
+    "andy": {58: 3, 63: 3},
+    # Hurricane Upper, Slash Kick and Screw Upper.
+    "joe": {60: 6, 62: 6, 65: 6, 107: 5},
+    # Ko'ou Ken (ground, EX, air and Haoh Shikou Ken).
+    "ryo": {60: 3, 61: 4, 64: 6, 85: 5, 86: 5, 87: 6, 107: 5,
+            109: 3, 110: 3},
+    # Ryuu Geki Ken and the three Haoh Shikou Ken variants.
+    "robert": {58: 5, 59: 5, 60: 5, 109: 7, 110: 7, 111: 7},
+    "chin": {85: 1, 86: 1, 87: 1, 111: 3},
+    "choi": {88: 7},
+    # Yamazaki's travelling super shot is drawn by helper 3141.
+    "yamazaki": {85: 11},
+    # Reppuken / Shippuu Ken helpers and the Raging Storm pillar.
+    "geese": {58: 3, 60: 4, 62: 4, 65: 4, 85: 8, 86: 8},
+    # Kaiser Wave helpers.
+    "krauser": {54: 3, 55: 3, 56: 3, 57: 3},
+    # Ground Blaster helper.
+    "mrbig": {54: 6, 55: 6},
+    # Eiji's super shot leaves the helper on element 9.
+    "eiji": {85: 8, 86: 8, 87: 8},
+    # Hadouken and Shinkuu Hadouken helpers (all start on element 5).
+    "ryu": {48: 4, 49: 4, 52: 4, 53: 4, 85: 4, 86: 4, 88: 4},
+    "ken": {54: 4, 55: 4},
+    # Sakura's Hadouken helper.
+    "sakura": {52: 4, 53: 4},
+    # Yuri's Ko'ou Ken helpers.  The air shot (450/451) already launches on
+    # frame 2; the ground and super versions wait for the palm thrust.
+    # The MAX Haoh (sid 107) used to be pinned to frame 0, which fired the
+    # shot during the super freeze/dim, before the palm pose.  It follows
+    # the other Haoh variants (source helper 555 at AnimElem 8).
+    "yuri": {48: 6, 49: 6, 50: 8, 51: 8, 85: 7, 87: 7, 107: 7},
+    # Psycho Ball (direct Projectile on AnimElem 6).
+    "athena": {48: 5, 55: 5},
+    # Raikouken helpers and their super variants.
+    "benimaru": {48: 5, 49: 4, 85: 6, 86: 5, 87: 5},
+    # Kensou's Psycho Ball helpers.
+    "kensou": {56: 3, 57: 3},
+    # Venom Strike / Double Strike (direct Projectile on AnimElem 4).
+    "king": {48: 3, 49: 3},
+    # Shermie's thrown shot: direct Projectile on AnimElem 10/15.
+    "shermie": {58: 9, 59: 14},
+    # D. Magnum's beam is drawn from element 11; the native shot follows it.
+    "heavyd": {87: 10, 88: 10},
+    # Rugal's 1550 helper creates the shot on entry.
+    "rugal": {61: 0},
+    # Omega Rugal's fireball helpers leave on element 4; the 2899 follow-up
+    # starts its helper on entry.
+    "omegarugal": {48: 3, 49: 3, 57: 0},
+    # Billy's super shot controller fires on element 12; 6000 on element 4.
+    "billy": {64: 11, 66: 11, 107: 11, 110: 3},
+    # Yuki's Kusanagi helper (3355) starts on AnimElem 6.
+    "yuki": {89: 5},
+}
+for _char, _rows in _PROJECTILE_RELEASE_AUDIT.items():
+    PROJECTILE_RELEASE.setdefault(_char, {}).update(_rows)
 
 # Character-level projectile calibration, in 8.8 px/tick and HUD damage.
 # The source CNS is used for every other move; these rows override generic

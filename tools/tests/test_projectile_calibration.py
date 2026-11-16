@@ -111,7 +111,7 @@ class ProjectileCalibrationTests(unittest.TestCase):
         self.assertEqual(projectiles.PROJECTILE_X_OFFSET["andy"],
                          {52: 80, 53: 80})
         self.assertEqual(projectiles.PROJECTILE_RELEASE["andy"],
-                         {52: 4, 53: 5})
+                         {52: 4, 53: 5, 58: 3, 63: 3})
         self.assertEqual(projectiles.PROJECTILE_CALIBRATION["andy"],
                          {52: (0x0000, 26), 53: (0x0000, 28),
                           58: (0x0400, 14)})
@@ -121,7 +121,7 @@ class ProjectileCalibrationTests(unittest.TestCase):
         spr = (Path(build_fight.ROOT) / "build/gen_fight/andy_spr.inc").read_text()
         self.assertIn("    .db $00,$00,26,5,$AA,41\n", spr)  # sid 52
         self.assertIn("    .db $00,$00,28,5,$AA,49\n", spr)  # sid 53
-        self.assertIn("    .db $00,$04,14,5,$A0,1\n", spr)   # sid 58
+        self.assertIn("    .db $00,$04,14,5,$A0,33\n", spr)  # sid 58, release 3
 
     def test_yuri_kouken_is_enlarged_to_kyo_size(self):
         # The old 48x80 Ko'ou Ken looked half Kyo's size.  Yuri now uses the
@@ -237,6 +237,82 @@ class ProjectileCalibrationTests(unittest.TestCase):
         frames[-1] = (0, 0, 0, 0, 40, "", [[1, 2, 3, 4]], [])
         self.assertIs(build_fight.cap_projectile_recovery(frames, 1, 12),
                       frames)
+
+    def test_shoto_fireball_windup_reaches_the_extended_arm_fast(self):
+        # Ryu/Ken/Ryo/Robert/Takuma/Yuri: the fireball body animation drops
+        # redundant wind-up poses and pins the source release frame, so the
+        # shot leaves on the extended-arm pose without adding startup time.
+        expected = {
+            "ryu": {48: 4, 49: 4, 52: 4, 53: 4},
+            "ken": {54: 4, 55: 4},
+            "ryo": {60: 3, 61: 4},
+            "robert": {58: 5, 59: 5},
+            "takuma": {48: 5, 49: 5},
+            "yuri": {48: 6, 49: 6},
+        }
+        self.assertEqual(
+            {n: set(s) for n, s in
+             build_fight.PROJECTILE_STARTUP_SPEEDUP.items()},
+            {n: set(s) for n, s in expected.items()})
+        for name, rows in expected.items():
+            for sid, release in rows.items():
+                self.assertEqual(
+                    projectiles.PROJECTILE_RELEASE[name][sid], release)
+        # The two-ticks-later release is paid back by a shorter recovery so
+        # the special keeps its total duration.
+        self.assertEqual(projectiles.PROJECTILE_RECOVERY["takuma"],
+                         {48: 20, 49: 20})
+        self.assertEqual(projectiles.PROJECTILE_RECOVERY["yuri"],
+                         {48: 22, 49: 22})
+
+    def test_projectile_startup_speedup_keeps_release_pose_and_tail(self):
+        ticks = [3, 2, 4, 3, 2, 4, 18, 4]
+        frames = [(i, 0, 0, 0, t, "", [], [])
+                  for i, t in enumerate(ticks)]
+        fast = build_fight.speed_up_projectile_startup(frames, 4)
+        self.assertEqual([f[4] for f in fast], [1, 1, 1, 1, 2, 4, 18, 4])
+        self.assertEqual(fast[4:], frames[4:])
+        self.assertIs(
+            build_fight.speed_up_projectile_startup(frames, 0), frames)
+
+        held = [(0, 0, 0, 0, 255, "", [], [])] + frames[1:]
+        self.assertIs(
+            build_fight.speed_up_projectile_startup(held, 4), held)
+        hitbox = list(frames)
+        hitbox[1] = (1, 0, 0, 0, 2, "", [[1, 2, 3, 4]], [])
+        self.assertIs(
+            build_fight.speed_up_projectile_startup(hitbox, 4), hitbox)
+
+    def test_projectile_startup_compaction_keeps_release_and_tail(self):
+        # The upload budget forces 2 ticks on the large fireball cels, so the
+        # wind-up must lose redundant in-between poses to stay fast.  The
+        # extended-arm release pose and every recovery frame stay untouched.
+        ticks = [2, 2, 2, 2, 2, 2, 4, 3, 9, 4]
+        frames = [(i, 0, 0, 0, t, "", [], [])
+                  for i, t in enumerate(ticks)]
+        self.assertEqual(build_fight.projectile_startup_keyframes(4),
+                         [0, 2, 3])
+        self.assertEqual(build_fight.projectile_startup_keyframes(6),
+                         [0, 3, 5])
+        compacted, frame_map, drop = \
+            build_fight.compact_projectile_startup(frames, 6)
+        self.assertEqual(drop, 3)
+        self.assertEqual(frame_map, {0: 0, 3: 1, 5: 2})
+        self.assertEqual(len(compacted), len(frames) - 3)
+        self.assertEqual(compacted[3], frames[6])      # release pose
+        self.assertEqual(compacted[4:], frames[7:])    # recovery tail
+
+    def test_projectile_startup_remaps_act_and_pos_timelines(self):
+        # A dropped wind-up PosAdd must not lose movement, and frame-triggered
+        # actions move with their pose to the compacted index.
+        acts = {1000: [(0, 7, 51, 0), (4, 7, 52, 0), (128, 7, 53, 0)]}
+        pos = {1000: [(1, 4), (2, 12), (3, 4), (6, 8)]}
+        build_fight.remap_startup_timeline(
+            1000, {0: 0, 3: 1, 5: 2}, 6, 3, acts, pos)
+        self.assertEqual(acts[1000],
+                         [(0, 7, 51, 0), (2, 7, 52, 0), (128, 7, 53, 0)])
+        # old 1/2 are dropped and merged into old 3; old 3 keeps its own dx.
+        self.assertEqual(pos[1000], [(1, 20), (3, 8)])
 
 
 if __name__ == "__main__":

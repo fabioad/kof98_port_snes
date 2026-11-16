@@ -74,9 +74,11 @@ def effect_cells(core):
 
 
 def check_shot(core, button, sid, motion):
-    if sid == 52:
-        # The Hishou Ken is an 80 px palm burst; put the dummy across the
-        # screen so the six animation frames are visible before it expires.
+    if sid in (52, 59):
+        # The Hishou Ken is an 80 px palm burst and Robert's strong Ryuu
+        # Geki Ken (vx 6.0) reaches the close dummy before the six-frame
+        # effect finishes; put the dummy across the screen so the whole
+        # clip is visible before the shot connects.
         core.put(0x4000, 60 << 8)
         core.put(0x4040, 200 << 8)
         core.step(2)
