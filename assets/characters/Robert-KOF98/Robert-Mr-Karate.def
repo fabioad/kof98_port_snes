@@ -1,0 +1,39 @@
+[Info]
+Name = "Mr. Karate"
+DisplayName = "Mr. Karate"
+Author       = "ikaruga"
+VersionDate  = 05,27,2018
+MugenVersion = 1.0
+Pal.Defaults = 1
+localcoord   = 320
+
+[Files]
+Cmd      = Robert-Mr-Karate-Robert.cmd
+Cns      = Robert-Mr-Karate-Constants.cns
+St       = Robert-Mr-Karate-Robert.cns
+St1      = Robert-Mr-Karate-Robert-N.cns
+St2      = Robert-Mr-Karate-Robert-S.cns
+St3      = Robert-Mr-Karate-Robert-H.cns
+St4      = Robert-Mr-Karate-Robert-2-3.cns
+St5      = Robert-Mr-Karate-Helper.cns
+St6      = Robert-Mr-Karate-Config.cns
+St7      = Robert-Mr-Karate-Member.cns
+St8      = Robert-Mr-Karate-MrKarate.cns
+StCommon = Robert-Mr-Karate-common_kof.cns
+Sprite   = Robert-Mr-Karate.sff
+Anim     = Robert-Mr-Karate-Robert.air
+Sound    = Robert-Mr-Karate.snd
+;---カラーパレット---
+
+Pal1 = act/MrKarate.act
+Pal2  = act/MrKarate_act04.act
+Pal3  = act/MrKarate_act06.act
+Pal4  = act/MrKarate_act01.act
+Pal5  = act/MrKarate_act03.act
+Pal6  = act/MrKarate_act05.act
+Pal7  = act/MrKarate_act10.act
+Pal8  = act/MrKarate_act12.act
+Pal9  = act/MrKarate_act08.act
+Pal10 = act/MrKarate_act09.act
+Pal11 = act/MrKarate_act11.act
+Pal12 = act/MrKarate_act07.act

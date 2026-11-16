@@ -104,6 +104,7 @@ ROSTER = [
     # Kyo's cell for SelChrCell so returning from a fight re-seeds there.
     (_nsff("kyonests"),               3, True),
     (_nsff("kyoash"),                 3, True),
+    ("../robert_mrkarate/MrKarate-KOF98/MrKarate.sff", 10, True),
 ]
 
 if os.environ.get("KOF_BASE4"):        # 8 MiB fallback: original roster

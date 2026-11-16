@@ -1131,8 +1131,11 @@ FightPresentDispatch:
 +   sep #$20
     .ACCU 8
     lda gamestate
+    cmp #GS_MK_SCENE.b
+    beq FPD_static
     cmp #GS_INTRO_MSU.b
     bne +
+FPD_static:
     ; MsuVideoVblank runs from IntroNmiHandler at the top of the NMI, so the
     ; VRAM DMA gets the whole vblank window.  Only the frame counter is left.
     sep #$20

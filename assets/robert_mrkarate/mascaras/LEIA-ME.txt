@@ -1,0 +1,5 @@
+Máscaras vermelhas de tengu extraídas dos quadros do GIF fornecido.
+PNG com transparência, sem corpo, cabelo, barba ou efeitos.
+png/: resolução original.
+ampliadas/: escala 8x sem suavização.
+Os números dos quadros começam em zero.

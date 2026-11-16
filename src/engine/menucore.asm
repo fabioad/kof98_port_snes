@@ -113,6 +113,16 @@
 .DEFINE OR_TILE     $F1A6                 ; word, portrait tile
 .DEFINE OR_ROWPOS   $F1A8                 ; word, card HUD offset
 
+.DEFINE MK_LOST     $F1C0                 ; any lost campaign round
+.DEFINE MK_BOSS     $F1C1                 ; secret boss route active
+.DEFINE MK_SEEN     $F1C2                 ; cinematic already played
+.DEFINE MK_PHASE    $F1C3                 ; 1 still, 2 fade, 3 walk-in
+.DEFINE MK_TICK     $F1C4                 ; word
+.DEFINE MK_VOLUME   $F1C6
+.DEFINE MK_MUSIC    $F1C7                 ; crystal with combat SFX
+.DEFINE MK_END      $F1C8                 ; ending1 -> survivor ending
+.DEFINE MK_SIDE     $F1C9                 ; byte offset 0/$40
+
 ; ---- SURVIVOR route -------------------------------------------------------
 ; The shuffled opponent list holds one byte per visible character, so it
 ; lives outside the DP window.  In the PVSnesLib build DBR is $7E and $8000
@@ -2581,6 +2591,7 @@ ET_adv:
     jmp TitleEnter                        ; -> gs 0, "PRESS START"
 ++  cmp #5
     bne +
+    jsl MkEndRouteFar
     lda #SONG_SUNSET.b                    ; ending2 theme
     jsr MusPlaySong
     sep #$20
@@ -3266,31 +3277,6 @@ LaunchVictim:
 ; fofs = victim; acc16 on entry.  Horizontal flight step.  The 16 px margin
 ; doubles as the corner treatment: a body that reaches it bounces back toward
 ; the playfield instead of sticking to the screen edge or lying off-screen.
-ThrowFlightMove:
-    rep #$20
-    .ACCU 16
-    ldx fofs
-    lda FP+F_VX,x
-    jsr AddXClamped
-    ldx fofs
-    lda FP+F_X,x
-    cmp #(STAGE_L+THROWCORNER)<<8.w
-    bcs +
-    lda #(STAGE_L+THROWCORNER)<<8.w
-    sta FP+F_X,x
-    bra TFM_bounce
-+   cmp #(STAGE_R-THROWCORNER)<<8.w
-    bcc TFM_done
-    lda #(STAGE_R-THROWCORNER)<<8.w
-    sta FP+F_X,x
-TFM_bounce:
-    lda FP+F_VX,x                       ; only a wall-bound velocity can reach
-    eor #$FFFF.w                        ;   this path, so bounce at half speed
-    inc a
-    lsr a
-    sta FP+F_VX,x
-TFM_done:
-    rts
 
 .IFDEF PVSNESLIB
 ; Far-bank bridge for the MSU opening video.  TitleEnter is a near routine

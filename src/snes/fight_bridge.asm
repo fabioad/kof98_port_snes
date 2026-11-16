@@ -22,7 +22,7 @@ MenuVarsRam dsb $180
 
 ; Private state for TEAM PLAY order selection; no campaign/input aliasing.
 .RAMSECTION ".team_order_vars" BANK $7E SLOT 2 ORGA $F180 FORCE
-TeamOrderVars dsb $40
+TeamOrderVars dsb $140
 .ENDS
 
 ; SURVIVOR opponent order + carried HP live in the menu-vars window above.
@@ -679,3 +679,7 @@ MsuChrPageClamp:
     sta scr3
 +   rtl
 .ENDS
+
+.INCLUDE "engine/mrkarate.asm"
+
+.INCLUDE "engine/mrkarate_combat.asm"

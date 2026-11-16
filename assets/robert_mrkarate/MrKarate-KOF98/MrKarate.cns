@@ -1,0 +1,215 @@
+; MrKarate: real 5/50-hit follow-ups, with an absolute per-combo damage budget.
+; Reserved formerly-unused root vars: 26=count,45=limit,46=budget,49=air,54=volley lock.
+[Statedef 9000]
+type = S
+movetype = A
+physics = N
+ctrl = 0
+velset = 0,0
+anim = 9050
+juggle = 0
+sprpriority = 3
+
+[State 9000, Hit limit]
+type = VarSet
+trigger1 = Time = 0
+var(45) = ifelse(IsHelper, var(45), ifelse(PrevStateNo >= 3000,50,5))
+
+[State 9000, Count starter]
+type = VarSet
+trigger1 = Time = 0
+var(26) = 1
+
+[State 9000, Budget]
+type = VarSet
+trigger1 = Time = 0 && NumTarget
+var(46) = ifelse(var(45) = 50, floor(Target,LifeMax / 3.0), 60)
+
+[State 9000, Air flag]
+type = VarSet
+trigger1 = Time = 0
+var(49) = Pos Y < 0
+
+[State 9000, Claim volley]
+type = ParentVarSet
+triggerall = IsHelper
+trigger1 = Time = 0
+var(54) = 1
+
+[State 9000, Projectile combo appearance]
+type = ChangeAnim
+triggerall = IsHelper
+trigger1 = Anim != 9051
+value = 9051
+
+[State 9000, Target bind]
+type = TargetBind
+trigger1 = NumTarget
+pos = 38,-35
+
+[State 9000, No push]
+type = PlayerPush
+trigger1 = 1
+value = 0
+
+[State 9000, First impact damage]
+type = TargetLifeAdd
+trigger1 = Time = 0 && NumTarget
+value = -floor(var(46)*1.0/var(45))
+absolute = 1
+kill = 1
+
+[State 9000, Real followup]
+type = HitDef
+triggerall = NumTarget
+triggerall = var(26) < var(45)
+trigger1 = Time % 4 = 1
+attr = A, HA
+hitflag = MAF
+; Followup is only reached after an unguarded starter.
+guardflag =
+priority = 7, Hit
+damage = 0,0
+pausetime = 0,0
+sparkno = s6002
+sparkxy = 0,-45
+hitsound = s1,1
+ground.type = High
+ground.hittime = 20
+ground.velocity = 0,0
+air.hittime = 20
+air.velocity = 0,0
+yaccel = .5
+fall = 0
+air.fall = 0
+p2stateno = 9010
+p2getp1state = 1
+numhits = 1
+getpower = 0,0
+givepower = 0,0
+
+[State 9000, Followup damage]
+type = TargetLifeAdd
+triggerall = Time > 0
+trigger1 = MoveHit = 1 && NumTarget
+value = -(floor(var(46)*(var(26)+1.0)/var(45))-floor(var(46)*var(26)*1.0/var(45)))
+absolute = 1
+kill = 1
+
+[State 9000, Count actual impacts]
+type = VarAdd
+triggerall = Time > 0
+trigger1 = MoveHit = 1
+var(26) = 1
+
+[State 9000, Release victim]
+type = TargetState
+trigger1 = var(26) >= var(45)
+trigger2 = Time > 240
+value = 9020
+
+[State 9000, Release volley lock]
+type = ParentVarSet
+triggerall = IsHelper
+trigger1 = var(26) >= var(45)
+trigger2 = Time > 240 || !NumTarget
+var(54) = 0
+
+[State 9000, Remove projectile]
+type = DestroySelf
+triggerall = IsHelper
+trigger1 = var(26) >= var(45)
+trigger2 = Time > 240 || !NumTarget
+
+[State 9000, Finish]
+type = ChangeState
+triggerall = !IsHelper
+trigger1 = var(26) >= var(45)
+trigger2 = Time > 240 || !NumTarget
+value = ifelse(var(49),50,0)
+ctrl = 1
+
+[Statedef 9010]
+type = A
+movetype = H
+physics = N
+velset = 0,0
+ctrl = 0
+
+[State 9010, Hit pose]
+type = ChangeAnim2
+trigger1 = Time = 0
+value = 9052
+
+[State 9010, Safety release]
+type = ChangeState
+trigger1 = Time > 250
+value = 9020
+
+[Statedef 9020]
+type = A
+movetype = H
+physics = N
+velset = -3,-4
+ctrl = 0
+
+[State 9020, Own falling animation]
+type = ChangeAnim
+trigger1 = Time = 0
+value = ifelse(SelfAnimExist(5050),5050,5000)
+[State 9020, Gravity]
+type = VelAdd
+trigger1 = 1
+y = .5
+[State 9020, Touch down]
+type = PosSet
+trigger1 = Pos Y >= 0 && Vel Y > 0
+y = 0
+[State 9020, Restore own landing]
+type = SelfState
+trigger1 = Pos Y >= 0 && Vel Y > 0
+value = 5100
+
+[Statedef 9300]
+type = A
+movetype = A
+physics = N
+anim = 9051
+ctrl = 0
+velset = 6,0
+sprpriority = 4
+
+[State 9300, Choose budget]
+type = VarSet
+trigger1 = Time = 0
+var(45) = ifelse(Root,StateNo >= 3000,50,5)
+
+[State 9300, Projectile starter]
+type = HitDef
+trigger1 = Time = 0
+attr = A, SP
+hitflag = MAF
+guardflag = MA
+priority = 4, Hit
+damage = 0,0
+pausetime = 0,0
+sparkno = s6002
+hitsound = s1,1
+guardsound = s2,1
+ground.type = High
+ground.hittime = 20
+ground.velocity = 0,0
+air.hittime = 20
+air.velocity = 0,0
+fall = 0
+p1stateno = 9000
+p2stateno = 9010
+p2getp1state = 1
+numhits = 1
+
+[State 9300, Remove stray volley members]
+type = DestroySelf
+trigger1 = Time > 0 && Root,var(54) > 0
+trigger2 = MoveGuarded
+trigger3 = Time > 100
+trigger4 = FrontEdgeDist < -80

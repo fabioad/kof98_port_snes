@@ -478,6 +478,19 @@ SMF_apu_idle:
     lda.l StageModTab,x
     and #$00FF.w
     pha
+    sep #$20
+    .ACCU 8
+    lda.l $7EF1C7                       ; MK_MUSIC (D=0 during SPC calls)
+    rep #$20
+    .ACCU 16
+    and #$00FF.w
+    beq +
+    pla
+    lda #17.w                           ; crystal, with fight FX sources
+    bra ++
++   pla
+++
+    pha
     jsl spcLoad
     rep #$20
     .ACCU 16

@@ -473,6 +473,7 @@
                                         ;   tick, and reusing 6 left YouLoseTick
                                         ;   unreachable (frozen cursor).
 .DEFINE GS_BOSS_FADE 13                ; final KO -> black -> ending1
+.DEFINE GS_MK_SCENE 16                 ; MSU-only secret boss still
 .DEFINE GS_TEAM_ORDER 15               ; TEAM PLAY pre-stage fighter order
 .DEFINE GS_INTRO_MSU 14                ; MSU-1 full-screen opening video
 .DEFINE nmiflag     $22
@@ -1223,6 +1224,11 @@ ML_sp_ok:
     sep #$20
     lda gamestate
 ML_sp_next:
+    cmp #GS_MK_SCENE.b
+    bne +
+    jsl MkSceneTickFar
+    jmp MainLoop
++   lda.b gamestate
 .IFDEF PVSNESLIB
     cmp #GS_TEAM_ORDER.b
     bne +
@@ -3147,6 +3153,18 @@ SL_cell:
     lda #14.b
     sta.b scr5
 SL_not_rugal:
+    rep #$20
+    .ACCU 16
+    lda.b scr6
+    and #$00FF.w
+    beq +
+    lda #FP2OFS.w
++   tax
+    sep #$20
+    .ACCU 8
+    lda.b scr5
+    jsl MkSelectFar
+    sta.b scr5
     ; Kyo EX variants: L = Nests, R = Ash.  Only on the Kyo cell and only
     ; with the MSU data file present; otherwise the normal Kyo pick stands.
     lda.b scr5
@@ -3895,6 +3913,18 @@ TVS_candidate_ok:
     lda #14.b
     sta.b scr0
 TVS_candidate_msu:
+    rep #$20
+    .ACCU 16
+    lda.w T_TVSSIDE
+    and #$00FF.w
+    beq +
+    lda #FP2OFS.w
++   tax
+    sep #$20
+    .ACCU 8
+    lda.b scr0
+    jsl MkSelectFar
+    sta.b scr0
     lda.b msuok
     bne TVS_dup
     lda.b scr0
@@ -4324,6 +4354,7 @@ StartFight:
 .IFDEF KOF_PERF_VERIFY
     jsl PerfVerifyReset
 .ENDIF
+    jsl MkCombatResetFar
     jsr VoiceQueueDrop                   ; no queued quote may follow us;
     stz.b winvoice                       ; and no deferred winner voice either
     lda #0
@@ -4518,7 +4549,8 @@ SF_carry:
     .ACCU 8
     lda.w T_TEAM2,x
     sta.b sel2
-+   rep #$20                            ; sel -> descriptor + table bank
++   jsl MkSanitizeFar
+    rep #$20                            ; sel -> descriptor + table bank
     .ACCU 16                            ;   (0 KYO, 1 IORI, 2 SHINGO, 3 RUGAL)
     lda sel1
     and #$00FF.w
@@ -4684,6 +4716,7 @@ SF_gs_intro:
     lda #4                                ; -> IntroTick until both stand
 SF_gs_store:
     sta gamestate
+    jsl MkFightSetupFar
     ; Every round starts at 99.  Later solo/campaign rounds skip IntroTick
     ; (gamestate 4), which used to be the only place that reset the clock,
     ; so round 2 inherited the seconds left from round 1.  Reset it here,
@@ -5414,6 +5447,7 @@ EnterState:
     ; back to standing instead of crashing on the out-of-range pointer.
     lda #S_STAND.w
 ES_valid:
+    jsl MkCombatEnterFar
     ldx fofs
     sta FP+F_STATE,x
 .IFDEF PVSNESLIB
@@ -7510,6 +7544,7 @@ FightTick:
     bcc +
     rts
 + FT_live:
+    jsl MkCombatTickFar
     jsl PracFillPowerFar                 ; practice: human meter stays full
     jsr BannerTick                       ; FIGHT! logo countdown -> clear
     lda.l APUIO3                         ; snesmod: music position / status
@@ -7708,7 +7743,10 @@ RoundEnd:
     sta FUS_CARRY+FP2OFS
     sep #$20
     .ACCU 8
-    jsr SurvSaveHP                        ; survivor: carry the human HP
+    jsl MkScoreFar
+    bcc +
+    rts
++   jsl SurvSaveHPFar                   ; survivor: carry the human HP
     lda.w G_MODE
     cmp #2
     beq RE_team
@@ -7875,70 +7913,7 @@ KoMute:                                 ; X = fighter offset: swallow inputs
 ; waits GO_WAIT frames: inputs stay muted, so the first hit cannot begin
 ; while the announcer is still calling GO.
 IntroTick:
-    ldx #0
-    jsr KoMute
-    stx fofs
-    jsr TickFighter
-    ldx #FP2OFS
-    jsr KoMute
-    stx fofs
-    jsr TickFighter
-    jsr TickSpark
-    jsr BuildOam
-    sep #$20
-    .ACCU 8
-    lda.b gotime                          ; announcer already running?
-    beq IT_entrance
-    dec a                                 ; READY+GO still playing: keep both
-    sta.b gotime                          ;   fighters idle until it finishes
-    beq IT_start
-    jsr BannerTick                        ; FIGHT! logo keeps its countdown
-IT_out:
-    rep #$20
-    .ACCU 16
-    rts
-IT_entrance:
-    rep #$20
-    .ACCU 16
-    lda FP+F_STATE
-    ora FP+F_STATE+FP2OFS                 ; either one still mid-intro?
-    bne IT_out
-    sep #$20
-    .ACCU 8
-    lda #99.b                             ; clock is drawn now, but only
-    sta rsecs                             ;   counts once gotime expires
-    stz rframe
-    jsl DrawTimer
-    rep #$20                            ; FIGHT! logo across the centre
-    .ACCU 16                            ;   rows; bantime clears it later
-    lda #HudGo.w
-    sta scr2
-    lda #:HudGo.w
-    sta scr2+2
-    jsl BannerDrawFar
-    sep #$20
-    .ACCU 8
-    lda #45.b
-    sta.w BANTIME
-    lda #1                              ; rows 9/10 lie outside the live HUD
-    sta.w RT_HUDFULL                    ;   bands: the banded live-play flush
-    lda huddirty                        ;   would skip the GO! logo otherwise
-    ora #HUD_FULL
-    sta huddirty
-    lda #SFX_FIGHT.b
-    jsr SfxPlay
-    lda #GO_WAIT.b
-    sta.b gotime
-    rep #$20
-    .ACCU 16
-    rts
-IT_start:
-    lda #0
-    sta.w T_ENTERFLAG                    ; entrance finished: camera free
-    lda #1.b                              ; GO over -> round is live
-    sta gamestate
-    rep #$20
-    .ACCU 16
+    jsl MkIntroTickFar
     rts
 
 ; Round clock reached zero: the higher-HP fighter wins the pose, the loser
@@ -8017,6 +7992,11 @@ TO_done:
     rts
 
 TickFighter:
+    jsl MkFighterTickFar
+    bcc +
+    rts
++   rep #$20
+    .ACCU 16
 .IFDEF PVSNESLIB
     jsl CloseNormalTickFar
 .ENDIF
@@ -8076,7 +8056,8 @@ TickFighter:
     .ACCU 16
     stz FP+F_VX,x
     stz FP+F_VY,x
-+   jsr GhostTick                         ; afterimage push + ttl decay
++   jsl MkAirRestoreFar
+    jsr GhostTick                         ; afterimage push + ttl decay
     jsr DizzyCheck                        ; FUSION stun when neutral
     rep #$20
     .ACCU 16
@@ -11231,6 +11212,11 @@ HO_chkgrd:
     jsr SparkSpawn
     jsr PlayHitSfx
 HO_apply:
+    jsl MkMeleeContactFar
+    bcc +
+    jmp HO_done
++   rep #$20
+    .ACCU 16
     ldx aofs                              ; damage/velocity rows come from
     stx fofs                              ; the attacker's tables
     ldy #CH_SHAKE                         ; HitDef envshake (supers): start
@@ -13946,6 +13932,14 @@ PH_hit:
     beq +
     jmp PH_guard
 +
+    jsl MkProjectileContactFar
+    bcc +
+    sep #$20
+    .ACCU 8
+    lda #1
+    rts
++   rep #$20
+    .ACCU 16
     ; --- hit: dmg + normal hitstun on the victim ---
     rep #$20
     .ACCU 16
@@ -14274,285 +14268,9 @@ PTS_out:
     rts
 
 ProjSpawn:
-    rep #$20
-    .ACCU 16
-    ldx #0
-    lda.w SPARKS+SPK_ANIM,x
-    beq +
-    ldx #SPK_SIZE
-    lda.w SPARKS+SPK_ANIM,x
-    beq +
-    ; A projectile may evict a cosmetic spark, but never another active
-    ; projectile. This prevents a hitbox from silently disappearing.
-    ldx #0
-    sep #$20
-    .ACCU 8
-    lda.w SPARKS+SPK_ATTR,x
-    bpl PS_slot
-    ldx #SPK_SIZE
-    lda.w SPARKS+SPK_ATTR,x
-    bpl PS_slot
-    rep #$20
-    .ACCU 16
-    inc.w RT_PROJDROP
-    clc
+    jsl MkProjectileSpawnFar
     rts
-PS_slot:
-    rep #$20
     .ACCU 16
-+   ldy fofs
-    lda FP+F_X,y                        ; positions are 8.8 fixed point
-    pha
-    lda FP+F_FACING,y
-    bmi +                               ; left-facing: spawn left of caster
-    pla
-    clc
-    adc #14<<8.w
-    bra ++
-+   pla
-    sec
-    sbc #14<<8.w
-++  xba                                ; sparks are stored in screen pixels
-    and #$00FF.w
-    sta.w SPARKS,x
-    lda FP+F_Y,y                        ; convert world height to screen Y
-    xba
-    and #$00FF.w
-    sta scr2
-    lda #GROUND_Y.w
-    sec
-    sbc scr2
-    sec
-    sbc #40.w                           ; mid torso, ~40px above the floor
-    sta.w SPARKS+2,x
-    rep #$20
-    .ACCU 16
-    phx
-    ldx #sptr.w
-    ldy #CH_PROJFXTAB.w
-    jsr CharPtr                         ; char-specific anim pointer table
-    plx                                 ; restore spark slot base
-    sep #$20
-    .ACCU 8
-    lda #:ProjFxGlobal
-    sta sptr+2
-    rep #$20
-    .ACCU 16
-    lda.w RT_PROJAIR                    ; per-shot override (air Shippuu Ken)
-    and #$00FF.w
-    beq PS_readmode
-    lda #2.w
-    bra PS_havemode
-PS_readmode:
-    ; ProjFxTab header: .dw primary anim, .dw alternate anim, .db height.
-    ; The height byte is always at offset 4; reading offset 2 here would
-    ; pick the low byte of the second anim pointer (non-zero), which sent
-    ; every primary shot to the floor (hadouken at GROUND_Y instead of the
-    ; caster's torso).  Ground rows keep mode 1 and are unaffected.
-    ldy #4
-    lda [sptr],y                        ; spawn-height mode
-    and #$00FF.w                        ;   0 = caster torso, 1 = floor,
-PS_havemode:
-    beq +                               ;   2 = fixed upper torso (air shots)
-    cmp #2.w
-    bne PS_ground
-    lda #(GROUND_Y-60).w                ; airborne throw: keep the ball at a
-    sta.w SPARKS+2,x                    ;   height a standing victim can hit
-    bra +
-PS_ground:
-    lda #GROUND_Y.w
-    sta.w SPARKS+2,x
-+
-    sep #$20
-    .ACCU 8
-    lda #90.b                           ; normal projectile lifetime
-    sta.w SPARKS+SPK_TTL,x
-    rep #$20
-    .ACCU 16
-    jsl ProjBallisticSetup              ; per-shot offset / high-drop profile
-    ldy #0
-    lda.w RT_PROJFX2                    ; 0 = primary ProjFxAnim,
-    and #$0001.w                        ; 1 = the alternate geyser clip
-    beq +
-    ldy #2
-+   lda [sptr],y
-    sta.w SPARKS+SPK_ANIM,x
-    ; Yuki's Kusanagi super (sid 89) draws Kyo in the alternate clip.  Against
-    ; Kyo himself that would duplicate the opponent, so fall back to the
-    ; primary clip -- the visible shot the super used to draw -- instead of
-    ; hiding it.  Hitbox, damage and guard are untouched.
-    ldy fofs
-    lda FP+F_STATE,y
-    and #$00FF.w
-    cmp #89
-    bne PS_kyo_done
-    lda FP+F_CHAR,y
-    cmp #CharYuki
-    bne PS_kyo_done
-    lda fofs
-    eor #FP2OFS.w
-    tay
-    lda FP+F_CHAR,y
-    cmp #CharKyo
-    beq PS_kyo_primary
-    cmp #CharKyonests
-    beq PS_kyo_primary
-    cmp #CharKyoash
-    bne PS_kyo_done
-PS_kyo_primary:
-    ldy #0
-    lda [sptr]
-    sta.w SPARKS+SPK_ANIM,x
-PS_kyo_done:
-    sep #$20
-    .ACCU 8
-    lda #:ProjFxGlobal
-    sta.w SPARKS+SPK_BANK,x
-    rep #$20
-    .ACCU 16
-    lda scr0                            ; vx magnitude -> signed by facing
-    ldy fofs
-    lda FP+F_FACING,y
-    bmi +
-    lda scr0
-    bra ++
-+   lda scr0
-    eor #$FFFF.w
-    inc a
-++  sta.w SPARKS+SPK_VX,x
-    jsr ProjVyFix                       ; default vy=0; Benimaru strong arcs up
-    lda scr1                            ; dmg byte -> SPK_AY low
-    and #$00FF.w
-    sta.w SPARKS+SPK_AY,x
-    sep #$20
-    .ACCU 8
-    lda scr1+1                          ; launch state's HitDef sound
-    sta.w SPARKS+SPK_AY+1,x
-    lda scr3                            ; per-shot guard mask (H/M/L/A<<4)
-    sta.w SPARKS+SPK_GRD,x
-    stz.w SPARKS+SPK_FIDX,x             ; begin at frame 0
-    rep #$20
-    .ACCU 16
-    lda.w SPARKS+SPK_ANIM,x             ; anim rec: byte0 = nframes
-    sta sptr
-    sep #$20
-    .ACCU 8
-    lda.w SPARKS+SPK_BANK,x
-    sta sptr+2
-    rep #$20
-    .ACCU 16
-    ldy #1                              ; first frame pointer -> ticks
-    lda [sptr],y
-    sta sptr
-    sep #$20
-    .ACCU 8
-    lda [sptr]
-    sta.w SPARKS+SPK_FTIM,x
-    lda #$80.b                          ; projectile flag; OAM palette is per side
-    ldy fofs
-    cpy #FP2OFS.w                       ; Y remains 16-bit even with acc8
-    bne +
-    ora #$40.b                          ; owner = P2
-+   sta.w SPARKS+SPK_ATTR,x
-    sep #$20
-    .ACCU 8
-    lda.w RT_PROJFX2
-    and #$01.b
-    beq +
-    lda.w SPARKS+SPK_ATTR,x
-    ora #$08.b                          ; bit3 = one-shot clip (no loop)
-    sta.w SPARKS+SPK_ATTR,x
-+   ldy fofs
-    lda FP+F_FACING+1,y                 ; bit4: projectile art faces left
-    bpl +
-    lda.w SPARKS+SPK_ATTR,x
-    ora #$10.b
-    sta.w SPARKS+SPK_ATTR,x
-+   ldy fofs
-    lda FP+F_STATE,y                     ; remember whether the launch state
-    jsr IsSpecialState                    ;   was a special/super (survivor)
-    bcc PTS_idx0                          ; not a special: single-hit setup
-    lda.w SPARKS+SPK_ATTR,x
-    ora #$20.b                           ; bit5 = special/super projectile
-    sta.w SPARKS+SPK_ATTR,x
-    stz scr3                             ; spark slot -> 0/1 table index
-    cpx #SPK_SIZE
-    bcc PTS_idx0
-    lda #1
-    sta scr3
-PTS_idx0:
-    ldy scr3
-    lda #0                               ; single-hit by default
-    sta.w RT_PROJHITS,y
-    sta.w RT_PROJCD,y
-    sta.w RT_PROJHIT,x                   ; no contact yet: let the shot fly
-    ldy fofs
-    lda FP+F_STATE,y
-    cmp #S_SUPPER.b                      ; 85..89 = super projectile:
-    bcc PTS_notmulti                     ;   five sequential hits
-    cmp #90.b
-    bcs PTS_notmulti
-    lda #5
-    ldy scr3
-    sta.w RT_PROJHITS,y
-    ; Geese's Raging Storm is a single-hit tall anti-air pillar in KOF98,
-    ; not the generic five-contact super projectile.  SPK_GRD bit0 marks
-    ; the tall hitbox (the guard bits themselves live in 4-7).
-    rep #$20
-    .ACCU 16
-    ldy fofs
-    lda FP+F_CHAR,y
-    cmp #CharGeese
-    bne PTS_notstorm
-    sep #$20
-    .ACCU 8
-    lda FP+F_STATE,y
-    cmp #85
-    beq PTS_storm
-    cmp #86
-    beq PTS_storm
-PTS_notstorm:
-    sep #$20
-    .ACCU 8
-    lda.w SPARKS+SPK_ATTR,x
-    ora #$01.b                        ; multi-hit shot: exempt from the
-    sta.w SPARKS+SPK_ATTR,x           ;   one-proj-per-fall cap
-    bra PTS_sakura_check
-PTS_storm:
-    lda #1
-    ldy scr3
-    sta.w RT_PROJHITS,y
-    lda.w SPARKS+SPK_GRD,x
-    ora #$01.b
-    sta.w SPARKS+SPK_GRD,x
-PTS_sakura_check:
-    ; Sakura's Shinkuu travels far, so it lands 8 contacts (9 HP each)
-    ; instead of the generic five-contact super sequence.
-    rep #$20
-    .ACCU 16
-    ldy fofs
-    lda FP+F_CHAR,y
-    cmp #CharSakura
-    bne PTS_notmulti
-    sep #$20
-    .ACCU 8
-    lda FP+F_STATE,y
-    cmp #85
-    beq PTS_sak_many
-    cmp #86
-    beq PTS_sak_many
-    cmp #87
-    beq PTS_sak_many
-    bra PTS_notmulti
-PTS_sak_many:
-    lda #8
-    ldy scr3
-    sta.w RT_PROJHITS,y
-PTS_notmulti:
-+   rep #$20
-    .ACCU 16
-    sec
-    rts
 
 SparkSpawn:
     rep #$20
@@ -17641,28 +17359,7 @@ SPF_done:
     rts
 
 ; SURVIVOR: stash the human HP before the round result resets anything.
-SurvSaveHP:
-    sep #$20
-    .ACCU 8
-    lda.w G_MODE
-    cmp #4
-    bne SVH_out
-    lda.w C_PVP                          ; opening bout is not the survivor run:
-    bne SVH_out                          ;   do not carry either side's HP
-    rep #$20
-    .ACCU 16
-    lda.w C_HUMAN_SIDE
-    and #$00FF.w
-    beq +
-    lda FP+F_HP+FP2OFS
-    bra ++
-+   lda FP+F_HP
-++  sep #$20
-    .ACCU 8
-    sta.w SURV_HP
-SVH_out:
-    rts
-
+; Moved to bank 126 (SurvSaveHPFar) to keep the Fight window under 32 KiB.
 ; A timer-over round has no finishing blow.
 SurvClearHit:
     sep #$20
@@ -17829,6 +17526,7 @@ CIH_prac:
 BitMask3: .db 1, 2, 4                     ; sel -> C_USED bit
 
 CampReset:
+    jsl MkResetFar
 .IFDEF PVSNESLIB
     sep #$20
     stz.w OR_READY
@@ -17872,15 +17570,7 @@ CampReset:
 
 ; C_STAGE <- random permitted stage (Rugal's stage 5 excluded).
 CampPickStage:
-    sep #$20
-    .ACCU 8
-    inc rng
-    lda.b rng
-    eor.b framecnt
-    jsr ModStg
-    cmp #5
-    beq CampPickStage                     ; Rugal's stage is boss-only
-    sta.w C_STAGE
+    jsl MkCampPickStageFar
     rts
 
 ; A candidate char and scr6 = used-count -> carry set if already used.
@@ -18022,6 +17712,7 @@ CT2_store_history:
 
 ; Called once when the selection locks -> fight 1 of a campaign.
 CampStart:
+    jsl MkResetFar
     sep #$30
     .ACCU 8
     .INDEX 8
@@ -18171,6 +17862,10 @@ CNF_surv_more:
     jsr CampPickSel2                      ; SURV_LIST[C_IDX]
     bra CNF_go
 CNF_boss:
+    jsl MkChooseBossFar
+    bcc +
+    jmp CNF_go
++
     stz.w C_WHARF
     lda #5                                ; Rugal's exclusive stage
     sta.w C_STAGE
@@ -18388,39 +18083,13 @@ CR_lost_legacy:
 
 ; Called by StartFight before StagePick: resolves STAGEF per mode/round.
 CampStage:
-    sep #$20
-    .ACCU 8
-    lda.w G_MODE
-    beq CS_vs
-    cmp #1
-    beq CS_force
-    cmp #2
-    beq CS_force
-    cmp #3
-    beq CS_force
-    cmp #4
-    beq CS_force
-    cmp #5
-    beq CS_force
-CS_random:
-    lda #$FF.b                            ; free/versus: StagePick stays random
-    sta.w STAGEF
-    rts
-CS_vs:
-    lda.b roundno
-    cmp #1.b
-    beq CS_random                         ; choose a fresh stage for the match
-    lda.b stageidx
-    sta.w STAGEF                          ; Single VS keeps it for every round
-    rts
-CS_force:
-    lda.w C_STAGE                         ; fixed for all rounds/members
-    sta.w STAGEF
+    jsl MkCampStageFar
     rts
 
 ; Team play: a member fell -> eliminate, recover winner, swap in next.
 ; Called from RoundEnd (acc8) instead of the best-of-3 scoring.
 TeamRoundEnd:
+    .ACCU 8                             ; far CampStage returns A8
     rep #$10                            ; pin index16: callers differ
     .INDEX 16
     stz.w MATWON
@@ -18633,6 +18302,7 @@ TeamJumpOne:
 ; Member-change fight entry (T_SWAP bit0/bit1).  Resets only the dead
 ; side(s); the survivor keeps HP, meter and position.  -> gs 4 intro.
 TeamSwap:
+    jsl MkCombatResetFar
     sep #$20
     .ACCU 8
     lda #0
@@ -19203,7 +18873,13 @@ TTS_cell_valid:
     bne +
     lda #14.b
     sta.b scr0
-+   lda.b msuok
++   rep #$10
+    .INDEX 16
+    ldx #0
+    lda.b scr0
+    jsl MkSelectFar
+    sta.b scr0
+    lda.b msuok
     bne +
     lda.b scr0
     jsr CharFlags
@@ -19325,6 +19001,12 @@ TTS_p2_go:
     lda #14.b
     sta.b scr0
 TTS_p2_msu:
+    rep #$10
+    .INDEX 16
+    ldx #FP2OFS.w
+    lda.b scr0
+    jsl MkSelectFar
+    sta.b scr0
     lda.b msuok
     bne TTS_p2_dup
     lda.b scr0
@@ -19394,7 +19076,103 @@ TTS_p2_deny:
     jsr SfxPlay
     jmp TTS_done
 
+; Far entry points used by the secret-boss cinematic.
+; Same-bank bridges used by the Mr. Karate contact/air controller.
+; Throw-flight code shares this bank; moved out of the full menu tail.
+ThrowFlightMove:
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    lda FP+F_VX,x
+    jsr AddXClamped
+    ldx fofs
+    lda FP+F_X,x
+    cmp #(STAGE_L+THROWCORNER)<<8.w
+    bcs +
+    lda #(STAGE_L+THROWCORNER)<<8.w
+    sta FP+F_X,x
+    bra TFM_bounce
++   cmp #(STAGE_R-THROWCORNER)<<8.w
+    bcc TFM_done
+    lda #(STAGE_R-THROWCORNER)<<8.w
+    sta FP+F_X,x
+TFM_bounce:
+    lda FP+F_VX,x                       ; only a wall-bound velocity can reach
+    eor #$FFFF.w                        ;   this path, so bounce at half speed
+    inc a
+    lsr a
+    sta FP+F_VX,x
+TFM_done:
+    rts
+
+
+MkCombat_SetAnimSlot:
+    jsr SetAnimSlot
+    rtl
+MkCombat_CharPtr:
+    jsr CharPtr
+    rtl
+MkCombat_IsSpecialState:
+    jsr IsSpecialState
+    rtl
+MkCombat_EnterState:
+    jsr EnterState
+    rtl
+MkCombat_AnimTick:
+    jsr AnimTick
+    rtl
+MkCombat_ComboBump:
+    jsr ComboBump
+    rtl
+MkCombat_SparkSpawnAt:
+    jsr SparkSpawnAt
+    rtl
+MkCombat_SfxPlay:
+    jsr SfxPlay
+    rtl
+
+MkCall_ModStg:
+    jsr ModStg
+    rtl
+MkCall_KoMute:
+    jsr KoMute
+    rtl
+MkCall_TickFighter:
+    jsr TickFighter
+    rtl
+MkCall_TickSpark:
+    jsr TickSpark
+    rtl
+MkCall_BuildOam:
+    jsr BuildOam
+    rtl
+MkCall_BannerTick:
+    jsr BannerTick
+    rtl
+MkCall_SfxPlay:
+    jsr SfxPlay
+    rtl
+MkCall_EnterState:
+    jsr EnterState
+    rtl
+MkCall_StartFight:
+    jsr StartFight
+    rtl
+MkCall_ShowTitle:
+    jsr ShowTitle
+    rtl
+MkCall_InVCopy:
+    jsr InVCopy
+    rtl
+MkCall_InCgRam:
+    jsr InCgRam
+    rtl
+MkCall_InM1Regs:
+    jsr InM1Regs
+    rtl
+
 .INCLUDE "engine/menucore.asm"
+
 
 .ENDS
 
@@ -20008,35 +19786,6 @@ PC_spark:
     rts
 .ENDS
 
-; Benimaru's strong Raikouken: the source hand is at -116 (the weak hand is
-; at -76) and the port's synthetic shot only had a horizontal VX.  Spawn the
-; strong shot at the raised hand and give it a slight upward VY so the ball
-; follows the hand instead of flying flat at torso height.  Kept out of the
-; full Fight bank; X = spark slot, fofs = caster.
-.BANK 50 SLOT 0
-.ORGA $0E38
-.SECTION "ProjVyFix" FORCE
-ProjVyFix:
-    rep #$20
-    .ACCU 16
-    stz.w SPARKS+SPK_VY,x                ; default: flat projectile
-    ldy fofs
-    lda FP+F_CHAR,y
-    cmp #CharBenimaru.w
-    bne +
-    lda FP+F_STATE,y
-    and #$00FF.w
-    cmp #49.w                            ; strong ground Raikouken
-    bne +
-    ; Keep the strong ball at upper-torso height.  The source raised-hand
-    ; spawn (GROUND_Y-96) flew over a standing opponent at point-blank and
-    ; missed even at mid range; 60 px above the floor still reads as the
-    ; high hand while staying inside the victim's torso hurtbox.
-    lda #(GROUND_Y-60).w
-    sta.w SPARKS+2,x
-+   rts
-.ENDS
-
 ; Team-mode fixups kept out of the full Fight bank.
 .BANK 50 SLOT 0
 .ORGA $0F70
@@ -20403,6 +20152,69 @@ ProjRadius:
 
 BallBounceVY:
     .dw $FB00, $FC00, $FE00            ; -5, -4, -2 px/tick
+.ENDS
+
+; Survivor HP carry: moved out of the full Fight window.  EnterState/round
+; result calls this with jsl; it uses only fixed WRAM and fighter HP, so it
+; needs no other helper.  $DC00 is free between ProjectileBallistic and the
+; SuperFx section at $DF00.
+.BANK 126 SLOT 0
+.ORGA $DC00
+.SECTION "SurvSaveFar" FORCE
+SurvSaveHPFar:
+    sep #$20
+    .ACCU 8
+    lda.w G_MODE
+    cmp #4
+    bne SVHF_out
+    lda.w C_PVP                          ; opening bout is not the survivor run:
+    bne SVHF_out                         ;   do not carry either side's HP
+    rep #$20
+    .ACCU 16
+    lda.w C_HUMAN_SIDE
+    and #$00FF.w
+    beq +
+    lda FP+F_HP+FP2OFS
+    bra ++
++   lda FP+F_HP
+++  sep #$20
+    .ACCU 8
+    sta.w SURV_HP
+SVHF_out:
+    rtl
+.ENDS
+
+; Benimaru's strong Raikouken: the source hand is at -116 (the weak hand is
+; at -76) and the port's synthetic shot only had a horizontal VX.  Spawn the
+; strong shot at the raised hand and give it a slight upward VY so the ball
+; follows the hand instead of flying flat at torso height.  Called once per
+; projectile spawn from ProjSpawn, so a far call is cheap.
+.BANK 126 SLOT 0
+.ORGA $DC40
+.SECTION "ProjVyFixFar" FORCE
+ProjVyFixFar:
+    rep #$20
+    .ACCU 16
+    stz.w SPARKS+SPK_VY,x                ; default: flat projectile
+    ldy fofs
+    lda FP+F_CHAR,y
+    cmp #CharBenimaru.w
+    bne +
+    lda FP+F_STATE,y
+    and #$00FF.w
+    cmp #49.w                            ; strong ground Raikouken
+    bne +
+    ; Keep the strong ball at upper-torso height.  The source raised-hand
+    ; spawn (GROUND_Y-96) flew over a standing opponent at point-blank and
+    ; missed even at mid range; 60 px above the floor still reads as the
+    ; high hand while staying inside the victim's torso hurtbox.
+    lda #(GROUND_Y-60).w
+    sta.w SPARKS+2,x
++   ; ProjSpawn stores the guard mask before this call, so the launch tier
+    ; (super/MAX) can be ORed in without being wiped.  The main Fight
+    ; section is full, so both helpers live in this bank.
+    jsl ProjSparkTier
+    rtl
 .ENDS
 
 ; Super flash/dim (Kyo helper 7000): four frames of additive white on the
@@ -22632,16 +22444,7 @@ YouLoseExit:
 ; Omega Rugal defeated: skip the winner banner, fade the KO screen to black
 ; and let EndEnter fade ending1 in from black.
 BossEndingFar:
-    sep #$20
-    .ACCU 8
-    lda #1
-    sta.w E_BLACKIN
-    stz.b nextflag
-    lda #15
-    sta.b fadelevel
-    lda #GS_BOSS_FADE.b
-    sta.b gamestate
-    rtl
+    jml MkBossEndingFar
 
 ; Gamestate 13: hold the KO screen while the display brightness walks to
 ; black, then hand off to ending1.  FightPresent/FightVblank re-write $0F
@@ -26371,6 +26174,8 @@ CPF_p:
 ; parry slots, and 90+ are poses, which must not fire while standing up).
 CmdRiseOkFar:
     .ACCU 8
+    jsl MkAirCommandFar
+    bcs CRF_yes
     lda ct_post
     and #8
     beq CRF_no

@@ -10714,6 +10714,24 @@ def _drop_isolated_pixels(sprite, max_area=1):
     return removed
 
 
+# Mr. Karate keeps Robert's complete native moveset and masked graphics.
+if "mrkarate" in CHARS:
+    _mk = copy.deepcopy(CHARS["robert"])
+    _mk.update(NEW_CHARS["mrkarate"])
+    _mk["anims"] = copy.deepcopy(CHARS["robert"]["anims"])
+    _mk["moves"] = copy.deepcopy(CHARS["robert"]["moves"])
+    _mk["air"] = "assets/robert_mrkarate/MrKarate-KOF98/Robert.air"
+    _mk["anims"][118] = 9050           # masked four-strike contact loop
+    _mk["moves"][118] = 9000           # no automatic source attack/throw
+    _mk["palette_act"] = "assets/robert_mrkarate/MrKarate-KOF98/act/MrKarate.act"
+    _mk["projfx_alias"] = CHARS["robert"]["projfx_alias"]
+    CHARS["mrkarate"] = _mk
+    AI_TUNING["mrkarate"] = AI_TUNING["robert"]
+    for _table in (POST_CAL_REACTIVATED, POST_CAL_TWEAKS, POST_CAL_PROJS,
+                   POST_CAL_CATEGORIES, POST_CAL_POW_OVERRIDE):
+        if "robert" in _table:
+            _table["mrkarate"] = copy.deepcopy(_table["robert"])
+
 def build_char(name, cfg, global_pal=None):
     coord_scale = cfg.get("coord_scale", 1)
     char_scale = char_scale_for(name, cfg)
@@ -13613,6 +13631,17 @@ def build_char(name, cfg, global_pal=None):
         CMD_POOL_ROWS[name] = cmd_rows
     print(f"{name}: {len(cmd_rows)} command-list rows")
 
+    if name == "mrkarate":
+        kinds = []
+        for sid in range(119):
+            state = cfg.get("moves", {}).get(sid, 0)
+            kinds.append(50 if 3000 <= state < 4000 else
+                         5 if 1000 <= state < 3000 else 0)
+        kinds[118] = 0
+        with open(os.path.join(OUT, "mrkarate_kind.inc"), "w") as f:
+            f.write("; generated native Mr. Karate special/super classification\n")
+            f.write("MkMoveKind: .db " + ",".join(map(str, kinds)) + "\n")
+
     # Victory quotes: four HUD pairs per language, word-wrapped into <= 2
     # rows of 30 glyphs.  The QuoteTab is language-major:
     #   Q_LANG*32 + (framecnt>>3 & 3)*4 -> pair offset (two .dw pointers).
@@ -16022,6 +16051,8 @@ def emit_newchars_inc(new_keys, msu_slices):
           "KYO_BASE_ID = 0\n",
           f"KYO_NESTS_ID = {new_ids.get('kyonests', 0)}\n",
           f"KYO_ASH_ID = {new_ids.get('kyoash', 0)}\n",
+          f"ROBERT_ID = {new_ids.get('robert', 0)}\n",
+          f"MRKARATE_ID = {new_ids.get('mrkarate', 255)}\n",
           "RomFlags:   .db " + ",".join(str(f) for f in rom_flags) + "\n",
           "HiddenTab:  .db " + ",".join(str(h) for h in hidden) + "\n",
           "CpuPool:    .db " + ",".join(str(i) for i in pool[:20]) + "\n",
@@ -16249,7 +16280,7 @@ def emit_newchars_inc(new_keys, msu_slices):
     # Bank 118's $401A-$6B85 area is occupied by Omega's generated tables;
     # only the tail after the packed projectile atlases is really free.
     PVS_SLOTS += [(118, 0x6B86, 0x8000 - 0x6B86),
-                  (120, 0x0E20, 0x71E0), (122, 0x0000, 0x8000)]
+                  (120, 0x0E20, 0x71E0)]
     # Other low halves are fixed ending stills, but their tails are ROM.
     # Exposing them keeps the character packer from fragmenting the last
     # ~10 KiB windows when a new move adds a few metasprite descriptors.
@@ -16966,6 +16997,8 @@ if __name__ == "__main__":
     build_stages.build()
     build_hud()
     build_portraits()
+    from build_mrkarate_scene import build as build_karate_scene
+    build_karate_scene(OUT)
     build_spark()
     skipped = []
     for name, cfg in CHARS.items():

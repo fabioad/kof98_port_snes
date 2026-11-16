@@ -91,3 +91,6 @@ music/ffg_energy/ouvir.html
 # Ferramentas locais de engenharia reversa (nao fazem parte do jogo)
 # ---------------------------------------------------------------------------
 /tools/ghidra/
+
+# Ambiente local de teste do Mr. Karate (Ikemen GO)
+/assets/robert_mrkarate/ikemen-test/

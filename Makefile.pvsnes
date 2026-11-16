@@ -141,6 +141,7 @@ FIGHT_GEN := $(GEN_DIR)/iori.chr $(GEN_DIR)/iori_pal.bin \
 	$(GEN_DIR)/stages.inc $(GEN_DIR)/stages_tab.inc \
 	$(GEN_DIR)/stgmods.inc \
 	$(GEN_DIR)/voices.inc \
+	$(GEN_DIR)/mrkarate_kind.inc $(GEN_DIR)/mrkarate_sleep.chr $(GEN_DIR)/mrkarate_sleep.map $(GEN_DIR)/mrkarate_sleep.pal \
 	$(GEN_DIR)/survival_msu.inc $(GEN_DIR)/survival_msu_defs.inc \
 	$(GEN_DIR)/quote_strings_en.inc $(GEN_DIR)/quote_strings_pt.inc \
 	$(GEN_DIR)/quote_strings_es.inc $(GEN_DIR)/quote_strings_fr.inc \
@@ -221,7 +222,7 @@ audio: $(SOUNDBANK).asm $(AUDIO_GEN) validate-snesmod
 # without this the object is not rebuilt when only those files change.
 # fight_bridge.asm also .INCLUDEs these, so they must be dependencies too:
 # editing one alone used to leave the old code in the ROM.
-src/snes/fight_bridge.obj: src/engine/fight.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/msu_seek.asm src/engine/close_normals.asm src/engine/voice_queue.asm src/engine/menucore.asm src/engine/menus.asm src/engine/options.asm src/engine/select_far.asm src/engine/fast_paths.asm src/engine/sel_nomsu.asm $(FIGHT_GEN) \
+src/snes/fight_bridge.obj: src/engine/fight.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/msu_seek.asm src/engine/close_normals.asm src/engine/mrkarate.asm src/engine/mrkarate_combat.asm src/engine/voice_queue.asm src/engine/menucore.asm src/engine/menus.asm src/engine/options.asm src/engine/select_far.asm src/engine/fast_paths.asm src/engine/sel_nomsu.asm $(FIGHT_GEN) \
 	$(wildcard src/gen_menu/*) $(wildcard src/gen_menu/intro/*)
 
 # The SDK's snes_rules recipe replaces the local soundbank recipe below, so
@@ -231,7 +232,7 @@ validate-snesmod: $(AUDIOFILES) tools/validate_snesmod.py tools/it_pattern_limit
 
 ifneq ($(TINY),1)
 $(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json assets/characters/*/*_SNES.cns assets/characters/*/*_SNES.cmd assets/characters/*/*.air assets/data/quotes/*.json) \
-	tools/build_fight.py tools/normal_throws.py tools/close_normals.py tools/remaining_specials.py tools/runtime_abi.py assets/runtime_abi.json tools/newroster.py tools/build_spc_neogeo.py \
+	tools/build_fight.py tools/build_mrkarate_scene.py tools/normal_throws.py tools/close_normals.py tools/remaining_specials.py tools/runtime_abi.py assets/runtime_abi.json tools/newroster.py tools/build_spc_neogeo.py \
 	Makefile.pvsnes $(wildcard Makefile.hi Makefile.old Makefile.mid) \
 	tools/build_stages.py tools/build_hud_arcade.py tools/sff.py tools/build_endings.py \
 	$(wildcard assets/survival_ending/*.png) \
@@ -277,7 +278,7 @@ PROFILE_OFILES := $(filter-out src/snes/fight_bridge.obj,$(OFILES)) $(PROFILE_FI
 
 $(PROFILE_FIGHT_OBJ): src/snes/fight_bridge.asm $(ORDER_GEN) src/engine/fight.asm \
 	src/engine/voice_queue.asm src/engine/menucore.asm src/engine/menus.asm \
-	src/engine/options.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/fast_paths.asm src/engine/msu_seek.asm src/engine/close_normals.asm src/engine/msu_intro.asm src/engine/cancel_gate.asm src/engine/sel_nomsu.asm \
+	src/engine/options.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/fast_paths.asm src/engine/msu_seek.asm src/engine/close_normals.asm src/engine/mrkarate.asm src/engine/mrkarate_combat.asm src/engine/msu_intro.asm src/engine/cancel_gate.asm src/engine/sel_nomsu.asm \
 	$(wildcard src/gen_menu/*) $(wildcard src/gen_menu/intro/*) \
 	$(FIGHT_GEN) $(AUDIO_GEN) $(SOUNDBANK).asm | $(GEN_DIR)
 	@mkdir -p $(dir $@)
@@ -341,7 +342,7 @@ $(SOUNDBANK).asm: $(AUDIOFILES)
 	  grep -o '^SOUNDBANK__[0-9]*:' $@ | tr -d ':' | sed 's/^/	.DL /'; } > build/gen_audio/sbkeep.inc
 
 src/snes/fight_bridge.obj: src/snes/fight_bridge.asm src/engine/fight.asm \
-	src/engine/menucore.asm src/engine/menus.asm src/engine/options.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/fast_paths.asm src/engine/msu_seek.asm src/engine/close_normals.asm \
+	src/engine/menucore.asm src/engine/menus.asm src/engine/options.asm src/engine/team_order.asm src/engine/frame_present.asm src/engine/fast_paths.asm src/engine/msu_seek.asm src/engine/close_normals.asm src/engine/mrkarate.asm src/engine/mrkarate_combat.asm \
 	src/engine/msu_intro.asm src/engine/cancel_gate.asm src/engine/sel_nomsu.asm \
 	$(wildcard src/gen_menu/*) $(wildcard src/gen_menu/intro/*) \
 	$(FIGHT_GEN) $(AUDIO_GEN) $(SOUNDBANK).asm
@@ -412,3 +413,5 @@ old-clean:
 BASE4 ?= 0
 BIGROM ?= 0
 ASFLAGS += -I. -Ibuild
+
+$(FIGHT_GEN): tools/build_mrkarate_scene.py tools/newroster.py assets/robert_mrkarate/MrKarate-KOF98/MrKarate.sff assets/robert_mrkarate/MrKarate-KOF98/act/MrKarate.act

@@ -36,3 +36,14 @@ validates this.
 - Fatal Fury / Art of Fighting quotes for the SNK guest characters.
 
 Translations are free adaptations kept short enough for the 30x2 HUD rows.
+
+### Mr. Karate (Robert variant)
+
+Source: [SNK Wiki — Mr. Karate/Quotes](https://snk.fandom.com/wiki/Mr._Karate/Quotes).
+The four slots are free adaptations for the two-row HUD: Kyokugen's
+invincibility (KOF '96 Game Boy), the training criticism and masked identity
+(SVC Chaos), and Yuri's safety (Art of Fighting's Ryo pre-battle dialogue,
+rephrased for the victory screen). They are adaptations, not verbatim dialogue.
+The speaker is Robert: self-identification uses Robert, and Yuri is addressed
+as "my love" / "meu amor" / "mi amor" / "mon amour", never as his sister.
+References to an opposing Ryo remain references to Ryo.

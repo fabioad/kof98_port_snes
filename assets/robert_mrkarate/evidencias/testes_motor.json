@@ -1,0 +1,218 @@
+[
+  {
+    "case": 0,
+    "connected": true,
+    "damage": 60,
+    "hits_at_end": 5,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 1,
+    "connected": true,
+    "damage": 60,
+    "hits_at_end": 5,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 2,
+    "connected": false,
+    "damage": 0,
+    "hits_at_end": 0,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 3,
+    "connected": true,
+    "damage": 333,
+    "hits_at_end": 50,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 4,
+    "connected": true,
+    "damage": 333,
+    "hits_at_end": 50,
+    "volley_members": 3,
+    "frames": 320
+  },
+  {
+    "case": 5,
+    "connected": true,
+    "damage": 60,
+    "hits_at_end": 5,
+    "volley_members": 3,
+    "frames": 320
+  },
+  {
+    "case": 6,
+    "connected": true,
+    "damage": 60,
+    "hits_at_end": 5,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 7,
+    "connected": true,
+    "damage": 60,
+    "hits_at_end": 5,
+    "volley_members": 3,
+    "frames": 320
+  },
+  {
+    "case": 8,
+    "connected": true,
+    "damage": 333,
+    "hits_at_end": 50,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 9,
+    "connected": false,
+    "damage": 0,
+    "hits_at_end": 0,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 10,
+    "connected": true,
+    "damage": 60,
+    "hits_at_end": 5,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 11,
+    "connected": true,
+    "damage": 60,
+    "hits_at_end": 5,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 12,
+    "connected": false,
+    "damage": 0,
+    "hits_at_end": 0,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 13,
+    "connected": true,
+    "damage": 60,
+    "hits_at_end": 5,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 14,
+    "connected": false,
+    "damage": 0,
+    "hits_at_end": 0,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 15,
+    "connected": true,
+    "damage": 60,
+    "hits_at_end": 5,
+    "volley_members": 3,
+    "frames": 320
+  },
+  {
+    "case": 16,
+    "connected": true,
+    "damage": 60,
+    "hits_at_end": 5,
+    "volley_members": 3,
+    "frames": 320
+  },
+  {
+    "case": 17,
+    "connected": false,
+    "damage": 0,
+    "hits_at_end": 0,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 18,
+    "connected": true,
+    "damage": 60,
+    "hits_at_end": 5,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 19,
+    "connected": true,
+    "damage": 60,
+    "hits_at_end": 5,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 20,
+    "connected": true,
+    "damage": 60,
+    "hits_at_end": 5,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 21,
+    "connected": true,
+    "damage": 60,
+    "hits_at_end": 5,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 22,
+    "connected": false,
+    "damage": 0,
+    "hits_at_end": 0,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 23,
+    "connected": false,
+    "damage": 0,
+    "hits_at_end": 0,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 24,
+    "connected": true,
+    "damage": 333,
+    "hits_at_end": 50,
+    "volley_members": 3,
+    "frames": 320
+  },
+  {
+    "case": 25,
+    "connected": true,
+    "damage": 333,
+    "hits_at_end": 50,
+    "volley_members": 0,
+    "frames": 320
+  },
+  {
+    "case": 26,
+    "connected": false,
+    "damage": 0,
+    "hits_at_end": 0,
+    "volley_members": 0,
+    "frames": 320
+  }
+]

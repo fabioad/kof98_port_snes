@@ -1182,3 +1182,10 @@ NEW_CHARS = {
         'display': 'KYO',
     },
 }
+
+# Hidden Robert form. Combat configuration is cloned after Robert's tuning.
+NEW_CHARS['mrkarate'] = {
+    'sff': 'assets/robert_mrkarate/MrKarate-KOF98/MrKarate.sff',
+    'anims': {}, 'moves': {}, 'msu': True, 'hidden': True,
+    'display': 'MR. KARATE',
+}
