@@ -11816,7 +11816,7 @@ pos = 43, -87
 [State 1631, TargetBind]
 type = TargetBind
 trigger1 = AnimElemtime(3) >= 0 && AnimElemtime(4) < 0
-pos = 40, -120
+pos = 40, -80
 
 [State 1631, EnvShake]
 type = EnvShake

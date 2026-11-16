@@ -2792,6 +2792,75 @@ if "kyo" in CHARS:
     _kyo["slice_no_fall"] = sorted(
         set(_kyo.get("slice_no_fall", ())) | {60})
 
+    # --- Aragami/Dokugami rekka: QCF+P parts 1 -> 2 -> 3 ----------------
+    # The source auto-chains 1600/1700 into 1605/1710 on MoveHit, then
+    # 1605/1710 into 1610/1720.  Human players must input QCF+P again for
+    # every part (weak or strong); the CPU keeps the automatic handoff.
+    # The missing third part is the Kototsuki grab: 1630 reaches, its
+    # throw HitDef binds the victim, and 1631 lifts him, explodes and drops
+    # him (TargetLifeAdd + fire Explod).  Reuse AIR 1405 (Koto Tsuki You)
+    # because its 1400-group cels are already in Kyo's ROM bank; the 1630
+    # grab Clsn1 sits on its third element.
+    _kyo.setdefault("moves", {}).update({115: 1630, 116: 1631})
+    _kyo.setdefault("anims", {}).update({115: 1405, 116: 1405})
+    _kyo["slice_no_fall"] = sorted(
+        set(_kyo.get("slice_no_fall", ())) | {61, 63, 66, 68})
+    _kyo["hitdef_override"] = dict(_kyo.get("hitdef_override", {}))
+    for _sid in (61, 63, 66, 68):
+        # Keep the victim in range for the next QCF+P: the source's -10.5
+        # px/tick pushback otherwise leaves the grab out of reach.
+        _kyo["hitdef_override"].setdefault(_sid, {})
+        _kyo["hitdef_override"][_sid].update(
+            {"gvx": 1 * 256, "gvy": 0, "grvx": 1 * 256})
+    # 1630 is a chain finisher that has to connect while the victim is still
+    # in hitstun (the engine's throw gate rejects S_HIT).  Keep the victim
+    # redirect (76) but run it through the normal hit path; p1mugen 1631
+    # moves the attacker into the bind/explosion phase on contact.
+    _kyo["hitdef_override"][115] = {
+        "active": 3, "throw": 0, "p2state": 76, "p1mugen": 1631,
+        "damage": 0, "gdamage": 0, "fall": 0, "animtype": 2,
+        "gvx": 0, "gvy": 0, "avx": 0, "avy": 0,
+        "grvx": 0, "agvx": 0, "agvy": 0,
+    }
+    # The source MoveHit rows would chain humans automatically.  Drop them
+    # and make kind 6 (fresh QCF+P) the human path; the CPU uses the
+    # automatic target from CHAINTAB.
+    _kyo["trans_drop"] = sorted(
+        set(_kyo.get("trans_drop", ())) |
+        {(61, 3), (63, 3), (66, 3), (68, 3)})
+    _kyo["extra_trans"] += [
+        (61, 0, 6, 0), (66, 0, 6, 0),      # human QCF+P follow-up
+        (63, 0, 6, 0), (68, 0, 6, 0),
+    ]
+    # CHAINTAB: from-state -> weak / strong command target and automatic
+    # CPU target.  Part 1 accepts either button; part 2's weak/strong
+    # variants both finish in the grab.
+    _kyo["rekka"] = [(61, 63, 68, 63), (66, 63, 68, 68),
+                     (63, 115, 115, 115), (68, 115, 115, 115)]
+    _kyo.setdefault("cmd_extra", []).extend([
+        {"name": "QCF_R2W", "hidden": True, "label": "ARAGAMI 2 W",
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 1)],
+         "time": 18, "state": 1605, "posture": 3},
+        {"name": "QCF_R2S", "hidden": True, "label": "ARAGAMI 2 S",
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 2)],
+         "time": 18, "state": 1710, "posture": 3},
+        {"name": "QCF_R3W", "hidden": True, "label": "ARAGAMI 3",
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 1)],
+         "time": 18, "state": 1630, "posture": 3},
+        {"name": "QCF_R3S", "hidden": True, "label": "ARAGAMI 3",
+         "elems": [(2, 0), (6, 0), (4, 0), (0, 2)],
+         "time": 18, "state": 1630, "posture": 3},
+    ])
+    # 1631 explodes on its source element 4 (index 3) and releases the
+    # victim to the thrown-flight slot on the next element, after the frame-3
+    # TargetBind has lowered him to hand height.
+    _kyo.setdefault("act_extra", {})[1631] = [(4, 4, 816, 0)]
+    _kyo["explod_override"] = dict(_kyo.get("explod_override", {}))
+    _kyo["explod_override"][1631] = [
+        (3, "MagicBurst", 55, -90, 20, 0x2A),
+        (3, "FlameRise", 45, -70, 18, 0x3E),
+    ]
+
 # Takuma's Ryuuko Ranbu: the real flurry states (3105/3125) pull a large set
 # of new sprites into TakumaData, which already shares the tight bank 83 low
 # half.  Reuse the already-loaded 1320 held-kick sprites as a synthetic
@@ -9045,7 +9114,7 @@ def build_command_list(name, cfg, button_rows, rules, cmddefs, max_sids=()):
 
     source = _state_labels(_source_cmd_path(cfg))
     for r in rules:
-        if r.get("shortcut"):
+        if r.get("shortcut") or r.get("hidden"):
             continue
         sid = r["state"]
         if sid in rows:
@@ -12731,6 +12800,7 @@ def build_char(name, cfg, global_pal=None):
                       "posture": int(_spec.get("posture", 3)),
                       "dist": 0, "nstate": 0, "state": _sid,
                       "mstate": _spec["state"],
+                      "hidden": bool(_spec.get("hidden", False)),
                       "label": _spec.get("label", "")})
     # A few source packages have a throw state but no [State -1, Throw]
     # command (Billy) or point it at a non-throw state (Chin 900).  Give
@@ -12911,7 +12981,16 @@ def build_char(name, cfg, global_pal=None):
     # the descriptors keep their layout.
     frames_by_sid = {sid: anim_tables[sid][0]
                      for sid in range(nsid) if sid in anim_tables}
+    # Special follow-up chain table.  CHAINTAB rows are 4 bytes:
+    # from_sid, weak_button_target, strong_button_target, cpu_target; $FF
+    # terminates.  TransAir kind 6 reads it while a state is live: a fresh
+    # QCB + punch chains into the matching next rekka part, while the CPU
+    # uses the automatic handoff target.  The target sid comes from the
+    # command rule matched inside CmdTryChain, so normal command scans
+    # never enter a mid-rekka state.
     inc.append(f"{name}ChainTab:\n")
+    for _from, _weak, _strong, _cpu in cfg.get("rekka", ()):
+        inc.append(f"    .db {_from},{_weak},{_strong},{_cpu}\n")
     inc.append("    .db $FF\n")
 
     # Special/super cancel gate.  The descriptor carries a pointer to this

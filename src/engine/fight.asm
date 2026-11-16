@@ -317,8 +317,9 @@
 .DEFINE CH_CMDTAB   40                  ; command rules (motion,held,nheld,post,st)
 .DEFINE CH_MOTTAB   42                  ; motion record pointer table
 .DEFINE CH_POSTAB   44                  ; per-state PosAdd timeline pointers
-.DEFINE CH_CHAINTAB 46                  ; legacy normal-chain table (empty:
-                                        ;   normal -> normal chains removed)
+.DEFINE CH_CHAINTAB 46                  ; command-driven rekka follow-ups
+                                        ;   (4B rows: from, weak-to,
+                                        ;   strong-to, cpu-to)
 .DEFINE CH_POWTAB   48                  ; per-state power delta table (.dw)
 .DEFINE CH_TRANSTAB 50                  ; intra-state ChangeState rules
 .DEFINE CH_EVELTAB  52                  ; per-state entry velset (.dw vx,vy)
@@ -588,6 +589,15 @@
 .DEFINE histp       $70                 ; 3-byte ptr to this fighter's ring
 .DEFINE pausecnt    $73                 ; global freeze (Pause/SuperPause):
                                         ;   FightTick stalls while nonzero
+; Command-driven rekka follow-ups.  The filter is only armed by
+; RekkaChainTry/kind 6, so ordinary CmdTry scans ignore it.  The scratch lives
+; past the per-side input rings ($7E4100 + 2*$40) and cannot collide with
+; either fighter's ring.  CHAIN_SPTR saves the TransTab cursor while CmdTry
+; borrows sptr for its motion record.
+.DEFINE CHAIN_LO    $7E4180             ; first accepted follow-up sid
+.DEFINE CHAIN_HI    $7E4181             ; second accepted follow-up sid
+.DEFINE CHAIN_TGT   $7E4182             ; sid returned by a chain match
+.DEFINE CHAIN_SPTR  $7E4184             ; word: saved TransTab row pointer
 .DEFINE SUPERFX     $7E51F0             ; super flash/dim frames remaining
 .DEFINE SUPERFX_MODE $7E51F1             ; 0 off, 1 white flash, 2 darken
 .DEFINE CINE_TIMER  $7E51F2             ; cinematic black-screen ticks
@@ -7156,6 +7166,16 @@ MM_rej2:
 MM_powok:
     sep #$20
     .ACCU 8
+    lda ct_cancel                      ; 2 = chain-target scan: only accept
+    cmp #2                             ;   the two target sids from the
+    bne MM_notchain                    ;   current CHAINTAB row.
+    lda ct_tmp
+    cmp.l CHAIN_LO
+    beq CMC_take
+    cmp.l CHAIN_HI
+    beq CMC_take
+    jmp MM_rej2
+MM_notchain:
     lda ct_cancel                     ; hit-cancel scans only accept combo
     beq CMC_take                      ;   routes: specials 48-66, supers
     lda ct_tmp                        ;   ct_tmp = rule target sid (MM_pow)
@@ -7218,7 +7238,15 @@ CMC_norchg:
     ldx fofs                          ; keep the debug stamp for test dumps
     lda ct_ts0
     sta FP+F_LASTCT,x
+    lda ct_cancel                     ; 2 = chain scan: hand the matched
+    cmp #2                            ;   target back to RekkaChainTry
+    bne +                             ;   instead of running the state here;
+    lda ct_tmp                        ;   CMC_mark already spent the press.
+    sta.l CHAIN_TGT
     rep #$20
+    .ACCU 16
+    rts
++   rep #$20
     .ACCU 16
     lda ct_row
     tay
@@ -8892,9 +8920,9 @@ VT_anim:
     jsr AnimTick
     jmp ClampX
 
-; TransAir: fire the first live (kind 1/2/3/4) TransTab row for the current
-; state.  kind 1: falling (vy > 0) and height <= arg px -> land.  kind 2:
-; still rising (vy < -1px) and pad arg just pressed -> air follow-up.
+; TransAir: fire the first live (kind 1/2/3/4/6/7) TransTab row for the
+; current state.  kind 1: falling (vy > 0) and height <= arg px -> land.
+; kind 2: still rising (vy < -1px) and pad arg just pressed -> air follow-up.
 ; kind 3: MoveHit -- the state's HitDef already connected (supers).
 ; kind 4: distance gate -- arg.lo = max centre distance in px, arg.hi =
 ;         first animation frame (running grabs such as Takuma's Shouran
@@ -8902,6 +8930,9 @@ VT_anim:
 ; kind 5: button released -- none of the pad bits in arg is held (mugen
 ;         `command != "holdx"`: Saisyu's Orochinagi charge).  Kinds 4/5
 ;         share the low-bank helper; the battle window has no slack.
+; kind 6: human rekka follow-up -- CHAINTAB row + connected HitDef + fresh
+;         QCB+P, scanned by CmdTryChain.  The CPU uses the row's automatic
+;         handoff target because the AI cannot input the follow-up command.
 TransAir:
     ldy #CH_TRANSTAB
     ldx #sptr
@@ -8924,6 +8955,8 @@ TA_row:
     beq TA_press
     cmp #3
     beq TA_hit
+    cmp #6
+    beq TA_rekka
     cmp #4
     bcs TA_dist                           ; 4 distance / 5 release
 TA_next:
@@ -8961,6 +8994,9 @@ TA_hit:
     and #$00FF.w                          ;   (hit, guard or parry); one tick
     beq TA_next                           ;   late since HitCheck runs after
     bra TA_fire                           ;   the state handlers
+TA_rekka:
+    jsr RekkaChainTry                     ; tail-enters the next part on match
+    bra TA_next
 TA_dist:
     jsr TransDistGate                     ; low-bank helper: C=1 -> grab
     bcc TA_next
@@ -19639,6 +19675,46 @@ TDG_dist:
     rts                                   ; C=1: close enough to grab
 .ENDS
 
+; CmdTryChain: same command matcher, but only accept the two follow-up sids
+; in CHAIN_LO/CHAIN_HI.  Returns C=1 with A16 = target sid on a match; on no
+; match C=0.  CMC_mark already spends the matched press, so one QCB+P input
+; opens exactly one follow-up part.  Lives in the low-bank gap between
+; TransDistGate and TransLive; same CPU bank, so the near jsr/rts still work.
+.IFDEF PVSNESLIB
+.BANK 50 SLOT 0
+.ELSE
+.BANK 70 SLOT 0
+.ENDIF
+.ORGA $0D50
+.SECTION "CmdTryChainLow" FORCE
+CmdTryChain:
+    sep #$20
+    .ACCU 8
+    lda #2
+    sta ct_cancel                      ; 2 = chain-target scan
+    lda #$FF
+    sta.l CHAIN_TGT                    ; no match yet
+    rep #$20
+    .ACCU 16
+    jsr CmdTryGo
+    sep #$20
+    .ACCU 8
+    lda.l CHAIN_TGT
+    cmp #$FF
+    beq CTCH_no
+    rep #$20
+    .ACCU 16
+    lda.l CHAIN_TGT
+    and #$00FF.w
+    sec
+    rts
+CTCH_no:
+    rep #$20
+    .ACCU 16
+    clc
+    rts
+.ENDS
+
 ; TransLive: A(16) != 0 when the current state still has a live (kind 1-4)
 ; TransTab row -- AnimTick freezes on the last frame while such a state
 ; waits on its positional/input transition.  Kind 5 (release) does not
@@ -19680,6 +19756,93 @@ TL_next:
     bra TL_row
 TL_no:
     lda #0
+    rts
+.ENDS
+
+; RekkaChainTry: CHAINTAB lookup for the current state.  When the previous
+; part has connected (F_HITDONE, hit or guard) and the player has a fresh
+; QCB+P in the ring, tail-jump into the weak/strong follow-up sid.  Called
+; from TransAir kind 6; on no match the caller resumes its TransTab scan.
+.IFDEF PVSNESLIB
+.BANK 50 SLOT 0
+.ELSE
+.BANK 70 SLOT 0
+.ENDIF
+.ORGA $0DC0
+.SECTION "RekkaChainLow" FORCE
+RekkaChainTry:
+    rep #$20
+    .ACCU 16
+    lda sptr                            ; CmdTry borrows sptr for its motion
+    sta.l CHAIN_SPTR                    ;   record; keep the TransTab cursor
+    lda sptr+1
+    sta.l CHAIN_SPTR+1
+    ldx fofs
+    lda FP+F_HITDONE,x
+    and #$00FF.w
+    beq RRT_no
+    ldy #CH_CHAINTAB
+    ldx #lptr
+    jsr CharPtr                       ; lptr -> this character's CHAINTAB
+    ldx fofs
+RRT_row:
+    ldy #0
+    lda [lptr],y
+    and #$00FF.w
+    cmp #$00FF.w
+    beq RRT_no
+    cmp FP+F_STATE,x
+    beq RRT_found
+    lda lptr
+    clc
+    adc #4
+    sta lptr
+    bra RRT_row
+RRT_found:
+    sep #$20
+    .ACCU 8
+    lda fofs                            ; the CPU cannot input the rekka
+    beq RRT_cpu1                        ;   command; use the automatic
+    lda cpu2                            ;   handoff target from row+3.
+    bra RRT_cpuchk
+RRT_cpu1:
+    lda cpu1
+RRT_cpuchk:
+    rep #$20
+    .ACCU 16
+    and #$00FF.w
+    beq RRT_human
+    ldy #3
+    sep #$20
+    .ACCU 8
+    lda [lptr],y
+    rep #$20
+    .ACCU 16
+    and #$00FF.w
+    jmp EnterState                    ; A = automatic next part sid
+RRT_human:
+    sep #$20
+    .ACCU 8
+    ldy #1
+    lda [lptr],y                      ; weak button target
+    sta.l CHAIN_LO
+    ldy #2
+    lda [lptr],y                      ; strong button target
+    sta.l CHAIN_HI
+    rep #$20
+    .ACCU 16
+    ldx fofs
+    jsr CmdTryChain
+    bcc RRT_no
+    jmp EnterState                    ; A = next part sid
+RRT_no:
+    lda.l CHAIN_SPTR
+    sta sptr
+    lda.l CHAIN_SPTR+1
+    sta sptr+1
+    rep #$20
+    .ACCU 16
+    clc
     rts
 .ENDS
 
