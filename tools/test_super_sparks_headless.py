@@ -29,6 +29,7 @@ F_STATE = 0x4008
 FP2 = 0x40
 SPARKS, SPK_SIZE = 0x4200, 20
 SPK_ANIM = 4
+SPK_FTIM, SPK_ATTR = 7, 15
 WEAK_PUNCH = 1                            # libretro Y -> MUGEN x
 SPARK_NAMES = ("SparkHit", "SparkSuper", "SparkMax")
 
@@ -135,6 +136,55 @@ def check_super(core, syms):
     print("PASS super hit -> SparkSuper", flush=True)
 
 
+def check_super_slot1(core, syms):
+    """A projectile in slot 1 must still land with SparkSuper.
+
+    SpawnProjImpact once pushed the slot after the spark index and popped
+    them in the wrong order: a slot-1 shot passed 20 as the SparkAnimTab
+    index (garbage cells, the golden squares after supers) and returned
+    the index as the slot offset.  Keep slot 0 busy so Ryu's Shinkuu
+    Hadouken takes slot 1.
+    """
+    reset_positions(core)
+    known = {syms[name] for name in ("SparkHit", "SparkGuard",
+                                     "SparkSuper", "SparkMax")}
+    guard = syms["SparkGuard"]
+
+    def hold_slot0():
+        core.put(SPARKS + SPK_ANIM, guard)
+        core.ram[SPARKS + 6] = 0
+        core.ram[SPARKS + SPK_FTIM] = 200
+        core.ram[SPARKS + SPK_ATTR] = 0x34
+
+    core.put(F_X + FP2, 170 << 8)         # out of body reach: the shot
+    core.put(F_POWER, 3000)               #   has to travel as a projectile
+    core.step(5)
+    hold_slot0()                          # ticks down for ~200 frames
+    motion(core, ((DOWN,), (DOWN, RIGHT), (RIGHT,),
+                  (DOWN,), (DOWN, RIGHT), (RIGHT,)), (X,))
+    base = SPARKS + SPK_SIZE
+    shot = False
+    for _ in range(360):
+        hold_slot0()
+        core.step()
+        anim = core.word(base + SPK_ANIM)
+        if not anim:
+            continue
+        if core.ram[base + SPK_ATTR] & 0x80:
+            shot = True
+            continue
+        assert shot, "slot 1 never held the super projectile"
+        assert anim in known, (
+            f"slot-1 impact spawned anim ${anim:04X}, not a hit spark")
+        name = next(n for n in SPARK_NAMES + ("SparkGuard",)
+                    if syms[n] == anim)
+        assert name == "SparkSuper", (
+            f"slot-1 super impact used {name}, expected SparkSuper")
+        print("PASS slot-1 super projectile -> SparkSuper", flush=True)
+        return
+    raise AssertionError("slot-1 super projectile never hit")
+
+
 def main(core_path, rom):
     core = Core(core_path, rom)
     syms = symbols()
@@ -153,6 +203,11 @@ def main(core_path, rom):
                 check(core, syms)
             except AssertionError as exc:
                 failed.append(f"{name}: {exc}")
+        enter_fight(core, select_state, "ryu", "kyo")
+        try:
+            check_super_slot1(core, syms)
+        except AssertionError as exc:
+            failed.append(f"super slot 1: {exc}")
     finally:
         core.close()
     if failed:

@@ -54,7 +54,18 @@ python3 tools/test_super_sparks_headless.py
 
 O teste dispara um soco normal, repete com `F_MAX` ligado e executa o
 QCFx2+X do Kyo; em cada caso compara o ponteiro do slot de spark com os
-simbolos `SparkHit`, `SparkMax` e `SparkSuper`.
+simbolos `SparkHit`, `SparkMax` e `SparkSuper`. Por fim, com Ryu, prende o
+slot 0 e confere que o Shinkuu Hadouken no slot 1 tambem termina em
+`SparkSuper`.
+
+### Correcao: quadrados dourados apos o super
+
+A primeira versao de `SpawnProjImpact` empilhava o indice do spark e depois o
+slot, mas desempilhava na ordem inversa. Um projetil no slot 1 passava `20`
+como indice de `SparkAnimTab` (ponteiro lixo, desenhado como blocos 16x16 da
+pagina de sparks) e devolvia o indice como offset de slot. No slot 0 o
+impacto virava sempre `SparkHit`. Agora o indice fica em A e so o slot vai
+para a pilha.
 
 O brilho/aura azul do MAX (ativação e supers durante o MAX) usa a
 variante azul do `SuperFx` (seção 7 de `docs/SUPER_MOVES.md`), não os

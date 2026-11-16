@@ -3217,11 +3217,9 @@ SPI_have:
     rep #$20
     .ACCU 16
     and #$00FF.w                        ; B may still hold scratch from the
-    pha                                 ;   8-bit reads: keep just the index
-    stz.w SPARKS+SPK_ANIM,x
+    stz.w SPARKS+SPK_ANIM,x             ;   8-bit reads: keep just the index
     stz.w SPARKS+SPK_ANIM+1,x
-    phx
-    pla
+    phx                                 ; A = anim index, never the slot
     jsr SparkSpawnAt
     plx
     rts
