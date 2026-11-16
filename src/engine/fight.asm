@@ -200,7 +200,7 @@
 .DEFINE S_REVACT    103                 ;   follow-ups (Yamazaki, Kyo,
 .DEFINE S_REVACT_LAST 106               ;   Shingo, Billy); dispatched as
                                         ;   ordinary ground specials
-.DEFINE S_EXT_LAST 116                  ; 107-116 = imported extended
+.DEFINE S_EXT_LAST 118                  ; 107-118 = imported extended
                                         ;   follow-ups (Blue Mary/Clark);
                                         ;   treated as specials by
                                         ;   HitOne/AI/survivor
@@ -8175,6 +8175,9 @@ StateTab:
     .dw StAirSpec, StAirSpec, StSpecial, StSpecial, StAirSpec
     .dw StSpecial, StSpecial, StSpecial
     .dw StSpecial, StSpecial              ; 115 Iori 3021 finisher, 116 spare
+    ; 117-118 Mary's Dynamite Swing air phases (3103 jump kick, 3110 grab):
+    ;   both fly under Physics and land through their TransTab rules.
+    .dw StAirSpec, StAirSpec
 
 StateRet:
     rep #$20
@@ -9568,6 +9571,8 @@ JT_go:
     and #$00FF.w
     jmp EnterState
 
+; Jump-pose selector, moved here from the Fight section (bank 50's 32 KiB
+; window is full).  Same bank, so the six near jsr call sites still resolve.
 ; A(16) = jump-pose state matching current horizontal momentum
 ; (neutral, forward or backward air anim).
 PickJumpState:
@@ -21769,6 +21774,8 @@ FD_nmi:
     .ACCU 16
     rtl
 .ENDS
+
+; ---------------------------------------------------------------------------
 
 ; ---------------------------------------------------------------------------
 ; YOU LOSE screen (campaign defeat).  Lives in bank 126's free tail: the

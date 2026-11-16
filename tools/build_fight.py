@@ -4639,15 +4639,36 @@ if "mary" in CHARS:
         (114, 3000, 3000),     # Super Dunk
         (58, 30000, 3000),     # Super Dunk MAX
         (62, 3100, 3100),      # Mary's Dynamite Swing
-        (64, 3300, 3301),      # Splash Rose
-        (66, 3400, 3301),      # Splash Rose S
+        (64, 3300, 3310),      # Splash Rose (dash/slash clip)
+        (66, 3400, 3310),      # Splash Rose S
         (68, 3800, 3800),      # Mary's Typhoon / Infinity Rose
+        # Super Dunk follow-ups: the root grab redirects the attacker to
+        # 3005 (normal) / 30005 (MAX), which own the bind windows, the
+        # +30/+30/+20 advance and the -105/-100 damage.  Both draw the
+        # two-cel 3005 clip (1300 + 6022), so no new sprite bank.
+        (115, 3005, 3005),     # Super Dunk grab/lift
+        (116, 30005, 3005),    # Super Dunk MAX grab/lift
+        # Dynamite Swing (3100): the source jumps (3101 -> 3103) and grabs on
+        # contact (3110 -> 3111 slam).  Only the startup was imported, as a
+        # stationary hit.  117 draws 3103 (the only clip in the chain with a
+        # Clsn1 box) and 118 draws 3110 (the air hold, two cels).
+        (117, 3103, 3103),     # Dynamite jump kick
+        (118, 3110, 3110),     # Dynamite air grab/slam
+        # Typhoon (3800 -> 3810 grab -> 3811 finisher).  Slot 106 was the
+        # only free one in the 103..118 grab window and already dispatches
+        # as a ground special, which is what 3810 is (physics N on the
+        # floor), so the whole grab+finisher fits without new state slots.
+        (106, 3810, 3810),     # Typhoon grab + finisher
     ])
     _mary = POST_CAL_TWEAKS.setdefault("mary", {})
     # Spinfall (1150/1160) launches with a statedef velset and no friction
-    # (physics N): StSpecial pinned F_VX to zero after the first tick, so
-    # Mary rose and fell in place.  Mark both sids VelSet-driven so the
-    # entry velocity (6 / 3.5 px/tick) survives until the landing rule.
+    # (physics N).  StSpecial pinned F_VX to zero after the first tick, so
+    # Mary rose and fell in place.  Mark both sids VelSet-driven (bit12) and
+    # launch one tick late: the engine integrates the entry velocity before
+    # the HitDef scan, so on the entry tick Mary used to be 19 px airborne
+    # and the frame-0 hitbox sailed over a standing opponent.  Zero entry
+    # velocity + op5/op15 rows at frame 1 keeps the launch (6/-5.2 weak,
+    # 3.5/-6.5 strong) with the hit checked from the floor, as in MUGEN.
     _mary.setdefault("velset_sids", []).extend([59, 60])
     # Straight Slicer (1600/1610): the source dashes 7 px/tick through the
     # 1601/1611 air phase (elements 2-4), nudges +10 at element 4 and then
@@ -4658,23 +4679,111 @@ if "mary" in CHARS:
         1600: [(1, 5, 5, 0), (4, 5, 3, 0), (7, 5, 2, 0), (11, 5, 0, 0)],
         1610: [(1, 5, 6, 0), (4, 5, 4, 0), (8, 5, 2, 0), (12, 5, 0, 0)],
     })
+    # Super Dunk: the root is a throw now (victim to the held slot, no
+    # damage); 3005/30005 pay the damage at element 14 through op3, and the
+    # last element hands the victim to the thrown slot (op4 arg 77) so it
+    # lands instead of standing up inside Mary.
+    POST_CAL_ACT_OVERRIDE["mary"].update({
+        3005: [(15, 4, 3012, 0)],
+        30005: [(15, 4, 3012, 0)],
+    })
+    # Super Dunk damage: 3005 pays -105 and its 3006 finisher -160
+    # (265/1000 life); the MAX pair 30005/30006 pays 200.  Scaled to the
+    # port's 200 HP.  Only two follow-up slots are free, so the finisher
+    # state is not wired and the whole chain's damage lands at element 14.
+    POST_CAL_TARGET_LIFE.setdefault("mary", {}).update(
+        {3005: -53, 30005: -40})
+    _mary.setdefault("extra_trans", []).extend([
+        (114, 115, 3, 0),      # Super Dunk grab -> lift/throw
+        (58, 116, 3, 0),       # Super Dunk MAX grab -> lift/throw
+        # Dynamite Swing: the startup only steps in; the jump owns the hit
+        # and the grab.  Landing from either air phase goes to the generic
+        # land recovery (17).
+        (62, 117, 0, 0),
+        (117, 118, 3, 0),
+        (117, 17, 1, 0),
+        (118, 17, 1, 0),
+        (68, 106, 3, 0),       # Typhoon grab -> lift/finisher
+        (68, 0, 0, 0),         # Typhoon whiff -> stand (anim end)
+    ])
+    # Dynamite: the source 3100 ends with a 100-tick hold that MUGEN never
+    # plays (ChangeState fires on AnimElem 5); leaving it in made the move
+    # stand still for ~110 ticks.  3103's clip is 23 ticks (its kick box is
+    # one frame) and 3110's last element is a t=-1 hold, so both need a
+    # longer tail to outlast the ~30-tick flight.
+    _mary.setdefault("tail_ticks", {}).update({3100: 1, 3103: 60, 3110: 24})
+    # The only Clsn1 in the chain sits 51-140 px above Mary's axis, i.e. it
+    # can only touch an opponent while her feet are almost on the floor, and
+    # it only exists on the kick frame.  Replace it on the kick and flight
+    # frames with a box that reaches down to her feet (8,-95,55,-18) so the
+    # grab lands mid-jump instead of at takeoff.
+    _mary.setdefault("air_box_patch_frames", {})[3103] = {
+        1: [(8, -95, 55, -18)], 2: [(8, -95, 55, -18)],
+        3: [(8, -95, 55, -18)], 4: [(8, -95, 55, -18)]}
+    # 3101 launches with VelSet 4.9,-7.5 and then VelMul .92 every tick.
+    # The port's air handler integrates a constant vx, so the decay is
+    # written as one exact-time op16 row per tick after the launch window.
+    # 118 must enter with a negative vy: Physics skips gravity while
+    # F_Y == 0 and vy >= 0, so a grab that connects at takeoff (height 0)
+    # never satisfied the `vy > 0 && F_Y <= 0` landing rule and Mary stood
+    # in the hold state forever.
+    _mary.setdefault("state_vel", {}).update({117: (4.9, -7.5), 118: (0, -1)})
+    _mary.setdefault("velset_sids", []).extend([117, 118])
+    POST_CAL_ACT_OVERRIDE["mary"][3103] = (
+        [(0x80 | t, 16, 235, 0) for t in range(6, 32)])
+    # 3110 holds the victim overhead while Mary falls.  The bind already
+    # adds her live height, so the source's -104 puts the pair through the
+    # 127 px playfield ceiling; keep the lift under it.
+    _mary.setdefault("bind_dy_cap", {})[3110] = -55
+    # Typhoon 3810 lifts the victim to -100; the bind adds Mary's height, so
+    # cap it under the 127 px playfield ceiling the same way.
+    _mary.setdefault("bind_dy_cap", {})[3810] = -60
+    # The source leaves 3800 on AnimElem 3 into the 3801/3802 whiff jump.
+    # The import kept the whole 7-frame clip, whose last element is a
+    # t=-1 hold (255 ticks in the port), so a whiff stood still for over
+    # four seconds.  Cap the startup at the three frames the source plays.
+    _mary.setdefault("frame_cap", {})[68] = 3
+    # 3811 pays -295 (weak) at its first element and hands the victim to
+    # 3821; the port folds the finisher into 3810, so pay it and throw at
+    # the last element of the grab clip (frame 12).
+    POST_CAL_ACT_OVERRIDE["mary"].update({
+        3810: [(12, 3, (-59) & 0xFF, 0), (12, 4, 3821, 0)],
+    })
+    # Dynamite slam: 3110 has no damage row of its own (3111 pays -35 after
+    # landing); pay it in the air hold and hand the victim to the throw slot
+    # at the last element.
+    POST_CAL_ACT_OVERRIDE["mary"].update({
+        3110: [(0, 3, (-13) & 0xFF, 0), (2, 4, 3012, 0)],
+    })
+    # Splash Rose: the import gave both variants the 1-frame 3301 dash pose,
+    # so the rush stood still with a single contact.  3310 is the source's
+    # dash/slash clip (8 frames) and its cels (1525 + 3301) are already
+    # resident, so both roses draw it and re-arm the hit across the clip.
+    POST_CAL_ACT_OVERRIDE["mary"].update({
+        3300: [(0, 5, 4, 0), (5, 5, 8, 0), (7, 5, 0, 0)],
+        3400: [(0, 5, 4, 0), (5, 5, 8, 0), (7, 5, 0, 0)],
+    })
+    _mary.setdefault("velset_sids", []).extend([64, 66])
     _mary.setdefault("slice_damage", {}).update({
-        112: 20, 113: 22, 114: 30, 58: 40,
-        62: 25, 64: 25, 66: 30, 68: 30})
+        112: 20, 113: 22, 114: 0, 58: 0,
+        62: 0, 64: 25, 66: 30, 68: 0})
     _mary.setdefault("hitdef_override", {}).update({
         112: {"active": 4, "damage": 20, "gdamage": 2, "fall": 1},
         113: {"active": 4, "damage": 22, "gdamage": 2, "fall": 1},
-        114: {"active": 1, "damage": 30, "gdamage": 2, "p2state": 0xFF,
-              "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
-        58: {"active": 1, "damage": 40, "gdamage": 2, "p2state": 0xFF,
-             "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
-        62: {"active": 4, "damage": 25, "gdamage": 2, "fall": 1},
-        64: {"active": 1, "damage": 25, "gdamage": 2, "p2state": 0xFF,
-             "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
-        66: {"active": 1, "damage": 30, "gdamage": 2, "p2state": 0xFF,
-             "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
-        68: {"active": 1, "damage": 30, "gdamage": 2, "p2state": 0xFF,
-             "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+        114: {"damage": 0, "gdamage": 0, "p2state": 76,
+              "fall": 0, "throw": 1, "gvx": 0, "gvy": 0},
+        58: {"damage": 0, "gdamage": 0, "p2state": 76,
+             "fall": 0, "throw": 1, "gvx": 0, "gvy": 0},
+        62: {"active": 0, "damage": 0, "gdamage": 0, "p2state": 0xFF,
+             "fall": 0, "throw": 0, "gvx": 0, "gvy": 0},
+        68: {"active": 4, "damage": 0, "gdamage": 0, "p2state": 76,
+             "fall": 0, "throw": 1, "gvx": 0, "gvy": 0},
+        117: {"damage": 12, "gdamage": 2, "p2state": 76,
+              "fall": 0, "throw": 1, "gvx": 0, "gvy": 0},
+        64: {"active": 10, "damage": 25, "gdamage": 2, "hittime": 16,
+             "p2state": 0xFF, "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
+        66: {"active": 10, "damage": 30, "gdamage": 2, "hittime": 16,
+             "p2state": 0xFF, "fall": 1, "throw": 0, "gvx": 0, "gvy": 0},
     })
     _mary.setdefault("cmd_extra", []).extend([
         {"name": "SLICER_W", "label": "STRAIGHT SLICER",
@@ -5452,6 +5561,14 @@ VICTIM_STATE_IDS = {1025: 70, 1026: 71, 1027: 72, 1028: 73,
                     3170: 76, 3171: 77,
                     3160: 76, 3161: 76, 3162: 76, 3163: 76,
                     3164: 76, 3165: 77,
+                    # Super Dunk (3000/30000): the source finisher 3006
+                    # launches the victim into 3012 (VelSet -2.5,-5 ->
+                    # SelfState 5100), i.e. the thrown/knockdown slot.
+                    3012: 77,
+                    # Typhoon (3800): 3821 launches the victim (-4,-5 ->
+                    # SelfState 5100), i.e. the thrown/knockdown slot.
+                    3821: 77,
+
                     3270: 76, 3271: 76, 3222: 77,
                     3210: 76, 3211: 76, 3212: 77,
                     4021: 77,
@@ -12799,7 +12916,9 @@ def build_char(name, cfg, global_pal=None):
             return None
         return frames, state_tick_of(sid, start)
 
-    def canon_bind(rows, floor_info=None, sid=0):
+    _bind_dy_cap = cfg.get("bind_dy_cap") or {}
+
+    def canon_bind(rows, floor_info=None, sid=0, dy_cap=None):
         frames = [None] * 255
         for lo, hi, dx, dy in rows:
             if hi < lo:
@@ -12816,6 +12935,8 @@ def build_char(name, cfg, global_pal=None):
                 # floor exactly on the highest hold poses (Billy 3001/3021,
                 # Daimon, Krauser, Brian, Andy/Billy throws, Omega Rugal).
                 d = max(d, -127)
+                if dy_cap is not None and d < dy_cap:
+                    d = dy_cap
                 frames[f] = (dx & 0xFF, d & 0xFF)
         out = []
         f = 0
@@ -12830,8 +12951,12 @@ def build_char(name, cfg, global_pal=None):
             f = g + 1
         return out
 
-    bind_rows = {sid: canon_bind(cns_binds.get(move_ids.get(sid, -1)) or (),
-                                 bind_floor_info(sid), sid)
+    _bind_extra = cfg.get("bind_extra") or {}
+    bind_rows = {sid: canon_bind(
+                     list(cns_binds.get(move_ids.get(sid, -1)) or ())
+                     + list(_bind_extra.get(move_ids.get(sid, -1), ())),
+                     bind_floor_info(sid), sid,
+                     _bind_dy_cap.get(move_ids.get(sid, -1)))
                  for sid in range(nsid)}
     inc.append(f"{name}BindTab:\n")
     for sid in range(nsid):
