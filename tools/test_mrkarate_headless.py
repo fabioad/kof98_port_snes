@@ -166,8 +166,8 @@ def selection():
             c.ram[0x108E] = c.ram[0x108F] = 1
             c.step()
             ready(c)
-            assert c.ram[0x1087] == 5
-            print(f'PASS hidden select P{port+1}, boss stage', flush=True)
+            assert c.ram[0x1087] != 5
+            print(f'PASS hidden select P{port+1}, regular stage', flush=True)
         finally:
             c.close()
 
@@ -196,8 +196,8 @@ def team_selection():
             c.buttons[port] = set()
             assert c.ram[0x10CB+port*3+2] == MK, (mode,port)
             wait_team_fight(c, 'team hidden selection', 4000)
-            assert c.ram[0x1087] == 5, 'benched Karate allowed another stage'
-            print(f'PASS team selection mode={mode}, P{port+1}, benched Karate pins boss stage', flush=True)
+            assert c.ram[0x1087] != 5, 'benched Karate forced the boss stage'
+            print(f'PASS team selection mode={mode}, P{port+1}, regular stage', flush=True)
         finally:
             c.close()
 

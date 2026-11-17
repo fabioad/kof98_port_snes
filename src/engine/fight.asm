@@ -724,12 +724,16 @@
 .DEFINE AI_AIRT     $5046               ; 2 bytes, per side: air-attack delay
 .DEFINE AI_JUMPCD   $5048               ; 2 bytes, per side: jump-in cooldown
 .DEFINE AI_OFFCD    $504A               ; 2 bytes, per side: offense cooldown
+.DEFINE AI_LVL      $504C               ; 1..9 effective level for this AI pass
+                                        ;   (Mr. Karate overrides his own pass
+                                        ;   to 9 without buffing the other CPU)
 .ELSE
 .DEFINE AI_OPPFALL  $4E00               ; standalone WRAM, below SURV_LIST
 .DEFINE AI_JUMP     $4E02
 .DEFINE AI_AIRT     $4E04
 .DEFINE AI_JUMPCD   $4E06
 .DEFINE AI_OFFCD    $4E08
+.DEFINE AI_LVL      $4E0A
 .ENDIF
 .DEFINE AI_J_FWD    $01                 ; AI_JUMP bit0: forward jump-in
 .DEFINE AI_J_ATK    $02                 ; AI_JUMP bit1: attack while airborne
@@ -743,6 +747,10 @@
 .DEFINE AI_PF_METER $02
 .DEFINE AI_PF_ADAPT $04
 .DEFINE AI_PF_ZONER $08
+.DEFINE AI_PF_COUNTER $10              ; prefer a counter attack when the foe
+                                        ;   commits to an attack (boss AI)
+.DEFINE AI_PF_BOSS  $20                 ; secret boss: faster offense cadence,
+                                        ;   projectile-heavy and air casts
 .DEFINE AI_DBG_THREAT DBGREG+120        ; headless AI coverage counters
 .DEFINE AI_DBG_BLOCK  DBGREG+121
 .DEFINE AI_DBG_SPEC   DBGREG+122
@@ -758,6 +766,7 @@
 .DEFINE AI_DBG_JUMP   DBGREG+132        ; jump-in actually launched
 .DEFINE AI_DBG_PBLOCK DBGREG+133        ; projectile blocked instead of dodged
 .DEFINE AI_DBG_COMBO  DBGREG+134        ; connected normal canceled into special/super
+.DEFINE AI_DBG_COUNTER DBGREG+135      ; boss counter-read turned into offense
 .DEFINE sintro      $8C                 ; 1 = skip intro (later round / solo)
 .DEFINE fadelevel   $8D                 ; 15..0 final-boss fade-out brightness
 .DEFINE msuok       $7A                 ; 1 = MSU-1 data port is present
@@ -4956,19 +4965,59 @@ DrawLevel:
     lda #:StrLevel
     sta scr2+2
     jsr WriteStr
+    jsr MkHudLevel                      ; boss Mr. Karate shows LEVEL 8
+    clc
+    adc #27                             ; charset: '0' is tile 27
+    pha
     rep #$20
     .ACCU 16
     ldx #((27*32+18)*2).w               ; space at col 17, digit at col 18
     sep #$20
     .ACCU 8
-    lda.w DIFFICULTY                    ; OPTIONS scale (1..8), not AI 1..9
-    clc
-    adc #27                             ; charset: '0' is tile 27
+    pla
     sta HUDMAP,x
     lda #ATT_TXT.b
     sta HUDMAP+1,x
     rep #$20
     .ACCU 16
+    rts
+
+; A(8) = 1..8 difficulty shown in the fight HUD.  A CPU-controlled Mr.
+; Karate always fights at effective AI level 9, so advertise the top
+; OPTIONS rung (8) even when the player picked a lower level.
+MkHudLevel:
+    sep #$20
+    .ACCU 8
+    stz scr6
+    lda cpu2
+    beq +
+    ldx #FP2OFS.w
+    rep #$20
+    .ACCU 16
+    lda FP+F_CHAR,x
+    cmp #CharMrkarate.w
+    sep #$20
+    .ACCU 8
+    bne +
+    lda #1
+    sta scr6
++   lda cpu1
+    beq +
+    ldx #0
+    rep #$20
+    .ACCU 16
+    lda FP+F_CHAR,x
+    cmp #CharMrkarate.w
+    sep #$20
+    .ACCU 8
+    bne +
+    lda #1
+    sta scr6
++   lda scr6
+    beq +
+    lda #8
+    rts
++   lda DIFFICULTY
     rts
 
 ; A(16) = hp 0..MAXHP -> A = filled px 0..88 (hp*11/25)
@@ -5158,6 +5207,17 @@ ProjFxLoadBoth:
     stz.w FX_CACHEBANK
     stz.w FX_CACHEBANK+2
     rts
+
+; X = spark slot.  If a projectile owned the slot, drop both page caches so
+; the next static spark must re-upload the shared atlas instead of drawing
+; against the projectile's tiles.  Ordinary spark slots keep their cache.
+ProjFxDropIfProjectile:
+    sep #$20
+    .ACCU 8
+    lda.w SPARKS+SPK_ATTR,x
+    bpl +
+    jmp ProjFxLoadBoth
++   rts
 
 ; Each live spark slot owns one full 2 KiB OBJ page. Projectiles stream
 ; their enlarged frame; ordinary effects restore the shared static page.
@@ -7567,6 +7627,13 @@ FightTick:
     lda.b pausecnt
     dec a                               ;   here aliased EnvShake ticks into a
     sta.b pausecnt                      ;   ~1024-tick full-match freeze
+    ; Hit-stop freezes animation, but the NMI still streams effect pages.
+    ; Rebuild the sprite list from the frozen state so OAM never keeps
+    ; cells from the previous projectile atlas against the new spark page
+    ; (the intermittent golden squares after supers).
+    jsr BuildOam
+    sep #$20
+    .ACCU 8
     rts                                 ; global Pause/SuperPause freeze:
                                         ;   positions, anims and hit checks
                                         ;   all hold (mugen movetime = 0)
@@ -12084,7 +12151,22 @@ AI_one:
     sep #$20
     .ACCU 8
     stx fofs
-    lda AI_LEVEL
+    ; Effective level for this fighter.  Mr. Karate is the secret boss: when
+    ; the CPU drives him he always uses the level-9 personality rates, even
+    ; if OPTIONS is lower.  Keep AI_LEVEL intact so the other CPU (and the
+    ; OPTIONS readout) keep their own difficulty.
+    rep #$20
+    .ACCU 16
+    lda FP+F_CHAR,x
+    cmp #CharMrkarate.w
+    sep #$20
+    .ACCU 8
+    bne +
+    lda #9
+    bra ++
++   lda AI_LEVEL
+++  sta AI_LVL
+    lda AI_LVL
     bne AI_smart                        ; level 0 is an invalid fallback
     jmp AI_classic
 AI_classic:
@@ -12223,7 +12305,9 @@ AI_air_reset:
 AI_air_hold:                            ; takeoff squat: keep the full jump
     jsr AI_SideX                         ;   alive and preserve the launch
     lda AI_JUMP,x                       ;   direction sampled by the state
-    beq AI_air_ret
+    bne AI_air_hold_go
+    jmp AI_air_ret
+AI_air_hold_go:
     jsr AI_DirFwd
     rep #$20
     .ACCU 16
@@ -12236,17 +12320,41 @@ AI_air_hold:                            ; takeoff squat: keep the full jump
     jsr AI_SideX
     lda AI_JUMP,x
     and #AI_J_ATK
-    beq AI_air_ret
+    bne AI_air_hold_atk
+    jmp AI_air_ret
+AI_air_hold_atk:
     lda AI_AIRT,x
-    beq AI_air_ret
+    bne AI_air_hold_tick
+    jmp AI_air_ret
+AI_air_hold_tick:
     dec a
     sta AI_AIRT,x
     jmp AI_done
 AI_air_fight:                           ; airborne: press the jump-in attack
     jsr AI_SideX
+    ; The boss also fires projectiles from the air.  The jump-in cooldown
+    ; doubles as an air-cast throttle so he cannot spam it every frame.
+    lda AI_FLAGS
+    and #AI_PF_BOSS
+    beq AI_air_jumpatk
+    lda AI_JUMPCD,x
+    bne AI_air_jumpatk
+    jsr AI_Rand
+    cmp #160                            ; 5/8: cast before the air normal
+    bcs AI_air_jumpatk
+    lda #4                              ; projectile-only scan
+    sta AI_SCANMODE
+    jsr AI_ScanMove
+    bcc AI_air_jumpatk
+    lda #24
+    sta AI_JUMPCD,x
+    jmp AI_have_move
+AI_air_jumpatk:
     lda AI_JUMP,x
     and #AI_J_ATK
-    beq AI_air_ret
+    bne AI_air_atk_ready
+    jmp AI_air_ret
+AI_air_atk_ready:
     lda AI_AIRT,x
     beq AI_air_press
     dec a
@@ -12332,7 +12440,7 @@ AI_think:
     ; --- projectiles: guard (levels 3+), jump or roll through them -------
     jsr AI_ProjThreat
     bcc AI_no_proj
-    lda AI_LEVEL
+    lda AI_LVL
     cmp #3
     bcc AI_no_proj
     ; A guardable shot is blocked when the read succeeds.  The 160 base
@@ -12364,7 +12472,7 @@ AI_proj_escape:
     cmp AI_TMP
     bcs AI_no_proj
     inc.w AI_DBG_PROJ
-    lda AI_LEVEL
+    lda AI_LVL
     cmp #5
     bcc AI_proj_jump
     lda AI_PDIST
@@ -12396,6 +12504,16 @@ AI_aa_range_rise:
     lda #96
 AI_aa_range:
     sta AI_TMP
+    ; Boss anti-air: a descending jump-in toward him gets a much wider
+    ; window than the generic 60 px read, so he contests the fall early.
+    lda AI_FLAGS
+    and #AI_PF_BOSS
+    beq +
+    lda AI_OPPFALL
+    beq +
+    lda #112
+    sta AI_TMP
++
     lda AI_DIST
     cmp AI_TMP
     bcs AI_ground_threat
@@ -12437,6 +12555,24 @@ AI_ground_threat:
     bcc +
     jmp AI_no_threat
 +   inc.w AI_DBG_THREAT
+    ; Boss counter preference: Mr. Karate reads the commitment and answers
+    ; with his own attack instead of only guarding.  The roll scales with
+    ; the effective level, so it is disabled below level 7.
+    lda AI_FLAGS
+    and #AI_PF_COUNTER
+    beq +
+    lda AI_LVL
+    cmp #7
+    bcc +
+    lda #176
+    jsr AI_Rate
+    sta AI_TMP
+    jsr AI_Rand
+    cmp AI_TMP
+    bcs +
+    inc.w AI_DBG_COUNTER
+    jmp AI_no_threat                 ; counter-read: go on offense
++
     ; Evade or block: personality mix decides the dodge, defense decides
     ; the guard.  Level 7+ may read the attack and counter instead.
     lda AI_MIX
@@ -12455,14 +12591,14 @@ AI_ground_threat:
     jsr AI_Rand
     cmp AI_TMP
     bcc AI_block
-    lda AI_LEVEL
+    lda AI_LVL
     cmp #7
     bcc +
     jmp AI_no_threat                  ; counter-read: go on offense
 +
 AI_block:
     inc.w AI_DBG_BLOCK
-    lda AI_LEVEL
+    lda AI_LVL
     cmp #7                              ; crouch guard is a close-range read
     bcc AI_block_stand
     lda AI_DIST
@@ -12486,7 +12622,7 @@ AI_evade:
     ; byte-sized: a word immediate leaves a $00 opcode (BRK) in the stream.
     sep #$20
     .ACCU 8
-    lda AI_LEVEL
+    lda AI_LVL
     cmp #4
     bcc AI_block
     lda AI_DIST
@@ -12513,7 +12649,7 @@ AI_no_threat:
     ; --- punish hitstun and whiff recovery -------------------------------
     lda AI_OPPHIT
     beq AI_check_guard
-    lda AI_LEVEL
+    lda AI_LVL
     cmp #3
     bcc AI_check_guard
     lda AI_FLAGS
@@ -12552,7 +12688,7 @@ AI_try_max:
     ; --- spend a stock on the MAX burst when the kit supports it ---------
     rep #$20                            ; entry paths come from the 8-bit
     .ACCU 16                            ;   decision tree; the immediates below
-    lda AI_LEVEL                        ;   are assembled as 16-bit
+    lda AI_LVL                        ;   are assembled as 16-bit
     cmp #5
     bcc AI_try_throw
     lda AI_FLAGS
@@ -12614,7 +12750,7 @@ AI_try_offense:
 AI_offense_ready:
     ; The gate makes low levels act only on a fraction of idle frames; the
     ; chosen category then applies its own level-scaled commit rate.
-    lda AI_LEVEL
+    lda AI_LVL
     rep #$20
     .ACCU 16
     and #$00FF.w
@@ -12632,7 +12768,23 @@ AI_offense_ready:
     jmp AI_move
 AI_offense_go:
     ; Equal random categories keep specials, supers, blowbacks and jump-ins
-    ; all represented at every level.
+    ; all represented at every level.  The secret boss weights the roll
+    ; toward supers and projectile specials instead: half of his neutral
+    ; windows try a super, a quarter try a projectile special.
+    lda AI_FLAGS
+    and #AI_PF_BOSS
+    beq AI_offense_even
+    jsr AI_Rand
+    cmp #128
+    bcc AI_try_super
+    cmp #192
+    bcc AI_try_special
+    cmp #224
+    bcs AI_boss_other
+    jmp AI_try_jumpin
+AI_boss_other:
+    jmp AI_try_blowback
+AI_offense_even:
     jsr AI_Rand
     and #$03
     beq AI_try_super
@@ -12937,7 +13089,7 @@ AI_LoadTab:
     beq +
     inx
 +   lda sel1,x
-    cmp #49
+    cmp #NROSTER
     bcc +
     lda #0
 +   rep #$20
@@ -12954,7 +13106,7 @@ AI_LoadTab:
     beq +
     inx
 +   lda sel1,x
-    cmp #49
+    cmp #NROSTER
     bcc +
     lda #0
 +   rep #$20
@@ -13004,7 +13156,7 @@ AI_LoadTab:
     rts
 
 ; Scan the move table for the first valid entry after a random start.
-; AI_SCANMODE: 0 special, 1 anti-air, 2 super, 3 throw.  Returns carry set
+; AI_SCANMODE: 0 special, 1 anti-air, 2 super, 3 throw, 4 projectile.  Returns carry set
 ; and A=sid on a hit; carry clear on no match.
 AI_ScanMove:
     lda AI_CNT
@@ -13067,9 +13219,16 @@ AI_scan_loop:
     beq AI_scan_super
     cpx #3
     beq AI_scan_throw
+    cpx #4
+    beq AI_scan_proj
     lda scr6                            ; plain special (weak or strong)
     and #(AI_F_SUPER|AI_F_THROW|AI_F_MAX)
     bne AI_scan_next
+    bra AI_scan_range
+AI_scan_proj:
+    lda scr6
+    and #AI_F_PROJ
+    beq AI_scan_next
     bra AI_scan_range
 AI_scan_aa:
     lda scr6
@@ -13377,7 +13536,7 @@ AI_Rand:
     lda rng
     eor framecnt
     eor AI_SIDE
-    eor AI_LEVEL
+    eor AI_LVL
     inc rng
     rts
 
@@ -13389,7 +13548,7 @@ AI_Rate:
     sep #$20
     .ACCU 8
     sta scr0
-    lda AI_LEVEL
+    lda AI_LVL
     rep #$20
     .ACCU 16
     and #$00FF.w                       ; clear B before tax: a stale high
@@ -13425,7 +13584,7 @@ AIOffCDTab:
 AI_SetOffCD:
     sep #$20
     .ACCU 8
-    lda AI_LEVEL
+    lda AI_LVL
     rep #$20
     .ACCU 16
     and #$00FF.w
@@ -13437,7 +13596,12 @@ AI_SetOffCD:
     .ACCU 8
     lda.l AIOffCDTab,x
     sta AI_TMP
-    jsr AI_SideX
+    lda AI_FLAGS                        ; boss acts again almost immediately
+    and #AI_PF_BOSS
+    beq +
+    lda #3
+    sta AI_TMP
++   jsr AI_SideX
     lda AI_TMP
     sta AI_OFFCD,x
     rts
@@ -13453,8 +13617,13 @@ AI_JumpIn:
     sta AI_JUMP,x
     lda #6                             ; takeoff squat + rise before the press
     sta AI_AIRT,x
-    lda #40
-    sta AI_JUMPCD,x
+    lda AI_FLAGS                       ; boss jumps again sooner and can cast
+    and #AI_PF_BOSS                    ;   an air projectile during the jump
+    beq +
+    lda #18
+    bra ++
++   lda #40
+++  sta AI_JUMPCD,x
     jsr AI_DirFwd
     rep #$20
     .ACCU 16
@@ -14092,6 +14261,7 @@ PH_guard:
     .ACCU 16
     stz.w SPARKS+SPK_ANIM,x             ; blocked shot is consumed
     stz.w SPARKS+SPK_ANIM+1,x
+    jsr ProjFxLoadBoth                  ; drop the shot's atlas from the cache
     lda scr1
     sec
     sbc #24.w
@@ -14524,7 +14694,8 @@ TS_slot:
     dec a
     sta.w SPARKS+SPK_TTL,x
     bne +
-    stz.w SPARKS+SPK_ANIM,x             ; expired: free the slot
+    jsr ProjFxDropIfProjectile          ; a dead shot's atlas must not be
+    stz.w SPARKS+SPK_ANIM,x             ;   reused with the spark page cache
     stz.w SPARKS+SPK_ANIM+1,x
     jmp TS_next8
 +   rep #$20
@@ -14612,7 +14783,8 @@ TS_anim_end:
 TS_multi_chk:
     lda.w RT_PROJHIT,x                  ; held only after a contact: a missed
     bne TS_multi_hold                   ;   Power Geyser must end with its clip
-++  stz.w SPARKS+SPK_ANIM,x             ; animation finished
+++  jsr ProjFxDropIfProjectile          ; a dead shot's atlas must not be
+    stz.w SPARKS+SPK_ANIM,x             ;   reused with the spark page cache
     stz.w SPARKS+SPK_ANIM+1,x
     jmp TS_next8
 TS_multi_hold:
@@ -19920,6 +20092,7 @@ ProjClash:
     stz.w SPARKS+SPK_ANIM+1
     stz.w SPARKS+SPK_ANIM+SPK_SIZE
     stz.w SPARKS+SPK_ANIM+SPK_SIZE+1
+    jsr FxInvalidateLow                 ; both shot atlases leave the cache
     jsr PC_spark                        ; clash spark + guard cue
     rts
 PC_out8:
@@ -19938,6 +20111,22 @@ PC_out:
 SuperFxSfx:
     jsr SfxPlay
     rtl
+.ENDS
+
+; Drop both effect-page cache keys after a projectile is consumed.  The
+; word key is compared before the ROM bank, so zeroing it is enough to
+; force the next static spark to re-upload its atlas (a zero frame pointer
+; can never match the $FFFF/$FFFE page sentinels or a live frame record).
+; Lives in the 12-byte gap between SuperFxSfx and ResetSuperFx.
+.BANK 50 SLOT 0
+.ORGA $0F64
+.SECTION "FxInvalidateLow" FORCE
+FxInvalidateLow:
+    rep #$20
+    .ACCU 16
+    stz.w FX_CACHE
+    stz.w FX_CACHE+2
+    rts
 .ENDS
 
 ; Ballistic projectile helpers.  They live in bank 126's free tail (same

@@ -3219,6 +3219,7 @@ SPI_have:
     and #$00FF.w                        ; B may still hold scratch from the
     stz.w SPARKS+SPK_ANIM,x             ;   8-bit reads: keep just the index
     stz.w SPARKS+SPK_ANIM+1,x
+    jsr FxInvalidateLow                 ; the consumed shot owned an FX page
     phx                                 ; A = anim index, never the slot
     jsr SparkSpawnAt
     plx

@@ -18,6 +18,10 @@ while len(pal)<256:pal.append([0,0,0])
 (dst/'act/MrKarate.act').write_bytes(bytes(c for rgb in reversed(pal) for c in rgb))
 masks=[Image.open(p).convert('RGBA') for p in sorted((ROOT/'mascaras/png').glob('*.png'))]
 placements=[]; encoded=[]
+# Poses where face detection cannot land the mask correctly.  The lying-down
+# frame (state 5110 / AIR 5040,10) is a horizontal body: keep the Tengu mask
+# resting on his chest instead of leaving the pose bare.
+CHEST_MASKS={(5040,10):(32,22,6)}
 
 def components(points):
  result=[]
@@ -35,7 +39,17 @@ for k,s in enumerate(sff.sprites):
  pix=bytearray(s.pix or b'');p=sff.palettes[s.palidx] if s.palidx is not None else sff.palettes[0]
  # Robert's player graphics share the 16-colour source palette; effect palettes stay intact.
  player=p is not None and p[:16]==sff.palettes[0][:16] and s.group not in (9001,)
- if player and s.group != 9000 and pix and s.w>8 and s.h>15:
+ if player and pix and (s.group,s.number) in CHEST_MASKS:
+  mx,my,choice=CHEST_MASKS[(s.group,s.number)]
+  m=masks[choice].copy()
+  canvas=Image.new('P',(s.w,s.h),0);canvas.paste(Image.frombytes('P',(s.w,s.h),bytes(pix)),(0,0))
+  for yy in range(m.height):
+   for xx in range(m.width):
+    r,g,b,a=m.getpixel((xx,yy))
+    if a and 0<=mx+xx<canvas.width and 0<=my+yy<canvas.height:canvas.putpixel((mx+xx,my+yy),240 if r>=160 else 241 if r>=100 else 242)
+  pix=bytearray(canvas.tobytes());w,h=canvas.size
+  placements.append({'group':s.group,'number':s.number,'x':mx,'y':my,'variant':choice,'chest':True})
+ elif player and s.group != 9000 and pix and s.w>8 and s.h>15:
   arr=np.frombuffer(bytes(pix),dtype=np.uint8).reshape(s.h,s.w)
   skin={(int(x),int(y)) for y,x in np.argwhere((arr>=1)&(arr<=5))}
   blobs=[c for c in components(skin) if len(c)>=7]

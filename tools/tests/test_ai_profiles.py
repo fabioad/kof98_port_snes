@@ -23,7 +23,7 @@ class AiProfileTests(unittest.TestCase):
                 for value in rates:
                     self.assertGreaterEqual(value, 0)
                     self.assertLessEqual(value, 255)
-                self.assertEqual(0, flags & ~0x0F)
+                self.assertEqual(0, flags & ~0x1F)
 
     def test_kyo_is_the_generic_fallback(self):
         self.assertIn("kyo", bf.AI_TUNING)

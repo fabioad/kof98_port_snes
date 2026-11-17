@@ -80,29 +80,8 @@ MKST_clean:
 MkStageFar:
     sep #$20
     .ACCU 8
-MKST_check:
-    lda.w G_MODE
-    cmp #2
-    beq MKST_team
-    cmp #3
-    bne MKST_solo
-MKST_team:
-    rep #$10
-    .INDEX 16
-    ldx #5
--   lda.w T_TEAM1,x
-    cmp #MRKARATE_ID.b
-    beq MKST_yes
-    dex
-    bpl -
-MKST_solo:
-    lda.b sel1
-    cmp #MRKARATE_ID.b
-    beq MKST_yes
-    lda.b sel2
-    cmp #MRKARATE_ID.b
-    bne MKST_no
-MKST_yes:
+    lda.w MK_BOSS
+    beq MKST_no
     lda #5
     sta.w STAGEF
     sec

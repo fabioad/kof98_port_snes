@@ -477,7 +477,7 @@ AI_ComboCheck:
     .ACCU 16
     jsr CancelGate                     ; contact + first third of the normal
     beq AC_fail
-    lda AI_LEVEL
+    lda AI_LVL
     and #$00FF.w
     cmp #2.w
     bcc AC_fail
@@ -501,7 +501,7 @@ AI_ComboCheck:
     lda FP+F_STATE,x
     cmp #S_APUNCH.b
     bcs AC_fail                        ; airborne: no special/super combo
-    lda AI_LEVEL
+    lda AI_LVL
     cmp #7.b
     bcs AC_try_super
     bra AC_try_special

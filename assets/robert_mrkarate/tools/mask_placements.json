@@ -2974,6 +2974,14 @@
   },
   {
     "group": 5040,
+    "number": 10,
+    "x": 32,
+    "y": 22,
+    "variant": 6,
+    "chest": true
+  },
+  {
+    "group": 5040,
     "number": 20,
     "x": 23,
     "y": 14,

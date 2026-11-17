@@ -233,6 +233,10 @@ AI_PF_PRESSURE = 0x01                   # advance after knockdowns/on block
 AI_PF_METER = 0x02                      # spend a stock on a MAX burst
 AI_PF_ADAPT = 0x04                      # punish hitstun and whiff recovery
 AI_PF_ZONER = 0x08                      # hold the preferred range
+AI_PF_COUNTER = 0x10                    # boss: prefer attacking into a
+                                        #   committed foe over blocking
+AI_PF_BOSS = 0x20                       # secret boss: faster offense cadence,
+                                        #   projectile-heavy, air casts
 
 # AiTab header extension: zone_lo, zone_hi, anti_air, throw, mixup, flags.
 # Aggression/defense reuse the existing header bytes; they are now authored
@@ -9672,6 +9676,16 @@ def ai_move_table(name, rules, move_ids, pow_costs, max_sids, projs, cfg):
         throw_r = 0
     if not super_n:
         super_rate = 0
+    if pflags & AI_PF_BOSS:
+        spec = 255                       # boss: fire specials/supers at
+        if super_n:                      #   maximum rate when stocked
+            super_rate = 255
+        # Projectile specials/supers normally wait for space in front of the
+        # fighter.  The boss may also fire them at point-blank range instead
+        # of holding the meter/stock.
+        rows = [(sid, 0 if flags & (AI_F_SUPER | AI_F_PROJ) else lo, hi,
+                 flags, cost100, weight)
+                for sid, lo, hi, flags, cost100, weight in rows]
     zlo = max(0, min(200, int(zlo)))
     zhi = max(zlo + 8, min(255, int(zhi)))
     # The authored profile also owns the spacing style.  Kit heuristics are
@@ -10748,7 +10762,14 @@ if "mrkarate" in CHARS:
     _mk["palette_act"] = "assets/robert_mrkarate/MrKarate-KOF98/act/MrKarate.act"
     _mk["projfx_alias"] = CHARS["robert"]["projfx_alias"]
     CHARS["mrkarate"] = _mk
-    AI_TUNING["mrkarate"] = AI_TUNING["robert"]
+    # Secret boss: always runs the level-9 personality in the engine (see
+    # AI_one).  Keep him close, highly reactive and counter-heavy instead of
+    # cloning Robert's spacing profile.  AI_PF_BOSS also biases the neutral
+    # roll toward supers/projectiles and enables air casts.
+    AI_TUNING["mrkarate"] = (
+        12, 48, 255, 150, 255, 180, 255,
+        AI_PF_PRESSURE | AI_PF_METER | AI_PF_ADAPT | AI_PF_COUNTER |
+        AI_PF_BOSS)
     for _table in (POST_CAL_REACTIVATED, POST_CAL_TWEAKS, POST_CAL_PROJS,
                    POST_CAL_CATEGORIES, POST_CAL_POW_OVERRIDE):
         if "robert" in _table:
@@ -16823,6 +16844,32 @@ def emit_newchars_inc(new_keys, msu_slices):
     open(os.path.join(OUT, "newchars_banks.inc"), "w").write("".join(b))
 
 
+def voice_snd_path(name):
+    """Resolve the .snd sample bank a fighter's voice table reads.
+
+    Variants can point at their own bank through ``cfg['snd']``.  More than
+    one .snd can live beside a shared CNS directory (Robert-KOF98 ships both
+    Robert.snd and the processed Robert-Mr-Karate.snd), so never rely on
+    directory order: the plain fighter must keep its original voices and the
+    variant must keep its own.
+    """
+    cfg = CHARS[name]
+    if cfg.get("snd"):
+        return asset_path(cfg["snd"])
+    d = os.path.join(ROOT, os.path.dirname(cfg["cns"]))
+    snds = sorted(f for f in os.listdir(d) if f.lower().endswith(".snd"))
+    if not snds:
+        return None
+    stem = os.path.splitext(os.path.basename(cfg["cns"]))[0]
+    for suffix in ("_SNES", "_MUGEN"):
+        if stem.upper().endswith(suffix):
+            stem = stem[:-len(suffix)]
+    for f in snds:                      # prefer the CNS-matching bank
+        if os.path.splitext(f)[0].upper() == stem.upper():
+            return os.path.join(d, f)
+    return os.path.join(d, snds[0])
+
+
 def emit_voices(msu, rom_voice_chars):
     """Per-char .snd samples -> ROM tables and MSU-1 voice data.
 
@@ -16841,19 +16888,12 @@ def emit_voices(msu, rom_voice_chars):
     ptrs = {}
     cache = {}
 
-    def snd_of(name):
-        d = os.path.join(ROOT, os.path.dirname(CHARS[name]["cns"]))
-        for f in sorted(os.listdir(d)):
-            if f.lower().endswith(".snd"):
-                return os.path.join(d, f)
-        return None
-
     voice_banks = "SEMISUPERFREE BANKS 11-63"
     total = 0
     missing = []
     for name in id_order:
         voices = CHAR_VOICES.get(name)
-        snd = voices and snd_of(name)
+        snd = voices and voice_snd_path(name)
         if not snd:
             continue
         if snd not in cache:

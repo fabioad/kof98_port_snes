@@ -1186,6 +1186,7 @@ NEW_CHARS = {
 # Hidden Robert form. Combat configuration is cloned after Robert's tuning.
 NEW_CHARS['mrkarate'] = {
     'sff': 'assets/robert_mrkarate/MrKarate-KOF98/MrKarate.sff',
+    'snd': 'assets/robert_mrkarate/MrKarate-KOF98/MrKarate.snd',
     'anims': {}, 'moves': {}, 'msu': True, 'hidden': True,
     'display': 'MR. KARATE',
 }
