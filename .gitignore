@@ -87,6 +87,9 @@ music/ffg_energy/ouvir.html
 /kof98-snes-1.pcm
 /port_snes_tecnica/
 
+# Fonte SFA2 do Sakura mantida apenas para referência local (não usada no build)
+/assets/characters/_excluded/Sakura-SFA2/
+
 # ---------------------------------------------------------------------------
 # Ferramentas locais de engenharia reversa (nao fazem parte do jogo)
 # ---------------------------------------------------------------------------
