@@ -1,0 +1,3358 @@
+{
+  "scope": "compiled special/super inputs; P1 vs idle Kyo; native adaptations preserved",
+  "rom_sha256": "20c71ce86fb3aa3738ac9c1af155853ac2749b963b4948ecbed697de4e42899d",
+  "msu_sha256": "7f9f3363eaecfa9b4ddf2c833cbf2e48b67203ef14ecd446aae315e9ca8c7ca6",
+  "tables_sha256": {
+    "andy_spr.inc": "a7520fd8096fb6db2364aa80e03779c05d9b9a2c9f88db5177aa2fd2d6ffa719",
+    "athena_spr.inc": "46a333992c2aa2d88719b861ac3faf24e9ce3eb5599c34f46b58a595a5f53490",
+    "benimaru_spr.inc": "2ec4f63034a90b218d62998da50ae6883ed6c81783de9dcb0741df6a5da1ccea",
+    "billy_spr.inc": "cc5af96d2118c6b36e6170bcb69a8933741a0fd324e81821d9ccf794e06bea5f",
+    "brian_spr.inc": "211632b248c7513b93d6316132a8d5a3ea5eec9a5e04a2891cc195b528133a01",
+    "chang_spr.inc": "b4b2d80056231943b3cb27f18fbde0d0622c970f77949c75a59f5de9ef1cc89f",
+    "chin_spr.inc": "8ac4aeafc84d5dde7ef2452dff144f567eb6b3abf30e979b94f46901af670d77",
+    "chizuru_spr.inc": "a14280008d9daa3c6539fa93c7878e5003a824482c645902f382a505056de0f8",
+    "choi_spr.inc": "d05d45573dcff5a5554059134626fc4edfac2ba144e99e8c25fce100f35d2580",
+    "chris_spr.inc": "b71eab041c9fe4a908230320c21b9e8086d0238e92297785ad8e7800dd8f7bb1",
+    "chunli_spr.inc": "6e8955544cb52e49cd7d0b201e1cdbd38c6d14a6ae977f837690ae8eccc70de2",
+    "clark_spr.inc": "210cbcd5150fa4d62f0501f2760888cb93354b7175d083ab035c853df704037c",
+    "daimon_spr.inc": "24462fdf1033fb94bdd0da7902572fbb84b07f232c795d547b3bcc102ec17372",
+    "duckking_spr.inc": "8591f7c8f54ea74bc6bc0752d881bdd49f590bb694ae71d493db8eae1837ebd7",
+    "eiji_spr.inc": "2377d2e54e671a2f9765f86228776dd642c00ecfe631ad5bf39cf7f761de4955",
+    "geese_spr.inc": "3817f1da86432e6853265ca23d62ea96fdde0914872470b37e03101e493ea7be",
+    "heavyd_spr.inc": "8b4e95d8ceda7ba74bf2de690040640fc14bc7d77a1b43f9d4d60cb05e48c616",
+    "heidern_spr.inc": "74aa251ff073317bcacf586b9c97a1032fabe7714f21f9ed43c67bcd6c63d601",
+    "iori_spr.inc": "3124085e4a9f04686e7d17db9018d96bbe583d12f2e9f7a4115d0180efe0507e",
+    "joe_spr.inc": "73f4ace2e574efb5cc85fccb35cea7fafa1179ca10bdafe1f78bfcd90bfb95f6",
+    "kasumi_spr.inc": "b244f523552de7459b0bc27c4830810958b2e2fe3674608579f2e76c7728daf7",
+    "ken_spr.inc": "d439eccda699da3dde16edc3ef941e52763df0558e3664c95fbc40429a3af26d",
+    "kensou_spr.inc": "bfd91b1d9721c1ed66c02e87f2dd478e0b9fa02ae7d6bd6a99b3013bcf8b915c",
+    "kim_spr.inc": "f8575c30ea3767d355e51f5b79ee9250c871b1b6c8fa1ab85447b6dc0cac3f93",
+    "king_spr.inc": "4510827daa135a68f2ed5933482c76ba10f30500dfb02df61a177c1501157cce",
+    "krauser_spr.inc": "e9a93eccd710e930e486727975e3dc4ad03ab0ad46cd97bca987ce7535e683ab",
+    "kyo_spr.inc": "cd1d476e933f4580759dccb2c07c051b8fd69bbff7d098f2028c79d3a87fd3c3",
+    "kyoash_spr.inc": "2898d753d4fe6b27a358ce1285e0a8b2fe8665f7dffe8566860c977e5a8d9e0d",
+    "kyonests_spr.inc": "7cf8bf78f7bb052cdc51cebccbcbe53ca36ecb54d1d933186908a45e1a7cd198",
+    "leona_spr.inc": "0a950598277f379a7b2cde239b11d6f9891a84cedf91d9c3ef661fbfb07f340b",
+    "lucky_spr.inc": "baa0e8c91bf5ad45d74ddb2a73ff1d03be95bda60b4c91373fa309e5f174a3ec",
+    "mai_spr.inc": "081d91be5c435203933b0dd753e02d4c5747096e51c1d53edcbcb4b148a5a304",
+    "mary_spr.inc": "ec2d5333d6c802a00f7678cd8ee4bd8c53fd51b47ca1582d6efc4711a70359d8",
+    "mature_spr.inc": "f788cc48071eceb1b5941fe16a51cd0278ad22453d23e2e2a270b5b51ef394a7",
+    "mrbig_spr.inc": "cf7fb2b46b12094bc6b4313fe16ecbae6df49ae2d65ede590c87facbe11b47ea",
+    "mrkarate_spr.inc": "738040569ba470bd526479135fe53c22ae04b2ba4199bf29799d3eb8926a90da",
+    "omegarugal_spr.inc": "e0c23ed1ce28950044a1236e580871b4f93f6dcf15fa00ecd41675bcadfadf05",
+    "ralf_spr.inc": "84b8adbad7703509bd0a6f5d45bd19f6471dff983d4bbfb29eb9dbc243ec7d34",
+    "robert_spr.inc": "7e15603260b05566219812e861ee714115b73b51384154b9df752d0a41e4ab0e",
+    "rugal_spr.inc": "93881ba48c57910889b48238134f9e6fa004ab4b5ba17aa48ecab6e6285531e4",
+    "ryo_spr.inc": "d50ae4494f66f87a2a4429fe44a9b7ea3e3c9673ad4f3c6be9d8c7600caaadd3",
+    "ryu_spr.inc": "e49b40dc26923f3d025555a6271096f47a0fecddd3ba9abee8f25b0d393eafd0",
+    "saisyu_spr.inc": "fe5610a8bab2823d5ccc0e6069a9c6e889bdb6084dd935d17e02dbea08f91a1a",
+    "sakura_spr.inc": "e48f85015f0130071166284337333a8688f9c751511a83b32704de20104f022e",
+    "shermie_spr.inc": "a4848ffbc9c250e0f2d62263721ed50344b0cbc98043211274c398374870a3c5",
+    "shingo_spr.inc": "03faead922247ba01c33d5eb39ba14cc72e9191c3144b1b8a5e2d57422308562",
+    "takuma_spr.inc": "4f7877845a3804456c9cb345332dc35c6a34a7ddac47ba825be698b96b5f4c9d",
+    "terry_spr.inc": "9d2bac1aff33b3b9b805871dc443bfdcf1064beafe037647129553e952ae9bb6",
+    "vega_spr.inc": "4a92035bf13afee332d7eaa5f6e5b3ef9d546b25cdcb62009eb8d8e9016bbcf2",
+    "vice_spr.inc": "5ca1201956b53186ed53c1c9470f8a65e2e93fa593bfb080a292f978223b21a6",
+    "yamazaki_spr.inc": "bfc315ffbb2551959c17c188db76e5ba06e00727a33aab85ce748069ee469986",
+    "yashiro_spr.inc": "8f399dcda0b088583a8e6e5348f3b4ba57ad621c15d1a7427008294af7ffddc7",
+    "yuki_spr.inc": "85df4f28177719a21981976de4efbaeda9540ae32523884ed846ccd5227e58e3",
+    "yuri_spr.inc": "b3e1efb0d7ef1356a64db54aa33fd07aca03c96bf4307b0dd4e4c3e9a7ec666c"
+  },
+  "limitations": "No 1:1 MUGEN test. Input/no-impact candidates require confirmation; no new build.",
+  "characters": {
+    "choi": [
+      {
+        "index": 0,
+        "rule": {
+          "sid": 111,
+          "row": [
+            1,
+            0,
+            0,
+            3,
+            0,
+            0,
+            111
+          ],
+          "elements": [
+            [
+              4,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              8,
+              0
+            ],
+            [
+              0,
+              4
+            ]
+          ],
+          "window": 25
+        },
+        "meta": {
+          "state": 1600,
+          "label": "state 1600",
+          "damage": 15,
+          "target": [
+            255,
+            0,
+            255,
+            0
+          ],
+          "projectile": true,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            1,
+            12,
+            13,
+            111,
+            0
+          ],
+          "victim_path": [
+            0,
+            10,
+            18,
+            0
+          ],
+          "damage": 15,
+          "final_damage": 15,
+          "healing": false,
+          "recovery": 130,
+          "ticks": 130,
+          "clock_stall": 1,
+          "x_range": [
+            81.875,
+            105.875
+          ],
+          "y_peak": 0.0,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": false,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                1,
+                12,
+                13,
+                111,
+                0
+              ],
+              "victim_path": [
+                0,
+                10,
+                18,
+                0
+              ],
+              "damage": 15,
+              "final_damage": 15,
+              "healing": false,
+              "recovery": 130,
+              "ticks": 130,
+              "clock_stall": 1,
+              "x_range": [
+                81.875,
+                105.875
+              ],
+              "y_peak": 0.0,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": false,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "index": 1,
+        "rule": {
+          "sid": 114,
+          "row": [
+            2,
+            0,
+            0,
+            3,
+            0,
+            0,
+            114
+          ],
+          "elements": [
+            [
+              2,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              8,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              8,
+              0
+            ],
+            [
+              0,
+              12
+            ]
+          ],
+          "window": 31
+        },
+        "meta": {
+          "state": 3200,
+          "label": "state 3200",
+          "damage": 30,
+          "target": [
+            255,
+            0,
+            255,
+            0
+          ],
+          "projectile": false,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            12,
+            13,
+            12,
+            13,
+            114,
+            0
+          ],
+          "victim_path": [
+            0,
+            10,
+            18,
+            0
+          ],
+          "damage": 30,
+          "final_damage": 30,
+          "healing": false,
+          "recovery": 107,
+          "ticks": 107,
+          "clock_stall": 1,
+          "x_range": [
+            80.0,
+            80.0
+          ],
+          "y_peak": 0.0,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": false,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                12,
+                13,
+                12,
+                13,
+                114,
+                0
+              ],
+              "victim_path": [
+                0,
+                10,
+                18,
+                0
+              ],
+              "damage": 30,
+              "final_damage": 30,
+              "healing": false,
+              "recovery": 107,
+              "ticks": 107,
+              "clock_stall": 1,
+              "x_range": [
+                80.0,
+                80.0
+              ],
+              "y_peak": 0.0,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": false,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "index": 2,
+        "rule": {
+          "sid": 110,
+          "row": [
+            3,
+            0,
+            0,
+            3,
+            0,
+            0,
+            110
+          ],
+          "elements": [
+            [
+              2,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              0,
+              12
+            ]
+          ],
+          "window": 31
+        },
+        "meta": {
+          "state": 1200,
+          "label": "state 1200",
+          "damage": 20,
+          "target": [
+            255,
+            0,
+            255,
+            0
+          ],
+          "projectile": false,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            12,
+            13,
+            12,
+            13,
+            110,
+            0
+          ],
+          "victim_path": [
+            0,
+            10,
+            18,
+            0
+          ],
+          "damage": 20,
+          "final_damage": 20,
+          "healing": false,
+          "recovery": 106,
+          "ticks": 106,
+          "clock_stall": 1,
+          "x_range": [
+            80.0,
+            80.0
+          ],
+          "y_peak": 0.0,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": false,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                12,
+                13,
+                12,
+                13,
+                110,
+                0
+              ],
+              "victim_path": [
+                0,
+                10,
+                18,
+                0
+              ],
+              "damage": 20,
+              "final_damage": 20,
+              "healing": false,
+              "recovery": 106,
+              "ticks": 106,
+              "clock_stall": 1,
+              "x_range": [
+                80.0,
+                80.0
+              ],
+              "y_peak": 0.0,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": false,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "index": 3,
+        "rule": {
+          "sid": 88,
+          "row": [
+            4,
+            0,
+            0,
+            3,
+            0,
+            0,
+            88
+          ],
+          "elements": [
+            [
+              66,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "window": 21
+        },
+        "meta": {
+          "state": 3500,
+          "label": "special_87",
+          "damage": 0,
+          "target": [
+            255,
+            0,
+            255,
+            0
+          ],
+          "projectile": true,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            12,
+            13,
+            12,
+            13,
+            88,
+            0
+          ],
+          "victim_path": [
+            0,
+            9,
+            10,
+            18,
+            0
+          ],
+          "damage": 70,
+          "final_damage": 70,
+          "healing": false,
+          "recovery": 191,
+          "ticks": 191,
+          "clock_stall": 1,
+          "x_range": [
+            80.0,
+            80.0
+          ],
+          "y_peak": 0.0,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": false,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                12,
+                13,
+                12,
+                13,
+                88,
+                0
+              ],
+              "victim_path": [
+                0,
+                9,
+                10,
+                18,
+                0
+              ],
+              "damage": 70,
+              "final_damage": 70,
+              "healing": false,
+              "recovery": 191,
+              "ticks": 191,
+              "clock_stall": 1,
+              "x_range": [
+                80.0,
+                80.0
+              ],
+              "y_peak": 0.0,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": false,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "index": 4,
+        "rule": {
+          "sid": 112,
+          "row": [
+            5,
+            0,
+            0,
+            3,
+            0,
+            0,
+            112
+          ],
+          "elements": [
+            [
+              2,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              0,
+              4
+            ]
+          ],
+          "window": 31
+        },
+        "meta": {
+          "state": 2400,
+          "label": "state 2400",
+          "damage": 30,
+          "target": [
+            255,
+            0,
+            255,
+            0
+          ],
+          "projectile": true,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            12,
+            13,
+            12,
+            13,
+            112,
+            0
+          ],
+          "victim_path": [
+            0,
+            10,
+            18,
+            0
+          ],
+          "damage": 30,
+          "final_damage": 30,
+          "healing": false,
+          "recovery": 318,
+          "ticks": 318,
+          "clock_stall": 1,
+          "x_range": [
+            80.0,
+            80.0
+          ],
+          "y_peak": 0.0,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": false,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                12,
+                13,
+                12,
+                13,
+                112,
+                0
+              ],
+              "victim_path": [
+                0,
+                10,
+                18,
+                0
+              ],
+              "damage": 30,
+              "final_damage": 30,
+              "healing": false,
+              "recovery": 318,
+              "ticks": 318,
+              "clock_stall": 1,
+              "x_range": [
+                80.0,
+                80.0
+              ],
+              "y_peak": 0.0,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": false,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "index": 5,
+        "rule": {
+          "sid": 113,
+          "row": [
+            6,
+            0,
+            0,
+            3,
+            0,
+            0,
+            113
+          ],
+          "elements": [
+            [
+              2,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              8,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              8,
+              0
+            ],
+            [
+              0,
+              4
+            ]
+          ],
+          "window": 31
+        },
+        "meta": {
+          "state": 3100,
+          "label": "state 3100",
+          "damage": 35,
+          "target": [
+            255,
+            0,
+            255,
+            0
+          ],
+          "projectile": false,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            12,
+            13,
+            12,
+            13,
+            113,
+            0
+          ],
+          "victim_path": [
+            0,
+            10,
+            18,
+            0
+          ],
+          "damage": 35,
+          "final_damage": 35,
+          "healing": false,
+          "recovery": 107,
+          "ticks": 107,
+          "clock_stall": 1,
+          "x_range": [
+            80.0,
+            80.0
+          ],
+          "y_peak": 0.0,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": false,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                12,
+                13,
+                12,
+                13,
+                113,
+                0
+              ],
+              "victim_path": [
+                0,
+                10,
+                18,
+                0
+              ],
+              "damage": 35,
+              "final_damage": 35,
+              "healing": false,
+              "recovery": 107,
+              "ticks": 107,
+              "clock_stall": 1,
+              "x_range": [
+                80.0,
+                80.0
+              ],
+              "y_peak": 0.0,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": false,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "index": 6,
+        "rule": {
+          "sid": 87,
+          "row": [
+            7,
+            0,
+            0,
+            3,
+            0,
+            0,
+            87
+          ],
+          "elements": [
+            [
+              66,
+              0
+            ],
+            [
+              8,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              8,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "window": 21
+        },
+        "meta": {
+          "state": 3000,
+          "label": "special_88",
+          "damage": 52,
+          "target": [
+            255,
+            2,
+            255,
+            0
+          ],
+          "projectile": false,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            12,
+            13,
+            12,
+            13,
+            87,
+            0
+          ],
+          "victim_path": [
+            0,
+            10,
+            18,
+            0
+          ],
+          "damage": 52,
+          "final_damage": 52,
+          "healing": false,
+          "recovery": 172,
+          "ticks": 172,
+          "clock_stall": 1,
+          "x_range": [
+            63.9375,
+            80.0
+          ],
+          "y_peak": 0.0,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": false,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                12,
+                13,
+                12,
+                13,
+                87,
+                0
+              ],
+              "victim_path": [
+                0,
+                10,
+                18,
+                0
+              ],
+              "damage": 52,
+              "final_damage": 52,
+              "healing": false,
+              "recovery": 172,
+              "ticks": 172,
+              "clock_stall": 1,
+              "x_range": [
+                63.9375,
+                80.0
+              ],
+              "y_peak": 0.0,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": false,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "index": 7,
+        "rule": {
+          "sid": 85,
+          "row": [
+            8,
+            0,
+            0,
+            4,
+            0,
+            0,
+            85
+          ],
+          "elements": [
+            [
+              66,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "window": 25
+        },
+        "meta": {
+          "state": 3050,
+          "label": "special_85",
+          "damage": 40,
+          "target": [
+            255,
+            0,
+            255,
+            0
+          ],
+          "projectile": false,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            4,
+            85,
+            0
+          ],
+          "victim_path": [
+            0,
+            10,
+            18,
+            0
+          ],
+          "damage": 40,
+          "final_damage": 40,
+          "healing": false,
+          "recovery": 145,
+          "ticks": 145,
+          "clock_stall": 0,
+          "x_range": [
+            80.0,
+            80.0
+          ],
+          "y_peak": 103.66796875,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": true,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                4,
+                85,
+                0
+              ],
+              "victim_path": [
+                0,
+                10,
+                18,
+                0
+              ],
+              "damage": 40,
+              "final_damage": 40,
+              "healing": false,
+              "recovery": 145,
+              "ticks": 145,
+              "clock_stall": 0,
+              "x_range": [
+                80.0,
+                80.0
+              ],
+              "y_peak": 103.66796875,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": true,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "index": 8,
+        "rule": {
+          "sid": 86,
+          "row": [
+            9,
+            0,
+            0,
+            4,
+            0,
+            0,
+            86
+          ],
+          "elements": [
+            [
+              66,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "window": 25
+        },
+        "meta": {
+          "state": 3060,
+          "label": "special_86",
+          "damage": 44,
+          "target": [
+            255,
+            0,
+            255,
+            0
+          ],
+          "projectile": false,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            4,
+            86,
+            0
+          ],
+          "victim_path": [
+            0,
+            10,
+            18,
+            0
+          ],
+          "damage": 44,
+          "final_damage": 44,
+          "healing": false,
+          "recovery": 145,
+          "ticks": 145,
+          "clock_stall": 0,
+          "x_range": [
+            80.0,
+            80.0
+          ],
+          "y_peak": 103.66796875,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": true,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                4,
+                86,
+                0
+              ],
+              "victim_path": [
+                0,
+                10,
+                18,
+                0
+              ],
+              "damage": 44,
+              "final_damage": 44,
+              "healing": false,
+              "recovery": 145,
+              "ticks": 145,
+              "clock_stall": 0,
+              "x_range": [
+                80.0,
+                80.0
+              ],
+              "y_peak": 103.66796875,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": true,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "index": 9,
+        "rule": {
+          "sid": 109,
+          "row": [
+            10,
+            0,
+            0,
+            3,
+            0,
+            0,
+            109
+          ],
+          "elements": [
+            [
+              2,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              0,
+              12
+            ]
+          ],
+          "window": 25
+        },
+        "meta": {
+          "state": 1100,
+          "label": "state 1100",
+          "damage": 20,
+          "target": [
+            255,
+            0,
+            255,
+            0
+          ],
+          "projectile": true,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            12,
+            13,
+            109,
+            0
+          ],
+          "victim_path": [
+            0,
+            10,
+            18,
+            0
+          ],
+          "damage": 20,
+          "final_damage": 20,
+          "healing": false,
+          "recovery": 130,
+          "ticks": 130,
+          "clock_stall": 1,
+          "x_range": [
+            80.0,
+            80.0
+          ],
+          "y_peak": 0.0,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": false,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                12,
+                13,
+                109,
+                0
+              ],
+              "victim_path": [
+                0,
+                10,
+                18,
+                0
+              ],
+              "damage": 20,
+              "final_damage": 20,
+              "healing": false,
+              "recovery": 130,
+              "ticks": 130,
+              "clock_stall": 1,
+              "x_range": [
+                80.0,
+                80.0
+              ],
+              "y_peak": 0.0,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": false,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "index": 10,
+        "rule": {
+          "sid": 48,
+          "row": [
+            11,
+            0,
+            0,
+            3,
+            0,
+            0,
+            48
+          ],
+          "elements": [
+            [
+              68,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              0,
+              4
+            ]
+          ],
+          "window": 21
+        },
+        "meta": {
+          "state": 1500,
+          "label": "special_48",
+          "damage": 20,
+          "target": [
+            255,
+            12,
+            255,
+            0
+          ],
+          "projectile": false,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            1,
+            12,
+            48,
+            17,
+            0
+          ],
+          "victim_path": [
+            0,
+            10,
+            18,
+            0
+          ],
+          "damage": 20,
+          "final_damage": 20,
+          "healing": false,
+          "recovery": 137,
+          "ticks": 137,
+          "clock_stall": 1,
+          "x_range": [
+            81.875,
+            153.875
+          ],
+          "y_peak": 68.51953125,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": false,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                1,
+                12,
+                48,
+                17,
+                0
+              ],
+              "victim_path": [
+                0,
+                10,
+                18,
+                0
+              ],
+              "damage": 20,
+              "final_damage": 20,
+              "healing": false,
+              "recovery": 137,
+              "ticks": 137,
+              "clock_stall": 1,
+              "x_range": [
+                81.875,
+                153.875
+              ],
+              "y_peak": 68.51953125,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": false,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "index": 11,
+        "rule": {
+          "sid": 48,
+          "row": [
+            12,
+            0,
+            0,
+            3,
+            0,
+            0,
+            48
+          ],
+          "elements": [
+            [
+              68,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              0,
+              4
+            ]
+          ],
+          "window": 21
+        },
+        "meta": {
+          "state": 1500,
+          "label": "special_48",
+          "damage": 20,
+          "target": [
+            255,
+            12,
+            255,
+            0
+          ],
+          "projectile": false,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            1,
+            12,
+            13,
+            48,
+            17,
+            0
+          ],
+          "victim_path": [
+            0,
+            10,
+            18,
+            0
+          ],
+          "damage": 20,
+          "final_damage": 20,
+          "healing": false,
+          "recovery": 138,
+          "ticks": 138,
+          "clock_stall": 1,
+          "x_range": [
+            81.875,
+            153.875
+          ],
+          "y_peak": 68.51953125,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": false,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                1,
+                12,
+                13,
+                48,
+                17,
+                0
+              ],
+              "victim_path": [
+                0,
+                10,
+                18,
+                0
+              ],
+              "damage": 20,
+              "final_damage": 20,
+              "healing": false,
+              "recovery": 138,
+              "ticks": 138,
+              "clock_stall": 1,
+              "x_range": [
+                81.875,
+                153.875
+              ],
+              "y_peak": 68.51953125,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": false,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "index": 12,
+        "rule": {
+          "sid": 49,
+          "row": [
+            13,
+            0,
+            0,
+            3,
+            0,
+            0,
+            49
+          ],
+          "elements": [
+            [
+              68,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              0,
+              8
+            ]
+          ],
+          "window": 21
+        },
+        "meta": {
+          "state": 1510,
+          "label": "special_49",
+          "damage": 20,
+          "target": [
+            255,
+            12,
+            255,
+            0
+          ],
+          "projectile": false,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            1,
+            12,
+            49,
+            17,
+            0
+          ],
+          "victim_path": [
+            0,
+            10,
+            18,
+            0
+          ],
+          "damage": 20,
+          "final_damage": 20,
+          "healing": false,
+          "recovery": 111,
+          "ticks": 111,
+          "clock_stall": 1,
+          "x_range": [
+            81.875,
+            171.875
+          ],
+          "y_peak": 108.32421875,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": false,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                1,
+                12,
+                49,
+                17,
+                0
+              ],
+              "victim_path": [
+                0,
+                10,
+                18,
+                0
+              ],
+              "damage": 20,
+              "final_damage": 20,
+              "healing": false,
+              "recovery": 111,
+              "ticks": 111,
+              "clock_stall": 1,
+              "x_range": [
+                81.875,
+                171.875
+              ],
+              "y_peak": 108.32421875,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": false,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "index": 13,
+        "rule": {
+          "sid": 49,
+          "row": [
+            14,
+            0,
+            0,
+            3,
+            0,
+            0,
+            49
+          ],
+          "elements": [
+            [
+              68,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              0,
+              8
+            ]
+          ],
+          "window": 21
+        },
+        "meta": {
+          "state": 1510,
+          "label": "special_49",
+          "damage": 20,
+          "target": [
+            255,
+            12,
+            255,
+            0
+          ],
+          "projectile": false,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            1,
+            12,
+            13,
+            49,
+            17,
+            0
+          ],
+          "victim_path": [
+            0,
+            10,
+            18,
+            0
+          ],
+          "damage": 20,
+          "final_damage": 20,
+          "healing": false,
+          "recovery": 111,
+          "ticks": 111,
+          "clock_stall": 1,
+          "x_range": [
+            81.875,
+            171.875
+          ],
+          "y_peak": 108.32421875,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": false,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                1,
+                12,
+                13,
+                49,
+                17,
+                0
+              ],
+              "victim_path": [
+                0,
+                10,
+                18,
+                0
+              ],
+              "damage": 20,
+              "final_damage": 20,
+              "healing": false,
+              "recovery": 111,
+              "ticks": 111,
+              "clock_stall": 1,
+              "x_range": [
+                81.875,
+                171.875
+              ],
+              "y_peak": 108.32421875,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": false,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "index": 14,
+        "rule": {
+          "sid": 50,
+          "row": [
+            15,
+            0,
+            0,
+            3,
+            0,
+            0,
+            50
+          ],
+          "elements": [
+            [
+              66,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              8,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "window": 21
+        },
+        "meta": {
+          "state": 1300,
+          "label": "special_50",
+          "damage": 0,
+          "target": [
+            255,
+            0,
+            255,
+            0
+          ],
+          "projectile": false,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            12,
+            13,
+            50,
+            103,
+            0
+          ],
+          "victim_path": [
+            0,
+            10,
+            18,
+            0
+          ],
+          "damage": 15,
+          "final_damage": 15,
+          "healing": false,
+          "recovery": 117,
+          "ticks": 117,
+          "clock_stall": 1,
+          "x_range": [
+            80.0,
+            85.5
+          ],
+          "y_peak": 0.0,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": false,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                12,
+                13,
+                50,
+                103,
+                0
+              ],
+              "victim_path": [
+                0,
+                10,
+                18,
+                0
+              ],
+              "damage": 15,
+              "final_damage": 15,
+              "healing": false,
+              "recovery": 117,
+              "ticks": 117,
+              "clock_stall": 1,
+              "x_range": [
+                80.0,
+                85.5
+              ],
+              "y_peak": 0.0,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": false,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "index": 15,
+        "rule": {
+          "sid": 51,
+          "row": [
+            16,
+            0,
+            0,
+            3,
+            0,
+            0,
+            51
+          ],
+          "elements": [
+            [
+              66,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              8,
+              0
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "window": 21
+        },
+        "meta": {
+          "state": 1310,
+          "label": "special_51",
+          "damage": 0,
+          "target": [
+            255,
+            0,
+            255,
+            0
+          ],
+          "projectile": false,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            12,
+            13,
+            51,
+            104,
+            0
+          ],
+          "victim_path": [
+            0,
+            10,
+            18,
+            0
+          ],
+          "damage": 15,
+          "final_damage": 15,
+          "healing": false,
+          "recovery": 117,
+          "ticks": 117,
+          "clock_stall": 1,
+          "x_range": [
+            80.0,
+            85.5
+          ],
+          "y_peak": 0.0,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": false,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                12,
+                13,
+                51,
+                104,
+                0
+              ],
+              "victim_path": [
+                0,
+                10,
+                18,
+                0
+              ],
+              "damage": 15,
+              "final_damage": 15,
+              "healing": false,
+              "recovery": 117,
+              "ticks": 117,
+              "clock_stall": 1,
+              "x_range": [
+                80.0,
+                85.5
+              ],
+              "y_peak": 0.0,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": false,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "index": 16,
+        "rule": {
+          "sid": 52,
+          "row": [
+            17,
+            0,
+            0,
+            4,
+            0,
+            0,
+            52
+          ],
+          "elements": [
+            [
+              66,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              0,
+              4
+            ]
+          ],
+          "window": 21
+        },
+        "meta": {
+          "state": 1400,
+          "label": "special_52",
+          "damage": 18,
+          "target": [
+            255,
+            2,
+            255,
+            0
+          ],
+          "projectile": false,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            4,
+            52,
+            17,
+            0
+          ],
+          "victim_path": [
+            0,
+            10,
+            18,
+            0
+          ],
+          "damage": 18,
+          "final_damage": 18,
+          "healing": false,
+          "recovery": 105,
+          "ticks": 105,
+          "clock_stall": 0,
+          "x_range": [
+            80.0,
+            108.0
+          ],
+          "y_peak": 98.2890625,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": true,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                4,
+                52,
+                17,
+                0
+              ],
+              "victim_path": [
+                0,
+                10,
+                18,
+                0
+              ],
+              "damage": 18,
+              "final_damage": 18,
+              "healing": false,
+              "recovery": 105,
+              "ticks": 105,
+              "clock_stall": 0,
+              "x_range": [
+                80.0,
+                108.0
+              ],
+              "y_peak": 98.2890625,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": true,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "index": 17,
+        "rule": {
+          "sid": 53,
+          "row": [
+            18,
+            0,
+            0,
+            4,
+            0,
+            0,
+            53
+          ],
+          "elements": [
+            [
+              66,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              0,
+              8
+            ]
+          ],
+          "window": 21
+        },
+        "meta": {
+          "state": 1410,
+          "label": "special_53",
+          "damage": 18,
+          "target": [
+            255,
+            2,
+            255,
+            0
+          ],
+          "projectile": false,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            4,
+            53,
+            17,
+            0
+          ],
+          "victim_path": [
+            0,
+            10,
+            18,
+            0
+          ],
+          "damage": 18,
+          "final_damage": 18,
+          "healing": false,
+          "recovery": 105,
+          "ticks": 105,
+          "clock_stall": 0,
+          "x_range": [
+            80.0,
+            162.5
+          ],
+          "y_peak": 98.2890625,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": true,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                4,
+                53,
+                17,
+                0
+              ],
+              "victim_path": [
+                0,
+                10,
+                18,
+                0
+              ],
+              "damage": 18,
+              "final_damage": 18,
+              "healing": false,
+              "recovery": 105,
+              "ticks": 105,
+              "clock_stall": 0,
+              "x_range": [
+                80.0,
+                162.5
+              ],
+              "y_peak": 98.2890625,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": true,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "index": 18,
+        "rule": {
+          "sid": 107,
+          "row": [
+            19,
+            0,
+            0,
+            3,
+            0,
+            0,
+            107
+          ],
+          "elements": [
+            [
+              2,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              8,
+              0
+            ],
+            [
+              0,
+              4
+            ]
+          ],
+          "window": 25
+        },
+        "meta": {
+          "state": 1000,
+          "label": "state 1000",
+          "damage": 25,
+          "target": [
+            255,
+            13,
+            255,
+            0
+          ],
+          "projectile": false,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            12,
+            13,
+            107,
+            0
+          ],
+          "victim_path": [
+            0,
+            10,
+            18,
+            0
+          ],
+          "damage": 25,
+          "final_damage": 25,
+          "healing": false,
+          "recovery": 112,
+          "ticks": 112,
+          "clock_stall": 1,
+          "x_range": [
+            80.0,
+            80.0
+          ],
+          "y_peak": 0.0,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": false,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                12,
+                13,
+                107,
+                0
+              ],
+              "victim_path": [
+                0,
+                10,
+                18,
+                0
+              ],
+              "damage": 25,
+              "final_damage": 25,
+              "healing": false,
+              "recovery": 112,
+              "ticks": 112,
+              "clock_stall": 1,
+              "x_range": [
+                80.0,
+                80.0
+              ],
+              "y_peak": 0.0,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": false,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "index": 19,
+        "rule": {
+          "sid": 108,
+          "row": [
+            20,
+            0,
+            0,
+            3,
+            0,
+            0,
+            108
+          ],
+          "elements": [
+            [
+              2,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              8,
+              0
+            ],
+            [
+              0,
+              8
+            ]
+          ],
+          "window": 25
+        },
+        "meta": {
+          "state": 1010,
+          "label": "state 1010",
+          "damage": 30,
+          "target": [
+            255,
+            13,
+            255,
+            0
+          ],
+          "projectile": false,
+          "reversal": null
+        },
+        "status": "hit_and_recovered",
+        "result": {
+          "entered": true,
+          "path": [
+            12,
+            13,
+            108,
+            0
+          ],
+          "victim_path": [
+            0,
+            10,
+            18,
+            0
+          ],
+          "damage": 30,
+          "final_damage": 30,
+          "healing": false,
+          "recovery": 113,
+          "ticks": 113,
+          "clock_stall": 1,
+          "x_range": [
+            80.0,
+            88.25
+          ],
+          "y_peak": 0.0,
+          "held": false,
+          "grab_flags": [
+            0,
+            0
+          ],
+          "last_states": [
+            0,
+            0
+          ],
+          "game_state": 1,
+          "complements_sent": [],
+          "setup": {
+            "distance": 24,
+            "hold": 2,
+            "keep_direction": true,
+            "airborne": false,
+            "opponent_attack": false,
+            "power": 5000,
+            "opponent_air": false,
+            "air_height": 72,
+            "combine_finish": false,
+            "input_game_ticks": false,
+            "opponent_at": 3,
+            "opponent_button": 1,
+            "natural_jump": false,
+            "hold_air": false
+          }
+        },
+        "attempts": [
+          {
+            "status": "hit_and_recovered",
+            "result": {
+              "entered": true,
+              "path": [
+                12,
+                13,
+                108,
+                0
+              ],
+              "victim_path": [
+                0,
+                10,
+                18,
+                0
+              ],
+              "damage": 30,
+              "final_damage": 30,
+              "healing": false,
+              "recovery": 113,
+              "ticks": 113,
+              "clock_stall": 1,
+              "x_range": [
+                80.0,
+                88.25
+              ],
+              "y_peak": 0.0,
+              "held": false,
+              "grab_flags": [
+                0,
+                0
+              ],
+              "last_states": [
+                0,
+                0
+              ],
+              "game_state": 1,
+              "complements_sent": [],
+              "setup": {
+                "distance": 24,
+                "hold": 2,
+                "keep_direction": true,
+                "airborne": false,
+                "opponent_attack": false,
+                "power": 5000,
+                "opponent_air": false,
+                "air_height": 72,
+                "combine_finish": false,
+                "input_game_ticks": false,
+                "opponent_at": 3,
+                "opponent_button": 1,
+                "natural_jump": false,
+                "hold_air": false
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

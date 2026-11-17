@@ -1793,7 +1793,7 @@ PROJECTILE_EXCLUDE = {
     # Choi, Kim, Mary, Vega and Yashiro have no travelling projectile in
     # their wired move set.  Their follow-up HitDefs/dashes were being
     # compiled as invisible shots.
-    "choi": (50, 51, 86),
+    "choi": (50, 51, 86, 109, 111, 112, 116),
     "kim": (53, 85, 86),
     "mary": (54, 55, 87),
     "vega": (48, 49, 52, 53, 85, 86),
@@ -1984,7 +1984,8 @@ POST_CAL_VEL = {
     "athena":   {54: (3, 5), 53: (4, 5)},                # Psycho Reflect
     "brian":    {88: (4, 5), 108: (4, 6)},               # 3210 / 3400
     "chizuru":  {87: (3, 5)},                            # super 2200
-    "choi":     {111: (4, 6)},                           # 1600
+    "choi":     {109: (5, 6), 110: (4, 6), 111: (6, 8),
+                 115: (5, 6), 116: (6, 8)},       # 1100 / 1200 / 1600 / 1210 / 1610
     "chunli":   {57: (4, 6)},                            # Hyakuretsu Kyaku
     "daimon":   {113: (3, 5), 112: (3, 5), 110: (3, 5)},
     "heavyd":   {50: (3, 5), 51: (3, 5)},                # 1100 / 1150
@@ -4503,22 +4504,84 @@ if "choi" in CHARS:
         (111, 1600, 1000),     # Shissou Hishou Zan
         (112, 2400, 2901),     # Ultimate Storm (reuse the rush)
         (113, 3100, 1000),     # Zan! En Getsu Rin
-        (114, 3200, 1010),     # Houou Kyaku
+        (114, 3201, 3201),     # Houou Kyaku dash/grab
+        (115, 1210, 1160),     # Hishou Kuuretsu Zan strong
+        (116, 1610, 1000),     # Shissou Hishou Zan strong
+        (117, 3110, 1000),     # Zan! En Getsu Rin y
+        (118, 3250, 1010),     # Houou Kyaku MAX
+        (60, 3210, 3210),      # Houou Kyaku grab/throw (HitOne grab slot)
+        (61, 3211, 3211),      # Houou Kyaku recovery
+        (62, 3260, 3260),      # Houou Kyaku MAX grab/throw
+        (63, 3261, 3261),      # Houou Kyaku MAX recovery
+        (64, 2404, 2901),      # Ultimate Storm ground flurry (grab slot)
+        (65, 2405, 2901),      # Ultimate Storm launcher
     ])
     _choi = POST_CAL_TWEAKS.setdefault("choi", {})
     _choi.setdefault("slice_damage", {}).update({
-        107: 25, 108: 30, 109: 20, 110: 20,
-        111: 15, 112: 30, 113: 35, 114: 30})
+        87: 13, 107: 25, 108: 30, 109: 20, 110: 20,
+        111: 15, 112: 0, 113: 12, 114: 0,
+        115: 22, 116: 18, 117: 12, 118: 0})
     _choi.setdefault("hitdef_override", {}).update({
+        87: {"active": 12, "damage": 13, "gdamage": 2, "fall": 0,
+             "gvx": 0, "gvy": 0},
         109: {"active": 1, "damage": 20, "gdamage": 2, "fall": 1},
         110: {"active": 3, "damage": 20, "gdamage": 2, "fall": 1},
         111: {"active": 3, "damage": 15, "gdamage": 2, "fall": 1},
-        112: {"active": 1, "damage": 30, "gdamage": 2, "fall": 1,
-              "p2state": 0xFF, "gvx": 0, "gvy": 0},
-        113: {"active": 3, "damage": 35, "gdamage": 2, "fall": 1},
+        112: {"active": 1, "damage": 0, "gdamage": 0, "throw": 1,
+              "p2state": 76, "p1mugen": 2404, "fall": 0,
+              "gvx": 0, "gvy": 0},
+        113: {"active": 3, "damage": 12, "gdamage": 2, "fall": 0,
+              "gvx": 0, "gvy": 0},
         114: {"active": 3, "damage": 30, "gdamage": 2, "fall": 1},
+        115: {"active": 3, "damage": 22, "gdamage": 2, "fall": 1},
+        116: {"active": 3, "damage": 18, "gdamage": 2, "fall": 1},
+        117: {"active": 3, "damage": 12, "gdamage": 2, "fall": 0,
+              "gvx": 0, "gvy": 0},
+        64: {"active": 0, "damage": 0, "gdamage": 0, "fall": 0,
+             "gvx": 0, "gvy": 0},
+        118: {"active": 1, "damage": 0, "gdamage": 0, "throw": 1,
+              "p2state": 76, "p1mugen": 3260, "fall": 0,
+              "gvx": 0, "gvy": 0},
     })
-    _choi.setdefault("cmd_priority", []).extend(["SHISSOU", "HOUOU"])
+    # Multi-hit supers: the source re-arms its HitDef/flurry after the first
+    # contact.  The native engine needs an explicit MoveHitReset per strike
+    # element (1-based) or the first hit latches and the rest never connect.
+    _choi.setdefault("hit_resets", {}).update({
+        3000: [13, 14, 15],          # 4 contacts, every 15 source ticks
+        3100: [4, 6],                # 3 contacts in the 3190/3191 nail
+        3110: [4, 6],                # strong variant, same three contacts
+    })
+    # Houou Kyaku: 3200 is only the startup.  The source dash (3201) carries
+    # the HitDef with p1stateno=3210; 3210 owns the TargetBind/TargetLifeAdd
+    # throw sequence.  Wire the three phases instead of playing the 3200
+    # startup clip as a single strike.
+    _choi.setdefault("extra_trans", []).extend([
+        (60, 61, 0, 0),              # 3210 throw -> 3211 recovery
+        (64, 65, 0, 0),              # 2404 flurry -> 2405 launcher
+        (62, 63, 0, 0),              # 3260 MAX throw -> 3261 recovery
+    ])
+    _choi.setdefault("hitdef_override", {}).update({
+        114: {"active": 1, "damage": 0, "gdamage": 0, "throw": 0,
+              "p2state": 76, "p1mugen": 3210, "fall": 0,
+              "gvx": 0, "gvy": 0},
+    })
+    POST_CAL_TARGET_LIFE.setdefault("choi", {}).update({3210: -3, 2404: -4, 3260: -3})
+    POST_CAL_ACT_OVERRIDE.setdefault("choi", {}).update({
+        2404: [(f, 3, -4, 0) for f in range(5)],
+        2405: [(0, 3, -20, 0)],
+    })
+    _choi.setdefault("slice_damage", {}).update({64: 0})
+    _choi.setdefault("hitdef_from_state", {}).update({
+        118: (3251, {"active": 1, "damage": 0, "gdamage": 0, "throw": 1,
+                     "p2state": 76, "p1mugen": 3260, "fall": 0,
+                     "gvx": 0, "gvy": 0}),
+    })
+    _choi.setdefault("hitdef_override", {}).update({
+        65: {"active": 0, "damage": 0, "gdamage": 0, "fall": 0},
+    })
+    _choi.setdefault("cmd_priority", []).extend(
+        ["SHISSOU", "HOUOU", "HISHOU_S", "SHISSOU_S",
+         "ENGETSU_S", "HOUOU_MAX"])
     _choi.setdefault("cmd_extra", []).extend([
         {"name": "TATSU_W", "label": "TATSUMAKI SHIPPUU ZAN",
          "state": 1000, "posture": 3, "time": 22,
@@ -4542,14 +4605,26 @@ if "choi" in CHARS:
          "state": 3100, "posture": 3, "time": 30,
          "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 4)]},
         {"name": "HOUOU", "label": "HOUOU KYAKU",
-         "state": 3200, "posture": 3, "time": 30,
+         "state": 3201, "posture": 3, "time": 30,
          "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 12)]},
+        {"name": "HISHOU_S", "label": "HISHOU KUURETSU ZAN S",
+         "state": 1210, "posture": 3, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 16)]},
+        {"name": "SHISSOU_S", "label": "SHISSOU HISHOU ZAN S",
+         "state": 1610, "posture": 3, "time": 22,
+         "elems": [(4, 0), (6, 0), (2, 0), (10, 0), (8, 0), (0, 16)]},
+        {"name": "ENGETSU_S", "label": "ZAN EN GETSU RIN S",
+         "state": 3110, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 16)]},
+        {"name": "HOUOU_MAX", "label": "HOUOU KYAKU MAX",
+         "state": 3250, "posture": 3, "time": 30,
+         "elems": [(2, 0), (10, 0), (8, 0), (2, 0), (10, 0), (8, 0), (0, 32)]},
     ])
     # Choi_SNES.cmd gave the air Toppa supers 3050/3060 the ground
     # ~D,B,D,B command of 3000, and 3050 sat first, so 3000 never came
     # out.  The source Choi.cmd fires 3050/3060 from the air on
     # ~D,F,D,F + x/y (statetype = A).
-    _choi.setdefault("cmd_drop_states", []).extend([3050, 3060])
+    _choi.setdefault("cmd_drop_states", []).extend([3050, 3060, 3500])
     _choi.setdefault("cmd_extra", []).extend([
         {"name": "TOPPA_L", "label": "TOPPA L",
          "state": 3050, "posture": 4, "time": 22,
@@ -4557,6 +4632,11 @@ if "choi" in CHARS:
         {"name": "TOPPA_S", "label": "TOPPA S",
          "state": 3060, "posture": 4, "time": 22,
          "elems": [(0x42, 0), (4, 0), (2, 0), (4, 0), (0, 2)]},
+        # Shakushi is the source's air-only MAX2 (state 3500).  The
+        # synthetic CMD had it as a ground move; restore the source stance.
+        {"name": "SHAKUSHI", "label": "SHAKUSHI MAX2",
+         "state": 3500, "posture": 4, "time": 30,
+         "elems": [(2, 0), (6, 0), (4, 0), (2, 0), (6, 0), (4, 0), (0, 1)]},
     ])
 
 if "yashiro" in CHARS:
