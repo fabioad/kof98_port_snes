@@ -432,7 +432,8 @@ def run_match(p1: Character, p2: Character, args: argparse.Namespace) -> int:
 def _run_headless(core: Core, p1: Character, p2: Character,
                   args: argparse.Namespace, limit_frames: int,
                   fps: float) -> dict:
-    summary = _play(core, args, limit_frames, fps, write_frame=None)
+    summary = _play(core, args, limit_frames, fps, write_frame=None,
+                    expect=(p1, p2))
     return summary
 
 
@@ -470,7 +471,8 @@ def _run_recorded(core: Core, p1: Character, p2: Character,
         return True
 
     try:
-        summary = _play(core, args, limit_frames, fps, write_frame=write_frame)
+        summary = _play(core, args, limit_frames, fps, write_frame=write_frame,
+                        expect=(p1, p2))
     finally:
         core.capture_video = False
         process.stdin.close()
@@ -505,16 +507,17 @@ def _run_recorded(core: Core, p1: Character, p2: Character,
 
 
 def _play(core: Core, args: argparse.Namespace, limit_frames: int,
-          fps: float, write_frame) -> dict:
+          fps: float, write_frame, expect: tuple[Character, Character]) -> dict:
     """Avança o emulador, opcionalmente gravando, e acompanha o placar."""
     frames = 0
     fight_frames = 0
     kos = 0
-    last_gs = core.ram[GS]
+    last_gs = -1
     saw_fight = False
     finish_frames = 0
     max_wins = (0, 0)
     last_roundwin = 0
+    round_no = 0
 
     while frames < limit_frames:
         core.step()
@@ -523,6 +526,19 @@ def _play(core: Core, args: argparse.Namespace, limit_frames: int,
             continue
 
         gs = core.ram[GS]
+        # Cada round é remontado pelo motor.  Confere que ele manteve os
+        # personagens pedidos; sem o latch da seleção secreta, o sanitizador
+        # devolvia o Mr. Karate como Robert a partir do round 2.
+        if gs == 1 and last_gs != 1:
+            round_no += 1
+            want = (expect[0].id, expect[1].id)
+            got = (core.ram[SEL1], core.ram[SEL2])
+            if got != want:
+                raise MatchError(
+                    f"round {round_no}: o jogo trocou a seleção "
+                    f"{want[0]}/{want[1]} -> {got[0]}/{got[1]} "
+                    f"({expect[0].name} vs {expect[1].name})."
+                )
         if gs == 1:
             saw_fight = True
             fight_frames += 1

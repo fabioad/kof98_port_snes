@@ -38,9 +38,11 @@ local done = false
 local maxW1, maxW2, rounds = 0, 0, 0
 local lastPng = nil
 
--- At least one CPU flag must be active when StartFight runs so the engine
--- latches CPU play.  The other side is enabled after the Mr. Karate sanitizer
--- has already run, otherwise the hidden form is converted back to Robert.
+-- The engine's round sanitizer drops Mr. Karate whenever both sides are CPU
+-- driven (attract/test harness).  MK_PICK ($F1CA) tells it a human really
+-- picked the secret form, so the later rounds keep the boss.  The select
+-- phase writes that latch below; the split CPU flags stay as a belt-and-
+-- braces for ROMs built before the latch existed.
 local earlyCpu1 = (p1 == 53) and 0 or 1
 local earlyCpu2 = (p1 == 53) and 1 or 0
 
@@ -132,6 +134,9 @@ emu.addEventCallback(function()
             wr(0x1090, earlyCpu1)
             wr(0x1091, earlyCpu2)
             wr(0x10EB, level)
+            -- bit 0 = P1 picked the hidden form, bit 1 = P2 (MkSelectFar sets
+            -- the same bits when a pad really locks L+R on Robert).
+            wr(0xF1CA, (p1 == 53 and 1 or 0) + (p2 == 53 and 2 or 0))
         elseif gs == 4 or gs == 1 then
             wr(0x1090, 1)
             wr(0x1091, 1)

@@ -13,9 +13,12 @@ MkResetFar:
 -   stz.w MK_LOST,x
     dex
     bpl -
+    stz.w MK_PICK
     rtl
 
-; A8 candidate, X16 fighter/pad offset. Only human selections get the form.
+; A8 candidate, X16 fighter/pad offset. Only human selections get the form;
+; the side is latched so the round sanitizer can tell a real pick apart from
+; a form the CPU was never allowed to choose.
 MkSelectFar:
     cmp #ROBERT_ID.b
     bne MKSEL_out
@@ -37,6 +40,18 @@ MkSelectFar:
     .ACCU 8
     bne MKSEL_base
     pla
+    ; Record the human pick.  StartFight calls MkSanitizeFar on every round
+    ; and drops Mr. Karate whenever both sides are CPU-driven (attract demo,
+    ; CPU-vs-CPU harnesses); the latch preserves a form the player chose.
+    lda.w MK_PICK
+    cpx #0
+    bne MKSEL_p2
+    ora #$01
+    bra MKSEL_latched
+MKSEL_p2:
+    ora #$02
+MKSEL_latched:
+    sta.w MK_PICK
     lda #MRKARATE_ID.b
     rtl
 MKSEL_base:
@@ -50,6 +65,8 @@ MkSanitizeFar:
     .ACCU 8
     lda.b msuok
     beq MKST_strip
+    lda.w MK_PICK                        ; a human selected the form: keep it
+    bne MKST_clean
     lda.b cpu1
     and.b cpu2
     beq MKST_clean

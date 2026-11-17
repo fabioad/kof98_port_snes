@@ -123,6 +123,7 @@
 .DEFINE MK_MUSIC    $F1C7                 ; crystal with combat SFX
 .DEFINE MK_END      $F1C8                 ; ending1 -> survivor ending
 .DEFINE MK_SIDE     $F1C9                 ; byte offset 0/$40
+.DEFINE MK_PICK     $F1CA                 ; bits 0/1: human picked the secret form
 
 ; ---- SURVIVOR route -------------------------------------------------------
 ; The shuffled opponent list holds one byte per visible character, so it
