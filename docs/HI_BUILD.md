@@ -1,7 +1,7 @@
 # Default (PRO), MID, HI10 and OLD builds
 
 The default `kof98-snes.sfc` / `kof98-snes.msu` now uses the **PRO** profile:
-near-full 1.0 art with a few per-character caps (Chang 0.80, Sakura 0.95,
+near-full 1.0 art with a few per-character caps (Chang 0.80,
 Billy 0.85, Rugal 0.94, Chun-Li 0.99 and Omega Rugal 0.94).  The previous
 default, tuned HI at a **0.88 base**, is still available as the **MID**
 profile (`kof98-snes-mid.sfc` / `kof98-snes-mid.msu`).  The 0.81 layout

@@ -23,7 +23,7 @@ $(error PVSnesLib 4.6+ is required (found '$(PVSNESLIB_VERSION)' at $(PVSNESLIB_
 endif
 
 # Profiles:
-#   default        PRO scale: 1.0 except Chang 0.80, Sakura 0.95, Billy 0.85,
+#   default        PRO scale: 1.0 except Chang 0.80, Billy 0.85,
 #                  Rugal/Omega Rugal 0.94 and Chun-Li 0.99
 #                                        -> kof98-snes.sfc/.msu
 #   MID=1          previous default: tuned HI 0.88 art
@@ -236,7 +236,13 @@ validate-snesmod: $(AUDIOFILES) tools/validate_snesmod.py tools/it_pattern_limit
 	python3 tools/validate_snesmod.py $(SMCONV) $(AUDIOFILES)
 
 ifneq ($(TINY),1)
+# SFF artwork is an input too: editing a character's sheet must regenerate the
+# CHR/metasprite tables.  Skip the few legacy copies whose names contain
+# spaces, since make cannot express those paths as a prerequisite.
+CHAR_SFFS := $(filter-out $(wildcard assets/characters/*/*\ *.sff),$(wildcard assets/characters/*/*.sff))
+
 $(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json assets/characters/*/*_SNES.cns assets/characters/*/*_SNES.cmd assets/characters/*/*.air assets/data/quotes/*.json) \
+	$(CHAR_SFFS) \
 	tools/build_fight.py tools/build_mrkarate_scene.py tools/normal_throws.py tools/close_normals.py tools/remaining_specials.py tools/runtime_abi.py assets/runtime_abi.json tools/newroster.py tools/build_spc_neogeo.py \
 	Makefile.pvsnes $(wildcard Makefile.hi Makefile.old Makefile.mid) \
 	tools/build_stages.py tools/build_hud_arcade.py tools/sff.py tools/build_endings.py \

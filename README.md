@@ -197,8 +197,8 @@ make pvsnes-verify PVSNESLIB_HOME=/caminho/para/pvsneslib
 ```
 
 A saída é a build principal, agora no perfil **PRO**: arte em escala 1.0 para
-quase todo o elenco, com exceções por personagem (Chang 0.80, Sakura 0.95,
-Billy 0.85, Rugal 0.94, Chun-Li 0.99 e Omega Rugal 0.94):
+quase todo o elenco, com exceções por personagem (Chang 0.80, Billy 0.85,
+Rugal 0.94, Chun-Li 0.99 e Omega Rugal 0.94):
 
 ```text
 kof98-snes.sfc   # ROM de 8 MiB
@@ -460,7 +460,7 @@ make pvsnes-verify PVSNESLIB_HOME=/path/to/pvsneslib
 ```
 
 Output is the main **PRO** build: 1.0-scale art for almost the whole roster,
-with per-character exceptions (Chang 0.80, Sakura 0.95, Billy 0.85, Rugal
+with per-character exceptions (Chang 0.80, Billy 0.85, Rugal
 0.94, Chun-Li 0.99 and Omega Rugal 0.94):
 
 ```text
