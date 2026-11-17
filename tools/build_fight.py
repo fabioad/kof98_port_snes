@@ -4520,7 +4520,7 @@ if "choi" in CHARS:
     _choi.setdefault("slice_damage", {}).update({
         87: 13, 107: 25, 108: 30, 109: 20, 110: 20,
         111: 15, 112: 0, 113: 12, 114: 0,
-        115: 22, 116: 18, 117: 12, 118: 0})
+        115: 22, 116: 18, 117: 12, 118: 0, 64: 0})
     _choi.setdefault("hitdef_override", {}).update({
         87: {"active": 12, "damage": 13, "gdamage": 2, "fall": 0,
              "gvx": 0, "gvy": 0},
@@ -4532,16 +4532,12 @@ if "choi" in CHARS:
               "gvx": 0, "gvy": 0},
         113: {"active": 3, "damage": 12, "gdamage": 2, "fall": 0,
               "gvx": 0, "gvy": 0},
-        114: {"active": 3, "damage": 30, "gdamage": 2, "fall": 1},
         115: {"active": 3, "damage": 22, "gdamage": 2, "fall": 1},
         116: {"active": 3, "damage": 18, "gdamage": 2, "fall": 1},
         117: {"active": 3, "damage": 12, "gdamage": 2, "fall": 0,
               "gvx": 0, "gvy": 0},
         64: {"active": 0, "damage": 0, "gdamage": 0, "fall": 0,
              "gvx": 0, "gvy": 0},
-        118: {"active": 1, "damage": 0, "gdamage": 0, "throw": 1,
-              "p2state": 76, "p1mugen": 3260, "fall": 0,
-              "gvx": 0, "gvy": 0},
     })
     # Multi-hit supers: the source re-arms its HitDef/flurry after the first
     # contact.  The native engine needs an explicit MoveHitReset per strike
@@ -4570,7 +4566,6 @@ if "choi" in CHARS:
         2404: [(f, 3, -4, 0) for f in range(5)],
         2405: [(0, 3, -20, 0)],
     })
-    _choi.setdefault("slice_damage", {}).update({64: 0})
     _choi.setdefault("hitdef_from_state", {}).update({
         118: (3251, {"active": 1, "damage": 0, "gdamage": 0, "throw": 1,
                      "p2state": 76, "p1mugen": 3260, "fall": 0,
@@ -4579,6 +4574,10 @@ if "choi" in CHARS:
     _choi.setdefault("hitdef_override", {}).update({
         65: {"active": 0, "damage": 0, "gdamage": 0, "fall": 0},
     })
+    # The source 2901 clip ends on a 255-tick wait for the next phase.  The
+    # flattened 2404/2405 phases reuse the same clip, so leaving the wait
+    # untouched made Ultimate Storm last ~8 seconds.  Bound the shared hold.
+    _choi.setdefault("tail_ticks", {}).update({2901: 40})
     _choi.setdefault("cmd_priority", []).extend(
         ["SHISSOU", "HOUOU", "HISHOU_S", "SHISSOU_S",
          "ENGETSU_S", "HOUOU_MAX"])

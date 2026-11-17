@@ -1,6 +1,6 @@
 {
   "scope": "compiled special/super inputs; P1 vs idle Kyo; native adaptations preserved",
-  "rom_sha256": "bc416d7aabc8f8943bab0c7f03c04c5d703cc356e04ccf98e4fa7eefdcc8cab0",
+  "rom_sha256": "5fe2574c025ce4d6115e05f68e62e2af0d545e4ecc3d566adc975ad491bd67e6",
   "msu_sha256": "c48bf983882cdbd0a2530a3a918067f33d45017815890fdb136836efca835513",
   "tables_sha256": {
     "andy_spr.inc": "a7520fd8096fb6db2364aa80e03779c05d9b9a2c9f88db5177aa2fd2d6ffa719",
@@ -11,7 +11,7 @@
     "chang_spr.inc": "b4b2d80056231943b3cb27f18fbde0d0622c970f77949c75a59f5de9ef1cc89f",
     "chin_spr.inc": "8ac4aeafc84d5dde7ef2452dff144f567eb6b3abf30e979b94f46901af670d77",
     "chizuru_spr.inc": "a14280008d9daa3c6539fa93c7878e5003a824482c645902f382a505056de0f8",
-    "choi_spr.inc": "b5936cf7f53ae8e665a79f665b6aafbbd3901dc614364a2804518cc7dc634f2f",
+    "choi_spr.inc": "f02d15cb90c13fd93a7f1f16f1630a67b0f48104b27132ff98c9d7647ef8b5f3",
     "chris_spr.inc": "b71eab041c9fe4a908230320c21b9e8086d0238e92297785ad8e7800dd8f7bb1",
     "chunli_spr.inc": "6e8955544cb52e49cd7d0b201e1cdbd38c6d14a6ae977f837690ae8eccc70de2",
     "clark_spr.inc": "210cbcd5150fa4d62f0501f2760888cb93354b7175d083ab035c853df704037c",
@@ -1352,8 +1352,8 @@
           "damage": 41,
           "final_damage": 41,
           "healing": false,
-          "recovery": 474,
-          "ticks": 474,
+          "recovery": 259,
+          "ticks": 259,
           "clock_stall": 1,
           "x_range": [
             80.0,
@@ -1414,8 +1414,8 @@
               "damage": 41,
               "final_damage": 41,
               "healing": false,
-              "recovery": 474,
-              "ticks": 474,
+              "recovery": 259,
+              "ticks": 259,
               "clock_stall": 1,
               "x_range": [
                 80.0,

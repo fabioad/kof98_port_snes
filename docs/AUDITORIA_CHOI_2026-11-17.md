@@ -1,5 +1,8 @@
 # Auditoria Choi — especiais, supers e MAX (17/11/2026)
 
+> **Atualização:** os quatro golpes ausentes e os supers incompletos foram
+> corrigidos na mesma data; ver **Correções aplicadas** no fim deste arquivo.
+
 Rodada focada no Choi para responder: **há golpe especial/super/MAX faltando
 ou incompleto no port?** A resposta curta é **sim**: quatro golpes da fonte não
 têm comando nem estado compilado, e quatro golpes implementados são
@@ -213,14 +216,15 @@ Upper strong** (`states [0, 3, 13, 21]`). O mesmo caso falha na ROM anterior à
 correção (`build/audit_choi_20261117/kof98-snes.sfc`), então não é regressão
 desta rodada.
 
-## Nota de build
+## Build final
 
-O build de teste foi feito com `src/engine/fight.asm`, `cancel_gate.asm`,
-`menucore.asm` e `mrkarate.asm` temporariamente no HEAD: a árvore de trabalho
-atual (Mr. Karate) não linka por distância de branch em `AI_air_ret` e por
-`AI_LVL` em `cancel_gate.asm`. Os arquivos foram restaurados depois do teste;
-a ROM `kof98-snes.sfc` gerada contém as correções do Choi sobre o engine do
-HEAD, não as alterações pendentes do Mr. Karate.
+O build final foi feito com o HEAD atual (`17bd6d6`), incluindo as alterações
+do Mr. Karate, e linkou sem ajustes temporários:
+
+```text
+make -f Makefile.pvsnes PVSNESLIB_HOME=/run/media/fabio/Dados/Fabio/pvsneslib-sdk-4.6
+Build finished successfully!
+```
 
 Resultado bruto pós-correção:
 `docs/audits/specials_choi_2026-11-17_fixed.json` (o de antes:
