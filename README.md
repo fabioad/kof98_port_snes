@@ -244,6 +244,9 @@ são alterados.
 - `tools/build_fight.py` — converte SFF/AIR/CNS/CMD em tabelas compactas.
 - `tools/build_stages.py` e `tools/build_audio.py` — cenários e áudio.
 - `docs/` — documentação técnica, lista de golpes e relatórios de validação.
+- [Proposta de melhoria dos stages e animações](docs/STAGES_QUALIDADE_ANIMACOES_PROPOSTA_2026-11-17.md) — adaptação das artes HD, poses reais e avaliação do orçamento do SNES.
+- [Piloto do cenário da China](docs/STAGE_CHINA_PILOTO_2026-11-17.md) — detalhes do templo priorizados e três poses reais do remador, dentro do limite de 512 tiles estáticos.
+- [Piloto do bazar](docs/STAGE_BAZAR_PILOTO_2026-11-17.md) — detalhes das fachadas e bancas priorizados, com gestos reais do público e do comerciante.
 
 O build experimental standalone (`make`) gera `build/boot-*.sfc` com WLA-DX
 puro. O build principal é o híbrido PVSnesLib.

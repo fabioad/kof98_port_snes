@@ -250,6 +250,8 @@ $(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json asse
 	$(wildcard assets/characters/*/*.snd) \
 	$(wildcard assets/stages/stages_png_snes/*.png) \
 	assets/stages/stages_png_snes/animations/stage_animations.json \
+	$(wildcard assets/stages/stages_png_snes/pilot_china/pose-*.png) \
+	$(wildcard assets/stages/stages_png_snes/pilot_bazar/bazar_*.png) \
 	assets/characters/Iori-KOF98/Iori.sff assets/characters/Iori-KOF98/Iori.air \
 	assets/characters/Iori-KOF98/Iori_SNES.cns assets/characters/Iori-KOF98/Iori_SNES.cmd \
 	assets/characters/Kyo-KOF98/Kyo.sff assets/characters/Kyo-KOF98/Kyo.air \

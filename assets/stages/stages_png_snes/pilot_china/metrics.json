@@ -1,0 +1,42 @@
+{
+  "stage": "KOF98-ChinaStage",
+  "static_tiles": 504,
+  "reserved_static_cells": 16,
+  "dynamic_tiles": 48,
+  "region_xywh": [
+    328,
+    112,
+    32,
+    32
+  ],
+  "priority_regions_xyxy_weight": [
+    [
+      56,
+      40,
+      248,
+      136,
+      4.0
+    ]
+  ],
+  "poses": [
+    0,
+    10,
+    17
+  ],
+  "source_group": 15,
+  "ticks": [
+    24,
+    30,
+    24
+  ],
+  "errors": {
+    "before": {
+      "whole_without_actor": 0.0699443593621254,
+      "temple": 0.07951869070529938
+    },
+    "after": {
+      "whole_without_actor": 0.07205373048782349,
+      "temple": 0.04420037940144539
+    }
+  }
+}

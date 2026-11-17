@@ -94,6 +94,18 @@ for recipe in recipes:
         sequence=[dict(pose=p,ticks60=t) for p,t in zip(recipe['steps'],recipe['ticks'])],
         start_phase_ticks60=recipe['phase'],cycle_ticks60=sum(recipe['ticks']),
         gesture=recipe['gesture'])
+    if recipe['id'] == 'china_remador':
+        # Implemented pilot uses resident SFF patches, not the legacy
+        # hypothetical double-buffer/static-464 budget below.
+        target.update(target_region_xywh=[328,112,32,32],
+            changed_tiles_per_pose_cap=16,art_bytes_per_pose_cap=512,
+            all_poses_rom_bytes_cap=1536,resident_vram_bytes_cap=1536,
+            resident_payload_bytes_cap=1536,
+            placement_status='pilot_axis_aligned_sff_poses_on_boat_deck',
+            resident_patch_files=[f'pilot_china/pose-{i}.png' for i in range(3)])
+    bazar_targets = HERE.parent/'pilot_bazar/targets.json'
+    if recipe['id'].startswith('bazar_') and bazar_targets.exists():
+        target.update(json.loads(bazar_targets.read_text())[recipe['id']])
     clips.append(dict(id=recipe['id'],label=recipe['label'],stage=stage,
         source=dict(def_file=Path(row['def_file']).name,sff_file=Path(row['sff_file']).name,
             def_sha256=row['def_sha256'],sff_sha256=row['sff_sha256'],action=recipe['group'],

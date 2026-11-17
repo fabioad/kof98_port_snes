@@ -55,7 +55,7 @@ def main():
         bad = 0
         for ty in range(28):
             for tx in range(64):
-                mi = (tx // 32) * 1024 + ty * 32 + tx % 32
+                mi = (tx // 32) * 1024 + (ty + bs.STAGE_YOFS.get(name, 0)) * 32 + tx % 32
                 w = map_b[mi * 2] | map_b[mi * 2 + 1] << 8
                 pal, flip = (w >> 10) & 7, w >> 14
                 assert 2 <= pal < 2 + bs.STAGE_NPAL, f"{name}: palette {pal}"

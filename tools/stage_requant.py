@@ -212,7 +212,7 @@ def _features(tiles_lab):
                            np.sqrt(16 * LAMBDA) * bm.reshape(n, -1)], 1)
 
 
-def reduce_tiles(lab_t, pal_lab, k=MAX_TILES, iters=40, seed=3):
+def reduce_tiles(lab_t, pal_lab, k=MAX_TILES, iters=40, seed=3, weights=None):
     """Discrete k-medoids over index tiles.
 
     cost(position, tile) = sum of per-pixel OKLab errors
@@ -221,6 +221,8 @@ def reduce_tiles(lab_t, pal_lab, k=MAX_TILES, iters=40, seed=3):
     tile right, which is what reads as square blocks when it is wrong.
     Returns medoids (K,64) colour indices, per position (medoid, flip,
     palette) and the total cost."""
+    weights = np.ones(NT, np.float32) if weights is None else np.asarray(weights, np.float32)
+    assert weights.shape == (NT,) and np.all(np.isfinite(weights)) and np.all(weights > 0)
     D = np.stack([((lab_t[:, :, None, :] - pal_lab[p][None, None]) ** 2)
                   .sum(-1) for p in range(NPAL)]).astype(np.float32)
     best_p = D.min(-1).sum(-1).argmin(0)
@@ -239,7 +241,8 @@ def reduce_tiles(lab_t, pal_lab, k=MAX_TILES, iters=40, seed=3):
         pick = [first[rng.integers(len(first))]]
         d2 = ((Fq[first] - Fq[pick[0]]) ** 2).sum(1)
         for _ in range(1, k):
-            j = first[rng.choice(len(first), p=d2 / d2.sum())]
+            weighted = d2 * weights[first]
+            j = first[rng.choice(len(first), p=weighted / weighted.sum())]
             pick.append(j)
             d2 = np.minimum(d2, ((Fq[first] - Fq[j]) ** 2).sum(1))
         med = q_idx[np.array(pick)].copy()
@@ -258,7 +261,7 @@ def reduce_tiles(lab_t, pal_lab, k=MAX_TILES, iters=40, seed=3):
         best = np.maximum(cost[np.arange(NT), j], 0)
         fp, m = np.divmod(j, K)
         arg = np.stack([m, fp // NPAL, fp % NPAL], 1)
-        total = float(best.sum())
+        total = float((best * weights).sum())
         # ---- update: per-pixel optimum, then ICM sweeps with block term
         acc = np.zeros((K, 64, NCOL), np.float32)
         for f in range(4):
@@ -266,11 +269,11 @@ def reduce_tiles(lab_t, pal_lab, k=MAX_TILES, iters=40, seed=3):
                 sel = np.where((arg[:, 1] == f) & (arg[:, 2] == p))[0]
                 if len(sel):
                     np.add.at(acc, (arg[sel, 0][:, None], PERM[f][None, :]),
-                              D[p, sel])
+                              D[p, sel] * weights[sel, None, None])
         used = np.bincount(arg[:, 0], minlength=K) > 0
         newmed = med.copy()
         newmed[used] = acc[used].argmin(-1)
-        _icm(newmed, arg, D, pal_lab, src_bm, sweeps=2)
+        _icm(newmed, arg, D, pal_lab, src_bm, sweeps=2, weights=weights)
         # ---- reseed unused / flip-duplicate medoids at worst positions
         canon, free = {}, list(np.where(~used)[0])
         for jm in np.where(used)[0]:
@@ -280,7 +283,7 @@ def reduce_tiles(lab_t, pal_lab, k=MAX_TILES, iters=40, seed=3):
             else:
                 canon[key] = jm
         if free:
-            taken, wi, worst = set(), 0, np.argsort(-best)
+            taken, wi, worst = set(), 0, np.argsort(-best * weights)
             for jm in free:
                 while wi < NT and arg[worst[wi], 0] in taken:
                     wi += 1
@@ -301,10 +304,10 @@ def reduce_tiles(lab_t, pal_lab, k=MAX_TILES, iters=40, seed=3):
     j = cost.argmin(1)
     fp, m = np.divmod(j, len(med))
     arg = np.stack([m, fp // NPAL, fp % NPAL], 1)
-    return med, arg, float(np.maximum(cost[np.arange(NT), j], 0).sum())
+    return med, arg, float((np.maximum(cost[np.arange(NT), j], 0) * weights).sum())
 
 
-def _icm(med, arg, D, pal_lab, src_bm, sweeps=2):
+def _icm(med, arg, D, pal_lab, src_bm, sweeps=2, weights=None):
     """Greedy per-pixel recolouring of medoids with the block-mean term."""
     K = len(med)
     pos = np.arange(NT)
@@ -330,7 +333,7 @@ def _icm(med, arg, D, pal_lab, src_bm, sweeps=2):
                 nb = cur_bm + (Pc - P0) / 16.0
                 d = (D[pi, pos, px, c] - base_pix
                      + w * (((tgt - nb) ** 2).sum(1) - base_blk))
-                deltas[c] = np.bincount(mi, weights=d, minlength=K)
+                deltas[c] = np.bincount(mi, weights=d if weights is None else d * weights, minlength=K)
             newc = deltas.argmin(0)
             ch = deltas[newc, np.arange(K)] < -1e-9
             if not ch.any():

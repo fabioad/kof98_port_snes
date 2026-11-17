@@ -46,17 +46,22 @@ BG1CHR = (0x0000, 0x2000)             # words
 BG1MAP = (0x4000, 0x4800)
 
 
-def stage0_rom(tmpdir: Path) -> Path:
-    """Patch CampStage's free-VS random pick to always return stage 0."""
-    match = re.search(r"^([0-9a-fA-F]+) CampStage$", SYMFILE.read_text(), re.M)
+def stage0_rom(tmpdir: Path, stage=0) -> Path:
+    """Patch CampStage's free-VS random pick (stage 0 by default)."""
+    symbols = SYMFILE.read_text()
+    match = re.search(r"^([0-9a-fA-F]+) MkCampStageFar$", symbols, re.M)
+    if not match:
+        match = re.search(r"^([0-9a-fA-F]+) CampStage$", symbols, re.M)
     if not match:
         raise AssertionError("CampStage missing from kof98-snes.symfull")
-    start = int(match.group(1), 16) - SYM_BIAS
+    address = int(match.group(1), 16)
+    start = address - SYM_BIAS if address >= SYM_BIAS else address
     data = bytearray(ROM.read_bytes())
     pos = data.find(bytes((0xA9, 0xFF)), start, start + 80)
     if pos < 0:
         raise AssertionError("StagePick random immediate not found")
-    data[pos + 1] = 0x00
+    assert 0 <= stage < 10
+    data[pos + 1] = stage
     rom = tmpdir / "super-vram.sfc"
     rom.write_bytes(data)
     if MSU.exists():

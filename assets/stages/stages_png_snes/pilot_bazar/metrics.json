@@ -1,0 +1,33 @@
+{
+  "stage": "KOF98-Mid.EastStage",
+  "static_tiles": 512,
+  "animated_cells": 29,
+  "dynamic_tiles": 58,
+  "shared_dynamic_tiles": 146,
+  "priority_regions": [
+    [
+      264,
+      0,
+      400,
+      104,
+      3.0
+    ],
+    [
+      8,
+      88,
+      112,
+      176,
+      2.0
+    ]
+  ],
+  "errors": {
+    "before": {
+      "without_actors": 0.07893192023038864,
+      "architecture": 0.08177045732736588
+    },
+    "after": {
+      "without_actors": 0.08220593631267548,
+      "architecture": 0.06613316386938095
+    }
+  }
+}

@@ -193,8 +193,8 @@ def build_anims(stage_names, pix_by_stage):
 
     Every pose of every clip is resident in the shared dynamic pool
     (tile index 704+), so a commit is a tilemap write only.  Pose k of a
-    cell re-samples the source k px higher -- a gentle bob that stands in
-    for the MUGEN gestures.  Format:
+    cell re-samples the source k px higher for legacy clips. Clips with
+    resident_patch_files use explicit indexed SFF poses instead. Format:
 
       StgAnimTab: .DW S0..S{n}            ; one list ptr per stage (0=none)
       Si: .DB nclips ; .DW clip ptrs
@@ -203,6 +203,7 @@ def build_anims(stage_names, pix_by_stage):
             .DW mapidx, tileP0..tilePn    ; per cell
     """
     import json
+    from PIL import Image
     spec = json.load(open(ANIM_JSON))
     chr_out = bytearray()
     asm = ["; generated: per-stage BG1 animation patches (resident poses)",
@@ -231,13 +232,36 @@ def build_anims(stage_names, pix_by_stage):
             assert len(ticks) == nposes and max(ticks) < 65536
             phase = t.get("start_phase_ticks60", 0)
             pix, rgbpal = pix_by_stage[sname]
+            # Explicit indexed patches contain real, axis-aligned SFF poses.
+            # Legacy stages retain their existing resampling until adapted.
+            patch_files = t.get("resident_patch_files")
+            sparse_cells = t.get("resident_patch_cells")
+            assert sparse_cells is None or patch_files, "sparse cells require explicit pose patches"
+            patches = []
+            if patch_files:
+                assert len(patch_files) == nposes
+                assert rx % 8 == ry % 8 == rw % 8 == rh % 8 == 0
+                if sparse_cells is None:
+                    assert rw * rh // 64 <= cap
+                else:
+                    sparse_cells = {tuple(cell) for cell in sparse_cells}
+                    assert len(sparse_cells) == len(t["resident_patch_cells"])
+                    assert 0 < len(sparse_cells) <= cap
+                    assert all(0 <= x < rw//8 and 0 <= y < rh//8 for x,y in sparse_cells)
+                for filename in patch_files:
+                    patch = Image.open(os.path.join(PNG_DIR, filename))
+                    assert patch.mode == "P" and patch.size == (rw, rh)
+                    assert patch.getpalette()[:135] == rgbpal[:135], filename
+                    patches.append(patch.tobytes())
             yofs = STAGE_YOFS.get(sname, 0)
             pal = [tuple(rgbpal[i * 3:i * 3 + 3])
                    for i in range(STAGE_NCOL * STAGE_NPAL)]
             cells = []
             for ty in range(ry // 8, (ry + rh) // 8):
                 for tx in range(rx // 8, (rx + rw) // 8):
-                    if (ty * 8 - ry) >= rh * 2 // 3:
+                    if sparse_cells is not None and (tx-rx//8,ty-ry//8) not in sparse_cells:
+                        continue
+                    if not patches and (ty * 8 - ry) >= rh * 2 // 3:
                         continue            # upper rows move; floor static
                     vals = [pix[(ty * 8 + r) * 512 + tx * 8 + c]
                             for r in range(8) for c in range(8)]
@@ -270,6 +294,17 @@ def build_anims(stage_names, pix_by_stage):
                 # palette group that reproduces its 8x8 sample best
                 tws = []
                 for pose in range(nposes):
+                    if patches:
+                        patch = patches[pose]
+                        idx = [patch[(ty * 8 - ry + r) * rw + tx * 8 - rx + c]
+                               for r in range(8) for c in range(8)]
+                        groups = {v // STAGE_NCOL for v in idx}
+                        assert len(groups) == 1 and max(groups) < STAGE_NPAL
+                        grp = groups.pop()
+                        chr_out += tiles4bpp(bytes(v % STAGE_NCOL + 1 for v in idx), 8, 8)[0]
+                        tws.append((tile_no + pose) |
+                                   ((STAGE_BG_PALETTE + grp) << 10))
+                        continue
                     y0 = max(ty * 8 - pose, 0)
                     idx = [pix[(y0 + r) * 512 + tx * 8 + c]
                            for r in range(8) for c in range(8)]
