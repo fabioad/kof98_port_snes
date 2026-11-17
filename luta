@@ -1,0 +1,3 @@
+#!/bin/sh
+# Atalho para tools/luta_cpu.py — use: ./luta "luta Kyo vs Iori"
+exec python3 "$(dirname "$0")/tools/luta_cpu.py" "$@"
