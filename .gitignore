@@ -87,6 +87,12 @@ music/ffg_energy/ouvir.html
 /kof98-snes-1.pcm
 /port_snes_tecnica/
 
+# Vídeos de referência/capturas soltos na raiz (não fazem parte do jogo)
+/*.mp4
+
+# Fonte antiga da Sakura usada no estudo do stand (backup local)
+/assets/characters/_excluded/Sakura-KOF98_old/
+
 # Fonte SFA2 do Sakura mantida apenas para referência local (não usada no build)
 /assets/characters/_excluded/Sakura-SFA2/
 
