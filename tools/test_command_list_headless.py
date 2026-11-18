@@ -182,8 +182,10 @@ def test_open_draw_and_close():
         assert text(core, 13, 18, 5) == "D + Y"
         assert text(core, 16, 18, 5) == "D + A"
         assert text(core, 17, 18, 7) == "AIR + Y"
-        assert text(core, 20, 18, 7) == "AIR + A"
-        assert text(core, 21, 1, 6) == "UP/DN "
+        assert text(core, 18, 18, 7) == "AIR + X"
+        assert text(core, 19, 1, 6) == "UP/DN "
+        assert text(core, 20, 1, 10) == "A NOTATION"
+        assert text(core, 21, 1, 9) == "SUP:SUPER"
 
         press(core, DOWN)
         assert core.ram[CL_SEL] == 1
@@ -256,7 +258,7 @@ def test_scrolling_and_freeze():
         for _ in range(14):
             press(core, DOWN)
         assert core.ram[CL_SEL] == 14, core.ram[CL_SEL]
-        assert core.ram[CL_TOP] == 3, core.ram[CL_TOP]
+        assert core.ram[CL_TOP] == 5, core.ram[CL_TOP]  # ten visible rows
         for _ in range(20):
             press(core, UP)
         assert core.ram[CL_SEL] == 0

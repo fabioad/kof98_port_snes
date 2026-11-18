@@ -40,3 +40,29 @@ imagegen integrada. Prompt: preservar Sakura, pose e roupa; reforçar o contorno
 externo em aproximadamente um pixel nativo, com azul quase preto para roupa e
 marrom escuro para pele, inspirado em KOF98; manter pixel art e transparência.
 O SFF final usa o processamento determinístico de pixels indexados em JavaScript.
+
+## Stand com ritmo de KOF98
+
+`tools/stand_kof98.py` gera a Action 0 com 14 passos (59 ticks) a partir dos
+quadros 0,0..0,6 com o contorno reforçado:
+
+- intercalações de 1 px no balanço do corpo. Os pés ficam fixos e uma linha
+  da coxa/joelho é duplicada ou removida;
+- pausas curtas no topo e no fundo do balanço (5 ticks), como nos stands de
+  KOF98;
+- a fita da bandana atrasada um passo em relação ao corpo e sempre em
+  movimento, inclusive nas pausas, como a bandana do Kyo ou o cabelo de
+  Iori/Athena.
+
+Os sprites novos são 0,7..0,15, inseridos logo após 0,6 com a mesma paleta.
+Os vínculos foram ajustados. Backups: `backups/Sakura.pre-stand-kof98.{sff,air}`.
+Prévias: `output/sakura-stand-novo.gif`, `output/sakura-stand-antes-depois.gif`
+e `output/sakura-stand-quadros.png`.
+
+```sh
+python3 tools/stand_kof98.py preview   # só gera as prévias
+python3 tools/stand_kof98.py apply     # grava no SFF/AIR (recusa se já aplicado)
+```
+
+Se `thicken_outlines.mjs` for rodado de novo, ele reconstrói o SFF a partir do
+original e apaga os quadros 0,7..0,15. Depois dele, rode `apply` novamente.

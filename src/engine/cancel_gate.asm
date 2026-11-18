@@ -167,11 +167,13 @@ PMT_last:
     beq +
     lda #0
     bra ++
-+   lda.w SPARKS+SPK_VX,x
-    bmi +
-    lda #$0400.w
++   lda.w SPARKS+SPK_ATTR,x            ; VX is zero once a multi-shot pins;
+    and #$0010.w                      ; bit4 retains its firing direction
+    beq PMT_right
+    lda #$FC00.w
     bra ++
-+   lda #$FC00.w
+PMT_right:
+    lda #$0400.w
 ++  sta scr5
     phx                                 ; keep the slot for PH_fx
     ldx fofs

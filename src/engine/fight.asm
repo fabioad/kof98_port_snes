@@ -8105,8 +8105,10 @@ TickFighter:
     dec a
     sta FP+F_MAX,x
     beq +
-    lda #2.b                           ; keep the bright MAX palette alive
-    sta FP+F_PFX,x
+    ; MAX is shown by the meter tag and its activation flash.  F_PFX is
+    ; the source's short PalFX/impact flash, whose high palette can be a
+    ; flat silhouette.  Re-arming it every tick hid the fighter for the
+    ; whole MAX window (Kyo/Robert/Geese).  Let genuine flashes expire.
 +   rep #$20
     .ACCU 16
     jsr ApplyTimeActions
@@ -16842,6 +16844,7 @@ PB_no:
 ; shows which moves P1/P2 actually performed and which one was the latest.
 ; The overlay lives in the empty BG3 rows 7-21 and is cleared on close.
 
+.DEFINE CL_HELP CL_VARS+$7B          ; notation help; unused outside list
 CmdListReset:
     rep #$30
     .ACCU 16
@@ -17004,6 +17007,7 @@ CmdListOpenSide:
     sta.w CL_OPEN
     stz.w CL_SEL
     stz.w CL_TOP
+    stz.w CL_HELP
     jsr CmdListCount
     jmp CmdListDraw
 
@@ -17104,17 +17108,33 @@ CmdListTick:
     ora FP+F_JOYPR+FP2OFS
     sta scr0
     and #(JOY_ST|JOY_B).w
-    bne CTK_close
-    rep #$20
+    beq +
+    jmp CTK_close
++   lda scr0
+    and #JOY_A.w
+    sep #$20
+    .ACCU 8
+    beq CTK_not_help
+    lda.w CL_HELP
+    eor #1.b
+    sta.w CL_HELP
+    jmp CmdListDraw
+CTK_not_help:
+    lda.w CL_HELP
+    beq +
+    rts
++   rep #$20
     .ACCU 16
+CTK_move:
     lda scr0
     and #JOY_UP.w
     beq CTK_down
     sep #$20
     .ACCU 8
     lda.w CL_SEL
-    beq CTK_done
-    dec a
+    bne +
+    jmp CTK_done
++   dec a
     sta.w CL_SEL
     cmp.w CL_TOP
     bcs CTK_up_draw
@@ -17137,11 +17157,11 @@ CTK_down:
     sta.w CL_SEL
     sec
     sbc.w CL_TOP
-    cmp.b #12
+    cmp.b #10
     bcc CTK_dn_draw
     lda.w CL_SEL
     sec
-    sbc.b #11
+    sbc.b #9
     sta.w CL_TOP
 CTK_dn_draw:
     jsr CmdListDraw
@@ -17211,12 +17231,21 @@ CmdListDraw:
 ++  sep #$20
     .ACCU 8
     jsr WriteStr
-    ; category legend
+    ; category legend / notation page heading
     rep #$20
     .ACCU 16
     lda #(8*32*2).w
     sta scr0
-    lda #CmdListLegend.w
+    lda.w CL_HELP
+    and #$00FF.w
+    beq +
+    lda #CmdListNotation.w
+    sta scr2
+    lda #:CmdListNotation
+    sta scr2+2
+    jsr WriteStr
+    jmp CmdListDrawHelp
++   lda #CmdListLegend.w
     sta scr2
     lda #:CmdListLegend
     sta scr2+2
@@ -17230,7 +17259,7 @@ CDL_loop:
     sep #$20
     .ACCU 8
     lda.w CL_ROW
-    cmp.b #12
+    cmp.b #10
     bcs CDL_help
     clc
     adc.w CL_TOP
@@ -17240,17 +17269,34 @@ CDL_loop:
     inc.w CL_ROW
     bra CDL_loop
 CDL_help:
-    rep #$20
-    .ACCU 16
-    lda #((21*32+1)*2).w
-    sta scr0
-    lda #CmdListHelp.w
-    sta scr2
-    lda #:CmdListHelp
-    sta scr2+2
     sep #$20
     .ACCU 8
+    lda.b #10                           ; footer = CmdHelpTab rows 10-12
+CDL_strs:
+    sta.w CL_ROW
+CDL_sl:
+    clc
+    adc #9.b                            ; screen row = 9 + row
+    jsr CmdListRowScr
+    .ACCU 16
+    clc
+    adc #2.w
+    sta scr0
+    lda.w CL_ROW
+    and #$00FF.w
+    asl a
+    tax
+    lda.l CmdHelpTab,x
+    sta scr2
+    lda #:CmdHelp0
+    sta scr2+2
     jsr WriteStr
+    sep #$20
+    .ACCU 8
+    inc.w CL_ROW
+    lda.w CL_ROW
+    cmp #13.b
+    bcc CDL_sl
     sep #$20                            ; WriteStr returns with A=16; the
     .ACCU 8                             ; HUD flags below are byte accesses
     lda huddirty                        ; (a 16-bit ORA would swallow the STA
@@ -17374,6 +17420,14 @@ CDL_cur_store:
     rep #$20
     .ACCU 16
     rts
+
+; The help page replaces the ten move rows; A/B returns without moving the
+; selection.  Rows 0-9 of CmdHelpTab, then the shared footer.
+CmdListDrawHelp:
+    sep #$20
+    .ACCU 8
+    lda.b #0
+    jmp CDL_strs
 
 ; SURVIVOR: build and shuffle the eligible opponent list.  RomFlags marks
 ; the characters whose sprites are resident in the ROM; without MSU-1 only
@@ -19384,7 +19438,7 @@ MkCall_OpnEnter:
 ; free low window just below OamCache so the Fight bank stays under 32 KiB.
 .BASE $C0
 .BANK 50 SLOT 0
-.ORGA $0972
+.ORGA $0985
 .SECTION "FramePresentNear" FORCE
 ; Cancel helpers end at $0971; this stays below HudTopCode at $09C0.
 ; Arm only the MainLoop wait. Other library waits during screen/CHR loads
@@ -19873,12 +19927,18 @@ ProjPushFar:
     lda.w SPARKS+SPK_GRD,x
     and #$0001.w
     bne PPH_zero
+    ; Pinning a multi-hit shot clears VX after contact.  Use the stored
+    ; launch/reflection heading, otherwise leftward supers push right on
+    ; hits 2..5 and pull the victim back toward their caster.
+    lda.w SPARKS+SPK_ATTR,x
+    and #$0010.w
+    beq PPH_right
+    lda #-(6<<8).w
+    bra PPH_store
+PPH_right:
     lda #6<<8.w
-    bit.w SPARKS+SPK_VX,x
-    bpl +
-    eor #$FFFF.w
-    inc a
-+   sta FP+F_VX,y
+PPH_store:
+    sta FP+F_VX,y
     rts
 PPH_zero:
     lda #0

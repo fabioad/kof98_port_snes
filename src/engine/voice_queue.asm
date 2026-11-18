@@ -413,11 +413,12 @@ VoiceQueueResetFar:
     lda #0
     sta.l $000158
     sta.l $00015A
-    lda.w MUSON                         ; no module ever started: nothing to
-    and #$00FF.w                        ;   key off/restart
-    beq VQR_out8
+    lda.w MUSON                         ; A is still 8-bit after clearing digi
+    beq VQR_out8                        ;   no module to key off/restart
     phd
-    lda #0
+    rep #$20                            ; TCD always consumes the full C reg:
+    .ACCU 16                            ; clear hidden B as well as A
+    lda #0.w
     tcd
     pea 0                               ; CMD_PLAY starts with Module_Stop:
     jsl spcPlay                         ;   key off every voice, then restart

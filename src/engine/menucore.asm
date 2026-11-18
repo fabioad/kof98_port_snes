@@ -159,13 +159,13 @@
 .DEFINE SV_FOUT     18                   ; fast fade-out window (2 steps/frame)
 .DEFINE END_COUNT   23                    ; end00-04 = ending1, 05-22 = ending2
 .DEFINE END_HOLD    300                   ; frames per screen (~128 fade-in + hold + ~124 fade-out)
-.DEFINE END_FOUT    132                   ; E_TICK threshold: fade-out window
+.DEFINE END_FOUT    36                    ; E_TICK threshold: fade-out window
 ; ending2 screens 6-20 are the 15 team-pair montage cards: they share the
-; 3x300-frame budget of the screens they replaced, so each runs 60 frames
-; with fast fades (2 InFadeStep/frame -> ~16-frame fades, black target).
+; montage now gives every team a readable three-second card, with fast
+; fades (2 InFadeStep/frame -> ~16-frame fades, black target).
 .DEFINE END_PFIRST  6                     ; first montage screen index
 .DEFINE END_PLAST   21                    ; one past the last montage index
-.DEFINE END_PHOLD   60                    ; frames per montage card (15x60=900)
+.DEFINE END_PHOLD   180                   ; frames per montage card (15x60=900)
 .DEFINE END_PFOUT   18                    ; montage fade-out window
 .DEFINE E_SCR       $F078                 ; free gap: $F052+ is intro scratch,
 .DEFINE E_TICK      $F079                 ;   $F080+ is IN_FCUR (.w countdown)
@@ -2078,6 +2078,9 @@ DPC_ok:
 
 ; mode menu ---------------------------------------------------------------
 MenuEnter:
+    sep #$20
+    .ACCU 8
+    stz.w DM_ON                           ; human navigation owns the lifecycle
     lda #1
     jsr MnLoadArt
     lda #0
@@ -2287,6 +2290,7 @@ OptCall_ConsumePadEdges:  jsr ConsumePadEdges
 MenuToSelect:
     sep #$20
     .ACCU 8
+    stz.w DM_ON                           ; stale attract state cannot own select
     lda.w S_MODE                          ; ids are the baked mode-menu rows:
     jsr CampReset
     lda.w S_MODE                          ;   0 play, 1 vs, 2 team play,
@@ -2454,16 +2458,8 @@ EndLoad:
     sta.b I_LEN
     ldx #0
     jsr InCgRam
-    jsr InFadeInit                        ; arm white->art fade (I_SRC = pal)
-    lda.w E_BLACKIN                       ; boss hand-off: fade ending1 in
-    and #$00FF.w                          ;   from black instead of white
-    bne EL_black
-    lda.w E_SCR                           ; montage cards fade in from
-    and #$00FF.w                          ;   black, not white: re-seat
-    cmp #END_PFIRST.w                     ;   IN_FCUR + CGRAM row 0 so the
-    bcc EL_regs                           ;   rapid art->black->art reads
-    cmp #END_PLAST.w                      ;   clean (no white strobe)
-    bcs EL_regs
+    jsr InFadeInit                        ; arm fade toward the art palette
+                                          ; ending cards always fade from black
 EL_black:
     stz.w E_BLACKIN
     ldx #0
@@ -2577,11 +2573,8 @@ ET_step:
     jsr InFadeStep
     jsr InFadeStep
     rts
-+   lda.w IN_TICK
-    and #$0003.w
-    bne +
-    jsr InFadeStep                        ; 1 step every 4 frames (~124 ticks)
-+   rts
++   jsr InFadeStep                        ; ~32 frames: keep the art readable
+    rts
 ET_adv:
     sep #$20
     .ACCU 8
@@ -2603,7 +2596,7 @@ ET_adv:
 +   jsr EndLoad                           ; returns in plp'd width (acc16)
     rep #$20
     .ACCU 16
-    lda.w E_SCR                           ; montage cards get a 60-frame
+    lda.w E_SCR                           ; montage cards get a 180-frame
     and #$00FF.w                          ;   slot; everything else 300
     cmp #END_PFIRST.w
     bcc +
@@ -2880,6 +2873,16 @@ DemoClock:
     .ACCU 8
     lda.w DM_ON
     beq DC_out
+    lda.b gamestate                      ; only the exhibition's bout states
+    cmp #1.b                              ; may advance the attract deadline
+    beq DC_active
+    cmp #2.b
+    beq DC_active
+    cmp #4.b
+    beq DC_active
+    stz.w DM_ON                           ; never evict a human menu/selection
+    rts
+DC_active:
     ; START or A on either pad leaves the exhibition immediately and returns
     ; to PRESS START.  MainLoop calls this before the gamestate tick, so these
     ; are still the real pad edges -- AiDrive overwrites them later.

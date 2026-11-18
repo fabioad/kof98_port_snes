@@ -41,7 +41,8 @@ from calibration.projectiles import (PROJECTILE_ACTIONS,
                                      PROJECTILE_X_OFFSET,
                                      PROJECTILE_RELEASE,
                                      BODY_ANIMATIONS as
-                                     PROJECTILE_BODY_ANIMATIONS)
+                                     PROJECTILE_BODY_ANIMATIONS,
+                                     PROJECTILE_EXTERNAL_ART)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -1986,7 +1987,7 @@ POST_CAL_VEL = {
     "chizuru":  {87: (3, 5)},                            # super 2200
     "choi":     {109: (5, 6), 110: (4, 6), 111: (6, 8),
                  115: (5, 6), 116: (6, 8)},       # 1100 / 1200 / 1600 / 1210 / 1610
-    "chunli":   {57: (4, 6)},                            # Hyakuretsu Kyaku
+    # chunli 57 (Hyakuretsu): no step-in, op23 latches the air-blow knockdown flag
     "daimon":   {113: (3, 5), 112: (3, 5), 110: (3, 5)},
     "heavyd":   {50: (3, 5), 51: (3, 5)},                # 1100 / 1150
     "iori":     {85: (5, 6)},                            # Ya Otome 3000
@@ -11271,6 +11272,12 @@ def build_char(name, cfg, global_pal=None):
         cns_binds, cns_acts, cns_posadds)
     if _remaining:
         print(f"{name}: restored special phase timelines {_remaining}")
+    from remaining_specials import complete_video_feedback
+    _feedback = complete_video_feedback(
+        name, cfg, anims, air, cns_moves, cns_headers, cns_statedefs,
+        cns_binds, cns_acts, cns_posadds)
+    if _feedback:
+        print(f"{name}: completed video-feedback moves {_feedback}")
     # Timed step-in (POST_CAL_VEL).  Runs after repair_remaining_specials,
     # which rewrites cns_acts for the flattened timelines.  ActTab op5 sets
     # the velocity; a matching Time row clears it, so the fighter closes a
@@ -12538,6 +12545,8 @@ def build_char(name, cfg, global_pal=None):
     _budget = VICTIM_POSE_BUDGET - (16 if CHAR_SCALE_OVERRIDE is not None
                                     else 0)
     _emit_keys(sorted(wanted))
+    if os.environ.get("KOF_DEBUG_WANTED") == name:
+        print("WANTED", [(k, len(m)) for k, m in zip(sorted(wanted), spr_meta)])
     _kept = {}
     for _pose in sorted(victim_poses):
         if sum(len(m) for m in spr_meta) > _budget:
@@ -14402,9 +14411,133 @@ def projectile_effect_sequence(name, cfg, sff, air, actions):
 PROJECTILE_LEGACY_FIT = {"kyo", "kyonests", "kyoash", "iori", "saisyu"}
 
 
+def np_unique_colors(rgba):
+    """Opaque (r, g, b) tuples of an RGBA array with their pixel counts."""
+    import numpy as np
+    px = rgba[rgba[..., 3] >= 128][:, :3]
+    if not len(px):
+        return [], []
+    cols, counts = np.unique(px, axis=0, return_counts=True)
+    return [tuple(int(v) for v in c) for c in cols], [int(n) for n in counts]
+
+
+def load_external_projectile_art(name):
+    """Return [(RGBA ndarray HxWx4, ticks)] for PROJECTILE_EXTERNAL_ART."""
+    import numpy as np
+    from PIL import Image
+    ticks, files = PROJECTILE_EXTERNAL_ART[name]
+    out = []
+    for fname in files:
+        path = os.path.join(ROOT, "assets", "projectiles", fname)
+        out.append((np.array(Image.open(path).convert("RGBA")), ticks))
+    return out
+
+
+def _external_scaled(rgba, num, den):
+    """Box-filter resize of an RGBA array by num/den (premultiplied)."""
+    import numpy as np
+    from PIL import Image
+    h, w = rgba.shape[:2]
+    nw, nh = max(1, round(w * num / den)), max(1, round(h * num / den))
+    if (nw, nh) == (w, h):
+        return rgba
+    a = rgba.astype(np.float32)
+    a[..., :3] *= a[..., 3:4] / 255.0
+    chans = [Image.fromarray(a[..., c], "F").resize((nw, nh), Image.BOX)
+             for c in range(4)]
+    s = np.stack([np.array(c) for c in chans], axis=-1)
+    alpha = s[..., 3:4]
+    s[..., :3] = np.where(alpha > 0, s[..., :3] * 255.0 / np.maximum(alpha, 1),
+                          0)
+    return np.clip(s + 0.5, 0, 255).astype(np.uint8)
+
+
+def _external_cells(rgba):
+    """Index the RGBA art with the shared projectile palette and cut it into
+    16x16 cells on the grid offset that leaves the fewest non-empty cells.
+
+    Returns (cells, padx, pady, w, h): cells = [(cx, cy, block)] with the
+    grid origin at (-padx, -pady) from the image's top-left corner.
+    """
+    import numpy as np
+    h, w = rgba.shape[:2]
+    pal = np.array(PROJECTILE_PALETTE[1:], dtype=np.int32)
+    opaque = rgba[..., 3] >= 128
+    rgb = rgba[..., :3].astype(np.int32)
+    dist = ((rgb[:, :, None, :] - pal[None, None, :, :]) ** 2).sum(-1)
+    idx = np.where(opaque, dist.argmin(-1) + 1, 0).astype(np.uint8)
+    best = None
+    for pady in range(CELL):
+        for padx in range(CELL):
+            rows = (h + pady + CELL - 1) // CELL
+            cols = (w + padx + CELL - 1) // CELL
+            grid = np.zeros((rows * CELL, cols * CELL), np.uint8)
+            grid[pady:pady + h, padx:padx + w] = idx
+            blocks = []
+            for cy in range(rows):
+                for cx in range(cols):
+                    blk = grid[cy * CELL:(cy + 1) * CELL,
+                               cx * CELL:(cx + 1) * CELL]
+                    if blk.any():
+                        blocks.append((cx, cy, bytes(blk.tobytes())))
+            uniq = len({b for _x, _y, b in blocks})
+            key = (uniq, len(blocks), pady + padx)
+            if best is None or key < best[0]:
+                best = (key, blocks, padx, pady)
+    _key, blocks, padx, pady = best
+    return blocks, padx, pady, w, h
+
+
+def projectile_effect_external(name):
+    """Compile PNG art into a <=2-frame projectile clip.
+
+    Both frames share one scale: the largest (in 1/16 steps) at which every
+    frame fits the 16 unique 16x16 cells of the shared effect page.  The art
+    is centred horizontally and sits on the floor (y = 0), like the ground
+    flames it replaces.
+    """
+    frames = load_external_projectile_art(name)
+    limit = len(SPARK_SLOTS)
+    for num in range(16, 0, -1):
+        fitted = []
+        for rgba, ticks in frames:
+            scaled = _external_scaled(rgba, num, 16)
+            blocks, padx, pady, w, h = _external_cells(scaled)
+            if len({b for _x, _y, b in blocks}) > limit:
+                break
+            fitted.append((ticks, blocks, padx, pady, w, h))
+        else:
+            break
+    else:
+        raise ValueError(f"{name}: external projectile does not fit")
+    print(f"{name}: external projectile art at {num}/16 scale, "
+          + ", ".join(f"{w}x{h} ({len(b)} cells)"
+                      for _t, b, _px, _py, w, h in fitted))
+    zoom_frames = []
+    chr_data = bytearray()
+    for ticks, blocks, padx, pady, w, h in fitted:
+        atlas = {}
+        cells = []
+        for cx, cy, block in blocks:
+            quad = tiles4bpp(block, CELL, CELL)[0]
+            idx = atlas.setdefault(quad, len(atlas))
+            cells.append((cx * CELL - padx - w // 2,
+                          cy * CELL - pady - h, idx))
+        page = bytearray(2048)
+        for quad, idx in atlas.items():
+            offset = (SPARK_SLOTS[idx] - 192) * 32
+            page[offset:offset + 64] = quad[:64]
+            page[offset + 512:offset + 576] = quad[64:]
+        chr_data += page
+        zoom_frames.append((max(1, min(255, ticks)), cells))
+    return PROJECTILE_ACTIONS.get(name), zoom_frames, bytes(chr_data)
+
+
 def projectile_effect(name, cfg, sff, air, statedefs, headers, move_ids,
                       palidx, global_pal, mapped_color):
     """Compile source AIR frames into the eight-cell OBJ cache per side."""
+    if name in PROJECTILE_EXTERNAL_ART:
+        return projectile_effect_external(name)
     sequence = PROJECTILE_ACTION_SEQUENCES.get(name)
     if sequence is not None:
         return projectile_effect_sequence(name, cfg, sff, air, sequence)
@@ -14755,6 +14888,12 @@ def projectile_effect_alt(name, sff, air, spec):
 PROJ_PAL_BOOST = {"kyo": 8, "kyonests": 8, "kyoash": 8, "iori": 12,
                   "saisyu": 8}
 
+# Colours the shared 15-slot OBJ effect palette must keep for the external
+# projectile art (see PROJECTILE_EXTERNAL_ART).  build_spark's median cut is
+# driven by the whole roster, so the violet Yami Barai ramp is pinned here and
+# missing entries are taken from the least-used colours.
+PROJECTILE_PALETTE_PINS = ((74, 36, 120), (150, 92, 200), (214, 186, 245))
+
 
 def build_spark():
     """Emit spark.chr (tiles placed at fixed OBJ indices), spark.inc
@@ -14792,6 +14931,14 @@ def build_spark():
     # matching the clip compiler's frame selection. Weight projectile
     # pixels above the generic hit spark so palette slots preserve magic hues.
     for name, cfg in CHARS.items():
+        if name in PROJECTILE_EXTERNAL_ART:
+            # PNG art: its exact colours feed the shared palette.
+            for rgba, _ticks in load_external_projectile_art(name):
+                cols, counts = np_unique_colors(rgba)
+                for c, n in zip(cols, counts):
+                    color_hist[c] = color_hist.get(c, 0) + (
+                        n * 4 * PROJ_PAL_BOOST.get(name, 1))
+            continue
         if not cfg.get("sff") or not cfg.get("air") or not cfg.get("cns"):
             continue
         sff, air = spark_source(asset_path(cfg["sff"]), asset_path(cfg["air"]))
@@ -14876,6 +15023,25 @@ def build_spark():
         return min(range(1, len(pal)),
                    key=lambda i: sum((pal[i][ch] - color[ch]) ** 2
                                      for ch in range(3)))
+    # Pin the violet Yami Barai ramp.  The median cut spreads its fifteen slots
+    # over every flash and orb in the roster, and the purple burst earns only
+    # one of them; two more are taken from the least-used colours (weighted by
+    # the histogram) so Iori's shot keeps its dark base and mid tone instead of
+    # collapsing into white with stray blue speckles.
+    pins = list(PROJECTILE_PALETTE_PINS)
+    if pins:
+        usage = [0] * len(pal)
+        for colour, count in color_hist.items():
+            usage[shared_color_index(colour)] += count
+        for pin in pins:
+            if min(sum((pal[i][ch] - pin[ch]) ** 2 for ch in range(3))
+                   for i in range(1, len(pal))) <= 32 ** 2:
+                continue
+            victims = [i for i in range(1, len(pal)) if pal[i] not in pins]
+            victim = min(victims, key=lambda i: (usage[i], -i))
+            pal[victim] = pin
+            usage[victim] = 0
+        palidx = {c: i for i, c in enumerate(pal)}
     global PROJECTILE_PALETTE, PROJECTILE_PALETTE_IDX
     PROJECTILE_PALETTE = pal
     PROJECTILE_PALETTE_IDX = palidx
@@ -15907,7 +16073,20 @@ def build_hud():
     strs["CmdListSide1"] = "P1"
     strs["CmdListSide2"] = "P2"
     strs["CmdListLegend"] = "NRM CMD SPC SUP MAX THR SYS"
-    strs["CmdListHelp"] = "UP/DN L/R SIDE  START EXIT"
+    strs["CmdHelp10"] = "UP/DN SCROLL  L/R PLAYER"
+    strs["CmdHelp11"] = "A NOTATION HELP  B BACK"
+    strs["CmdHelp12"] = "SUP:SUPER  MAX:POWER SUPER"
+    strs["CmdListNotation"] = "HOW TO READ COMMANDS"
+    strs["CmdHelp0"] = "F FORWARD  B BACK  D DOWN"
+    strs["CmdHelp1"] = "U UP  DF DOWN-FORWARD"
+    strs["CmdHelp2"] = "QCF D-DF-F  QCB D-DB-B"
+    strs["CmdHelp3"] = "DP F-D-DF"
+    strs["CmdHelp4"] = "HCF B-DB-D-DF-F"
+    strs["CmdHelp5"] = "HCB F-DF-D-DB-B"
+    strs["CmdHelp6"] = "X2 REPEAT MOTION TWICE"
+    strs["CmdHelp7"] = "+ PRESS BUTTONS TOGETHER"
+    strs["CmdHelp8"] = "A/B/X/Y ARE SNES BUTTONS"
+    strs["CmdHelp9"] = "F/B FOLLOW YOUR FACING SIDE"
     inc = []
     inc.append(f"PORTRAIT_P1 = {portrait_base}\n"
                f"PORTRAIT_P2 = {portrait_base + 9}\n")
@@ -15922,6 +16101,7 @@ def build_hud():
     inc.append("CmdCatShortTab: .dw " +
                ",".join(f"CmdCatShort{i}"
                         for i in range(len(CMD_CATEGORIES))) + "\n")
+    inc.append("CmdHelpTab: .dw " + ",".join(f"CmdHelp{i}" for i in range(13)) + "\n")
     inc.append(f"CMD_CUR_TILE = {CHARSET.index('>')}\n"
                f"CMD_USED_TILE = {CHARSET.index('+')}\n")
     bstrs = {
