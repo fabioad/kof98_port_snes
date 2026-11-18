@@ -22,7 +22,9 @@ from test_counter_grab_headless import boot_select, enter_fight  # noqa: E402
 
 CORE = "/usr/lib/x86_64-linux-gnu/libretro/snes9x_libretro.so"
 F_STATE, F_HP = 0x4008, 0x4010
+F_GRAB = 0x4034                # word; bit1 = victim uses attacker sprites
 FP2 = 0x40
+SPARKS, SPK_SIZE, SPK_ATTR = 0x4200, 20, 15
 DOWN, RIGHT = 5, 7
 Y, X = 1, 9                    # SNES Y = weak punch, SNES X = strong punch
 
@@ -33,6 +35,19 @@ PART3 = 115                    # 1630 grab, auto-chains to 116 (1631)
 S_VHELD = 76
 S_VTHROW = 77
 S_DOWN = 10
+
+
+def sample(core, seen, seen_v, grab_flags):
+    """Step one frame and record states plus the victim's sprite source."""
+    seen.add(core.ram[F_STATE])
+    seen_v.add(core.ram[F_STATE + FP2])
+    grab_flags.append(core.word(F_GRAB + FP2))
+
+
+def projectile_fired(core):
+    """SPK_ATTR bit7 marks a pooled shot; hit sparks do not set it."""
+    return any(core.ram[SPARKS + slot * SPK_SIZE + SPK_ATTR] & 0x80
+               for slot in range(2))
 
 
 def qcf(core, button, hold=3):
@@ -70,21 +85,30 @@ def run_chain(core, select, first_button, second_button, third_button,
     first, second, third = expected
     seen = set()
     seen_v = set()
+    grab_flags = []
+    fired = False
     qcf(core, first_button)
     for _ in range(16):
-        seen.add(core.ram[F_STATE])
-        seen_v.add(core.ram[F_STATE + FP2])
+        sample(core, seen, seen_v, grab_flags)
+        fired |= projectile_fired(core)
         core.step()
     qcf(core, second_button)
     for _ in range(20):
-        seen.add(core.ram[F_STATE])
-        seen_v.add(core.ram[F_STATE + FP2])
+        sample(core, seen, seen_v, grab_flags)
+        fired |= projectile_fired(core)
         core.step()
     qcf(core, third_button)
     for _ in range(100):
-        seen.add(core.ram[F_STATE])
-        seen_v.add(core.ram[F_STATE + FP2])
+        sample(core, seen, seen_v, grab_flags)
+        fired |= projectile_fired(core)
         core.step()
+    if fired:
+        raise AssertionError(
+            "Aragami/Dokugami is melee but spawned a travelling projectile")
+    if any(grab & 0x0002 for grab in grab_flags):
+        raise AssertionError(
+            "held/thrown victim was drawn with the attacker's sprites "
+            "(F_GRAB bit1 set)")
     for state in (first, second, third):
         if state not in seen:
             raise AssertionError(

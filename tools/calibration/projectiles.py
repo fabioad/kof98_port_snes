@@ -435,7 +435,8 @@ PROJECTILE_CALIBRATION = {
     # than a Hadouken.  Keep the source speed and give it a commensurate
     # HUD value.
     "chunli": {48: (0x0300, 24)},
-    "iori": {48: (0x02C0, 12), 49: (0x03C0, 16)},
+    # Iori's Yami Barai is intentionally melee in this port (see
+    # PROJECTILE_EXCLUDE in tools/build_fight.py).
     "kyo": {48: (0x0300, 14), 49: (0x0400, 18)},
     "rugal": {48: (0x0300, 16), 49: (0x0400, 20)},
     "saisyu": {48: (0x0280, 14), 49: (0x0380, 18)},

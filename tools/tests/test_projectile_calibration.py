@@ -80,7 +80,8 @@ class ProjectileCalibrationTests(unittest.TestCase):
         # generator used to turn their dash HitDefs into invisible shots.
         self.assertEqual(build_fight.PROJECTILE_EXCLUDE["billy"], (50, 53))
         self.assertEqual(build_fight.PROJECTILE_EXCLUDE["benimaru"], (56, 57))
-        self.assertEqual(build_fight.PROJECTILE_EXCLUDE["choi"], (50, 51, 86))
+        self.assertEqual(build_fight.PROJECTILE_EXCLUDE["choi"],
+                         (50, 51, 86, 109, 111, 112, 116))
         self.assertEqual(build_fight.PROJECTILE_EXCLUDE["kim"], (53, 85, 86))
         self.assertEqual(build_fight.PROJECTILE_EXCLUDE["mary"], (54, 55, 87))
         self.assertEqual(build_fight.PROJECTILE_EXCLUDE["vega"],
@@ -106,8 +107,11 @@ class ProjectileCalibrationTests(unittest.TestCase):
     def test_calibration_rows_match_generator_table(self):
         self.assertIs(build_fight.PROJECTILE_CALIBRATION,
                       projectiles.PROJECTILE_CALIBRATION)
-        self.assertEqual(projectiles.PROJECTILE_CALIBRATION["iori"],
-                         {48: (0x02C0, 12), 49: (0x03C0, 16)})
+        # Iori's Yami Barai was converted to a melee flame, so it has no
+        # projectile calibration row anymore.
+        self.assertNotIn("iori", projectiles.PROJECTILE_CALIBRATION)
+        self.assertIn(48, build_fight.PROJECTILE_EXCLUDE["iori"])
+        self.assertIn(49, build_fight.PROJECTILE_EXCLUDE["iori"])
         self.assertEqual(projectiles.PROJECTILE_CALIBRATION["kyo"],
                          {48: (0x0300, 14), 49: (0x0400, 18)})
 
@@ -180,6 +184,52 @@ class ProjectileCalibrationTests(unittest.TestCase):
         w2 = max(x for x, _y in frames[2][2]) - min(x for x, _y in frames[2][2]) + 16
         h2 = max(y for _x, y in frames[2][2]) - min(y for _x, y in frames[2][2]) + 16
         self.assertEqual((w2, h2), (80, 96))     # Kyo's frame 0 bbox
+
+    def test_kensou_projectile_has_athena_size(self):
+        # Kensou's orb cels match Athena's dimensions.  Compiling all eight
+        # frames instead of the generic first/last pair keeps the same cell
+        # grid and therefore the same on-screen bbox as Athena's Psycho Ball.
+        self.assertIn("kensou", build_fight.PROJECTILE_ALL_FRAMES)
+        meta = (Path(build_fight.ROOT) /
+                "build/gen_fight/projectiles_meta.inc").read_text()
+        lines = meta.splitlines()
+
+        def sizes(prefix):
+            result = {}
+            i = 0
+            label = re.compile(rf"{prefix}ProjFxF(\d+): \.db (\d+),(\d+)")
+            while i < len(lines):
+                m = label.match(lines[i])
+                if not m:
+                    i += 1
+                    continue
+                fi = int(m.group(1))
+                cells = []
+                j = i + 1
+                while j < len(lines) and not re.match(r"^\S", lines[j]):
+                    cm = re.match(r"\s*\.db (-?\d+),(-?\d+)", lines[j])
+                    if cm and j + 1 < len(lines) and \
+                            re.search(r"\.dw \$[0-9A-F]+", lines[j + 1]):
+                        x, y = int(cm.group(1)), int(cm.group(2))
+                        if x > 127:
+                            x -= 256
+                        if y > 127:
+                            y -= 256
+                        cells.append((x, y))
+                        j += 2
+                        continue
+                    j += 1
+                result[fi] = (max(x for x, _ in cells) -
+                              min(x for x, _ in cells) + 16,
+                              max(y for _, y in cells) -
+                              min(y for _, y in cells) + 16)
+                i = j
+            return result
+
+        athena = sizes("athena")
+        kensou = sizes("kensou")
+        self.assertEqual(len(kensou), 8)
+        self.assertEqual(kensou, athena)
 
     def test_lucky_death_bound_is_a_diagonal_hand_shot(self):
         # The arcade Death Bound leaves Lucky's hand and travels diagonally

@@ -487,9 +487,8 @@ CHARS = {
         # KOF HitDefs carry ~5-19 raw damage on a MUGEN ~103-HP scale;
         # x2 lands normals at ~6-15% and supers at ~30% of the 200-HP bar
         "damage_scale": 2.0,
-        # FUSION: Yamibarai fires a spark-pool projectile
-        # (sid -> vx px/tick 8.8, dmg, SparkAnim idx)
-        "projs": {48: (0x0300, 14, 4), 49: (0x0400, 18, 4)},
+        # Yami Barai is a melee flame in this port: no ProjTab rows.  The
+        # body HitDef and the compact flame Explod are wired below.
         # FUSION: MAX burst spends one 1000 stock (the mugen
         #   statedef PowerAdd is var-gated and does not extract)
         "pow_override": {96: -1000},
@@ -1784,7 +1783,16 @@ PROJECTILE_EXCLUDE = {
     # Kyo's MAX Mushiki (3550) is a command grab; the HitDef/ChangeState
     # heuristic turned its 3551 bind state into a travelling shot and the
     # grab chain never ran.  Kyo's real shots (1000/1010/3000) stay.
-    "kyo": (87,), "kyonests": (87,), "kyoash": (87,),
+    # The Aragami/Dokugami follow-ups (sids 61/63/66/68) are also melee: the
+    # same heuristic walked their ChangeState chain into 1615/1720 and made
+    # every rekka contact spawn an invisible flame shot.
+    "kyo": (61, 63, 66, 68, 87),
+    "kyonests": (61, 63, 66, 68, 87),
+    "kyoash": (61, 63, 66, 68, 87),
+    # Iori's 108 Shiki: Yami Barai (sids 48/49) is converted to a close-range
+    # body flame.  Dropping the source helper shot keeps the move and its
+    # damage but removes the travelling projectile from the port.
+    "iori": (48, 49),
     # Ryu's QCBx2+kick super (3200) is a close-range rush that must finish
     # with the 3201 Shoryuken; the HitDef/dash heuristic invented a
     # stationary shot for it, which the super-projectile pin then dragged
@@ -2733,6 +2741,30 @@ if "iori" in CHARS:
     _iori["hitdef_override"][87] = {
         "damage": 6, "gdamage": 1, "gvx": 0, "gvy": 0,
     }
+    # --- Yami Barai (QCF+P): melee flame, no travelling shot -------------
+    # The source states 1000/1010 only spawn helper 1020, whose Projectile
+    # controller owns the damage.  The port keeps the move but drops the
+    # shot: a body HitDef at the flame-release frame preserves the damage
+    # (14 weak / 18 strong) and the same knockdown-free hit reaction.
+    # Frames 3-8 of the launch clips carry the flame box; the source's
+    # 48 px spawn point becomes the position of a compact attached flame.
+    _yami = {
+        "active": 3, "damage": 14, "gdamage": 1, "fall": 0,
+        "animtype": 2, "low": 1, "guard": 0x0A,
+        # Match the old ProjHit feel: 6 px/tick pushback, 8 hitstun ticks
+        # and a 5-tick slide window.  Using the source's -10.5 ground
+        # velocity here threw the victim more than half a screen away.
+        "gvx": 0x0600, "gvy": 0, "avx": 0x0600, "avy": 0,
+        "grvx": 0x0600, "agvx": 0x0400, "agvy": -0x0100,
+        "hittime": 8, "slidetime": 5,
+    }
+    _iori["hitdef_override"][48] = dict(_yami)
+    _iori["hitdef_override"][49] = dict(_yami, damage=18)
+    _iori.setdefault("air_box_patch_frames", {})
+    for _anum in (1000, 1010):
+        _iori["air_box_patch_frames"][_anum] = {
+            _frame: [(12, -80, 88, -4)]
+            for _frame in range(3, 9)}
     # --- Aoi Hana (QCB+P): three-part rekka -----------------------------
     # Source states 1200/1201/1210/1211 mark the victim as knocked down
     # (fall/air.fall), so the native hit path sent it to S_DOWN on the first
@@ -2873,6 +2905,12 @@ if "kyo" in CHARS:
         "damage": 0, "gdamage": 0, "fall": 0, "animtype": 2,
         "gvx": 0, "gvy": 0, "avx": 0, "avy": 0,
         "grvx": 0, "agvx": 0, "agvy": 0,
+        # 1630 is routed through the normal hit path (the native throw gate
+        # rejects victims still in hitstun), but the victim must keep its own
+        # sprites.  Without this flag the TargetTab row sets F_GRAB bit1
+        # (ChangeAnim2 source), so Iori/all opponents were drawn as a second
+        # Kyo during the held pose, the flame drop and the fall.
+        "target_flags": 1,
     }
     # The source MoveHit rows would chain humans automatically.  Drop them
     # and make kind 6 (fresh QCF+P) the human path; the CPU uses the
@@ -3705,6 +3743,12 @@ if "omegarugal" in CHARS:
         82: (0x0100, 14, 0x20),
     })
     _orug = POST_CAL_TWEAKS.setdefault("omegarugal", {})
+    # Source state 105 ships a single backdash cel, so the native BB hop only
+    # ever showed frame 0.  Reuse the existing jump-back clip (AIR 43), which
+    # has the full five-pose arc, and keep the run/dash clips free of
+    # synthetic dissolves.
+    _orug.setdefault("anims", {})[46] = 43
+    _orug.setdefault("tween_skip_sids", []).extend([45, 46])
     _orug.setdefault("slice_damage", {}).update({
         83: 40, 112: 40, 107: 30, 108: 35, 109: 30, 110: 0, 111: 0})
     _orug.setdefault("hitdef_override", {}).update({
@@ -5312,6 +5356,12 @@ if "vega" in CHARS:
     # 224-line screen; the OAM Y wraps and the character appears at the
     # bottom.  Keep the jump inside the visible field and cap the rise.
     _vega_tw = POST_CAL_TWEAKS.setdefault("vega", {})
+    # Vega's source run starts with two 304x224 crouch cels before the
+    # Loopstart at element 3.  They cannot upload before the first run tick,
+    # so the character appeared to slide in the crouch pose.  Slice the clip
+    # from the run loop onward and keep the real 105 backdash cels.
+    _vega_tw.setdefault("slices", {})[45] = (100, 2, 8)
+    _vega_tw.setdefault("tween_skip_sids", []).extend([45, 46])
     _vega_tw.setdefault("state_vel", {}).update({
         60: (2, -7), 62: (4, -7), 68: (3, -4)})
     _vega_tw.setdefault("frame_cap", {})[62] = 2
@@ -10853,6 +10903,12 @@ if "mrkarate" in CHARS:
                    POST_CAL_CATEGORIES, POST_CAL_POW_OVERRIDE):
         if "robert" in _table:
             _table["mrkarate"] = copy.deepcopy(_table["robert"])
+    # Robert's source backdash (AIR 105) only has two cels, so the generic
+    # tween pass filled it with dissolves.  Use the real seven-pose jump-back
+    # clip instead, and keep both movement clips free of synthetic frames.
+    _mk_tw = POST_CAL_TWEAKS.setdefault("mrkarate", {})
+    _mk_tw.setdefault("anims", {})[46] = 43
+    _mk_tw.setdefault("tween_skip_sids", []).extend([45, 46])
 
 def build_char(name, cfg, global_pal=None):
     coord_scale = cfg.get("coord_scale", 1)
@@ -14400,6 +14456,11 @@ def projectile_effect_sequence(name, cfg, sff, air, actions):
 # Characters whose projectile art is already at its intended size; keep the
 # historical pre-zoom fit for them (Kyo/Iori/Saisyu flames).
 PROJECTILE_LEGACY_FIT = {"kyo", "kyonests", "kyoash", "iori", "saisyu"}
+# Keep the complete source frame progression for these shots instead of the
+# usual first/last pair.  Kensou's orb cels have exactly Athena's dimensions;
+# using only two frames jumped straight to the 64x64 final cel and made his
+# shot read larger than Athena's animated Psycho Ball.
+PROJECTILE_ALL_FRAMES = {"athena", "kensou"}
 
 
 def projectile_effect(name, cfg, sff, air, statedefs, headers, move_ids,
@@ -14421,7 +14482,8 @@ def projectile_effect(name, cfg, sff, air, statedefs, headers, move_ids,
 
     action = None
     frames = None
-    all_frames = bool(cfg.get("projectile_all_frames"))
+    all_frames = bool(cfg.get("projectile_all_frames")) \
+        or name in PROJECTILE_ALL_FRAMES
     for anum in candidates:
         if anum not in air:
             continue
