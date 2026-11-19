@@ -137,7 +137,7 @@ FIGHT_GEN := $(GEN_DIR)/iori.chr $(GEN_DIR)/iori_pal.bin \
 	$(GEN_DIR)/portrait_pal.bin \
 	$(GEN_DIR)/spark.chr $(GEN_DIR)/spark_b.chr $(GEN_DIR)/spark_pal.bin \
 	$(GEN_DIR)/spark.inc \
-	$(GEN_DIR)/stage_anim.inc $(GEN_DIR)/stage_anim.chr \
+	$(GEN_DIR)/stage_anim.inc \
 	$(GEN_DIR)/stages.inc $(GEN_DIR)/stages_tab.inc \
 	$(GEN_DIR)/stgmods.inc \
 	$(GEN_DIR)/voices.inc \
@@ -248,10 +248,10 @@ $(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json asse
 	tools/build_stages.py tools/build_hud_arcade.py tools/sff.py tools/build_endings.py \
 	$(wildcard assets/survival_ending/*.png) \
 	$(wildcard assets/characters/*/*.snd) \
-	$(wildcard assets/stages/stages_png_snes/*.png) \
-	assets/stages/stages_png_snes/animations/stage_animations.json \
-	$(wildcard assets/stages/stages_png_snes/pilot_china/pose-*.png) \
-	$(wildcard assets/stages/stages_png_snes/pilot_bazar/bazar_*.png) \
+	$(wildcard assets/stages/stages_v2/*.png) \
+	$(wildcard assets/stages/stages_v2/anim/*.json) \
+	$(wildcard assets/stages/stages_v2/anim/*.pool.chr) \
+	$(wildcard assets/stages/stages_v2/movers/*.png) \
 	assets/characters/Iori-KOF98/Iori.sff assets/characters/Iori-KOF98/Iori.air \
 	assets/characters/Iori-KOF98/Iori_SNES.cns assets/characters/Iori-KOF98/Iori_SNES.cmd \
 	assets/characters/Kyo-KOF98/Kyo.sff assets/characters/Kyo-KOF98/Kyo.air \

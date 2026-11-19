@@ -46,4 +46,19 @@ invincibility (KOF '96 Game Boy), the training criticism and masked identity
 rephrased for the victory screen). They are adaptations, not verbatim dialogue.
 The speaker is Robert: self-identification uses Robert, and Yuri is addressed
 as "my love" / "meu amor" / "mi amor" / "mon amour", never as his sister.
+
+### Jason, John and Lucia (GTA tribute trio)
+
+- **John Crawley**: [SNK Wiki — John Crawley/Quotes](https://snk.fandom.com/wiki/John_Crawley/Quotes)
+  (Art of Fighting 2 win quotes, cross-checked with the GameFAQs AOF2 quote
+  list). Slots 1/2 are the English win quotes, slot 3 is the Japanese win
+  quote ("I've seen hell on the battlefield..."), slot 4 the short "That all
+  you've got? That's too bad."
+- **Jason and Lucia**: lines transcribed from the characters' own voice banks
+  (`Jason_Quotes.md` / `Lucia_Quotes.md`, groups 12 and 13). The victory slots
+  reuse the taunt/victory lines ("Stuck together..." / "What matters is who
+  you know..."), shortened to fit the two 30-column rows.
+
+Translations are free adaptations. John keeps his AOF2 bravado in all four
+languages; Jason/Lucia keep the trailer dialogue's tone.
 References to an opposing Ryo remain references to Ryo.

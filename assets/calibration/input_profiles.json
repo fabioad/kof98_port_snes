@@ -18,7 +18,11 @@
       "special_default_frames": 18,
       "special_prefix_frames": {
         "MBDF": 22,
-        "DBF": 26
+        "DBF": 26,
+        "MDFDF": 30,
+        "MDBDB": 30,
+        "SUP1": 30,
+        "SUP2": 30
       },
       "system_command_frames": {
         "FF": 18,
@@ -73,6 +77,9 @@
     "ryu": "kof98_fluida",
     "ken": "kof98_fluida",
     "chunli": "kof98_fluida",
-    "sakura": "kof98_fluida"
+    "sakura": "kof98_fluida",
+    "jason": "kof98_fluida",
+    "john": "kof98_fluida",
+    "lucia": "kof98_fluida"
   }
 }

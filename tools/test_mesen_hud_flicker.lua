@@ -25,10 +25,11 @@ if forcedStage then
  local address=nil
  for line in io.lines(os.getenv('KOF_HUD_SYMBOLS') or 'kof98-snes.sym')do
   local a,n=line:match('^(%x+)%s+(%S+)$')
-  if n=='CampStage' then address=tonumber(a,16)&0xFFFFFF end
+  if n=='StagePick' then address=tonumber(a,16)&0xFFFFFF end
  end
- assert(address,'CampStage symbol missing')
- emu.addMemoryCallback(function()wr(0x10C4,forcedStage)end,emu.callbackType.exec,address,address)
+ assert(address,'StagePick symbol missing')
+ -- CampStage resolves STAGEF itself, so pin it right before StagePick reads it.
+ emu.addMemoryCallback(function()wr(0x10C5,forcedStage)end,emu.callbackType.exec,address,address)
 end
 
 local function log(s)out:write(s..'\n');out:flush()end

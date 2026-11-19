@@ -14,8 +14,6 @@ modo pelo menu de pausa.
 - O campo `P1`/`P2` no topo indica o lado ativo.
 - `>` marca a linha selecionada.
 - `+` marca um golpe que aquele lado já executou.
-- A linha 8 mostra a legenda das categorias:
-  `NRM CMD SPC SUP MAX THR SYS`.
 
 ## Controles (pad SNES)
 
@@ -66,8 +64,9 @@ convenção padrão; o pad físico continua igual ao resto do elenco:
 | B | chute fraco |
 | A | chute forte |
 
-Assim os especiais também caem nos botões certos: QCF+Y (Ko-Ou-Ken fraco),
-QCF+X (forte), QCB+Y/X (Saiha), HCB+B/A (Senkai Kyaku) e DP+B/A (Kuuga).
+Assim os especiais também caem nos botões certos: ↓ ↘ → + Y (Ko-Ou-Ken
+fraco), ↓ ↘ → + X (forte), ↓ ↙ ← + Y/X (Saiha), → ↘ ↓ ↙ ← + B/A (Senkai
+Kyaku) e → ↓ ↘ + B/A (Kuuga).
 
 Cada linha mostra:
 
@@ -110,9 +109,10 @@ O gerador (`tools/build_fight.py`) monta a lista por personagem a partir de:
 4. fallback legível por categoria (`SPECIAL`, `THROW`, `MAX MODE`, ...).
 
 Os botões MUGEN são convertidos para os rótulos SNES do próprio personagem.
-Os comandos longos são compactados (`QCF`, `QCB`, `DP`, `HCF`, `HCB`,
-`QCBHCF`, `QCFx2`, ...). Nomes são limitados a 16 caracteres e comandos a 11
-para caber no HUD de 32 colunas.
+As direções viram setas (`↓ ↘ →`, `↓ ↙ ←`, `→ ↓ ↘`, `→ ↘ ↓ ↙ ←`, ...) e
+comandos longos são compactados sem espaços ou com `X2` nas metades
+repetidas (`↓↙←↙↓↘→+Y`, `→↘↓↙←X2+Y`). Nomes são limitados a 16 caracteres e
+comandos a 11 para caber no HUD de 32 colunas.
 
 ## Formato gerado
 

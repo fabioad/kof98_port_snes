@@ -347,6 +347,14 @@ AI_TUNING = {
                    AI_PF_PRESSURE | AI_PF_ADAPT),
     "yuki":       (36,  96, 210, 190, 200, 100, 210,
                    AI_PF_PRESSURE | AI_PF_METER | AI_PF_ADAPT),
+    # GTA tribute trio.  Jason pressures with hooks and the getaway rush,
+    # John keeps a balanced mid range, Lucia leans on her command grab.
+    "jason":      (28,  76, 215, 185, 200, 130, 215,
+                   AI_PF_PRESSURE | AI_PF_ADAPT),
+    "john":       (60, 130, 210, 200, 190,  90, 170,
+                   AI_PF_METER | AI_PF_ADAPT),
+    "lucia":      (24,  68, 210, 180, 190, 190, 200,
+                   AI_PF_PRESSURE | AI_PF_ADAPT),
 }
 
 # Style fallbacks for a roster entry added without an AI_TUNING row.
@@ -2110,8 +2118,9 @@ for _c, _cfg in NEW_CHARS.items():
         # Final Psycho Crusher (3050) and MAX Knee Press Nightmare (3150)
         # are part of Vega's move list; 89 is unused.
         _drop = (89,)
-    elif _c in ("kasumi", "duckking", "yuki"):
-        # The 1.1.2 newcomers keep their full super/MAX slots 87-89.
+    elif _c in ("kasumi", "duckking", "yuki", "jason", "john", "lucia"):
+        # The 1.1.2 newcomers and the GTA trio keep their full super/MAX
+        # slots 87-89 (user-facing move list requires every super and MAX).
         _drop = ()
     else:
         _drop = (87, 88, 89)
@@ -2317,7 +2326,7 @@ if "lucky" in CHARS:
     CHARS["lucky"]["cmd_labels"] = {66: "BASKETBALL"}
     # The command-list button labels are globally inverted; show the input
     # the pad actually needs for the new move: forward, down, down-forward, Y.
-    CHARS["lucky"]["cmd_text"] = {66: "DP+B"}
+    CHARS["lucky"]["cmd_text"] = {66: "→ ↓ ↘ + B"}
 
 # Blue Mary: restore the multi-phase specials and give the grab follow-ups a
 # runtime state.  The generated import only wired the root statedefs, so every
@@ -3360,6 +3369,12 @@ if "athena" in CHARS:
     # alternate 7700 clip at the root's release frame; the three SUP
     # commands get progressively stronger balls.
     _athena = CHARS["athena"]
+    # Psycho Sword strong (58, source launch -12) hit the 127 px playfield
+    # ceiling and the victim wrapped to the bottom of the screen.  Launch
+    # at -10 px/tick (weak is -9) so it stays on screen.
+    POST_CAL_TWEAKS.setdefault("athena", {}).setdefault(
+        "hitdef_override", {})[58] = {
+        "gvy": -10 * 256, "avy": -10 * 256}
     _athena.setdefault("projs", {}).update({
         85: (0x0000, 12, 4, 0x02),
         86: (0x0000, 14, 4, 0x02),
@@ -4382,8 +4397,8 @@ if "mrbig" in CHARS:
     # A/B are the SNES kick buttons, Y the weak punch.  DP+Y is California
     # Romance, so the Rising Spear row advertises its kick inputs only.
     _big["cmd_text"] = {
-        107: "QCF+B/A", 87: "QCFX2+Y/B", 85: "QCF,HCB+Y/B",
-        110: "QCFX2+Y+B", 89: "QCF,HCB+Y+B", 111: "DP+B/A",
+        107: "↓ ↘ → + B/A", 87: "↓↘→↓↘→+Y/B", 85: "↓↘→↘↓↙←+Y/B",
+        110: "↓↘→↓↘→+Y+B", 89: "↓↘→↘↓↙←+Y+B", 111: "→ ↓ ↘ + B/A",
     }
 
 if "eiji" in CHARS:
@@ -5816,7 +5831,28 @@ SPLIT_OLD = ("vice", "mature", "leona", "ralf",
              # Takuma's bank 83 low half was at the limit; the eight new
              # command slots need the metasprite blob moved out.
              "takuma")
-CHARSET = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:!?'-/+>,@\""
+CHARSET = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:!?'-/+>,↑\"↓↘→↙←"
+
+# The KOF99DM strip has no arrow glyphs.  The unused '@' slot becomes the
+# up arrow, and the four remaining directions used by the command list are
+# appended to CHARSET so the existing tile indices do not move.  They are
+# drawn procedurally in the small font (see the font loop below).  The BG3
+# font region is already full (384 tiles), so the up diagonals are not
+# needed: no command in the roster uses UF/UB.
+ARROW_GLYPHS = {
+    "↑": ((3, 1), (2, 2), (3, 2), (4, 2), (3, 3), (3, 4), (3, 5),
+          (3, 6)),
+    "→": ((1, 3), (2, 3), (3, 3), (4, 3), (5, 3), (5, 2), (6, 3),
+          (5, 4)),
+    "↘": ((1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (5, 3), (5, 4),
+          (4, 5), (3, 5)),
+    "↓": ((3, 1), (3, 2), (3, 3), (3, 4), (3, 5), (2, 5), (3, 6),
+          (4, 5)),
+    "↙": ((6, 1), (5, 2), (4, 3), (3, 4), (2, 5), (2, 3), (2, 4),
+          (3, 5), (4, 5)),
+    "←": ((2, 3), (3, 3), (4, 3), (5, 3), (6, 3), (2, 2), (1, 3),
+          (2, 4)),
+}
 
 # Victory-quote languages.  The first item is the JSON file name, the second
 # the runtime/label tag.  Q_LANG indexes this list, so keep the order stable
@@ -8938,33 +8974,55 @@ SNES_BTN_TEXT = {0x0080: "A", 0x8000: "B", 0x0040: "X", 0x4000: "Y",
 SNES_BTN_MASK = {v: k for k, v in SNES_BTN_TEXT.items()}
 DIR_TEXT = {1: "U", 2: "D", 4: "F", 8: "B",
             5: "UF", 6: "DF", 9: "UB", 10: "DB"}
+# Display form of the direction tokens: the command list shows arrows
+# instead of QCF/QCB-style letter abbreviations.
+ARROW_TEXT = {"U": "↑", "D": "↓", "F": "→", "B": "←",
+              "DF": "↘", "DB": "↙"}
+
+
+def _arrow_text(dirs):
+    return " ".join(ARROW_TEXT.get(d, d) for d in dirs)
+
+
 MOTION_TEXT = {
-    ("D", "DF", "F"): "QCF",
-    ("D", "DB", "B"): "QCB",
-    ("F", "D", "DF"): "DP",
-    ("B", "D", "DB"): "RDP",
-    ("B", "DB", "D", "DF", "F"): "HCF",
-    ("F", "DF", "D", "DB", "B"): "HCB",
-    ("B", "DB", "D", "DF", "F", "B"): "HCBF",
-    ("D", "B", "F"): "DBF",
-    ("D", "DF", "F", "D", "DF", "F"): "QCFx2",
-    ("D", "DB", "B", "D", "DB", "B"): "QCBx2",
-    ("D", "DB", "B", "DB", "D", "DF", "F"): "QCBHCF",
-    ("D", "DF", "F", "D", "DB", "B"): "QCFHCB",
-    ("F", "DF", "D", "DB", "B", "F", "DF", "D", "DB", "B"): "HCBx2",
-    ("B", "DB", "D", "DF", "F", "B", "DB", "D", "DF", "F"): "HCFx2",
-    ("F", "DF", "D", "DB", "B", "F"): "HCBF2",
-    ("D", "DF", "F", "DF", "D", "DB", "B"): "QCF,HCB",
-    ("D", "DF", "F", "DF", "B"): "QCF,DB",
-    ("DF", "B", "DF", "B"): "DFBx2",
-    ("DB", "DB"): "DBx2",
-    ("DF", "DF"): "DFx2",
-    ("F", "D", "DF", "F", "D", "DF", "F"): "DP,QCF",
-    ("F", "B", "DB", "D", "DF", "F"): "F,HCF",
-    ("F", "B", "F"): "F,B,F",
-    ("F", "F"): "F,F",
-    ("B", "B"): "B,B",
-    ("D", "F"): "DF",
+    ("D", "DF", "F"): _arrow_text(("D", "DF", "F")),
+    ("D", "DB", "B"): _arrow_text(("D", "DB", "B")),
+    ("F", "D", "DF"): _arrow_text(("F", "D", "DF")),
+    ("B", "D", "DB"): _arrow_text(("B", "D", "DB")),
+    ("B", "DB", "D", "DF", "F"): _arrow_text(("B", "DB", "D", "DF", "F")),
+    ("F", "DF", "D", "DB", "B"): _arrow_text(("F", "DF", "D", "DB", "B")),
+    ("B", "DB", "D", "DF", "F", "B"):
+        _arrow_text(("B", "DB", "D", "DF", "F", "B")),
+    ("D", "B", "F"): _arrow_text(("D", "B", "F")),
+    ("D", "DF", "F", "D", "DF", "F"):
+        _arrow_text(("D", "DF", "F", "D", "DF", "F")),
+    ("D", "DB", "B", "D", "DB", "B"):
+        _arrow_text(("D", "DB", "B", "D", "DB", "B")),
+    ("D", "DB", "B", "DB", "D", "DF", "F"):
+        _arrow_text(("D", "DB", "B", "DB", "D", "DF", "F")),
+    ("D", "DF", "F", "D", "DB", "B"):
+        _arrow_text(("D", "DF", "F", "D", "DB", "B")),
+    ("F", "DF", "D", "DB", "B", "F", "DF", "D", "DB", "B"):
+        _arrow_text(("F", "DF", "D", "DB", "B", "F", "DF", "D", "DB", "B")),
+    ("B", "DB", "D", "DF", "F", "B", "DB", "D", "DF", "F"):
+        _arrow_text(("B", "DB", "D", "DF", "F", "B", "DB", "D", "DF", "F")),
+    ("F", "DF", "D", "DB", "B", "F"):
+        _arrow_text(("F", "DF", "D", "DB", "B", "F")),
+    ("D", "DF", "F", "DF", "D", "DB", "B"):
+        _arrow_text(("D", "DF", "F", "DF", "D", "DB", "B")),
+    ("D", "DF", "F", "DF", "B"):
+        _arrow_text(("D", "DF", "F", "DF", "B")),
+    ("DF", "B", "DF", "B"): _arrow_text(("DF", "B", "DF", "B")),
+    ("DB", "DB"): _arrow_text(("DB", "DB")),
+    ("DF", "DF"): _arrow_text(("DF", "DF")),
+    ("F", "D", "DF", "F", "D", "DF", "F"):
+        _arrow_text(("F", "D", "DF", "F", "D", "DF", "F")),
+    ("F", "B", "DB", "D", "DF", "F"):
+        _arrow_text(("F", "B", "DB", "D", "DF", "F")),
+    ("F", "B", "F"): _arrow_text(("F", "B", "F")),
+    ("F", "F"): "→,→",
+    ("B", "B"): "←,←",
+    ("D", "F"): _arrow_text(("D", "F")),
 }
 # Physical pad action for the system moves.  PushHist (fight.asm) reroutes
 # the shoulder buttons into the legacy MUGEN tokens used by the CMD files
@@ -8974,8 +9032,8 @@ PHYSICAL_SYS_CMD = {
     47: "SELECT",    # taunt (dedicated pad button)
     67: "R",         # blowback
     69: "L + DIR",   # dodge/roll while holding a direction
-    94: "L + BACK",  # back roll
-    95: "L + FWD",   # forward roll
+    94: "L + ←",     # back roll
+    95: "L + →",     # forward roll
 }
 # CMD block labels that are boilerplate rather than a move name.
 GENERIC_CMD_LABELS = re.compile(
@@ -9094,7 +9152,7 @@ def _motion_text(dirs):
     key = tuple(dirs)
     if key in MOTION_TEXT:
         return MOTION_TEXT[key]
-    return ",".join(dirs)
+    return _arrow_text(dirs)
 
 
 def _motion_text_compact(dirs):
@@ -9102,32 +9160,47 @@ def _motion_text_compact(dirs):
         return ""
     key = tuple(dirs)
     if key in MOTION_TEXT:
-        return MOTION_TEXT[key]
+        return MOTION_TEXT[key].replace(" ", "")
     # Unknown motion: no commas/spaces so the button still fits the HUD.
-    return "".join(dirs)
+    return "".join(ARROW_TEXT.get(d, d) for d in dirs)
+
+
+def _motion_text_x2(dirs):
+    """Repeated motion (HCBx2/HCFx2) as half + 'X2'.
+
+    The full arrow string for a double half-circle leaves no room for the
+    button in the 11-cell HUD field, but the repeated half plus 'X2' does.
+    """
+    n = len(dirs)
+    if n < 6 or n % 2:
+        return None
+    if tuple(dirs[:n // 2]) != tuple(dirs[n // 2:]):
+        return None
+    return _motion_text_compact(dirs[:n // 2]) + "X2"
 
 
 def _short_motion(dirs):
     """Longest known prefix of a raw motion, used when the full one won't
     fit next to the button.  Exact matches are handled by _motion_text."""
     for n in range(len(dirs) - 1, 2, -1):
-        name = MOTION_TEXT.get(tuple(dirs[:n]))
-        if name:
-            return name
+        if tuple(dirs[:n]) in MOTION_TEXT:
+            return _motion_text_compact(dirs[:n])
     return None
 
 
 def _command_text(rec, cfg, limit=11):
-    """(held, elems, window) -> command notation.
+    """(held, elems, window) -> arrow-notation command text.
 
-    Try the readable form first ('QCF + Y'); if it does not fit the 11-cell
-    HUD field, fall back to a compact form ('QCF+Y', 'CHG BF+Y', 'HLD D+U+Y').
-    The old code truncated the whole string, cutting off exactly the button.
+    Try the readable form first ('↓ ↘ → + Y'); if it does not fit the
+    11-cell HUD field, drop the spaces around '+', then the arrow spacing,
+    then shorten repeated motions ('→↘↓↙←X2+Y').  The old code truncated the
+    whole string, cutting off exactly the button.
     """
     if not rec or rec[1] is None:
         return "?"
     held, elems, _window = rec
-    hd = [DIR_TEXT[b] for b in (1, 2, 4, 8) if held & b] if held else []
+    hd = [ARROW_TEXT[DIR_TEXT[b]] for b in (1, 2, 4, 8)
+          if held & b] if held else []
     dirs = []
     btns = []
     charged = False
@@ -9147,7 +9220,7 @@ def _command_text(rec, cfg, limit=11):
             uniq.append(b)
     button_text = "+".join(uniq)
 
-    def build(compact, motion=None):
+    def build(motion=None, sep=" + ", compact=False):
         parts = []
         if hd:
             parts.append(("HLD " if compact else "HOLD ") + "/".join(hd))
@@ -9161,21 +9234,30 @@ def _command_text(rec, cfg, limit=11):
             mt = "CHG" if compact else "CHARGE"
         if mt:
             parts.append(mt)
-        sep = "+" if compact else " + "
         if button_text:
             parts.append(button_text)
         return sep.join(parts) if parts else "?"
 
-    pretty = build(False)
+    pretty = build()
     if len(pretty) <= limit:
         return pretty
-    compact = build(True)
+    tight = build(sep="+")
+    if len(tight) <= limit:
+        return tight
+    compact = build(sep="+", compact=True)
     if len(compact) <= limit:
         return compact
+    x2 = _motion_text_x2(dirs)
+    if x2:
+        cand = build(x2, sep="+", compact=True)
+        if len(cand) <= limit:
+            return cand
     short = _short_motion(dirs)
     if short:
-        return build(True, ("CHG " + short) if charged else short)
-    return compact
+        cand = build(short, sep="+", compact=True)
+        if len(cand) <= limit:
+            return cand
+    return tight
 
 
 def _clean_move_label(label):
@@ -9322,7 +9404,7 @@ def build_command_list(name, cfg, button_rows, rules, cmddefs, max_sids=()):
         inv.setdefault(v, k)
     normal_defs = (
         ("stand", "STAND", ""),
-        ("crouch", "CROUCH", "D + "),
+        ("crouch", "CROUCH", "↓ + "),
         ("air", "JUMP", "AIR + "),
     )
     for cls, prefix, dpref in normal_defs:
@@ -10926,6 +11008,14 @@ def build_char(name, cfg, global_pal=None):
     # carry a damaged/alternate copy, keeping effect/projectile sheets on
     # their own colours (Yuki's body cels use pal2, a dark variant, while
     # pal0 holds the canonical ACT palette).
+    # Recolour chosen palette indices (RGB) in every bank the sprites use.
+    recolor = cfg.get("palette_recolor")
+    if recolor:
+        for _pi in {sp.palidx for sp in sff.sprites if sp.palidx is not None}:
+            _pal = sff.palettes[_pi]
+            for _idx, _rgb in recolor.items():
+                if _idx < len(_pal):
+                    _pal[_idx] = tuple(_rgb)
     bank_map = cfg.get("palette_bank_map")
     if bank_map:
         for sprite in sff.sprites:
@@ -11418,6 +11508,14 @@ def build_char(name, cfg, global_pal=None):
         except (ValueError, TypeError):
             pass
         for trig, sfxid in entries:
+            # Jason/Lucia pair their callouts as `random % 2 = 0` and
+            # `= 1`.  Keep the first branch as a deterministic row: the
+            # state-entry scan's cond=2 coin flip could skip both variants
+            # (and did, leaving only the attack swish audible).
+            if isinstance(sfxid, tuple) and any(
+                    re.search(r"random\s*%\s*2\s*=\s*1\b", t, re.I)
+                    for t in trig):
+                continue
             is_voice = isinstance(sfxid, tuple)
             voice_random = (isinstance(sfxid, tuple) and any(
                 re.search(r"\brandom\s*<=\s*500\b", t, re.I)
@@ -11439,6 +11537,14 @@ def build_char(name, cfg, global_pal=None):
                      for t in trig
                      for e in [re.match(r"time\s*=\s*(\d+)\s*$", t, re.I)]
                      if e]
+            # Compound time gates: `Time = 0 && random % 2 = 0` (the GTA
+            # trio's normal/special callouts) and `Time = N && ...`.  The
+            # anchored match above dropped them, leaving the voice table
+            # with only the swish effects.
+            times += [int(e.group(1))
+                      for t in trig
+                      for e in [re.match(r"\s*time\s*=\s*(\d+)\s*&&", t,
+                                         re.I)] if e]
             # MUGEN accepts arithmetic in Time triggers. Preserve simple
             # integer sums so the event fires once at the intended state tick.
             times += [sum(map(int, e.groups()))
@@ -15709,15 +15815,8 @@ def build_hud():
                 for x in range(8):
                     if _q(pix[x, y]) >= 2:
                         cell[y * 8 + x] = 3
-        # The KOF99DM strip has a blank @ entry; draw a compact one so the
-        # MSU credits can spell "LE@N".
-        if ch == '@' and not any(cell):
-            for x, y in ((2, 1), (3, 1), (4, 1),
-                         (1, 2), (5, 2),
-                         (1, 3), (3, 3), (5, 3),
-                         (1, 4), (3, 4), (5, 4),
-                         (1, 5), (3, 5), (4, 5), (5, 5),
-                         (1, 6), (2, 7), (3, 7), (4, 7)):
+        if ch in ARROW_GLYPHS:
+            for x, y in ARROW_GLYPHS[ch]:
                 cell[y * 8 + x] = 3
         # dark outline around every lit pixel
         for y in range(8):
@@ -15968,7 +16067,6 @@ def build_hud():
     strs["CmdListTitle"] = "COMMAND LIST"
     strs["CmdListSide1"] = "P1"
     strs["CmdListSide2"] = "P2"
-    strs["CmdListLegend"] = "NRM CMD SPC SUP MAX THR SYS"
     strs["CmdListHelp"] = "UP/DN L/R SIDE  START EXIT"
     inc = []
     inc.append(f"PORTRAIT_P1 = {portrait_base}\n"
@@ -16364,8 +16462,9 @@ def emit_newchars_inc(new_keys, msu_slices):
     # ---- alt_pals.inc: P2 mirror palettes -------------------------------
     # Kept out of FightData: its tail already holds YouLoseCode.  PVS bank
     # 124's low window carries EndData2 up to $6A80; the remaining 5.5 KiB
-    # tail is free.  The 1.1.2 newcomers reuse their base P1 palettes for the
-    # mirror palette, which keeps all 53 AltPalRow entries inside this tail.
+    # tail is free.  The 1.1.2 newcomers and the GTA trio reuse their base
+    # P1 palettes for the mirror palette, which keeps every AltPalRow entry
+    # inside this tail.
     a = ["; generated by tools/build_fight.py -- do not edit\n",
          ".IFDEF PVSNESLIB\n",
          ".BASE $00\n",
@@ -16382,7 +16481,10 @@ def emit_newchars_inc(new_keys, msu_slices):
     # The three 1.1.2 newcomers and the hidden Kyo EX forms reuse their
     # existing base palettes in the mirror match.  This saves 96 bytes each
     # and keeps the AltPals section inside bank 124's tail.
-    _base_pal = {"kasumi", "duckking", "yuki", "kyonests", "kyoash"}
+    # The GTA trio reuses the base palette too: three extra P2 ramps would
+    # push the table past bank 124's EndData2 tail (the check below).
+    _base_pal = {"kasumi", "duckking", "yuki", "kyonests", "kyoash",
+                 "jason", "john", "lucia"}
     for _k in alt_roster:
         _c = alt_label.get(_k, cap(_k))
         if _k in _base_pal:
@@ -16440,11 +16542,11 @@ def emit_newchars_inc(new_keys, msu_slices):
     # after EndData18 (13 KiB) and its upper half is free.  Small overflow
     # tables/projectile atlases use these tail windows.
     PVS_SLOTS += [(82, 0x4000, 0x4000)]
-    # Bank 50's low half is free below the Fight code, but $70C0 upwards is
-    # reserved for FightMenuTail (menucore.asm) and the TeamOrderNear stub.
-    # Keep generated data below that tail or the linker cannot place the
-    # section.
-    PVS_SLOTS += [(50, 0x0000, 0x70C0)]
+    # Bank 50's low half reserves $0000-$0FFF for CancelData and the fixed
+    # near-call helpers (FramePresentNear/HudTopCode/OamCache/...) and only
+    # the $1000-$7024 span below FightMenuTail/TeamOrderNear is packable.
+    # The allocator carves out that first 4 KiB when it claims this slot.
+    PVS_SLOTS += [(50, 0x0000, 0x7024)]
     # Bank 48 ($F0) carries EndDataMP2 at $0000-$6600.  The rest of the
     # 64 KiB window is free and is the only remaining slot large enough for
     # a 33-34 KiB generated table/meta blob (Heavyd/Billy/Mrbig).
@@ -16559,10 +16661,17 @@ def emit_newchars_inc(new_keys, msu_slices):
         return out
 
     def qstr_standalone():
-        out = [".BANK 52 SLOT 0\n", ".ORGA $0000\n",
-               '.SECTION "QuoteStrings" FORCE\n']
-        out += [f'.INCLUDE "gen_fight/{rel}"\n' for _tag, rel in qstr_files]
-        out += [".ENDS\n", ".BANK 52 SLOT 0\n", ".ORGA $8000\n",
+        # One language per free low half (52-55); the combined table passed
+        # 32 KiB once the GTA trio arrived.  QuoteTab stores 24-bit far
+        # pointers, so the four blocks do not need to share a bank.
+        out = []
+        _QSTR_BANKS = {"en": 52, "fr": 53, "pt": 54, "es": 55}
+        for _tag, rel in qstr_files:
+            _bank = _QSTR_BANKS.get(_tag, 52)
+            out += [f".BANK {_bank} SLOT 0\n", ".ORGA $0000\n",
+                    f'.SECTION "QuoteStrings{cap(_tag)}" FORCE\n',
+                    f'.INCLUDE "gen_fight/{rel}"\n', '.ENDS\n']
+        out += [".BANK 52 SLOT 0\n", ".ORGA $8000\n",
                 '.SECTION "SharedTables" FORCE\n',
                 '.INCLUDE "gen_fight/quote_tables.inc"\n',
                 '.INCLUDE "gen_fight/char_names.inc"\n',
@@ -16766,15 +16875,33 @@ def emit_newchars_inc(new_keys, msu_slices):
         pvs_cancel = grab({"__cancel": cancel_size}, guard=0)["__cancel"]
     if pvs_cancel[0] != 50:
         raise ValueError("CancelData must stay in the Fight bank (near JSR)")
+    # The gate code must stay in bank 50 for the near JSR, but the table is
+    # reached through a 24-bit indirect read (:CancelTab), so it can live in
+    # any free window.  Keeping it here made CancelData grow past
+    # FramePresentNear's fixed $0972 slot as the roster expanded.
+    cancel_tab_sz = _inc_size("cancel_tab.inc")
+    pvs_cancel_tab = grab({"__canceltab": cancel_tab_sz},
+                          guard=0)["__canceltab"]
     cancel_data = ["; generated by tools/build_fight.py -- do not edit\n",
                    ".IFDEF PVSNESLIB\n", pvs_bank(pvs_cancel[0]),
                    f".ORGA ${pvs_cancel[1]:04X}\n",
                    ".ELSE\n", ".BANK 50 SLOT 0\n", ".ORGA $0000\n",
                    ".ENDIF\n",
                    '.SECTION "CancelData" FORCE\n',
-                   '.INCLUDE "gen_fight/cancel_tab.inc"\n',
                    '.INCLUDE "engine/cancel_gate.asm"\n',
-                   ".ENDS\n"]
+                   ".ENDS\n",
+                   "; cancel rows: any 24-bit window (read through :CancelTab)\n",
+                   pvs_bank(pvs_cancel_tab[0]),
+                   f".ORGA ${pvs_cancel_tab[1]:04X}\n",
+                   '.SECTION "CancelTable" FORCE\n',
+                   '.INCLUDE "gen_fight/cancel_tab.inc"\n',
+                   ".ENDS\n",
+                   # pvs_bank() above may have left .BASE $00 for a high
+                   # bank.  fight.asm includes this file with .BASE $C0 and
+                   # the following Fight section must inherit it, or the
+                   # linker maps bank 50 to CPU $32 instead of $F2 and every
+                   # far call to FightMain lands in the wrong bank.
+                   ".BASE $C0\n"]
     open(os.path.join(OUT, "cancel_data.inc"), "w").write(
         "".join(cancel_data))
     # Reserve the PRACTICE command pool before smaller allocations fragment
@@ -16876,7 +17003,9 @@ def emit_newchars_inc(new_keys, msu_slices):
         pvs_qstr = {"en": (44, 0x3000), "fr": (44, 0x5000),
                     "pt": (58, 0x9000), "es": (59, es_off)}
     assert 0xC000 + qtab_sz <= 0x10000            # PVS bank 58
-    assert sum(qstr_sz.values()) <= 0x8000        # standalone bank 52
+    # Standalone: each language gets its own free low half (see
+    # qstr_standalone), so only the largest block must fit 32 KiB.
+    assert max(qstr_sz.values()) <= 0x8000
     assert 0x8000 + qtab_sz <= 0x10000
     gfx_inc = ["; per-frame 2x projectile atlases\n.IFDEF PVSNESLIB\n"]
     for k in proj_order:

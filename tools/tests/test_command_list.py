@@ -73,10 +73,10 @@ class CommandListTests(unittest.TestCase):
                 self.assertGreaterEqual(
                     sum(1 for row in rows if row[1] == 0), 4, name)
                 for sid, cat, move, command in rows:
-                    # 103-114 are the imported follow-up/Reversal/Flashing
+                    # 103-118 are the imported follow-up/Reversal/Flashing
                     # Elbow slots; they are valid command targets and still
                     # fit the one-byte sid field used by CmdList.
-                    self.assertLessEqual(sid, 114, (name, sid))
+                    self.assertLessEqual(sid, 118, (name, sid))
                     self.assertIn(cat, range(7), (name, sid, cat))
                     self.assertTrue(move and move.strip(), (name, sid))
                     self.assertLessEqual(len(move), 16, (name, move))
@@ -88,6 +88,15 @@ class CommandListTests(unittest.TestCase):
                     self.assertNotIn("?", command, (name, command))
                     self.assertFalse(command.endswith(("+", ",", "-", "/")),
                                      (name, command))
+
+    def test_commands_use_arrow_notation(self):
+        """No QCF/QCB/DP-style letter shortcuts reach the HUD."""
+        shortcuts = re.compile(r"QCF|QCB|HCF|HCB|RDP|DP|BACK|FWD")
+        for name in sorted(bf.CHARS):
+            for sid, _cat, _move, command in _parse_table(name):
+                with self.subTest(char=name, sid=sid):
+                    self.assertIsNone(shortcuts.search(command),
+                                      (name, sid, command))
 
     def test_normal_buttons_follow_pad_layout(self):
         """LP=Y, HP=X, LK=B, HK=A for every fighter (physical pad remap)."""
@@ -109,21 +118,21 @@ class CommandListTests(unittest.TestCase):
                 with self.subTest(char=name, sid=sid):
                     last = command.split("+")[-1].strip()
                     # A row may show the weak/strong alternates together
-                    # ("QCF+B/A"); both halves still have to be buttons.
+                    # ("↓↘→+B/A"); both halves still have to be buttons.
                     parts = last.split("/")
                     self.assertTrue(parts and all(p in buttons for p in parts),
                                     (name, sid, move, command))
 
     def test_known_kof98_commands(self):
         kyo = {row[0]: row for row in _parse_table("kyo")}
-        self.assertEqual((2, "DP + Y"), (kyo[50][1], kyo[50][3]))
+        self.assertEqual((2, "→ ↓ ↘ + Y"), (kyo[50][1], kyo[50][3]))
         self.assertTrue(kyo[50][2].startswith("ONIYAKI"))
         # Physical pad routing: R = blowback, SELECT = taunt, L+DIR = dodge.
         self.assertEqual((1, "R"), (kyo[67][1], kyo[67][3]))
         self.assertEqual("SELECT", kyo[47][3])
         self.assertEqual("L + DIR", kyo[69][3])
-        self.assertEqual("L + BACK", kyo[94][3])
-        self.assertEqual("L + FWD", kyo[95][3])
+        self.assertEqual("L + ←", kyo[94][3])
+        self.assertEqual("L + →", kyo[95][3])
         self.assertEqual(4, kyo[87][1])                  # MAX super
         self.assertEqual(3, kyo[88][1])                  # second super (SUP)
         self.assertEqual(3, kyo[89][1])                  # second super (SUP)
@@ -132,12 +141,12 @@ class CommandListTests(unittest.TestCase):
         iori = {row[0]: row for row in _parse_table("iori")}
         self.assertEqual(4, iori[89][1])                 # SDM/MAX slot
         self.assertEqual(3, iori[88][1])                 # ordinary finisher
-        # Composed super: the list keeps the full QCBHCF notation even
+        # Composed super: the list keeps the full half-circle notation even
         # though the matcher also accepts the diagonal-free HCF portion.
         # Sid 85 is the MAX Ya Otome slot, so the row advertises both punch
         # buttons; the weak-only input still reaches it through the other
         # rule for the same slot.
-        self.assertEqual("QCBHCF+Y+X", iori[85][3])
+        self.assertEqual("↓↙←↙↓↘→+Y+X", iori[85][3])
 
         heavyd = {row[0]: row for row in _parse_table("heavyd")}
         self.assertEqual(4, heavyd[86][1])               # MAX D. Crazy
@@ -153,12 +162,12 @@ class CommandListTests(unittest.TestCase):
 
         terry = {row[0]: row for row in _parse_table("terry")}
         self.assertTrue(terry[50][2].startswith("BURN KNUCKLE"))
-        self.assertEqual("QCB + Y", terry[50][3])
+        self.assertEqual("↓ ↙ ← + Y", terry[50][3])
         self.assertTrue(terry[52][2].startswith("CRACK SHOOT"))
-        self.assertEqual("QCB + B", terry[52][3])
+        self.assertEqual("↓ ↙ ← + B", terry[52][3])
         # The command list keeps the classic motion even though the matcher
-        # also accepts the diagonal-free HCF/HCB form.
-        self.assertEqual("HCF + B", terry[56][3])
+        # also accepts the diagonal-free half-circle form.
+        self.assertEqual("← ↙ ↓ ↘ →+B", terry[56][3])
         self.assertEqual(6, terry[45][1])                # system/dash
 
     def test_reachable_supers_cost_meter(self):

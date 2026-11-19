@@ -11,6 +11,7 @@
 .DEFINE MKC_HITS    $F1D9
 .DEFINE MKC_DAMAGE  $F1DA                ; word, actual HP removed
 .DEFINE MKC_SHOTS   $F1DC                ; word, successful launches
+.DEFINE MKC_THROW   $F1DE                ; 1 = 15-hit throw follow-up pending
 .DEFINE MKB_KIND    $F1F0                ; two effect slots, 5 or 50
 .DEFINE MKB_SERIAL  $F1F2
 .DEFINE MKA_FLAG    $F200                ; fields indexed by fofs (0/$40)
@@ -35,7 +36,7 @@
 
 .BASE $00
 .BANK 64 SLOT 0
-.ORGA $7400                         ; after CloseNormalProfiles ($73DC)
+.ORGA $7600                         ; after CloseNormalProfiles (grows with roster)
 .SECTION "MrKarateCombat" FORCE
 .INCLUDE "gen_fight/mrkarate_kind.inc"
 
@@ -396,7 +397,7 @@ MKPC_no:
     clc
     rtl
 
-; A16 = 5 or 50. Begin only after actual unguarded overlap. First impact
+; A16 = 5, 15 or 50. Begin only after actual unguarded overlap. First impact
 ; and each follow-up use the same fractional budget, including zero-HP
 ; contacts in a 48-HP/50-hit super. Never round 50 hits up to 50 damage.
 MkContactStart:
@@ -404,13 +405,23 @@ MkContactStart:
     .ACCU 8
     sta.w MKC_TOTAL
     sta.w MKC_LEFT
+    cmp #15
+    beq MCS_throw
     cmp #50
     lda #9                              ; prototype 60/1000 -> 9 HP per volley
-    bcc +
+    bcc MCS_small
     lda #48.b                           ; super: 48 HP over 50 contacts (the
                                         ;   144-HP prototype's third, not
                                         ;   MAXHP/3 -- this bar is 200 HP)
-+   sta.w MKC_BUDGET
+    bra MCS_budget
+MCS_small:
+    sta.w MKC_BUDGET
+    bra MCS_owner
+MCS_throw:
+    lda #40.b                           ; same -40 HP as the normal throw
+MCS_budget:
+    sta.w MKC_BUDGET
+MCS_owner:
     lda aofs
     sta.w MKC_OWNER
     lda #1
@@ -575,6 +586,37 @@ MkRelease:
     bra ++
 +   lda #S_STAND.w
 ++  jsl MkCombat_EnterState
+    ; The 15-hit throw follow-up ends with the normal throw launch instead
+    ; of the generic knockdown: the victim goes airborne only after the
+    ; Hien Shippuu Kyaku combo, matching the source throw's release.
+    sep #$20
+    .ACCU 8
+    lda.w MKC_THROW
+    beq MKR_no_throw
+    stz.w MKC_THROW
+    rep #$20
+    .ACCU 16
+    ldx vofs
+    lda #S_VTHROW.w
+    jsl MkCombat_EnterState
+    rep #$20
+    .ACCU 16
+    ldx vofs
+    lda #-$0680.w                      ; -6.5 px/tick launch
+    sta FP+F_VY,x
+    lda #30
+    sta FP+F_HTIMER,x
+    ldx aofs
+    lda FP+F_FACING,x
+    bmi MKR_throw_left
+    lda #$0480.w                       ; 4.5 px/tick away from the thrower
+    bra MKR_throw_store
+MKR_throw_left:
+    lda #-$0480.w
+MKR_throw_store:
+    ldx vofs
+    sta FP+F_VX,x
+MKR_no_throw:
     rep #$20
     .ACCU 16
     rts
@@ -1136,6 +1178,58 @@ PTS_notmulti:
 +   rep #$20
     .ACCU 16
     sec
+    rtl
+
+; Called from AO_tlife for a negative TargetLifeAdd.  Mr. Karate's normal
+; throw damage row (-40 HP at state 810 element 8) becomes a 15-hit Hien
+; Shippuu Kyaku follow-up.  The same budget is reused, so the combo spends
+; exactly the standard throw's energy before the victim is launched.
+MkThrowComboFar:
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    ldx fofs
+    lda FP+F_CHAR,x
+    cmp #CharMrkarate.w
+    bne MTC_no
+    lda FP+F_STATE,x
+    and #$00FF.w
+    cmp #S_TSEQ.w                       ; throw bind sequence (sid 75)
+    bne MTC_no
+    sep #$20
+    .ACCU 8
+    lda scr6+1
+    bpl MTC_no8                         ; only the negative throw life row
+    ldx scr5
+    lda FP+F_GRAB,x
+    bit #$01.b                          ; victim still bound to this fighter
+    beq MTC_no8
+    lda FP+F_OWNER,x
+    cmp.b fofs
+    bne MTC_no8
+    rep #$20
+    .ACCU 16
+    lda fofs
+    sta aofs
+    lda scr5
+    sta vofs
+    lda #15.w
+    jsr MkContactStart
+    lda #51.w                           ; strong Hien Shippuu Kyaku clip
+    jsl MkCombat_SetAnimSlot
+    sep #$20
+    .ACCU 8
+    lda #1
+    sta.w MKC_THROW
+    rep #$20
+    .ACCU 16
+    sec
+    rtl
+MTC_no8:
+    rep #$20
+    .ACCU 16
+MTC_no:
+    clc
     rtl
 
 .ENDS

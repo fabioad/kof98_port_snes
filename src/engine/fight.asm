@@ -788,6 +788,13 @@
 .DEFINE animP       $A4                 ; stage-anim poses:  8 bytes $A4-$AB
 .DEFINE sacnt       $AC                 ; StageAnimTick clip counter (word)
 .DEFINE saofs       $AE                 ; StageAnimTick clip-ptr offset (word)
+; Stage-anim pose commits are spread across frames: a 255-cell clip costs far
+; more than one vblank (two descriptor reads + two VRAM port writes per cell).
+; animQ = pending pose+1 (0 = nothing pending), animC = running cell offset,
+; animR = cells left.  Word arrays so one X (slot*2) serves all three.
+.DEFINE animQ       $7E5290             ; 8 words, pending target pose+1
+.DEFINE animC       $7E52A0             ; 8 words, byte offset of next cell
+.DEFINE animR       $7E52B0             ; 8 words, cells left in this commit
 .DEFINE stageidx    $87                 ; last random stage loaded
 .DEFINE rng         $88                 ; free-running entropy for stage pick
 .DEFINE camx        $89                 ; stage camera x, pixels (word)
@@ -1497,7 +1504,14 @@ SfxWaitMenuEffects:
     .ACCU 16
     lda.l $7E46F8
     beq SfxMenuReady
-    jmp SfxDoneD                        ; skip until the UI slots are restored
+    ; UI slots are still being reloaded (4 frames after a module change).
+    ; Play the always-resident light-hit blip instead of dropping the input
+    ; sound, so the first cursor moves in a fresh menu are audible too.
+    sep #$20
+    .ACCU 8
+    lda #SFX_HIT_LIGHT.b
+    sta sfxlast
+    bra SfxDispatch
 SfxMenuReady:
     sep #$20
     .ACCU 8
@@ -1529,7 +1543,9 @@ SfxDispatch:
     tay                                 ; preserve the byte id as a clean word;
                                         ; $32 beside sfxlast is audiordy
     cmp #SPC_MUS_PLAY.w
-    beq SfxMusPlay
+    bne SfxNotMusPlay
+    jmp SfxMusPlay
+SfxNotMusPlay:
     cmp #SPC_MUS_STOP.w
     bne +
     jmp SfxMusStop
@@ -1587,9 +1603,24 @@ SfxEffect:
     tya
     phy                             ; arg2: source index
     pea 1                           ; arg1: pitch 1 = 4 kHz
+    ; spcEffect shares the APU ports with the NMI-driven spcProcess.  An NMI
+    ; between its handshake writes can drop the effect (the menu blips were
+    ; the most visible loss).  Mask NMI for this short message.
+    sep #$20
+    .ACCU 8
+    lda #0
+    sta.l NMITIMEN
+    rep #$20
+    .ACCU 16
     lda #0
     tcd                             ; pvsneslib audio code expects D=0
     jsl spcEffect
+    sep #$20
+    .ACCU 8
+    lda #$81.b
+    sta.l NMITIMEN
+    rep #$20
+    .ACCU 16
     bra SfxPop
 SfxMusPlay:
     lda #0
@@ -1808,20 +1839,9 @@ LoadStaticGfx:
     jsl VrDmaFar
     rep #$20
     .ACCU 16
-    ; crowd-anim pose tiles -> dynamic BG1 slots ($2C00, above the font)
-    lda #StgAnimChr
-    sta scr0
-    lda #StgAnimChr_End-StgAnimChr
-    sta scr1
-    lda #STGACHR
-    sta scr2
-    sep #$20
-    .ACCU 8
-    lda #:StgAnimChr
-    jsl VrDmaFar
-    ; anim state is reinitialised per stage in StagePick (animT/animP)
-    rep #$20
-    .ACCU 16
+    ; The stage-animation pool is per stage and is uploaded by StagePick
+    ; under forced blank (StgAnimPoolTab -> $2C00).  Keeping the old shared
+    ; pool here would overwrite the v2 pool after the first stage pick.
     ; Effect pages are uploaded by FxPrepareBoth under forced blank.  The
     ; old unconditional static-spark copy ran after it and overwrote the
     ; streamed projectile atlas, so projectiles showed the spark page.
@@ -2122,6 +2142,45 @@ SP_set:
     lda [lptr],y                        ; pal bank
     sta scr3
     jsr CgDma
+    ; v2 stage animation pool: every stage has its own <=160-tile pool.
+    ; Upload it to the dynamic BG1 window while the display is still blank.
+    rep #$20
+    .ACCU 16
+    lda stageidx
+    and #$00FF.w
+    asl
+    sta scr6
+    asl
+    clc
+    adc scr6                            ; idx*6 (6-byte StgAnimPoolTab rows)
+    sta scr6
+    lda #StgAnimPoolTab
+    clc
+    adc scr6
+    sta lptr
+    sep #$20
+    .ACCU 8
+    lda #:StgAnimPoolTab
+    sta lptr+2
+    rep #$20
+    .ACCU 16
+    ldy #0
+    lda [lptr],y                        ; pool offset
+    sta scr0
+    ldy #2
+    lda [lptr],y                        ; pool length
+    beq SP_anim_done
+    sta scr1
+    lda #STGACHR
+    sta scr2
+    sep #$20
+    .ACCU 8
+    ldy #4
+    lda [lptr],y                        ; pool bank
+    jsl VrDmaFar
+SP_anim_done:
+    rep #$20
+    .ACCU 16
     jsr StageAnimInit                     ; reset clip clocks for this stage
     jsl PushOamShadowFar                  ; hardware OAM <- cleared shadow
     lda.b stagehold                       ; StartFight rebuilt the HUD map, so
@@ -6280,6 +6339,8 @@ AO_tlife:                               ; TargetLifeAdd: clamp 0..200
     jsr AO_victim
     cmp #$FFFF.w
     beq AO_ret16
+    jsl MkThrowComboFar
+    bcs AO_ret16
     lda scr6+1
     and #$00FF.w
     bit #$0080.w
@@ -6333,13 +6394,21 @@ AO_tstat_enter:
 +   lda FP+F_STATE,x                      ; source TargetState 821/816 (and
     and #$00FF.w                          ;   every imported 3020/3503-style
     cmp #S_VTHROW.w                       ;   victim) maps to the generic
-    bne +                                 ;   flight slot: launch it now.
-    jsr SlamRelease                       ; X = fofs on both paths.  Reads
-                                          ;  the state byte: EnterState
-                                          ;  zeroes scr6, so the old scr6
-                                          ;  test never launched anyone;
-                                          ;  only the slam bounce acts here
-                                          ;  (generic launch kept as it was)
+    bne +                                 ;   flight slot.
+    ; Special throws release an airborne victim (Mary's Typhoon/Super Dunk,
+    ; Clark's chains, ...).  The victim's own generic 816 clip differs per
+    ; character: Kyo's VelSet launches up, Geese's drops straight down, so
+    ; the same throw left Geese glued to the floor.  When the victim is
+    ; still off the ground, give it the shared 821 arc; a release at floor
+    ; level keeps the plain knockdown.  F_TFLAGS bit7 still marks a slam
+    ; pose (bounce) and STIME=128 blocks the character-specific VelSet row.
+    lda FP+F_TFLAGS,x
+    bit #$0080.w
+    bne AO_tstat_launch
+    lda FP+F_Y,x
+    beq +
+AO_tstat_launch:
+    jsl SlamBounceFar                     ; X = victim, A16
 +   lda scr5
     eor #FP2OFS.w                         ; back to the attacker
     sta fofs
@@ -15788,6 +15857,12 @@ StageAnimInit:
     inx                                 ;   sacnt (DP $AC)
     cpx #32.w
     bne -
+    ldx #0                              ; animQ/animC/animR: drop any pending
+-   sta.l animQ,x                       ;   commit from the previous stage
+    inx
+    inx
+    cpx #48.w
+    bne -
     sep #$20
     .ACCU 8
     lda stageidx
@@ -17211,17 +17286,6 @@ CmdListDraw:
 ++  sep #$20
     .ACCU 8
     jsr WriteStr
-    ; category legend
-    rep #$20
-    .ACCU 16
-    lda #(8*32*2).w
-    sta scr0
-    lda #CmdListLegend.w
-    sta scr2
-    lda #:CmdListLegend
-    sta scr2+2
-    jsr WriteStr
-
 CDL_list:
     sep #$20
     .ACCU 8
@@ -23363,12 +23427,19 @@ SparkChrB:  .INCBIN "gen_fight/spark_b.chr"
 HudChr:     .INCBIN "gen_fight/hud.chr"
 HudChr_End:
 .INCLUDE "gen_fight/intro_girls.inc"
-.INCLUDE "gen_fight/stage_anim.inc"
 Portraits:  .INCBIN "gen_fight/portraits.chr"
 Portraits_End:
 PortraitPal: .INCBIN "gen_fight/portrait_pal.bin"
 PortraitPal_End:
 .INCLUDE "gen_fight/portraits.inc"
+.ENDS
+
+; v2 stage clip descriptors are much larger than the old sparse patches, so
+; they live in their own free ROM bank instead of the half-bank StageData.
+.BANK 31 SLOT 0
+.ORGA $8000
+.SECTION "StageAnimClipData" FORCE
+.INCLUDE "gen_fight/stage_anim.inc"
 .ENDS
 
 ; ORDER SELECT 32x32 portraits live in the free lower half of bank 126 so
@@ -23931,9 +24002,14 @@ GCHoldsBack:
 ;   .DB ncells, nposes, phase / .DW ticks[nposes] /
 ;   cells {mapidx, tileP0..tilePn} x ncells
 ; Every pose of every clip is resident in dynamic tiles 704+, so a pose
-; commit is a tilemap write only and runs inside the forced-blank window
-; after the HUD flush.  animT: 8 word timers ($94..), animP: 8 pose bytes
-; ($A4..), both indexed by slot*2 so one X serves both arrays.
+; commit is a tilemap write only.  The v2 descriptors select up to 255 cells
+; per clip and a big stage (Porto B) changes several hundred: writing them in
+; one vblank overruns the forced-blank window and the display stays blank far
+; into the visible picture.  Commits are therefore budgeted by remaining
+; scanlines and resumed on the next frame (animQ/animC/animR).  Cells whose
+; word is identical to the pose already on screen are skipped, which is most
+; of a clip between adjacent poses.  animT: 8 word timers ($94..), animP: 8
+; pose bytes ($A4..), both indexed by slot*2 so one X serves both arrays.
 StageAnimTickFar:
     sep #$20
     .ACCU 8
@@ -23951,9 +24027,12 @@ StageAnimTickFar:
 SAI_ok:
     rep #$10
     .INDEX 16
-    lda stageidx
+    jsr StageAnimBudget                   ; how many cells still fit
     rep #$20
     .ACCU 16
+    lda scr4
+    beq SAI_skip
+    lda stageidx
     and #$00FF.w
     asl
     tax
@@ -23984,7 +24063,7 @@ SA_clip:
     .ACCU 8
     lda #:StgAnimTab
     sta boxp+2
-    jsr StageAnimOne                    ; NOTE: clobbers scr4/scr5
+    jsr StageAnimOne                    ; NOTE: clobbers scr0-scr6
     rep #$20
     .ACCU 16
     inc saofs
@@ -24001,9 +24080,73 @@ SAI_skip:
     .ACCU 16
     rtl
 
+; A16 -> number of scanlines left before line 260 (0 outside vblank).
+; Uses scr1; X and scr0/scr4-scr6 are preserved.
+StageAnimLines:
+    rep #$20
+    .ACCU 16
+    sep #$20
+    .ACCU 8
+    lda.l $00213F                        ; reset the OPVCT read flip-flop
+    lda.l $002137                        ; latch H/V (SNESMOD reads it too)
+    lda.l $00213D                        ; V bits 0-7
+    sta scr1
+    stz scr1+1
+    lda.l $00213D                        ; V bit 8
+    and #1.b
+    bne SAL_none                         ; 256-261: too late anyway
+    lda scr1
+    cmp #225.b
+    bcc SAL_none                         ; not in vblank yet
+    rep #$20
+    .ACCU 16
+    lda #260.w
+    sec
+    sbc scr1
+    rts
+SAL_none:
+    rep #$20
+    .ACCU 16
+    lda #0
+    rts
+
+; A16 -> scr4: upper bound on cells whose pose commit can fit before the
+; visible picture.  The cell loop also calls StageAnimRoom every few cells,
+; so a slower-than-expected commit stops at line 244 and resumes next frame.
+StageAnimBudget:
+    jsr StageAnimLines
+    stz scr4
+    cmp #16.w
+    bcc SAB_out
+    beq SAB_out
+    sec
+    sbc #16.w
+    asl                                  ; two cells per line (upper bound)
+    sta scr4
+SAB_out:
+    rts
+
+; Carry set while at least sixteen scanlines remain before line 260.  Called
+; from the cell loop with A8; scr2-scr6 (the commit state) are preserved.
+StageAnimRoom:
+    jsr StageAnimLines
+    cmp #16.w
+    bcc SARM_no
+    sec
+    rts
+SARM_no:
+    clc
+    rts
+
 ; boxp = clip long ptr, X = slot*2.  Advances the clip clock; on a pose
-; boundary commits every cell's new tile index to the BG1 map.
+; boundary starts a commit.  A commit may span frames: the pose is only
+; marked as shown (animP) after every cell has been visited, and the timer
+; stays frozen while animQ is pending.
 StageAnimOne:
+    sep #$20
+    .ACCU 8
+    lda.l animQ,x
+    bne SAO_commit
     rep #$20
     .ACCU 16
     lda animT,x
@@ -24023,8 +24166,9 @@ StageAnimOne:
     tay                                 ; ticks[pose] at clip+3+pose*2
     lda animT,x
     cmp [boxp],y
-    bcc SAO_out                         ; still inside this pose's window
-    sec
+    bcs +
+    rts                                 ; still inside this pose's window
++   sec
     sbc [boxp],y                        ; keep the remainder (no drift)
     sta animT,x
     ldy #1
@@ -24039,59 +24183,135 @@ StageAnimOne:
     cmp scr5
     bcc +
     lda #0.b
-+   sta animP,x
++   inc a                               ; pending pose + 1
+    sta.l animQ,x
     rep #$20
     .ACCU 16
-    and #$00FF.w
-    asl
-    sta scr6                            ; new pose*2
-    txa                                 ; debug: commits per clip slot
-    clc
-    adc #DBGREG+112
-    sta scr3
+    lda #0
+    sta.l animC,x                       ; start at the first cell
+    sta.l animR,x
+SAO_commit:
     sep #$20
     .ACCU 8
-    lda #$7E.b
-    sta scr3+2
-    lda [scr3]
-    clc
-    adc #1
-    sta [scr3]
-    lda #$80.b
-    sta.l VMAIN
+    lda.l animQ,x
+    dec a
+    sta scr0                            ; target pose
+    stz scr0+1
+    lda animP,x
+    sta scr1                            ; pose currently on screen
+    stz scr1+1
     rep #$20
     .ACCU 16
-    lda [boxp]                          ; ncells (clip+0)
+    lda scr0
+    asl
+    sta scr6                            ; target pose*2
+    lda scr1
+    asl
+    sec
+    sbc scr6
+    sta scr3                            ; (shown-target)*2
+    ldy #1
+    lda [boxp],y                        ; nposes
     and #$00FF.w
-    sta scr4
-    lda scr5                            ; nposes
     asl
     clc
     adc #2
-    sta scr5                            ; cell stride = 2 + nposes*2 bytes
-    clc
-    adc #1                              ; first cell at 3+nposes*2 = stride+1
-    sta scr2                            ; running cell offset
-SAO_cell:
-    ldy scr2
-    lda [boxp],y                        ; mapidx
-    clc
-    adc #BG1MAP
-    sta.l VMADDL
+    sta scr2                            ; cell stride = 2 + nposes*2
+    sep #$20
+    .ACCU 8
+    lda #$80.b                          ; VRAM: increment after the low word
+    sta.l VMAIN
+    lda #2.b                            ; first V re-check after 2 cells
+    sta scr0+1
+    rep #$20
+    .ACCU 16
+    lda.l animC,x
+    bne SAO_resume
+    lda [boxp]                          ; ncells (clip+0)
+    and #$00FF.w
+    beq SAO_finish
+    sta.l animR,x
     lda scr2
+    inc a                               ; first cell at 3+nposes*2 = stride+1
+    sta scr5                            ; running cell offset
+    sep #$20
+    .ACCU 8
+    lda.l DBGREG_L+112,x                ; debug: commits per clip slot
+    inc a
+    sta.l DBGREG_L+112,x
+    rep #$20
+    .ACCU 16
+    bra SAO_cells
+SAO_resume:
+    sta scr5                            ; cell offset left from last frame
+SAO_cells:
+    lda.l animR,x
+    beq SAO_finish
+SAO_cell:
+    lda scr4                            ; out of vblank time: resume next frame
+    beq SAO_pause
+    dec scr4
+    lda scr5
     clc
     adc #2
     adc scr6                            ; tile word at cell+2+pose*2
     tay
-    lda [boxp],y
-    sta.l VMDATAL
-    lda scr2
+    lda [boxp],y                        ; new word
+    sta scr1
+    tya
     clc
-    adc scr5
-    sta scr2
-    dec scr4
-    bne SAO_cell
+    adc scr3                            ; same cell, pose already on screen
+    tay
+    lda [boxp],y
+    cmp scr1
+    beq SAO_skip                        ; unchanged: no VRAM write
+    ldy scr5
+    lda [boxp],y                        ; mapidx
+    clc
+    adc #BG1MAP
+    sta.l VMADDL
+    lda scr1
+    sta.l VMDATAL
+SAO_skip:
+    lda scr5
+    clc
+    adc scr2
+    sta scr5
+    lda.l animR,x
+    dec a
+    sta.l animR,x
+    beq SAO_finish
+    sep #$20
+    .ACCU 8
+    dec scr0+1
+    bne +
+    lda #4.b                            ; then every 4 cells
+    sta scr0+1
+    jsr StageAnimRoom                   ; deadline: stop at line 244
+    bcc SAO_pause
++   rep #$20
+    .ACCU 16
+    bra SAO_cell
+SAO_finish:
+    sep #$20
+    .ACCU 8
+    lda.l animQ,x                       ; now the map shows this pose
+    dec a
+    sta animP,x
+    lda #0.b
+    sta.l animQ,x
+    rep #$20
+    .ACCU 16
+    lda #0
+    sta.l animC,x
+    sta.l animR,x
 SAO_out:
+    rts
+SAO_pause:
+    rep #$20
+    .ACCU 16
+    lda scr5
+    sta.l animC,x
     rts
 .ENDS
 

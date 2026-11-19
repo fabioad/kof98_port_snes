@@ -63,10 +63,12 @@ def config_hash(cfg):
     # A projectile FX alias only redirects the descriptor to another
     # character's compiled effect table; it changes no calibrated native
     # value, so it must not invalidate an existing profile.  The same holds
-    # for the physical-pad button masks: they change input routing, never a
-    # damage/hit-timing value read from the CNS.
+    # for the physical-pad button masks and command-list text overrides:
+    # they change input routing/display, never a damage or hit-timing value
+    # read from the CNS.
     hashed = {k: v for k, v in cfg.items()
-              if k not in ('projfx_alias', 'buttons')}
+              if k not in ('projfx_alias', 'buttons', 'cmd_text',
+                           'palette_recolor')}
     return hashlib.sha256(json_bytes(hashed)).hexdigest()
 
 

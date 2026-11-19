@@ -119,13 +119,8 @@ HR_room:
     .ACCU 8
     rtl
 
+; StageAnimTickFar reads the V counter itself and only commits the cells that
+; fit before the picture resumes; there is no separate byte budget to check.
 StageAnimPresentFar:
-    rep #$20
-    .ACCU 16
-    lda #2560.w                         ; CPU patches include per-cell setup
-    jsr VblankRoom
-    bcc SAP_done
     jml StageAnimTickFar
-SAP_done:
-    rtl
 .ENDS

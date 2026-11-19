@@ -323,5 +323,23 @@
     "Entraîne-toi avant de me défier à nouveau!",
     "Robert ? Au combat, je suis Mr. Karate !",
     "Yuri, mon amour, tu es en sécurité !"
+  ],
+  "jason": [
+    "Toujours ensemble. On va s'en sortir.",
+    "Ah, c'est pour ça que tu es venu?",
+    "Ils ne prêtent rien aux gens comme moi.",
+    "J'ai eu des ennuis à l'armée. Mal parti."
+  ],
+  "john": [
+    "J'ai senti le napalm. Tu ne m'as pas fait peur!",
+    "La déception n'en finit pas? Que des faibles!",
+    "J'ai vu l'enfer trop de fois pour te craindre.",
+    "C'est tout ce que tu as? Dommage."
+  ],
+  "lucia": [
+    "Ce qui compte, c'est qui tu connais et ce que tu as.",
+    "Mauvaise chance, je pense.",
+    "La seule façon de s'en sortir...",
+    "Crois-moi, cet endroit n'est que le début."
   ]
 }

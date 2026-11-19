@@ -219,6 +219,10 @@ PROJECTILE_SOURCE_PALETTES = {
     # SFF palette index (1645) is a body/shadow bank with black entries
     # where the flame colours should be.
     "yuri": 0,
+    # John's Mega Smash cels (SFF group 1001) carry palidx 1, which has
+    # black at the effect indices 17-23; the orange/blue blast ramp lives
+    # in palette 3.  Without this the compiled clip is all-transparent.
+    "john": 3,
 }
 PROJECTILE_ZOOM = 2
 
@@ -232,6 +236,9 @@ PROJECTILE_ZOOM_BY_CHAR = {
     # The basketball is already 24x24 in the source.  Doubling it would be
     # half the playfield height; keep it native so it reads as a ball.
     "lucky": 1,
+    # John's blast cells are 102x39 already; the default 2x zoom overflows
+    # the 16-cell effect page.
+    "john": 1,
 }
 # Projectile effects that need a non-integer resize.  The engine fits the
 # compiled 16x16-cell atlas, so these are scaled before the atlas quantizer.
@@ -249,9 +256,10 @@ GROUND_PROJECTILES = {
 }
 
 # Character-level fixed upper-torso spawn height.  Lucky's basketball uses
-# the ballistic profile below instead, so this set is currently empty; the
-# per-shot PROJECTILE_TORSO_SIDS switch below still covers Geese's air shot.
-TORSO_PROJECTILES = set()
+# the ballistic profile below instead; the per-shot PROJECTILE_TORSO_SIDS
+# switch below still covers Geese's air shot.  The GTA trio fire from
+# raised hands: the default 40 px "mid torso" spawn sat below the arms.
+TORSO_PROJECTILES = {"john", "jason", "lucia"}
 
 # Source-verified ballistic projectiles.  The ProjFxTab header gets three
 # extra bytes at offsets 5-7: spawn height above the floor, gravity in 1/16

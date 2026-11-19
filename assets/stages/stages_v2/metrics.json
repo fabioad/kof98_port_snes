@@ -1,0 +1,112 @@
+{
+ "KOF98-ChinaStage": {
+  "static_tiles": 512,
+  "pool_tiles": 160,
+  "clips": 1,
+  "pix_rmse": 0.06998375803232193,
+  "blur_rmse": 0.026543461314190546,
+  "block_rmse": 0.024993199855089188,
+  "palette_only_pix": 0.029504403471946716,
+  "palette_only_blur": 0.017246287842050553,
+  "seconds": 16.5
+ },
+ "KOF98-JpnStreetStage": {
+  "static_tiles": 511,
+  "pool_tiles": 160,
+  "clips": 7,
+  "pix_rmse": 0.0801234319806099,
+  "blur_rmse": 0.033153221985255533,
+  "block_rmse": 0.03149830549955368,
+  "palette_only_pix": 0.03384514898061752,
+  "palette_only_blur": 0.02146919096945837,
+  "seconds": 36.2
+ },
+ "KOF98-JpnTempleStage": {
+  "static_tiles": 512,
+  "pool_tiles": 160,
+  "clips": 5,
+  "pix_rmse": 0.05593916401267052,
+  "blur_rmse": 0.023051300717673306,
+  "block_rmse": 0.02188422530889511,
+  "palette_only_pix": 0.02211487479507923,
+  "palette_only_blur": 0.013007878110569,
+  "seconds": 30.7
+ },
+ "KOF98-KoreaStage": {
+  "static_tiles": 511,
+  "pool_tiles": 156,
+  "clips": 3,
+  "pix_rmse": 0.09244930744171143,
+  "blur_rmse": 0.03681087702428539,
+  "block_rmse": 0.034657083451747894,
+  "palette_only_pix": 0.03744819015264511,
+  "palette_only_blur": 0.02433451925189107,
+  "seconds": 38.7
+ },
+ "KOF98-Mid.EastStage": {
+  "static_tiles": 512,
+  "pool_tiles": 160,
+  "clips": 3,
+  "pix_rmse": 0.08256854116916656,
+  "blur_rmse": 0.03341080633885961,
+  "block_rmse": 0.031089169904589653,
+  "palette_only_pix": 0.03026892989873886,
+  "palette_only_blur": 0.019669361668613664,
+  "seconds": 19.3
+ },
+ "KOF98-RugalStage": {
+  "static_tiles": 511,
+  "pool_tiles": 160,
+  "clips": 1,
+  "pix_rmse": 0.06282002478837967,
+  "blur_rmse": 0.021430525176434703,
+  "block_rmse": 0.01969325914978981,
+  "palette_only_pix": 0.021178865805268288,
+  "palette_only_blur": 0.010294572528036913,
+  "seconds": 36.1
+ },
+ "KOF98-SpainStage": {
+  "static_tiles": 463,
+  "pool_tiles": 141,
+  "clips": 1,
+  "pix_rmse": 0.047573819756507874,
+  "blur_rmse": 0.016421554749129198,
+  "block_rmse": 0.01596418209373951,
+  "palette_only_pix": 0.020869003608822823,
+  "palette_only_blur": 0.011766656608715245,
+  "seconds": 22.0
+ },
+ "KOF98-USAWharfStage": {
+  "static_tiles": 507,
+  "pool_tiles": 160,
+  "clips": 3,
+  "pix_rmse": 0.05342128127813339,
+  "blur_rmse": 0.023838870111080615,
+  "block_rmse": 0.022932328283786774,
+  "palette_only_pix": 0.026794200763106346,
+  "palette_only_blur": 0.01763879278819711,
+  "seconds": 35.9
+ },
+ "KOF98-USAWharfStage-B": {
+  "static_tiles": 506,
+  "pool_tiles": 160,
+  "clips": 3,
+  "pix_rmse": 0.0541425384581089,
+  "blur_rmse": 0.02445823814551461,
+  "block_rmse": 0.023934220895171165,
+  "palette_only_pix": 0.026819560676813126,
+  "palette_only_blur": 0.016674758299119536,
+  "seconds": 90.1
+ },
+ "KOF98-USAYardStage": {
+  "static_tiles": 511,
+  "pool_tiles": 160,
+  "clips": 3,
+  "pix_rmse": 0.09379454702138901,
+  "blur_rmse": 0.03208136936043686,
+  "block_rmse": 0.029579531401395798,
+  "palette_only_pix": 0.027066905051469803,
+  "palette_only_blur": 0.01682905856246559,
+  "seconds": 19.7
+ }
+}

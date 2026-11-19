@@ -1,0 +1,36 @@
+; Jason Duval -- original fighter (procedural tribute build)
+; MUGEN 1.0 / IKEMEN GO, KOF'98 system, localcoord 320
+[Info]
+name = "Jason Duval"
+displayname = "Jason"
+versiondate = 11,18,2026
+mugenversion = 1.0
+author = "Jason_Lucia_chars (procedural tribute build)"
+pal.defaults = 1,2,3,4
+localcoord = 320,240
+
+[Files]
+cmd = Jason.cmd
+cns = states/constants.cns
+st = states/system.cns
+st1 = states/normal.cns
+st2 = states/special.cns
+st3 = states/super.cns
+st4 = states/throw.cns
+st5 = states/ai_level.cns
+stcommon = states/common1.cns
+sprite = Jason.sff
+anim = Jason.air
+sound = Jason.snd
+pal1 = pal/jason01.act
+pal2 = pal/jason02.act
+pal3 = pal/jason03.act
+pal4 = pal/jason04.act
+pal5 = pal/jason05.act
+pal6 = pal/jason06.act
+pal7 = pal/jason07.act
+pal8 = pal/jason08.act
+
+[Arcade]
+intro.storyboard =
+ending.storyboard =

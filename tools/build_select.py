@@ -105,6 +105,11 @@ ROSTER = [
     (_nsff("kyonests"),               3, True),
     (_nsff("kyoash"),                 3, True),
     ("../robert_mrkarate/MrKarate-KOF98/MrKarate.sff", 10, True),
+    # GTA tribute trio in CharSelTab/NEW_CHARS order (ids 54-56), on the
+    # new row directly above Shingo/Rugal/Eiji.
+    (_nsff("jason"),                 50),
+    (_nsff("john"),                  51),
+    (_nsff("lucia"),                 52),
 ]
 
 if os.environ.get("KOF_BASE4"):        # 8 MiB fallback: original roster
@@ -126,7 +131,12 @@ NEW_CELLS = [(8, 143, 27, 165), (30, 143, 49, 165),
              # aligned with the top row cells (x=96/118/140) and with the
              # existing bottom-row cells (y=168-190).
              (96, 168, 115, 190), (118, 168, 137, 190),
-             (140, 168, 159, 190)]
+             (140, 168, 159, 190),
+             # GTA trio: a matching row directly ABOVE Shingo/Rugal/Eiji,
+             # same three columns and the same 25 px row pitch (displayed
+             # y=116, between the 9x4 block at y=90 and the bottom row).
+             (96, 118, 115, 140), (118, 118, 137, 140),
+             (140, 118, 159, 140)]
 
 # name/CPU-tag anchors (8px tile coords), kept from the face windows so
 # the OBJ name row still reads "left side = P1, right side = P2".
@@ -526,7 +536,16 @@ def main():
     pals = [art_pal]
     cell_palidx = {}
     GRP = 6
-    if len(vis) == 50:
+    if len(vis) == 53:
+        # GTA trio roster: seven balanced icon palettes; the three new
+        # portraits join the front groups so no palette carries an
+        # oversized sheet.
+        sizes = [8, 8, 8, 7, 7, 8, 7]
+        palette_chunks, start = [], 0
+        for size in sizes:
+            palette_chunks.append(vis[start:start + size])
+            start += size
+    elif len(vis) == 50:
         # 1.1.2 roster: keep the first five groups unchanged and let the
         # newcomers share the final two palettes.
         sizes = [7, 7, 7, 7, 7, 8, 7]

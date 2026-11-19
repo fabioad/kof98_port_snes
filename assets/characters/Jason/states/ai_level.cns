@@ -1,0 +1,16 @@
+; AI level for IKEMEN GO (uses the AILevel trigger, 1-9).
+; MUGEN 1.0 does not know AILevel: use <Char>_mugen10.def instead, which
+; loads ai_level_mugen10.cns.
+[Statedef -3]
+
+[State -3, AI flag]
+type = VarSet
+trigger1 = 1
+var(59) = AILevel > 0
+ignorehitpause = 1
+
+[State -3, AI level]
+type = VarSet
+trigger1 = 1
+var(58) = AILevel
+ignorehitpause = 1

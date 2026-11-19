@@ -9,6 +9,7 @@ A variante usa `Robert-Mr-Karate.sff`, `Robert-Mr-Karate.snd` e arquivos de esta
 - Comandos originais preservados. Especiais terrestres também podem começar durante o pulo; o personagem fica suspenso durante a execução e volta a cair ao terminar. O chute de mergulho continua usando seu movimento aéreo original.
 - Ao conectar um especial, segue uma sequência de 5 impactos reais, totalizando 60 pontos de dano absoluto.
 - Ao conectar um super, segue uma sequência de 50 impactos reais, totalizando `floor(LifeMax do adversário / 3)` de dano absoluto. Contra 1.000 de vida: 333 de dano. O dano é distribuído pelos impactos, sem depender da defesa do alvo.
+- **Arremesso (X+Y):** o dano normal de -40 é substituído por um Hien Shippuu Kyaku de **15 impactos**. O combo usa exatamente o orçamento do arremesso (40 de vida), mantém a vítima presa durante os golpes e só a lança ao ar no final. O input de arremesso do port é **X+Y**; frente/trás + botão forte continua sendo o normal do personagem.
 - A sequência só começa depois que o primeiro golpe acerta. Esquiva, alcance e defesa continuam relevantes. As sequências usam poses de soco e chute de Robert, mantendo as animações iniciais dos golpes.
 - Golpes de projétil disparam uma rajada simultânea com três membros. O primeiro membro que acerta inicia a sequência; os outros são removidos para que a mesma rajada não multiplique o limite de dano.
 - As 20 amostras do grupo de voz 10 foram processadas com tom mais grave e eco. Os IDs e as outras 57 amostras do SND foram preservados.

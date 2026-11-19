@@ -808,6 +808,122 @@ OVERRIDES.update({
     },
 })
 
+# The GTA tribute trio.  Jason and Lucia are complete KOF'98-style packages
+# and the generic matcher wires their normals/specials; the only gap is the
+# second MAX super (state 3150), whose double-QCB both-button input the
+# matcher folds onto the normal version.  John is an ikaruga KOF'98 pack
+# that dispatches everything through a keyctrl helper: every [State -1] only
+# tests Helper(99999),var(N), so the auto extractor saw no command triggers
+# at all.  The helper vars map 1:1 to the pack's numbered command strings
+# (236A/B/C/D, 214A..D, 623A/C, 28B/D and 641236A..D/AC/BD); the rows below
+# reproduce that mapping with the shared SNES token layout.
+OVERRIDES.update({
+    "jason": {
+        "specials": [(89, 3150, "MAX_HOLDUP",
+                      "~D, DB, B, D, DB, B, x+y")],
+        # Hold-Up / MAX Hold-Up are command grabs: the 0-damage HitDef
+        # redirects the attacker (p1stateno) to 3110/3160, which own the
+        # TargetBind/TargetLifeAdd sequence.  Wire those follow-ups into the
+        # engine's imported-grab sid range (103..118, StSpecial) so
+        # StVictimHeld keeps the victim bound while the life rows run.
+        "moves": {103: 3110, 104: 3160},
+        "cfg": {
+            # The grab HitDef declares fall=1, but the source holds the
+            # victim (p2stateno 805) while 3110/3160 chip with TargetLifeAdd.
+            # Letting the port apply the fall launched the victim before
+            # those rows fired, so the whole grab did 1 HP.
+            "hitdef_override": {88: {"fall": 0}, 89: {"fall": 0}},
+            # The jump's 2-pose clip is expanded to 4 synthetic dissolves;
+            # the large air pose then needs a mid-jump CHR page flip.  Keep
+            # the two source poses so the jump has one page transition.
+            "tween_skip_sids": list(range(98)),
+            # The source -50/-150/-270 rows target the 1000-point life
+            # scale; -270 even overflows the signed ActTab byte.  Keep the
+            # 200-point scale: 4 x -15 = 60 (Hold-Up), 4 x -22 = 88 (MAX).
+            "target_life_fix": {3110: -15, 3160: -22},
+            # The blowback's source guard-cancel PowerAdd -1000 is
+            # unconditional in PowTab, so every CD spent a stock and raised
+            # the super flash/dim.  The normal blowback is free.
+            "pow_override": {67: 0},
+            # Strong Cold Hook (sid 51) rises at -9.5 and drifts 2.5 px/tick;
+            # against a narrow opponent (Mai/Chun-Li) it crosses past the
+            # source box at x=16..34.  Add a close/overlap box to the two
+            # active frames so both strengths connect at point-blank too.
+            "air_box_patch_frames": {1100: {
+                3: [(20, -97, 34, -71), (-12, -85, 20, -20)],
+                5: [(16, -85, 30, -59), (-12, -75, 20, -20)],
+            }},
+            "cmd_priority": [
+            "MDFDF_df+xy", "MDFDF_df+x", "MDFDF_df+y",
+            "MAX_HOLDUP", "MDBDB_db+x",
+            "MFDB_db+df+x", "MFDB_db+df+y", "MFD_df+x", "MFD_df+y"]},
+    },
+    "lucia": {
+        "specials": [(89, 3150, "MAX_ATRACO",
+                      "~D, DB, B, D, DB, B, a+b")],
+        # Atraco Total / MAX: same command-grab HitDef redirect as Jason;
+        # use the next two imported-grab sids.
+        "moves": {105: 3110, 106: 3160},
+        "cfg": {
+            # Same held command-grab fall fix as Jason (p2stateno 815).
+            "hitdef_override": {88: {"fall": 0}, 89: {"fall": 0}},
+            "tween_skip_sids": list(range(98)),
+            # 4 x -14 = 56 (Atraco), 5 x -16 = 80 (MAX) on the 200 scale.
+            "target_life_fix": {3110: -14, 3160: -16},
+            # Same unconditional guard-cancel PowerAdd on the blowback.
+            "pow_override": {67: 0},
+            "cmd_priority": [
+            "MDFDF_df+xy", "MDFDF_df+x", "MDFDF_df+y",
+            "MAX_ATRACO", "MDBDB_a+db",
+            "MBDF_a+db+df", "MBDF_b+db+df",
+            "MFD_a+df", "MFD_b+df", "MDB_db+x", "MDB_db+y"]},
+    },
+    "john": {
+        "specials": [
+            (48, 1000, "QCF_X", "~D, DF, F, x"),      # Mega Smash weak
+            (49, 1010, "QCF_Y", "~D, DF, F, y"),      # Mega Smash strong
+            (50, 1100, "QCB_X", "~D, DB, B, x"),      # Flying Attack weak
+            (51, 1110, "QCB_Y", "~D, DB, B, y"),      # Flying Attack strong
+            (52, 1200, "CHARGE_DU_A", "~$D, U, a"),   # Spiral Leg Bomber
+            (53, 1210, "CHARGE_DU_B", "~$D, U, b"),
+            (54, 1300, "QCB_A", "~D, DB, B, a"),      # Overdrive Kick weak
+            (55, 1310, "QCB_B", "~D, DB, B, b"),      # Overdrive Kick strong
+            (56, 1400, "DP_X", "~F, D, DF, x"),       # Flame Raid weak
+            (57, 1410, "DP_Y", "~F, D, DF, y"),       # Flame Raid strong
+            (58, 1250, "AIR_CHARGE_DU_A", "~$D, U, a", 4),
+            (59, 1260, "AIR_CHARGE_DU_B", "~$D, U, b", 4),
+            (85, 3000, "SUP1_X", "~F, B, DB, D, DF, F, x"),
+            (86, 3010, "SUP1_Y", "~F, B, DB, D, DF, F, y"),
+            (87, 3050, "SUP1_MAX", "~F, B, DB, D, DF, F, x+y"),
+            (88, 3100, "SUP2_A", "~F, B, DB, D, DF, F, a"),
+            (89, 3150, "SUP2_MAX", "~F, B, DB, D, DF, F, a+b"),
+        ],
+        "cfg": {"cmd_priority": [
+                    "SUP1_MAX", "SUP1_X", "SUP1_Y",
+                    "SUP2_MAX", "SUP2_A"],
+                # The source Mega Smash fires helper 1020, whose AIR 1021 is
+                # absent; the visible blast is SFF group 1001 (played by AIR
+                # 1020).  Synthesize it as the ProjFx clip so all John shots
+                # (sids 48/49/85-89) draw something instead of an empty
+                # sprite page.
+                "projectile_air": {1021: [(1001, 0, 4),
+                                          (1001, 1, 4),
+                                          (1001, 2, 4)]},
+                "projectile_all_frames": True,
+                "cmd_labels": {
+            48: "MEGA SMASH W", 49: "MEGA SMASH S",
+            50: "FLYING ATTACK W", 51: "FLYING ATTACK S",
+            52: "LEG BOMBER W", 53: "LEG BOMBER S",
+            54: "OVERDRIVE KICK W", 55: "OVERDRIVE KICK S",
+            56: "FLAME RAID W", 57: "FLAME RAID S",
+            85: "MEGA SMASHER", 86: "MEGA SMASHER S",
+            87: "MAX MEGA SMASHER",
+            88: "ATOMIC SMASH", 89: "MAX ATOMIC SMASH",
+            69: "DODGE", 94: "ROLL BACK", 95: "ROLL FWD",
+        }},
+    },
+})
+
 # sel-id order after the existing 15 (0..13 + hidden OmegaRugal=14).
 ROSTER = [
     ("terry",    "Terry-KOF98",    "Terry-KOF98.def",    "TERRY"),
@@ -846,6 +962,9 @@ ROSTER = [
     ("kasumi",   "Kasumi-KOF98",   "Kasumi-KOF98.def",   "KASUMI"),
     ("duckking", "DUCK",           "DUCK.def",           "DUCK KING"),
     ("yuki",     "Yuki-CvSE",      "yuki_kushinada.def", "YUKI"),
+    ("jason",    "Jason",           "Jason.def",          "JASON"),
+    ("john",     "John-KOF98",      "John-KOF98.def",     "JOHN"),
+    ("lucia",    "Lucia",           "Lucia.def",          "LUCIA"),
 ]
 
 BUTTONS = {"x": 0x4000, "y": 0x0040, "a": 0x8000, "b": 0x0080,
@@ -1561,6 +1680,14 @@ def gen_char(key, cdir_name, defname, display):
            "============================\n"]
     used_names = set()
     motion_order = sorted(spec_motion.items())
+    # Commands listed in cfg.cmd_priority are emitted first.  CmdTry scans
+    # the generated table in file order, so a double-QCF super must be
+    # tested before the single-QCF special that matches the same tail.
+    _priority = (ov.get("cfg") or {}).get("cmd_priority") or []
+    if _priority:
+        _rank = {name: i for i, name in enumerate(_priority)}
+        motion_order.sort(key=lambda kv: (_rank.get(kv[1][0], len(_rank)),
+                                          kv[0]))
     if key == "yuri":
         # The super motions end in the same F/DF/B tail as Senkai Kyaku.
         # CmdTry uses table order as priority, so emit the longer motions

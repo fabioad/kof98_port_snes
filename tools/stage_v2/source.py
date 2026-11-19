@@ -50,3 +50,24 @@ def arcade_rgb(world_rgba):
     """RGBA 752x224 -> sRGB 512x224 float 0..255."""
     rgb = srgb_to_lin(world_rgba[..., :3].astype(np.float64))
     return lin_to_srgb(downscale(rgb)).astype(np.float32)
+
+
+def bilateral_lab(lab, radius=3, sigma_s=1.6, sigma_r=0.045, iters=1):
+    """Filtro bilateral em OKLab: apaga ruido de textura (que gasta tiles e
+    cores) mas preserva contornos.  lab (H,W,3) float32."""
+    out = lab.astype(np.float32)
+    H, W, _ = out.shape
+    for _ in range(iters):
+        p = np.pad(out, ((radius, radius), (radius, radius), (0, 0)), mode="edge")
+        acc = np.zeros_like(out)
+        wsum = np.zeros((H, W, 1), np.float32)
+        for dy in range(-radius, radius + 1):
+            for dx in range(-radius, radius + 1):
+                ws = np.exp(-(dx * dx + dy * dy) / (2 * sigma_s ** 2))
+                nb = p[radius + dy:radius + dy + H, radius + dx:radius + dx + W]
+                d2 = ((nb - out) ** 2).sum(-1, keepdims=True)
+                w = ws * np.exp(-d2 / (2 * sigma_r ** 2))
+                acc += w * nb
+                wsum += w
+        out = acc / wsum
+    return out

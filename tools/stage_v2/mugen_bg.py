@@ -271,7 +271,9 @@ class Stage:
                 sp, dx, dy, flip = self._layer_sprite(L, tick)
             if sp is None or sp.pix is None:
                 continue
-            img = self.sprite_rgba(sp, L.mask)
+            # mask=0 pinta o indice 0 (as vezes magenta, marcador de area
+            # nao usada); tratamos como transparente e preenchemos depois.
+            img = self.sprite_rgba(sp, 1)
             if img is None:
                 continue
             if "H" in flip:
@@ -335,7 +337,27 @@ def render_world(st, tick=0, width=752, **kw):
         alt = st.render(tick, cam, width=width, world=True, simulate=False, **kw)
         hole = base[..., 3] == 0
         base[hole] = alt[hole]
-    return base
+    return _fill_rows(base)
+
+
+def _fill_rows(img):
+    """Buracos restantes (nenhuma camada cobre): repete o vizinho valido
+    mais proximo na mesma linha."""
+    a = img[..., 3] == 0
+    if not a.any():
+        return img
+    out = img.copy()
+    H, W = a.shape
+    for y in np.where(a.any(1))[0]:
+        row = a[y]
+        valid = np.where(~row)[0]
+        if not len(valid):
+            continue
+        for x in np.where(row)[0]:
+            j = valid[np.abs(valid - x).argmin()]
+            out[y, x] = img[y, j]
+    out[..., 3] = 255
+    return out
 
 
 def main():

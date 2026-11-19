@@ -1,0 +1,35 @@
+; AI detection for MUGEN 1.0: the CPU "presses" impossible commands.
+; MUGEN 1.0 has no AILevel trigger, so the level is fixed here.
+; Edit the number in [State -3, AI level] (1 = easy ... 9 = brutal).
+[Statedef -3]
+
+[State -3, AI detect]
+type = VarSet
+trigger1 = command = "AI_1"
+trigger2 = command = "AI_2"
+trigger3 = command = "AI_3"
+trigger4 = command = "AI_4"
+trigger5 = command = "AI_5"
+trigger6 = command = "AI_6"
+trigger7 = command = "AI_7"
+trigger8 = command = "AI_8"
+trigger9 = command = "AI_9"
+trigger10 = command = "AI_10"
+trigger11 = command = "AI_11"
+trigger12 = command = "AI_12"
+trigger13 = command = "AI_13"
+trigger14 = command = "AI_14"
+trigger15 = command = "AI_15"
+trigger16 = command = "AI_16"
+trigger17 = command = "AI_17"
+trigger18 = command = "AI_18"
+trigger19 = command = "AI_19"
+trigger20 = command = "AI_20"
+var(59) = 1
+ignorehitpause = 1
+
+[State -3, AI level]
+type = VarSet
+trigger1 = 1
+var(58) = ifelse(var(59), 7, 0)
+ignorehitpause = 1

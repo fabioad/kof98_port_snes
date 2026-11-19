@@ -49,7 +49,7 @@ RT_HUDFULL = 0x5100
 HUDMAP = 0x4700
 BG3MAP = 0x5000               # VRAM word address of the HUD tilemap
 # CHARSET tiles used by the small HUD font (must match tools/build_fight.py).
-CHARSET = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:!?'-/+>,@\""
+CHARSET = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:!?'-/+>,↑\"↓↘→↙←"
 TXT_ATTR = 0x2C
 CUR_TILE = CHARSET.index(">")
 USED_TILE = CHARSET.index("+")
@@ -168,7 +168,6 @@ def test_open_draw_and_close():
         assert text(core, 7, 2, 12) == "COMMAND LIST"
         assert text(core, 7, 29, 2) == "P1"
         assert row_attrs(core, 7, 13)[2] == TXT_ATTR
-        assert text(core, 8, 0, 3) == "NRM"
         assert text(core, 9, 2, 8) == "STAND LP"
         assert text(core, 9, 18, 1) == "Y"
         assert text(core, 9, 29, 3) == "NRM"
@@ -179,8 +178,8 @@ def test_open_draw_and_close():
         assert text(core, 11, 18, 1) == "B"
         assert text(core, 12, 2, 8) == "STAND HK"
         assert text(core, 12, 18, 1) == "A"
-        assert text(core, 13, 18, 5) == "D + Y"
-        assert text(core, 16, 18, 5) == "D + A"
+        assert text(core, 13, 18, 5) == "↓ + Y"
+        assert text(core, 16, 18, 5) == "↓ + A"
         assert text(core, 17, 18, 7) == "AIR + Y"
         assert text(core, 20, 18, 7) == "AIR + A"
         assert text(core, 21, 1, 6) == "UP/DN "
@@ -339,8 +338,8 @@ def test_system_moves_show_shoulder_buttons():
         assert command_for("BLOWBACK") == "R", rows
         assert command_for("TAUNT") == "SELECT", rows
         assert command_for("DODGE") == "L + DIR", rows
-        assert command_for("ROLL BACK") == "L + BACK", rows
-        assert command_for("ROLL FWD") == "L + FWD", rows
+        assert command_for("ROLL BACK") == "L + ←", rows
+        assert command_for("ROLL FWD") == "L + →", rows
         print("PASS command list: L/R shoulder moves show physical buttons")
     finally:
         core.close()

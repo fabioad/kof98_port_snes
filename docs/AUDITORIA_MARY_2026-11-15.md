@@ -219,9 +219,19 @@ movimento. `POST_CAL_ACT_OVERRIDE` reescreve como VelSet escalonado (op5):
 - **Dynamite**: a fase 3111 (queda com -35 e 17 cels) não entrou; o dano foi
   pago no agarrão aéreo (118) e usa o clipe de 2 cels do 3110. A soma ficou 16
   (fonte: 87/1000 de vida ≈ 17).
-- Defeito visual relatado (vítima metade no teto, metade abaixo do chão):
-  **não reproduzido** de novo, inclusive no erguimento do Super Dunk (88 px)
-  e no agarrão aéreo do Dynamite.
-  Suspeita: `DrawCellsPlain` em `src/engine/fast_paths.asm` força Y negativo a
-  `$F0`. Precisa do golpe, oponente e fase do usuário.
+- **Vítima baixa/abaixo da tela no arremesso especial (Geese).** Reproduzido:
+  os arremessos especiais entregam a vítima ao slot 77 via `TargetState`; o
+  motor deixava a velocidade de voo para o clipe 816 **do próprio personagem**.
+  Kyo/Iori têm `VelSet y=-6.5` e sobem; o 816 do Geese tem `VelSet y=2` e cai
+  reto, ficando no chão. Correção em `AO_tstat`: vítima ainda no ar recebe o
+  arco compartilhado 821 (`SlamBounceFar`, -5.28 px/tick e 3.7 px/tick para
+  longe), com `STIME=128` para bloquear o VelSet específico do personagem;
+  soltura no chão continua caindo/knockdown. Medido: Geese, Kyo e Iori chegam
+  aos mesmos 85 px e caem juntos (`tools/test_mary_throw_height_headless.py`).
+  A pose de **segurado** continua sendo a genérica do personagem (Geese usa o
+  anim 47, não a 3820 específica da Mary); se o hold em si ainda parecer baixo,
+  é a pose, não a física do voo.
+- Suspeita separada, ainda não confirmada: `DrawCellsPlain` em
+  `src/engine/fast_paths.asm` força Y negativo a `$F0`; isso só afetaria
+  células acima do topo da tela, não o voo baixo acima.
 

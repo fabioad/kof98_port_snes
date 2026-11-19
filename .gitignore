@@ -90,6 +90,16 @@ music/ffg_energy/ouvir.html
 # Vídeos de referência/capturas soltos na raiz (não fazem parte do jogo)
 /*.mp4
 
+# Prévias/folhas de movimento dos stages v2: artefatos de análise, não entram
+# no build (os PNGs, anim/*.json e anim/*.pool.chr são versionados).
+/assets/stages/stages_v2/preview/
+/assets/stages/stages_v2/movers/
+/assets/stages/stages_v2/anim/*.movers.json
+
+# Backups locais dos pacotes Jason/Lucia (o pacote ativo fica versionado)
+/assets/characters/**/backup_before_*/
+/assets/characters/**/*.bak_before_*
+
 # Fonte antiga da Sakura usada no estudo do stand (backup local)
 /assets/characters/_excluded/Sakura-KOF98_old/
 
