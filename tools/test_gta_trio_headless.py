@@ -93,20 +93,29 @@ def run_move(select, char, sequence, buttons, power=0, max_mode=0):
 
 
 def voice_stream(select, char):
-    """Sample the streamed-voice counter during a normal attack."""
-    core = start(select, char)
-    try:
-        core.ram[0x1090] = 0
-        core.ram[0x1091] = 0
-        counters = []
-        for tick in range(45):
-            core.buttons[0] = {Y} if tick < 2 else set()
-            core.step()
-            if core.ram[VOICE_BUSY] or core.word(VOICE_LEFT):
-                counters.append(core.word(VOICE_LEFT))
-        return counters
-    finally:
-        core.close()
+    """Sample the streamed-voice counter during a normal attack.
+
+    The trio's attack voices are gated by `random % 2`, so a single try hits
+    about half the time.  Retry at shifted RNG phases and report the first
+    attempt that streamed (or the last empty one)."""
+    counters = []
+    for phase in (0, 7, 14, 21, 28, 35):
+        core = start(select, char)
+        try:
+            core.ram[0x1090] = 0
+            core.ram[0x1091] = 0
+            core.step(phase)
+            counters = []
+            for tick in range(45):
+                core.buttons[0] = {Y} if tick < 2 else set()
+                core.step()
+                if core.ram[VOICE_BUSY] or core.word(VOICE_LEFT):
+                    counters.append(core.word(VOICE_LEFT))
+        finally:
+            core.close()
+        if len(counters) >= 4 and counters[0] > counters[-1]:
+            break
+    return counters
 
 
 def main():

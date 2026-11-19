@@ -1581,7 +1581,7 @@ SfxUiWin:
 SfxUiUse:
     and #$00FF.w
     tay
-    lda #$00E8.w                        ; volume 14, centre pan
+    lda #$00F8.w                        ; volume 15, centre pan
     bra SfxEffect
 SfxMap:
     tya
@@ -23375,7 +23375,7 @@ SongModTab: .db 11, 12, 13, 14, 15, 16, 17, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 ; swing/hit sources plus the FIGHT! and K.O. announcers only; slots 3/4 are
 ; reserved for the winner/select voices on UI modules.
 FightFxSrc: .db 0, 1, 2, 5, 6, 4, 13, 12 ; combat 0-4 + menu select/move/back
-UiSrc:      .db 4, 13, 12, 3            ; select, move, back, winner voice
+UiSrc:      .db 16, 17, 18, 3           ; select, move, back (6 kHz), winner voice
 .IFDEF PVSNESLIB
 .INCLUDE "gen_audio/sbkeep.inc"
 .ENDIF
