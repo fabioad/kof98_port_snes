@@ -9448,6 +9448,11 @@ def build_command_list(name, cfg, button_rows, rules, cmddefs, max_sids=()):
             }
             label = fallback.get(sid, CMD_CATEGORIES[cat][1])
         label = cfg.get("cmd_labels", {}).get(sid, label)
+        # CPU-only helper commands ("AI Zoning", "AI Max Super", ...) are
+        # duplicates of real moves for the bot; keep them out of the player
+        # command list.
+        if (label or "").strip().upper().startswith("AI "):
+            continue
         rows[sid] = {
             "sid": sid, "cat": cat,
             "name": _sanitize_hud_text(label, 16),

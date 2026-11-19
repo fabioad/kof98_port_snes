@@ -51,25 +51,25 @@ channel = -1
 type = TargetBind
 trigger1 = AnimElemNo(0) >= 1 && AnimElemNo(0) <= 1
 time = 1
-pos = 24, 0
+pos = 26, 0
 
 [State 801, bind]
 type = TargetBind
 trigger1 = AnimElemNo(0) >= 2 && AnimElemNo(0) <= 2
 time = 1
-pos = 8, -54
+pos = 9, -59
 
 [State 801, bind]
 type = TargetBind
 trigger1 = AnimElemNo(0) >= 3 && AnimElemNo(0) <= 6
 time = 1
-pos = -14, -66
+pos = -15, -73
 
 [State 801, bind]
 type = TargetBind
 trigger1 = AnimElemNo(0) >= 7 && AnimElemNo(0) <= 7
 time = 1
-pos = -30, -40
+pos = -33, -44
 
 [State 801, TargetFacing]
 type = TargetFacing
@@ -162,7 +162,7 @@ channel = -1
 type = TargetBind
 trigger1 = AnimElemNo(0) >= 1 && AnimElemNo(0) <= 8
 time = 1
-pos = 26, 0
+pos = 29, 0
 
 [State 811, knee]
 type = TargetLifeAdd
@@ -179,7 +179,7 @@ channel = -1
 type = Explod
 trigger1 = AnimElem = 4
 anim = 6011
-pos = 34, -60
+pos = 37, -66
 postype = p1
 removetime = -2
 sprpriority = 5
@@ -205,7 +205,7 @@ channel = -1
 type = Explod
 trigger1 = AnimElem = 7
 anim = 6011
-pos = 34, -60
+pos = 37, -66
 postype = p1
 removetime = -2
 sprpriority = 5

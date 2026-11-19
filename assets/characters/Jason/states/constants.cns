@@ -17,16 +17,16 @@ FloatPersistIndex = 40
 [Size]
 xscale = 1
 yscale = 1
-ground.back = 15
-ground.front = 16
-air.back = 12
-air.front = 12
-height = 60
+ground.back = 16
+ground.front = 18
+air.back = 13
+air.front = 13
+height = 66
 attack.dist = 160
 proj.attack.dist = 90
 proj.doscale = 0
-head.pos = -6, -94
-mid.pos = 0, -60
+head.pos = -7, -103
+mid.pos = 0, -66
 shadowoffset = 0
 draw.offset = 0, 0
 
