@@ -167,7 +167,9 @@ def attempt(core, base, info, rule, distance=24, hold=2, keep_direction=True,
                 core.put(P1 + 6, 0)
             held_seen |= victim in (76, 100, 102)
             hp = core.word(P2 + 16)
-            healed |= hp > last_hp
+            # A KO ends the round and StartFight refills both bars; an
+            # increase from 0 is that reset, not a healing move.
+            healed |= hp > last_hp and last_hp > 0
             last_hp = hp
             min_hp = min(min_hp, hp)
             if entered:
@@ -399,7 +401,9 @@ def confirmation_setups(case, key=None):
                 yield dict(power=power, hold=3, distance=40, keep_direction=True,
                            combine_finish=True, input_game_ticks=game_ticks)
     elif case["status"] == "no_impact_review":
-        for distance in (32, 48):
+        # Long-range lunges (Mary's Spinfall only has Clsn1 on the stomp
+        # frame, ~100 px into the dive) whiff at the close default range.
+        for distance in (32, 48, 90, 130):
             yield dict(hold=3, distance=distance, keep_direction=False)
         if not case["rule"]["row"][3] & 3 or case["meta"]["damage"] > 0:
             yield dict(hold=3, distance=24, keep_direction=False, opponent_air=True)

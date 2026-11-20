@@ -98,13 +98,17 @@ def main():
             fails.append(f"ground: drops={drops} down={down} guard={guard}")
 
         # Block: guard stance, chip only, no knockdown, meter still paid.
-        start(core, select)
+        # Closer than the ground case: a victim holding back walks out of the
+        # 80 px pillar during the startup, which is correct gameplay.
+        start(core, select, p2x=100)
         loss, drops, down, guard, _ = collect(core, hold=(RIGHT,))
         if not guard or down or not (0 < loss <= 4):
             fails.append(
                 f"block: guard={guard} down={down} loss={loss}")
-        if core.word(F_POWER) != 2000:
-            fails.append(f"block meter={core.word(F_POWER)}, wanted 2000")
+        # The 1000-point cost is paid; the source's state also adds 100 and
+        # the guard contact gives a little meter back, so allow that band.
+        if not (2000 <= core.word(F_POWER) <= 2100):
+            fails.append(f"block meter={core.word(F_POWER)}, wanted ~2000")
 
         # Air: the tall pillar must catch a jump (KOF98 anti-air).
         start(core, select)

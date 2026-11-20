@@ -5155,6 +5155,25 @@ if "geese" in CHARS:
     # so the move showed only the startup and returned to stand.  Wire both
     # and let them recover to stand at the end of the attack clip.
     _gcfg = CHARS["geese"]
+    # Raging Storm (85/86): in the source the damage and the Clsn1 live in
+    # the invisible helper 3005, spawned at element 9 together with the two
+    # Explods that draw the pillar.  The port carried it as a stationary
+    # projectile in the shared two-slot spark pool, which the Explods reuse
+    # on that same frame; the shot ended up with damage 0 and never hit.
+    # Compile the helper's HitDef onto the fighter (the native engine has no
+    # helpers) and paint its wide, tall Clsn1 on the frames where the pillar
+    # appears.  guard=M, fall=1 = sweep-style knockdown.
+    _gee.setdefault("atk_box_add", {}).update({
+        3000: (8, 10, (-80, -156, 79, -1)),
+        3010: (8, 10, (-80, -156, 79, -1)),
+    })
+    _gee["projs_drop"] = [85, 86]
+    _gee.setdefault("hitdef_from_state", {}).update({
+        85: (3005, {"active": 9, "damage": 38, "gdamage": 2, "fall": 1,
+                    "guard": 2, "gvy": -1664}),
+        86: (3005, {"active": 9, "damage": 38, "gdamage": 2, "fall": 1,
+                    "guard": 2, "gvy": -1664}),
+    })
     _gcfg["moves"].update({55: 1301, 56: 1311})
     _gcfg["anims"].update({55: 1302, 56: 1312})
     _gcfg.setdefault("extra_trans", []).extend([
@@ -11800,6 +11819,11 @@ def build_char(name, cfg, global_pal=None):
     # 4-tuples match the cfg["projs"] format.
     for sid, vals in POST_CAL_PROJS_FULL.get(name, {}).items():
         projs[sid] = tuple(vals)
+    # Rows removed by the port after every source/profile merge.  Geese's
+    # Raging Storm now uses the native HitDef from helper 3005, so it must
+    # not also spawn the old stationary projectile.
+    for _sid in cfg.get("projs_drop", ()):
+        projs.pop(int(_sid), None)
 
     repair_invisible_move_anims(name, cfg, anims, air)
     # Team member entrance: state 43 is not otherwise dispatched, so reuse
@@ -11828,6 +11852,18 @@ def build_char(name, cfg, global_pal=None):
         if _add:
             frames = [(g, n, x, y, t, flip, atk + [_add], hurt)
                       for g, n, x, y, t, flip, atk, hurt in frames]
+        # Same, restricted to a 0-based frame range.  Used when the source
+        # hitbox lives in an invisible helper (Geese's Raging Storm): the
+        # player's own animation has no Clsn1, so the active window is
+        # painted onto the frames where the source helper starts attacking.
+        _rng = cfg.get("atk_box_add", {}).get(anum)
+        if _rng:
+            _f0, _f1, _box = _rng
+            frames = [(g, n, x, y, t, flip,
+                       (list(atk or []) + [_box]) if _f0 <= i <= _f1 else atk,
+                       hurt)
+                      for i, (g, n, x, y, t, flip, atk, hurt)
+                      in enumerate(frames)]
         if sid == 97:
             frames, loopstart = charge_frames(name, air, anum)
         frames = scale_air_frames(frames, coord_scale)

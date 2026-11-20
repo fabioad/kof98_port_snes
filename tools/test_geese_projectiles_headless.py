@@ -51,10 +51,12 @@ def qcf(core, button):
 
 
 def qcfx2(core, button):
+    # Two ticks per direction: one tick is too fast for the command ring's
+    # 6-tick window and the DP matcher steals the sequence.
     for _ in range(2):
         for direction in ({DOWN}, {DOWN, RIGHT}, {RIGHT}):
             core.buttons[0] = set(direction)
-            core.step(1)
+            core.step(2)
     press(core, {button}, 2)
 
 
@@ -125,25 +127,10 @@ def main():
         assert hp1 < hp0, f"Reppuken did not connect (hp {hp0}->{hp1})"
         print(f"OK Geese Reppuken: vx=$0300, hp {hp0}->{hp1}")
 
-        # Raging Storm spawn: keep the victim far so the stationary row stays
-        # alive long enough to inspect it.
-        core.load(baseline)
-        core.put(F_X + FP2, 200 << 8)
-        core.step(4)
-        qcfx2(core, STRONG_P)
-        wait_state(core, S_RAGING_STRONG, "Raging Storm state", limit=300)
-        fired = None
-        for _ in range(40):
-            fired = shot(core)
-            if fired:
-                break
-            core.step()
-        assert fired, "Raging Storm did not spawn a stationary projectile"
-        _slot, _x, _y, vx, _anim, _attr = fired
-        assert vx == 0, f"Raging Storm vx={vx:#06x}, wanted stationary"
-        print("OK Geese Raging Storm: stationary shot spawned")
-
-        # Raging Storm hit: put the victim inside the stationary shot's reach.
+        # Raging Storm: the source's HitDef lives in the invisible helper
+        # 3005, so the port compiles it onto the fighter (sid 86).  It must
+        # deal one 38-damage knockdown and must not spawn a projectile --
+        # the two Explods that draw the pillar use the same two spark slots.
         core.load(baseline)
         core.put(F_X + FP2, 90 << 8)
         core.put(HP1 + FP2, 336)
@@ -151,13 +138,16 @@ def main():
         qcfx2(core, STRONG_P)
         wait_state(core, S_RAGING_STRONG, "Raging Storm state", limit=300)
         hp0 = core.word(HP1 + FP2)
+        down = False
         for _ in range(90):
-            if core.word(HP1 + FP2) < hp0:
+            down |= core.ram[F_STATE + FP2] == 10
+            if core.word(HP1 + FP2) <= hp0 - 38:
                 break
             core.step()
         hp1 = core.word(HP1 + FP2)
-        assert hp1 < hp0, f"Raging Storm did not connect (hp {hp0}->{hp1})"
-        print(f"OK Geese Raging Storm: hp {hp0}->{hp1}")
+        assert hp0 - hp1 == 38, f"Raging Storm hp {hp0}->{hp1}, wanted 38"
+        assert down, "Raging Storm did not knock the victim down"
+        print(f"OK Geese Raging Storm: native hit {hp0}->{hp1}, knockdown")
 
         # Air Shippuu Ken: the per-shot torso flag must keep the shot at a
         # fixed upper-torso height instead of the character's ground row.
