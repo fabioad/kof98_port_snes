@@ -407,7 +407,14 @@ def confirmation_setups(case, key=None):
             yield dict(hold=3, distance=distance, keep_direction=False)
         if not case["rule"]["row"][3] & 3 or case["meta"]["damage"] > 0:
             yield dict(hold=3, distance=24, keep_direction=False, opponent_air=True)
-            yield dict(hold=3, distance=24, keep_direction=False, air_height=28)
+            # Ryo's air Kohou (2000/2010) releases its shot on element 4 and
+            # needs a high jump; a 28 px hop lands before the release.
+            for air_height in (28, 60):
+                # hold_air keeps the fighter at that height through the
+                # motion; otherwise the -6 px/tick descent eats the jump
+                # before an air special reaches its release element.
+                yield dict(hold=3, distance=24, keep_direction=False,
+                           air_height=air_height, hold_air=True)
 
 
 def sha256(path):

@@ -114,6 +114,9 @@
 .DEFINE HIGHJUMPVXB $03D4               ; 1.5 * jump.back (rounded)
 .DEFINE GRAV        $0071               ;  0.44 px/tick^2 (kfm yaccel)
 .DEFINE MAX_AIR_Y   112                 ; keep sprites inside the 224-line field
+.DEFINE MAX_LAUNCH_Y 150                ; hit/juggle ceiling: F_Y is 8.8 and
+                                        ;   wraps at 256 px, teleporting the
+                                        ;   victim to the floor
 .DEFINE VBOUNCEGRAV $005A               ;  0.35 px/tick^2 (state 1028)
 .DEFINE KOVY        $FB00               ; -5.0 px/tick: minimum KO upward launch
 .DEFINE KOVXMAX     $0400               ;  4.0 px/tick: cap on KO pushback
@@ -10584,12 +10587,35 @@ PH_air:
     clc
     adc #GRAV.w
     sta FP+F_VY,x                         ; vy += yaccel (screen-space: + = down)
+    ; F_Y is an unsigned 8.8 height, but F_VY is a signed screen velocity
+    ; (+ = down).  A plain bpl/borrow test misreads heights above 127 px as
+    ; negative, and 250 px + 20 px/tick overflows the 16-bit word; both sent
+    ; a launched victim back to the floor ("appears at the bottom").
     lda FP+F_Y,x
+    cmp #(MAX_LAUNCH_Y<<8).w
+    bcc +
+    lda #(MAX_LAUNCH_Y<<8).w
+    sta FP+F_Y,x
++   lda FP+F_VY,x
+    bmi PHY_rise
+    lda FP+F_Y,x                        ; falling: y -= vy
     sec
-    sbc FP+F_VY,x                         ; F_Y is height: subtract screen vel
-    bpl +
-    lda #0                              ; clamp at the floor; overshooting to
-+   sta FP+F_Y,x                        ;   $FFFF would keep us airborne forever
+    sbc FP+F_VY,x
+    bcs PHY_cap                         ; no borrow: still above the floor
+    lda #0
+    bra PHY_cap
+PHY_rise:
+    lda FP+F_VY,x                       ; rising: y += -vy
+    eor #$FFFF.w
+    inc a
+    clc
+    adc FP+F_Y,x
+PHY_cap:
+    cmp #(MAX_LAUNCH_Y<<8).w
+    bcc PHY_store
+    lda #(MAX_LAUNCH_Y<<8).w
+PHY_store:
+    sta FP+F_Y,x
 PH_x:
     ldx fofs
     lda FP+F_VX,x
