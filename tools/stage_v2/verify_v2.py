@@ -62,12 +62,9 @@ def draw(img, ty, tx, px, pal, word):
 def main():
     out = sys.argv[1]
     ok = True
-    if bs.STAGE_YOFS:
-        print('AVISO: build_stages.STAGE_YOFS =', bs.STAGE_YOFS,
-              '-> a arte v2 ja esta alinhada ao chao; usar 0 ao integrar (verificando com 0).')
-        bs.STAGE_YOFS = {}
     for png in sorted(glob.glob(os.path.join(out, "KOF98-*.png"))):
         name = os.path.basename(png)[:-4]
+        yofs = bs.STAGE_YOFS.get(name, 0)
         chrb, mapb, palb, _ = bs.emit_stage(png)
         ntiles = len(chrb) // 32
         pal = pal_rgb(palb)
@@ -81,7 +78,8 @@ def main():
         img = np.zeros((224, 512, 3), np.int64)
         for ty in range(28):
             for tx in range(64):
-                w = int(grid[ty, tx])
+                # emit_stage stores art row ty at map row ty+yofs.
+                w = int(grid[ty + yofs, tx])
                 draw(img, ty, tx, decode_tile(chrb, w & 0x3FF), pal, w)
         diff = int((img != ref).any(-1).sum())
         # clips

@@ -170,9 +170,13 @@ Total de tiles de pool somados: 1577. Cada cenário usa no máximo 160.
   (`StageAnimRoom`), escreve só as células cuja palavra mudou e retoma no
   quadro seguinte. Em troca, os clips maiores podem animar um pouco mais
   devagar que o arcade; os pequenos continuam no ritmo original.
-* **China:** a v2 já está alinhada ao convés; `STAGE_YOFS` ficou vazio para
-  não deslocar a arte 32 px. O balanço do barco (±3 px) e as camadas de fundo
-  em rolagem contínua não foram portados (exigiriam BG2 ou scroll por cenário).
+* **China:** a v2 está alinhada ao convés, mas a borda frontal do convés
+  (BG 25) vem do arcade em `layerno 1`, na frente dos lutadores. O port usa um
+  único BG1 atrás dos OBJ, então essa borda caía atrás das canelas e os
+  lutadores pareciam estar fora do barco. `STAGE_YOFS` desloca a arte 16 px
+  (2 linhas) para deixar a borda logo abaixo dos pés, preservando a arte v2.
+  O balanço do barco (±3 px) e as camadas de fundo em rolagem contínua não
+  foram portados (exigiriam BG2 ou scroll por cenário).
 * **Elementos em deslocamento** (aves, gaivotas, gato, vaga-lumes) não viraram
   tiles; as poses estão exportadas para uso futuro como sprites.
 * **O orçamento de 512 tiles continua sendo o maior limite de qualidade**

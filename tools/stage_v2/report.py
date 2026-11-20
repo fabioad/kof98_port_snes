@@ -143,8 +143,11 @@ Total de tiles de pool somados: {tot_pool}. Cada cenário usa no máximo 160.
   `build_anims()`. Os clips v2 precisam de um pool **por cenário** carregado
   na troca de cenário e de um relógio de ticks por grupo. As palavras de
   tilemap do JSON são relativas ao início do pool (somar 704).
-* **China:** `STAGE_YOFS` em `build_stages.py` desloca a arte da China 32 px;
-  a v2 já está alinhada ao convés, então esse valor deveria ser 0 para ela.
+* **China:** `STAGE_YOFS` em `build_stages.py` desloca a arte da China 16 px.
+  O arcade desenha a borda frontal do convés (BG 25) em `layerno 1`, na frente
+  dos lutadores; como o port usa um único BG1 atrás dos OBJ, essa borda caía
+  atrás das canelas e os lutadores pareciam estar fora do barco. O deslocamento
+  coloca a borda logo abaixo da linha dos pés sem reverter a arte v2.
   O balanço do barco (±3 px) e as camadas de fundo em rolagem contínua não
   foram portados (exigiriam BG2 ou scroll por cenário).
 * **Elementos em deslocamento** (aves, gaivotas, gato, vaga-lumes) não viraram

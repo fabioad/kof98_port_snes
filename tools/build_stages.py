@@ -51,13 +51,19 @@ STAGE_BG_PALETTE = 2                # BG3 HUD uses CGRAM colours 12-31
 STAGE_NPAL = 3                      # StagePick uploads BG palettes 2-4
 STAGE_NCOL = 15                     # 15 art colours + transparent per group
 # Per-stage vertical placement inside the 64x32 BG1 map, in 8 px rows.  A
-# positive value moves the stage art down so its floor meets the engine's
-# fixed GROUND_Y (the fighters themselves are not moved).  China's boat deck
-# sat ~32 px above the fighters, so they looked like they stood on the outer
-# hull.  The map is 32 rows tall and the art uses 28, so up to 4 rows fit.
-# v2 already aligns the arcade floor to GROUND_Y; the old China 32 px
-# offset would push the boat deck below the fighters.
-STAGE_YOFS = {}
+# positive value moves the stage art down (the fighters themselves are not
+# moved).  The map is 32 rows tall and the art uses 28, so up to 4 rows fit;
+# the duplicated top band sits behind the HUD.
+# v2 already aligns the arcade floor to GROUND_Y.  China is the exception:
+# the arcade draws BG 25 (the boat's front deck lip) on layerno 1, *in front*
+# of the fighters.  The SNES port flattens every layer into BG1, which always
+# renders behind the OBJ fighters, so the lip crossed behind their shins and
+# they looked like they stood on the outer hull ("outside the boat").
+# Two rows (16 px) put the lip just below GROUND_Y: the fighters now stand on
+# the deck behind the front edge without reverting the v2 art.
+STAGE_YOFS = {
+    "KOF98-ChinaStage": 2,          # 16 px: front deck lip under the feet
+}
 # file banks >= 64 map into the CPU $00-$3D:$8000 windows under ExHiROM;
 # 45-49 stay free for the SNESMOD soundbank (it wants banks < 64).
 FREE_BANKS = [65, 66, 67, 68, 69, 90, 91, 92, 93, 94]
@@ -226,6 +232,7 @@ def build_anims(stage_names):
         if not clips:
             stage_lists.append(0)
             continue
+        yofs = STAGE_YOFS.get(sname, 0)
         ptrs = []
         body = []
         for c in clips:
@@ -256,7 +263,7 @@ def build_anims(stage_names):
                 flat = []
                 for ci in chunk:
                     ty, tx = cells[ci]
-                    flat.append((tx // 32) * 1024 + ty * 32 + tx % 32)
+                    flat.append((tx // 32) * 1024 + (ty + yofs) * 32 + tx % 32)
                     for state in order:
                         w = int(state_words[state][ci])
                         tile = (w & 0x03FF) + DYN_BASE
