@@ -167,11 +167,15 @@ PMT_last:
     beq +
     lda #0
     bra ++
-+   lda.w SPARKS+SPK_VX,x
-    bmi +
-    lda #$0400.w
++   ; SPK_VX is zeroed by ProjPinIfMultiFar once the shot latches onto the
+    ; victim, so the final launch direction comes from SPK_ATTR bit4 (the
+    ; firing facing).  Otherwise a right-side caster pulled the victim in.
+    lda.w SPARKS+SPK_ATTR,x
+    and #$0010.w
+    beq +
+    lda #$FC00.w
     bra ++
-+   lda #$FC00.w
++   lda #$0400.w
 ++  sta scr5
     phx                                 ; keep the slot for PH_fx
     ldx fofs

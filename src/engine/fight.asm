@@ -14310,10 +14310,11 @@ PH_guard:
     sta scr0                            ; impact position
     lda.w SPARKS+2,x
     sta scr1
-    lda.w SPARKS+SPK_VX,x
-    sta scr5                            ; pushback direction
+    lda.w SPARKS+SPK_ATTR,x
+    and #$0010.w
+    sta scr5                            ; bit4 = shot was fired facing left
     lda.w SPARKS+SPK_AY,x
-    and #$00FF.w
+    and #$00FF.w                      ; high byte is a sound ID, not damage
     sta scr4                            ; full damage
     lda.w SPARKS+SPK_ATTR,x
     and #$0040.w                        ; bit6 = owner is P2
@@ -14367,13 +14368,14 @@ PH_gdmg_done:
     lda #31.w
     ldx scr2
     jsr AddPower
-    ; pushback away along the shot's heading, like a light hit
-    lda #6<<8.w
-    bit scr5
-    bpl +
-    eor #$FFFF.w
-    inc a
-+   ldx scr6
+    ; pushback away along the shot's heading, like a light hit.  scr5 holds
+    ; ATTR bit4 (firing facing), not VX: a pinned shot has VX zeroed.
+    lda scr5
+    beq +
+    lda #((-6)<<8)&$FFFF.w
+    bra ++
++   lda #6<<8.w
+++  ldx scr6
     sta FP+F_VX,x
     ; guard-hit stun + pushback window (EnterState zeroes both)
     ldx scr6
@@ -19937,12 +19939,17 @@ ProjPushFar:
     lda.w SPARKS+SPK_GRD,x
     and #$0001.w
     bne PPH_zero
-    lda #6<<8.w
-    bit.w SPARKS+SPK_VX,x
-    bpl +
-    eor #$FFFF.w
-    inc a
-+   sta FP+F_VX,y
+    ; ProjPinIfMultiFar zeroes a pinned super's VX, so the sign of VX no
+    ; longer says which way the shot was fired.  Use SPK_ATTR bit4 (set at
+    ; spawn from the caster's facing, toggled on reflect): a shot fired by a
+    ; left-facing fighter must push the victim left, away from the caster.
+    lda.w SPARKS+SPK_ATTR,x
+    and #$0010.w
+    beq +
+    lda #((-6)<<8)&$FFFF.w
+    bra ++
++   lda #6<<8.w
+++  sta FP+F_VX,y
     rts
 PPH_zero:
     lda #0
