@@ -7651,10 +7651,10 @@ value = s12,3
 
 [State 1400, エフェクト表示]
 type = Explod
-trigger1 = AnimElem = 7
+trigger1 = AnimElem = 6
 anim = 6040
-pos = 20, 0
-sprpriority = -1
+pos = 24, -12
+sprpriority = 3
 shadow = 0
 ownpal = 1
 
@@ -7727,10 +7727,10 @@ value = s12,3
 
 [State 1410, エフェクト表示]
 type = Explod
-trigger1 = AnimElem = 7
+trigger1 = AnimElem = 6
 anim = 6040
-pos = 20, 0
-sprpriority = -1
+pos = 24, -12
+sprpriority = 3
 shadow = 0
 ownpal = 1
 

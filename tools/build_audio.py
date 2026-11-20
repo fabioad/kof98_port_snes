@@ -56,6 +56,10 @@ SAMPLES = [
     ("SFX_HIT_HEAVY", "hit heavy", "assets/characters/Kyo-KOF98/Kyo.snd", (1, 3), 0x70),
     ("SFX_HIT_MAX", "hit max", "assets/characters/Kyo-KOF98/Kyo.snd", (1, 4), 0x70),
     ("SFX_WALL", "wall impact", "assets/characters/Kyo-KOF98/Kyo.snd", (1, 4), 0x68),
+    # Daimon's Jiraishin ground rumble (s6,1: 0.64 s, 78% of its energy below
+    # 300 Hz).  Shared so John's Flame Raid can play the same tremor on the
+    # ground punch while keeping his own callout.
+    ("SFX_QUAKE", "ground quake", "assets/characters/Daimon-KOF98/Daimon.snd", (6, 1), 0x70),
 ]
 
 

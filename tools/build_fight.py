@@ -34,6 +34,7 @@ from calibration.projectiles import (PROJECTILE_ACTIONS,
                                      PROJECTILE_ZOOM_BY_CHAR,
                                      PROJECTILE_RESIZE,
                                      PROJECTILE_CALIBRATION,
+                                     PROJECTILE_KNOCKDOWN,
                                      PROJECTILE_BALLISTIC,
                                      PROJECTILE_RECOVERY,
                                      PROJECTILE_RECOVERY_TICKS,
@@ -6992,12 +6993,21 @@ if "john" in CHARS:
         107: {"damage": 4, "gdamage": 1, "fall": 0,
               "gvx": 0, "gvy": 0, "avx": 0, "avy": 0},
     })
-    # Flame Raid (56/57) is a stationary flame burst.  The source helper
-    # spawns an invisible projectile whose damage/guard lives in 1402; the
-    # visible flame is Explod 6040, so keep the hitbox invisible.
+    # Flame Raid (56/57) is a floor flame.  It used to be a stationary burst
+    # 64 px ahead; fire it as a travelling ground wave instead so it reaches
+    # the opponent anywhere on screen (8 px/tick weak, 10 strong; the 90-tick
+    # shot lifetime covers the whole stage).  ProjTab damage bit7 marks the
+    # trip knockdown handled by ProjVictimDownFar.
     POST_CAL_PROJS_FULL.setdefault("john", {}).update({
-        56: (0x0000, 14, 4, 0x0A),
-        57: (0x0000, 20, 4, 0x0A),
+        56: (0x0800, 14, 4, 0x0A),
+        57: (0x0A00, 20, 4, 0x0A),
+    })
+    # Ground tremor: same sample Daimon's Jiraishin uses (SFX_QUAKE, id 21
+    # in tools/build_audio.py).  Fired on the punch frame, alongside the
+    # state's own PlaySnd callout, so John's voice is untouched.
+    _late_act("john", {
+        1400: [(6, 7, 21, 0)],
+        1410: [(6, 7, 21, 0)],
     })
 
 # Runtime SFX ids -- kept in sync with the SAMPLES order in
@@ -13637,6 +13647,10 @@ def build_char(name, cfg, global_pal=None):
     inc.append(f"{name}ProjTab:\n")
     for sid in range(nsid):
         vx, dmg, _anim, guard = projs.get(sid, (0, 0, 0, 0))
+        # Tripping shots mark the damage byte with bit7 (damage is never
+        # >= 128).  ProjHit reads it to apply the sweep/trip knockdown.
+        if sid in PROJECTILE_KNOCKDOWN.get(name, ()):
+            dmg |= 0x80
         # Presence, not velocity, decides whether a shot exists: stationary
         # supers (Geese's Raging Storm) still need their launch HitDef sound.
         hit_sfx = cns_hitsnds.get(move_ids.get(sid, -1), 5) \
@@ -14349,6 +14363,13 @@ EXPLODS = {
     "MagicBurst": ("assets/characters/Athena-98/Athena-98.sff", 5,
                    [(7000, 0, 10)],
                    0x2A),
+    # John's Flame Raid ground burst (Explod 6040): the 128 px floor flame
+    # compressed to the 16-cell explod page.  The projectile itself is
+    # invisible, so this is the punch's visual cue at his feet; the magic
+    # palette (attr 0x2A) keeps its fire colours in the shared spark palette.
+    "JohnFlame": ("assets/characters/John-KOF98/John.sff", 4,
+                  [(6040, 5, 14)],
+                  0x34),
     "Bottle": ("assets/characters/chin-kofa/Chin-KOFM.sff", 4,
                [(1005, 0, 10)],
                0x3E),
@@ -14377,8 +14398,13 @@ EXPLOD_ANIM = {191: "WoodA", 192: "WoodA",
 # the victim's feet as a pale square with a transparent ring.
 EXPLOD_SKIP_STATES = {
     "athena": {1020, 1030},
+    # John's throw (state 820) also paints Explod 6040; only the Flame Raid
+    # punch (1400/1410) should show the ground burst.
+    "john": {820},
 }
 EXPLOD_ANIM_BY_CHAR = {
+    # John's Flame Raid fire (CNS anim 6040).
+    "john": {6040: "JohnFlame"},
     "geese": {3001: "FlameRise", 3002: "FlameTop"},
     # Category E: reuse the compiled magic/flame clips for the source
     # effects that lived in Explod controllers.
@@ -14418,8 +14444,15 @@ INVUL_TICKS = {
     # Geese Raging Storm: elements 1-13 are 2+3+3+3+3+17+2+2+6+2+2+2 ticks.
     "geese": {3000: 47, 3010: 47},
 }
+# Explods whose cells live on the *spark* page (page A), used to relieve the
+# 16-cell explod page.  FxPrepareBoth selects the page by comparing the anim
+# record against SparkMiscStart, so these must also be emitted before that
+# marker; EXPLOD_ORDER keeps the table and index order identical.
+PAGE_A_EXPLODS = {"Bottle"}
+EXPLOD_ORDER = ([label for label in EXPLODS if label in PAGE_A_EXPLODS]
+                + [label for label in EXPLODS if label not in PAGE_A_EXPLODS])
 EXPLODS_IDX = {label: i for i, label in enumerate(
-    list(SPARK_ANIMS) + list(EXPLODS))}
+    list(SPARK_ANIMS) + EXPLOD_ORDER)}
 
 # Verified source AIR clips for characters whose converted CNS lost ProjAnim.
 # Others are resolved from their Projectile controllers first.
@@ -14960,11 +14993,14 @@ def projectile_effect_alt(name, sff, air, spec):
     if spec.get("invisible"):
         # Keep the projectile object and its hitbox, but emit a single
         # empty-cell frame so DrawSparks skips the art entirely.  The
-        # ProjTab damage/guard row and the tall SPK_GRD hitbox are still
-        # active, so the move hits exactly as before.
+        # ProjTab damage/guard row is still active, so the move hits as
+        # before.  The frame must last long enough for a *travelling* shot:
+        # a 1-tick clip ends on the first TickSpark and frees the slot, so
+        # the projectile would freeze at its spawn point (the old stationary
+        # burst relied on that).  Hold it until the 90-tick ProjTab TTL.
         # Keep a one-byte CHR payload: the emitter cannot encode
         # .INCBIN ... READ 0, and the empty frame never reads it anyway.
-        return action, [(1, [])], b"\x00"
+        return action, [(255, [])], b"\x00"
     pre_scale = max(1, int(spec.get("pre_scale", 1)))
     zoom = max(1, int(spec.get("zoom", 1)))
     max_cells = int(spec.get("max_cells", len(SPARK_SLOTS)))
@@ -15363,25 +15399,38 @@ def build_spark():
             out_frames.append((t, sprite_cells(s, remap)))
         anims[label] = out_frames
 
-    cur_page[0] = 1
     wood_attrs = {}
-    for label, (sff_rel, scale, frs, attr) in EXPLODS.items():
-        csff = Sff(os.path.join(ROOT, sff_rel))
-        out_frames = []
-        for g, n, t in frs:
-            if g < 0:
-                out_frames.append((t, []))
-                continue
-            s = spark_sprite(csff.get(g, n), scale)
-            remap = [0] * 256
-            srcpal = csff.palettes[s.palidx]
-            use_magic = (attr & 0x1C) == 0x08      # OBJ palette 2
-            for i, c in enumerate(srcpal):
-                remap[i] = (shared_color_index(c) if use_magic
-                            else wpidx.get(c, 0))
-            out_frames.append((t, sprite_cells(s, remap)))
-        anims[label] = out_frames
-        wood_attrs[label] = attr
+    for _page, _labels in (
+            (0, [l for l in EXPLODS if l in PAGE_A_EXPLODS]),
+            (1, [l for l in EXPLODS if l not in PAGE_A_EXPLODS])):
+        cur_page[0] = _page
+        for label in _labels:
+            sff_rel, scale, frs, attr = EXPLODS[label]
+            csff = Sff(os.path.join(ROOT, sff_rel))
+            out_frames = []
+            for g, n, t in frs:
+                if g < 0:
+                    out_frames.append((t, []))
+                    continue
+                s = spark_sprite(csff.get(g, n), scale)
+                remap = [0] * 256
+                srcpal = csff.palettes[s.palidx]
+                # OBJ palette 2 (0x34/0x24) is SparkPal, the same shared
+                # atlas palette projectiles use; palette 5 entries (0x2A)
+                # also index shared colours.
+                use_magic = ((attr & 0x1C) == 0x08
+                             or ((attr >> 1) & 0x07) == 2)
+                for i, c in enumerate(srcpal):
+                    # Index 0 is the sprite key colour; keep it transparent
+                    # instead of remapping it into a visible palette entry
+                    # (John's 6040 flame uses a magenta key that rendered as
+                    # a purple strip).
+                    remap[i] = (0 if i == 0 else
+                                shared_color_index(c) if use_magic
+                                else wpidx.get(c, 0))
+                out_frames.append((t, sprite_cells(s, remap)))
+            anims[label] = out_frames
+            wood_attrs[label] = attr
 
     # tile buffer covering both zones: pool slot -> tile quad bytes
     chrbufs = []
@@ -15397,10 +15446,12 @@ def build_spark():
 
     inc = ["; generated by build_fight.py -- shared hit sparks + explods\n",
            "SparkAnimTab:\n"]
-    for label in list(SPARK_ANIMS) + list(EXPLODS):
+    for label in list(SPARK_ANIMS) + EXPLOD_ORDER:
         inc.append(f"    .dw {label}\n")
+    _first_b = next(label for label in EXPLOD_ORDER
+                    if label not in PAGE_A_EXPLODS)
     for label, frames in anims.items():
-        if label == next(iter(EXPLODS)):
+        if label == _first_b:
             # anim records at/after this label use page B (SparkChrB)
             inc.append("SparkMiscStart:\n")
         inc.append(f"{label}:\n    .db {len(frames)}\n")

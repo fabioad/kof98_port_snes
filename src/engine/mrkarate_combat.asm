@@ -1232,4 +1232,39 @@ MTC_no:
     clc
     rtl
 
+; Projectile victim reaction.  X = spark slot, fofs = victim offset.
+; A shot whose ProjTab damage byte carries bit7 (PROJECTILE_KNOCKDOWN) knocks
+; the victim down: it crumples with the crouching-sweep trip clip (5070) and
+; lies down.  Every other shot keeps the short 8-tick projectile hitstun.
+ProjVictimDownFar:
+    phx                                  ; EnterState/SetAnimSlot clobber X;
+    rep #$20                             ;   the caller still owns the shot slot
+    .ACCU 16
+    lda.w SPARKS+SPK_AY,x
+    and #$0080.w
+    beq PVD_stun
+    lda #S_DOWN.w
+    jsl MkCombat_EnterState
+    lda #ANIM_TRIP.w
+    jsl MkCombat_SetAnimSlot
+    ldx fofs
+    lda #LIEDOWN.w
+    sta FP+F_HTIMER,x
+    rep #$20
+    .ACCU 16
+    plx
+    rtl
+PVD_stun:
+    ldx fofs
+    sep #$20
+    .ACCU 8
+    lda #8.b
+    sta FP+F_HTIMER,x
+    lda #5.b
+    sta FP+F_SLIDE,x
+    rep #$20
+    .ACCU 16
+    plx
+    rtl
+
 .ENDS

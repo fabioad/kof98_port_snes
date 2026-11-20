@@ -14254,8 +14254,8 @@ PH_hit:
     plx
     bcs PH_dmg_done                       ; practice: no projectile damage
     lda.w SPARKS+SPK_AY,x
-    and #$00FF.w                      ; high byte is a sound ID, not damage
-    sta scr4
+    and #$007F.w                      ; high byte is a sound ID; bit7 is the
+    sta scr4                          ;   trip-knockdown marker (ProjTab)
     lda FP+F_HP,y
     sec
     sbc scr4
@@ -14267,12 +14267,11 @@ PH_dmg_done:
                                         ;   stationary tall pillar (geyser)
     lda FP+F_HP,y                     ; a killing shot must knock the victim
     beq PH_ko                         ;   down, not leave it on its feet
-    sep #$20
-    .ACCU 8
-    lda #8.b                          ; brief hitstun; the fifth super hit
-    sta FP+F_HTIMER,y                 ;   replaces it with a knockdown
-    lda #5.b
-    sta FP+F_SLIDE,y
+    tya                               ; keep the victim offset for the tail
+    sta fofs
+    jsl ProjVictimDownFar             ; brief hitstun, or the sweep-style trip
+                                      ;   for a marked shot (ProjTab bit7)
+    ldy fofs
     ; A projectile contact also advances the attacker's combo counter.  The
     ; normal hit path calls ComboBump from HitOne; this shot path used to
     ; apply damage directly, so a normal -> projectile link kept showing
@@ -14340,7 +14339,7 @@ PH_guard:
     and #$0010.w
     sta scr5                            ; bit4 = shot was fired facing left
     lda.w SPARKS+SPK_AY,x
-    and #$00FF.w                      ; high byte is a sound ID, not damage
+    and #$007F.w                        ; damage (bit7 = trip marker)
     sta scr4                            ; full damage
     lda.w SPARKS+SPK_ATTR,x
     and #$0040.w                        ; bit6 = owner is P2

@@ -144,6 +144,16 @@ PROJECTILE_ALT_EFFECTS = {
         "sids": (85, 86, 87),
         "release": 6,
     },
+    # John's Flame Raid hitbox is invisible: the visible fire is the CNS
+    # Explod 6040 at his feet.  Emit an empty-cell alternate clip so the
+    # travelling shot keeps its full-screen hitbox without drawing a second
+    # flame (the tremor/impact sells the hit instead).
+    "john": {
+        "action": 6040,
+        "invisible": True,
+        "sids": (56, 57),
+        "release": 6,
+    },
     # Yuki's Ai no Kusanagi (source state 3350) calls the Kyo helper
     # (state 3355, AIR 1903 / SFF group 2001).  The native engine keeps the
     # projectile hitbox but has no helper bodies, so draw Kyo as the
@@ -161,17 +171,6 @@ PROJECTILE_ALT_EFFECTS = {
         "squeeze_w": 64,
         "squeeze_h": 64,
     },
-    # John's Flame Raid (states 1400/1410) draws the fire with Explod 6040
-    # and the source projectile itself is invisible.  Keep the native hitbox
-    # invisible too, so the alternate ProjFx clip does not draw a second
-    # fireball over the authored flame.
-    "john": {
-        "action": 6040,
-        "invisible": True,
-        "sids": (56, 57),
-        "release": 6,
-    },
-
 }
 
 # Characters that reuse another character's compiled projectile effect.  The
@@ -263,13 +262,15 @@ GROUND_PROJECTILES = {
     # Restored shots that travel along the floor (or reuse a floor-wave
     # atlas): keep their spawn height at the feet so jumps can clear them.
     "andy", "daimon", "geese", "leona", "mrbig", "ralf", "shingo",
+    # John's Flame Raid is a floor wave too.
+    "john",
 }
 
 # Character-level fixed upper-torso spawn height.  Lucky's basketball uses
 # the ballistic profile below instead; the per-shot PROJECTILE_TORSO_SIDS
 # switch below still covers Geese's air shot.  The GTA trio fire from
 # raised hands: the default 40 px "mid torso" spawn sat below the arms.
-TORSO_PROJECTILES = {"john", "jason", "lucia"}
+TORSO_PROJECTILES = {"jason", "lucia"}
 
 # Source-verified ballistic projectiles.  The ProjFxTab header gets three
 # extra bytes at offsets 5-7: spawn height above the floor, gravity in 1/16
@@ -338,12 +339,11 @@ PROJECTILE_X_OFFSET = {
     # height test that lets the anti-air version hit airborne victims.
     "kasumi": {52: 88, 53: 88, 56: 72, 57: 72,
                 85: 56, 86: 56, 87: 56},
-    # John's Flame Raid draws a 128 px wide floor flame (Explod 6040 at
-    # +20 px, so it spans about -44..84).  The default shot is a 24 px
-    # radius circle 14 px ahead (covers -10..38), which only hit at
-    # point-blank.  Code 8 centres a 48 px radius burst 64 px ahead
-    # (16..112) with the short 12-tick lifetime.
-    "john": {56: 64, 57: 64},
+    # John's Flame Raid is a travelling floor wave now, so it must not use
+    # the short-burst profile (the guard-byte low nibble >= 8 forces a
+    # 12-tick lifetime).  Code 4 spawns the flame 32 px ahead with the
+    # ordinary 90-tick shot lifetime, giving it full-screen reach.
+    "john": {56: 32, 57: 32},
 }
 
 # Per-shot release frame override (0-based source animation frame).  Used
@@ -360,6 +360,9 @@ PROJECTILE_RELEASE = {
     # The super root clips are only 7 frames; frame 6 is already past the
     # last pose, so launch on frame 4.
     "kasumi": {52: 6, 53: 6, 56: 7, 57: 7, 85: 4, 86: 4, 87: 4},
+    # Flame Raid spawns the wave on AnimElem 7 (the ground punch); the
+    # compiled launch clip has 7 poses, so the punch is its last frame.
+    "john": {56: 6, 57: 6},
 }
 
 # Source-aligned release frames (audit 2026-11-15).
@@ -503,6 +506,16 @@ PROJECTILE_CALIBRATION = {
     # Mr. Big's Ground Blaster helper only exposes a placeholder velocity in
     # the imported CNS; use the same forward wave scale as the other shots.
     "mrbig": {54: (0x0300, 14), 55: (0x0400, 18)},
+}
+
+# Shots that knock the victim down like a sweep (crouching strong kick) on a
+# clean hit.  The ProjTab row has no free flag bit, so the build marks the
+# row's damage byte with $80 (damage itself is capped below 128) and ProjHit
+# reads that bit to switch the victim to the trip-fall knockdown instead of
+# the ordinary 8-tick hitstun.
+PROJECTILE_KNOCKDOWN = {
+    # John's Flame Raid (states 1400/1410): floor wave that trips on contact.
+    "john": (56, 57),
 }
 
 # sid -> AIR body launch action played while the projectile effect flies.
