@@ -12,6 +12,7 @@ import copy
 import glob
 import hashlib
 import json
+import math
 import re
 import statistics
 import struct
@@ -6853,6 +6854,32 @@ _late_act("mary", {1525: [(6, 3, -55, 0)]})
 # tools/build_audio.py (spc_ids.inc is generated from that list).
 CHAR_VOICES = {}                        # name -> {(snd group,item): voice id}
 VOICE_BASE = 40                         # op7 arg >= this -> streamed voice
+
+# Peak normalization alone leaves Jason and Lucia noticeably quieter than
+# the rest of the cast.  Their callouts have a high crest factor: after the
+# usual 30000-peak normalization their RMS sits around 6.7k, while most
+# fighters land between 10k and 15k.  These makeup gains push their average
+# level into that range through a soft limiter instead of hard clipping.
+VOICE_LOUDNESS_GAIN = {
+    "jason": 1.7,
+    "lucia": 1.7,
+}
+VOICE_SOFT_KNEE = 24000                 # compression starts at 80% full scale
+VOICE_CEILING = 30000                   # matches the existing peak target
+
+
+def voice_makeup(pcm, gain):
+    """Raise a voice's average level without letting peaks clip."""
+    knee, ceiling = VOICE_SOFT_KNEE, VOICE_CEILING
+    span = ceiling - knee
+    out = []
+    for x in pcm:
+        v = x * gain
+        a = abs(v)
+        if a > knee:
+            v = math.copysign(knee + span * math.tanh((a - knee) / span), v)
+        out.append(v)
+    return out
 
 SND_TO_SFX = {                          # character .snd (group,item) -> id
     (0, 0): 0, (0, 1): 1, (0, 4): 1,   # weak / strong punch swish
@@ -17190,6 +17217,11 @@ def emit_voices(msu, rom_voice_chars):
             pcm = pcm[:6000]
             peak = max((abs(v) for v in pcm), default=1) or 1
             pcm = [int(v * 30000 / peak) for v in pcm]
+            gain = VOICE_LOUDNESS_GAIN.get(name)
+            if gain:
+                pcm = voice_makeup(pcm, gain)
+                peak = max((abs(v) for v in pcm), default=1) or 1
+                pcm = [int(v * 30000 / peak) for v in pcm]
             items.append(encode_brr(pcm or [0] * 16, loop=False))
         tab_label = f"VoiceTab_{name}"
         ofs_label = f"VoiceOfs_{name}"
