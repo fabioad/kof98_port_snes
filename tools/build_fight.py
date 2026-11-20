@@ -6859,7 +6859,7 @@ _late_act("mary", {1525: [(6, 3, -55, 0)]})
 # follow-ups and keeps the bound victim while the owner is there.
 if "john" in CHARS:
     _wire_followups("john", [
-        (103, 1101, 1102),   # Flying Attack weak: leap + attack clip
+        (117, 1101, 1102),   # Flying Attack weak: leap + attack clip (air-phase slot)
         (104, 1120, 1120),   # Flying Attack catch + 12 hits
         (105, 1201, 1201),   # Spiral Leg Bomber weak: hit state
         (106, 1220, 1220),   # Spiral Leg Bomber catch + hits
@@ -6867,13 +6867,13 @@ if "john" in CHARS:
         (108, 1111, 1102),   # Flying Attack strong (same attack clip)
         (109, 1211, 1201),   # Spiral Leg Bomber strong (same clip)
     ], [
-        (103, 104, 3, 0), (108, 104, 3, 0),
+        (117, 104, 3, 0), (108, 104, 3, 0),
         (105, 106, 3, 0), (109, 106, 3, 0),
         (58, 106, 3, 0), (59, 106, 3, 0),   # air Spiral -> same follow-up
         (54, 107, 3, 0), (55, 107, 3, 0),   # Overdrive contact -> 1305
         # Whiff/landing exits: these states otherwise sit on their last
         # animation frame until the engine's 255-tick fallback.
-        (103, 0, 0, 0), (108, 0, 0, 0),
+        (117, 0, 0, 0), (108, 0, 0, 0),
         (105, 0, 0, 0), (109, 0, 0, 0),
         (104, 0, 0, 0), (106, 0, 0, 0), (107, 0, 0, 0),
     ])
@@ -6881,6 +6881,41 @@ if "john" in CHARS:
     # slot so the TargetState rows in 1120/1220 survive ActTab compilation.
     # 1131/1231 are the release/flight poses.
     VICTIM_STATE_IDS.update({1130: 76, 1230: 76, 1131: 77, 1231: 77})
+    # Flying Attack (QCB+P): 1101/1111 leap with a `Time = 0` VelSet
+    # (x = p2dist/32, y = -8), which the extractor cannot represent, so the
+    # synthetic slots stood still on the ground and held the attack pose
+    # until the 255-tick fallback.  Slot 103 also dispatches to the
+    # ground-special handler, which drops vx, so the weak version lives in
+    # the StAirSpec slot 117 (strong stays in 108).  Apply a fixed leap on
+    # entry (the
+    # engine's 0.44 gravity gives ~36 ticks of flight, close to the source
+    # 0.395) and hand over to the touch-down recovery on landing.  A fixed
+    # speed cannot track p2dist, so the single small source Clsn1 is
+    # widened to cover the whole arc.
+    # The catch states (1120 Flying Attack, 1220 Spiral Leg Bomber) hover in
+    # place for the 12-hit flurry (velset 0,0 and no gravity until element
+    # 13).  The port applies gravity to every state, so once the Flying
+    # Attack catches in the air John fell to the floor after ~12 ticks and
+    # the landing rule cut the flurry short (4 hits instead of 12).  PosFreeze
+    # is not enough: it zeroes vy after Physics has already added gravity, so
+    # the fighter still sinks 0.44 px/tick (26 px over the flurry), which
+    # dropped an air-caught victim to the floor early.  Instead re-arm a
+    # small upward vy every 5 ticks: +0.44/tick gravity over five ticks nets
+    # out to a ~0.35 px sink per step.  These are exact state-time rows
+    # (0x80|tick): the element-row scan in AnimSetFrame stops after 16 rows
+    # and the 12-hit table already uses all of them.  Element 13 keeps the
+    # source jump (vx 2.5 / -2.5, vy -8); op15 rows are replaced wholesale,
+    # so that one is restated here.
+    _hover = [(0x80 | t, 15, -5 & 0xFF, 0) for t in range(0, 60, 5)]
+    _late_act("john", {
+        1120: _hover + [(12, 15, 224, 0)],
+        1220: _hover + [(12, 15, 224, 0)],
+    })
+    _tweak("john", "state_vel", {117: (2.4, -8), 108: (3.0, -8)})
+    _tweak("john", "air_box_add", {1102: (-4, -85, 44, -10)})
+    LATE_EXTRA_TRANS.setdefault("john", []).extend([
+        (117, 17, 1, 0), (108, 17, 1, 0),
+    ])
     # The auto projectile heuristic misread the Spiral Leg Bomber's dash
     # HitDef as a travelling shot (1 damage).  John's real shots are Mega
     # Smash (48/49) and the five super slots (85-89).
@@ -6913,7 +6948,7 @@ if "john" in CHARS:
         # Flying Attack / Spiral Leg Bomber open with a catch: mark the
         # victim as held so the follow-up TargetLifeAdd rows pass
         # MkThrowComboFar instead of being skipped.
-        103: {"p2state": 76, "throw": 1, "fall": 0,
+        117: {"p2state": 76, "throw": 1, "fall": 0,
               "gvx": 0, "gvy": 0, "avx": 0, "avy": 0},
         105: {"p2state": 76, "throw": 1, "fall": 0,
               "gvx": 0, "gvy": 0, "avx": 0, "avy": 0},

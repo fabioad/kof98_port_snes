@@ -338,6 +338,12 @@ PROJECTILE_X_OFFSET = {
     # height test that lets the anti-air version hit airborne victims.
     "kasumi": {52: 88, 53: 88, 56: 72, 57: 72,
                 85: 56, 86: 56, 87: 56},
+    # John's Flame Raid draws a 128 px wide floor flame (Explod 6040 at
+    # +20 px, so it spans about -44..84).  The default shot is a 24 px
+    # radius circle 14 px ahead (covers -10..38), which only hit at
+    # point-blank.  Code 8 centres a 48 px radius burst 64 px ahead
+    # (16..112) with the short 12-tick lifetime.
+    "john": {56: 64, 57: 64},
 }
 
 # Per-shot release frame override (0-based source animation frame).  Used
