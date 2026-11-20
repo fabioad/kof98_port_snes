@@ -145,8 +145,10 @@ FIGHT_GEN := $(GEN_DIR)/iori.chr $(GEN_DIR)/iori_pal.bin \
 	$(GEN_DIR)/survival_msu.inc $(GEN_DIR)/survival_msu_defs.inc \
 	$(GEN_DIR)/quote_strings_en.inc $(GEN_DIR)/quote_strings_pt.inc \
 	$(GEN_DIR)/quote_strings_es.inc $(GEN_DIR)/quote_strings_fr.inc \
+	$(GEN_DIR)/quote_strings_ja.inc \
 	$(GEN_DIR)/quote_tables.inc $(GEN_DIR)/char_names.inc \
 	$(GEN_DIR)/hud.chr $(GEN_DIR)/hud2.chr $(GEN_DIR)/hud_pal.bin \
+	$(GEN_DIR)/hudkana.chr \
 	$(GEN_DIR)/$(MSU_NAME).msu
 
 ifeq ($(TINY),1)
@@ -246,6 +248,7 @@ $(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json asse
 	tools/build_fight.py tools/build_mrkarate_scene.py tools/normal_throws.py tools/close_normals.py tools/remaining_specials.py tools/runtime_abi.py assets/runtime_abi.json tools/newroster.py tools/build_spc_neogeo.py \
 	Makefile.pvsnes $(wildcard Makefile.hi Makefile.old Makefile.mid) \
 	tools/build_stages.py tools/build_hud_arcade.py tools/sff.py tools/build_endings.py \
+	tools/kana_charset.py tools/build_kana_font.py assets/fonts/kana8.chr \
 	$(wildcard assets/survival_ending/*.png) \
 	$(wildcard assets/characters/*/*.snd) \
 	$(wildcard assets/stages/stages_v2/*.png) \

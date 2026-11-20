@@ -77,7 +77,8 @@ OptEnglish:    .db 7,5,14,7,12,9,19,8                ; ENGLISH
 OptPortuguese: .db 10,16,15,18,20,21,7,21,5,19,5     ; PORTUGUESE
 OptSpanish:    .db 7,19,16,1,14,9,19,8                ; SPANISH
 OptFrench:     .db 6,6,18,5,14,3,8                   ; FRENCH
-OptLangPtrTab: .dw OptEnglish, OptPortuguese, OptSpanish, OptFrench
+OptJapanese:   .db 8,10,1,16,1,14,5,19,5              ; JAPANESE
+OptLangPtrTab: .dw OptEnglish, OptPortuguese, OptSpanish, OptFrench, OptJapanese
 
 ; Length-prefixed charset names, 10 cells wide (x=136..216).  Every length
 ; below must match its character count: a wrong byte makes the row print into

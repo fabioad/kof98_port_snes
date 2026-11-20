@@ -919,6 +919,9 @@ OrderDrawName:
     .ACCU 8
     lda #:ioriName
     sta.b scr2+2
+    jsl VegaNameFar
+    sep #$20
+    .ACCU 8
     lda #9.b
     sta.w OR_LIMIT
     rep #$20

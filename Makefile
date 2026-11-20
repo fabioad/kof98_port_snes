@@ -29,7 +29,9 @@ FIGHT_GEN := build/gen_fight/iori.chr build/gen_fight/iori_pal.bin \
 	build/gen_fight/survival_msu.inc build/gen_fight/survival_msu_defs.inc \
 	build/gen_fight/quote_strings_en.inc build/gen_fight/quote_strings_pt.inc \
 	build/gen_fight/quote_strings_es.inc build/gen_fight/quote_strings_fr.inc \
-	build/gen_fight/quote_tables.inc build/gen_fight/char_names.inc
+	build/gen_fight/quote_strings_ja.inc \
+	build/gen_fight/quote_tables.inc build/gen_fight/char_names.inc \
+	build/gen_fight/hudkana.chr
 
 MIDI    ?= assets/music/mario.mid
 TIMBRE_BANK ?= assets/music/spc_brr_melhora_timbres.bin
@@ -80,7 +82,7 @@ $(OBJ): src/boot/boot.asm build/gen/spc_boot.bin build/gen/spc_size.inc build/ge
 
 $(FIGHT_GEN): $(wildcard tools/calibration/*.py assets/calibration/*.json assets/characters/*/*_SNES.cns assets/characters/*/*_SNES.cmd assets/characters/*/*.air assets/data/quotes/*.json)
 
-$(FIGHT_GEN): tools/build_fight.py tools/normal_throws.py tools/runtime_abi.py assets/runtime_abi.json tools/build_stages.py tools/stage_requant.py tools/sff.py tools/build_endings.py $(wildcard assets/stages/stages_png_snes/*.png) $(wildcard assets/stages/stages_png_snes/animations/*.json) $(wildcard assets/survival_ending/*.png) assets/characters/Iori-KOF98/Iori.sff assets/characters/Iori-KOF98/Iori.air assets/characters/Iori-KOF98/Iori_SNES.cns assets/characters/Iori-KOF98/Iori_SNES.cmd assets/characters/Kyo-KOF98/Kyo.sff assets/characters/Kyo-KOF98/Kyo.air assets/characters/Kyo-KOF98/Kyo_SNES.cns assets/characters/Kyo-KOF98/Kyo_SNES.cmd assets/stages/stage0.sff assets/stages/stage0.def assets/data/fightfx.sff assets/data/fightfx.air assets/kof98data/Lifebar/fight.def assets/kof98data/Lifebar/fight.sff assets/kof98data/Lifebar/Lifebar_Font/Life\ Names.fnt assets/kof98data/Lifebar/Lifebar_Font/Life\ Names\ Simul.fnt $(wildcard assets/kof98data/Lifebar/Lifebar_Font/*.def assets/kof98data/Lifebar/Lifebar_Font/*.sff assets/stages/*.def assets/stages/*.sff)
+$(FIGHT_GEN): tools/build_fight.py tools/kana_charset.py tools/build_kana_font.py tools/normal_throws.py tools/runtime_abi.py assets/runtime_abi.json tools/build_stages.py tools/stage_requant.py tools/sff.py tools/build_endings.py $(wildcard assets/stages/stages_png_snes/*.png) $(wildcard assets/stages/stages_png_snes/animations/*.json) $(wildcard assets/survival_ending/*.png) assets/characters/Iori-KOF98/Iori.sff assets/characters/Iori-KOF98/Iori.air assets/characters/Iori-KOF98/Iori_SNES.cns assets/characters/Iori-KOF98/Iori_SNES.cmd assets/characters/Kyo-KOF98/Kyo.sff assets/characters/Kyo-KOF98/Kyo.air assets/characters/Kyo-KOF98/Kyo_SNES.cns assets/characters/Kyo-KOF98/Kyo_SNES.cmd assets/stages/stage0.sff assets/stages/stage0.def assets/data/fightfx.sff assets/data/fightfx.air assets/kof98data/Lifebar/fight.def assets/kof98data/Lifebar/fight.sff assets/kof98data/Lifebar/Lifebar_Font/Life\ Names.fnt assets/kof98data/Lifebar/Lifebar_Font/Life\ Names\ Simul.fnt $(wildcard assets/kof98data/Lifebar/Lifebar_Font/*.def assets/kof98data/Lifebar/Lifebar_Font/*.sff assets/stages/*.def assets/stages/*.sff assets/fonts/kana8.chr)
 	python3 tools/build_fight.py
 
 $(FOBJ): src/engine/fight.asm $(FIGHT_GEN)

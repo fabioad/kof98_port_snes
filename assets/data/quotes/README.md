@@ -10,6 +10,7 @@ lists are padded by repeating the last quote.
 | `pt-BR.json` | 1 (Portuguese - Brazil) |
 | `es.json` | 2 (Spanish) |
 | `fr.json` | 3 (French) |
+| `ja.json` | 4 (Japanese) |
 
 The OPTIONS > LANGUAGE row stores the selected index in `Q_LANG`
 (`$F07F`, one byte); the next victory screen uses it.  `FightMain` initialises
@@ -17,12 +18,23 @@ it to 0 at power-on only, so changing it in OPTIONS persists across matches.
 
 ## Formatting
 
-Quotes are uppercased, word-wrapped into at most two rows of 30 glyphs, and
-folded onto the lifebar font.  That font only contains
+Quotes are word-wrapped into at most two rows of 30 glyphs and folded onto the
+lifebar font.  For Latin languages that font contains
 `A-Z 0-9 . : ! ? ' - / +` and space, so accented source text is transliterated
 (`VOCÊ` -> `VOCE`, `ÇA` -> `CA`, `¡`/`¿` are dropped).  Keep each quote at 60
 characters or less after transliteration; `tools/tests/test_quotes.py`
 validates this.
+
+Japanese uses the kana table added for the JAPANESE option
+(`tools/kana_charset.py`, glyphs in `assets/fonts/kana8.chr`).  The 8x8 font
+has no kanji room, so `ja.json` is written in hiragana/katakana; full-width
+`！？` and `…` are folded by NFKC to the ASCII punctuation already present.
+The fight HUD has no free 173-tile BG3 window, so the build uses the first
+Japanese quote of each fighter and stores only the kana it needs.  At the
+first match-over frame `JaQuotePrepare` copies those glyphs into the 20 free
+BG3 tiles (1004..1023) plus 13 ASCII slots the win screen does not draw
+(41..53); the quote row uses per-quote slot codes.  All four runtime slots
+show that same first quote.
 
 ## Sources
 

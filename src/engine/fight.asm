@@ -611,6 +611,7 @@
 .DEFINE SUPERFX     $7E51F0             ; super flash/dim frames remaining
 .DEFINE SUPERFX_MODE $7E51F1             ; 0 off, 1 white flash, 2 darken
 .DEFINE SUPERFX_BLUE $7E51F8             ; 1 = MAX aura: blue flash + blue dim
+.DEFINE JA_QUOTE_READY $7E4EC7          ; Japanese glyph cache already uploaded
 .DEFINE CINE_TIMER  $7E51F2             ; cinematic black-screen ticks
 .DEFINE CINE_ACTIVE $7E51F3             ; 1 while the saved backdrop is black
 .DEFINE CINE_BGCOL  $7E51F4             ; saved CGRAM colour 0 (word)
@@ -2227,9 +2228,15 @@ WriteStr:
     sta scr0
     iny
 -   lda [scr2],y
+    cmp #KANA_CODE_BASE.b
+    bcs WS_kana
     sta HUDMAP,x
     lda #$2C.b
     sta HUDMAP+1,x
+    bra WS_next
+WS_kana:
+    jsl WriteStrKanaFar
+WS_next:
     iny
     inx
     inx
@@ -3016,6 +3023,7 @@ SDO_floop:
     tax
     lda.l SelStrTab,x
     sta.b scr2
+    jsl VegaStrFar
     sep #$20
     .ACCU 8
     lda tblbank.b
@@ -4147,6 +4155,7 @@ DrawBanner:
     tax
     lda.l SelBStrTab,x
     sta scr2
+    jsl VegaBStrFar
     sep #$20
     .ACCU 8
     lda tblbank
@@ -4203,6 +4212,7 @@ DrawBanner:
     .ACCU 8
     lda.b #:ioriQuoteTab
     sta scr2+2
+    jsl JaQuotePrepareFar
     rep #$20
     .ACCU 16
     lda framecnt
@@ -4219,10 +4229,10 @@ DrawBanner:
     sep #$20
     .ACCU 8
     lda.w Q_LANG
-    and #$03.b
+    and #$07.b
     rep #$20
     .ACCU 16
-    and #$0003.w
+    and #$0007.w
     asl a
     asl a
     asl a                               ; language * 8
@@ -4456,6 +4466,10 @@ StartFight:
     jmp TeamSwap                          ;   (TeamSwap clears T_SWAP)
 SF_not_team:
 SF_full:
+    sep #$20
+    .ACCU 8
+    lda #0
+    sta.l JA_QUOTE_READY                 ; new fight: cache the next quote
     jsr PpuInit                          ; select screen changed BG/OBJ bases
     jsr LoadStaticGfx                    ; restore HUD, sparks and static tiles
     rep #$20
@@ -4719,7 +4733,7 @@ SF_carry:
     jsl FillBarMemoResetFar
     jsr DrawBars
     jsr DrawWins                          ; round-win pips under the names
-    jsr DrawLevel                         ; small LEVEL n at the bottom
+    jsl DrawLevelFar                      ; small LEVEL n at the bottom
     jsr CampStage                       ; campaign stage rules -> STAGEF
     lda #1                              ; StagePick must upload the rebuilt
     sta.b stagehold                     ;   HUD map before it shows the stage
@@ -5015,73 +5029,14 @@ DrawWins:                               ; fight.def [WinIcon], beneath names
     rts
 
 ; Small "LEVEL n" at the bottom centre of the fight HUD (BG3, row 27).
-DrawLevel:
-    rep #$20
-    .ACCU 16
-    lda #((27*32+12)*2).w               ; 7 cells = 56 px -> x=96..151
-    sta scr0
-    lda #StrLevel.w
-    sta scr2
-    sep #$20
-    .ACCU 8
-    lda #:StrLevel
-    sta scr2+2
+; DrawLevel moved to bank 117 to keep the Fight section under 32 KiB.
+WriteStrFar:
     jsr WriteStr
-    jsr MkHudLevel                      ; boss Mr. Karate shows LEVEL 8
-    clc
-    adc #27                             ; charset: '0' is tile 27
-    pha
-    rep #$20
-    .ACCU 16
-    ldx #((27*32+18)*2).w               ; space at col 17, digit at col 18
-    sep #$20
-    .ACCU 8
-    pla
-    sta HUDMAP,x
-    lda #ATT_TXT.b
-    sta HUDMAP+1,x
-    rep #$20
-    .ACCU 16
-    rts
+    rtl
 
 ; A(8) = 1..8 difficulty shown in the fight HUD.  A CPU-controlled Mr.
 ; Karate always fights at effective AI level 9, so advertise the top
 ; OPTIONS rung (8) even when the player picked a lower level.
-MkHudLevel:
-    sep #$20
-    .ACCU 8
-    stz scr6
-    lda cpu2
-    beq +
-    ldx #FP2OFS.w
-    rep #$20
-    .ACCU 16
-    lda FP+F_CHAR,x
-    cmp #CharMrkarate.w
-    sep #$20
-    .ACCU 8
-    bne +
-    lda #1
-    sta scr6
-+   lda cpu1
-    beq +
-    ldx #0
-    rep #$20
-    .ACCU 16
-    lda FP+F_CHAR,x
-    cmp #CharMrkarate.w
-    sep #$20
-    .ACCU 8
-    bne +
-    lda #1
-    sta scr6
-+   lda scr6
-    beq +
-    lda #8
-    rts
-+   lda DIFFICULTY
-    rts
-
 ; A(16) = hp 0..MAXHP -> A = filled px 0..88 (hp*11/25)
 HpToPx:
     jsl HpToPxFar
@@ -5533,6 +5488,7 @@ CharPtr:
 ; CharPtr (which assumes the character's F_TBANK).
 NamePtr:
     jsr CharPtr
+    jsl VegaNameFar
     sep #$20
     .ACCU 8
     lda.b #:ioriName
@@ -18748,7 +18704,7 @@ TS_hud:
     .INDEX 16
     jsr DrawBars
     jsr DrawWins
-    jsr DrawLevel
+    jsl DrawLevelFar
     jsl DrawTimer                       ; keep the clock lit through the swap
     sep #$20
     .ACCU 8
@@ -21865,6 +21821,7 @@ CharPtr:
 ; CharPtr (which assumes the character's F_TBANK).
 NamePtr:
     jsr CharPtr
+    jsl VegaNameFar
     sep #$20
     .ACCU 8
     lda.b #:ioriName
@@ -23463,6 +23420,12 @@ Portraits:  .INCBIN "gen_fight/portraits.chr"
 Portraits_End:
 PortraitPal: .INCBIN "gen_fight/portrait_pal.bin"
 PortraitPal_End:
+; Source glyphs for the Japanese quote cache.  The fight HUD has no free
+; 176-tile BG3 window, so JaQuotePrepare copies only the kana used by the
+; winner's quote into the free 1004..1023 tiles (plus 13 unused ASCII slots
+; at 41..53) when the win screen starts.
+HudKana:     .INCBIN "gen_fight/hudkana.chr"
+HudKana_End:
 .INCLUDE "gen_fight/portraits.inc"
 .ENDS
 
@@ -26665,3 +26628,297 @@ CRF_no:
     rtl
 .ENDS
 .ENDIF
+
+; ---------------------------------------------------------------------------
+; Japanese quote glyph cache.
+;
+; The fight HUD has no free 173-tile BG3 window (tiles 384..703 belong to
+; the per-stage animation), so a Japanese quote cannot use a fixed font
+; bank.  The win screen does have 20 free BG3 tiles (1004..1023) and never
+; draws the 13 ASCII slots 41..53 (arrows, the solid '"' block and unused
+; punctuation).  At the first match-over frame copy the winner's kana into
+; those slots; WriteStr maps the quote's 54+s slot codes to them.
+.BASE $00
+.BANK 117 SLOT 0
+.ORGA $8000
+.SECTION "JaQuoteCode" FORCE
+
+; A(8) = KANA_CODE_BASE+slot, X = HUDMAP byte offset.  Maps the per-quote
+; slot to the cached BG3 tile and writes the two map bytes.  Preserves X, Y
+; and scr0; clobbers A and qtab.
+WriteStrKanaFar:
+    php
+    sep #$20
+    .ACCU 8
+    sec
+    sbc #KANA_CODE_BASE.b
+    rep #$20
+    .ACCU 16
+    and #$00FF.w
+    cmp #KANA_SLOT_FREE.w
+    bcc +
+    sec
+    sbc #KANA_SLOT_FREE.w
+    clc
+    adc #KANA_SLOT_LOW_BASE.w
+    bra ++
++   clc
+    adc #KANA_SLOT_FREE_BASE.w
+++  sta qtab
+    sep #$20
+    .ACCU 8
+    lda.b qtab
+    sta HUDMAP,x
+    lda.b qtab+1
+    and #$03.b
+    ora #$2C.b
+    sta HUDMAP+1,x
+    plp
+    rtl
+
+MkHudLevelFar:
+    sep #$20
+    .ACCU 8
+    stz scr6
+    lda cpu2
+    beq +
+    ldx #FP2OFS.w
+    rep #$20
+    .ACCU 16
+    lda FP+F_CHAR,x
+    cmp #CharMrkarate.w
+    sep #$20
+    .ACCU 8
+    bne +
+    lda #1
+    sta scr6
++   lda cpu1
+    beq +
+    ldx #0
+    rep #$20
+    .ACCU 16
+    lda FP+F_CHAR,x
+    cmp #CharMrkarate.w
+    sep #$20
+    .ACCU 8
+    bne +
+    lda #1
+    sta scr6
++   lda scr6
+    beq +
+    lda #8
+    rtl
++   lda DIFFICULTY
+    rtl
+
+DrawLevelFar:
+    rep #$20
+    .ACCU 16
+    lda #((27*32+12)*2).w               ; 7 cells = 56 px -> x=96..151
+    sta scr0
+    lda #StrLevel.w
+    sta scr2
+    sep #$20
+    .ACCU 8
+    lda #:StrLevel
+    sta scr2+2
+    jsl WriteStrFar
+    jsl MkHudLevelFar                      ; boss Mr. Karate shows LEVEL 8
+    clc
+    adc #27                             ; charset: '0' is tile 27
+    pha
+    rep #$20
+    .ACCU 16
+    ldx #((27*32+18)*2).w               ; space at col 17, digit at col 18
+    sep #$20
+    .ACCU 8
+    pla
+    sta HUDMAP,x
+    lda #ATT_TXT.b
+    sta HUDMAP+1,x
+    rep #$20
+    .ACCU 16
+    rtl
+
+
+; A(16) in scr2 = name pointer.  When JAPANESE is selected and the pointer
+; is the American spelling, replace it with the original Japanese one.
+VegaNameFar:
+    php
+    sep #$20
+    .ACCU 8
+    lda.w Q_LANG
+    cmp #4.b
+    bne +
+    rep #$20
+    .ACCU 16
+    lda scr2
+    cmp #vegaName.w
+    bne +
+    lda #vegaNameJa.w
+    sta scr2
+    sep #$20
++   plp
+    rtl
+
+VegaStrFar:
+    php
+    sep #$20
+    .ACCU 8
+    lda.w Q_LANG
+    cmp #4.b
+    bne +
+    rep #$20
+    .ACCU 16
+    lda scr2
+    cmp #StrVega.w
+    bne +
+    lda #StrVegaJa.w
+    sta scr2
+    sep #$20
++   plp
+    rtl
+
+VegaBStrFar:
+    php
+    sep #$20
+    .ACCU 8
+    lda.w Q_LANG
+    cmp #4.b
+    bne +
+    rep #$20
+    .ACCU 16
+    lda scr2
+    cmp #BStrVega.w
+    bne +
+    lda #BStrVegaJa.w
+    sta scr2
+    sep #$20
++   plp
+    rtl
+
+; qtab = 24-bit pointer to the winner's {n, KANA index...} list
+; (QuoteTab+120).  No-op outside JAPANESE and after the cache is ready.
+JaQuotePrepareFar:
+    php
+    sep #$20
+    .ACCU 8
+    ; Keep the caller's QuoteTab pointer (scr2) intact across the upload.
+    lda scr2
+    pha
+    lda scr2+1
+    pha
+    lda scr2+2
+    pha
+    lda.w Q_LANG
+    cmp #4.b
+    beq +
+    jmp JQP_out
++   lda.l JA_QUOTE_READY
+    beq +
+    jmp JQP_out
++
+    ; The glyph list follows QuoteTab's 40 24-bit pointers (+120).
+    rep #$20
+    .ACCU 16
+    lda scr2
+    clc
+    adc #120.w
+    sta qtab
+    sep #$20
+    .ACCU 8
+    lda scr2+1
+    adc #0
+    sta.b qtab+1
+    lda scr2+2
+    sta.b qtab+2
+    ldy #0
+    lda [qtab],y                     ; n glyphs
+    sta.b scr4
+    bne +
+    jmp JQP_out
++
+    inc.b qtab
+    bne +
+    inc.b qtab+1
+    bne +
+    inc.b qtab+2
++   lda #$80.b
+    sta.l INIDISP
+    lda #0
+    sta.l NMITIMEN
+    stz.b scr5                       ; slot
+JQP_loop:
+    ldy #0
+    lda [qtab],y                     ; KANA index
+    sta.b scr6
+    inc.b qtab
+    bne +
+    inc.b qtab+1
+    bne +
+    inc.b qtab+2
++   ; source = HudKana + idx*16
+    sep #$20
+    lda.b scr6
+    rep #$20
+    .ACCU 16
+    and #$00FF.w
+    asl a
+    asl a
+    asl a
+    asl a
+    sta scr0
+    lda #HudKana.w
+    clc
+    adc scr0
+    sta scr0
+    lda #16.w
+    sta scr1
+    ; destination tile: 1004+slot (slot<20) or 41+(slot-20)
+    sep #$20
+    lda.b scr5
+    rep #$20
+    .ACCU 16
+    and #$00FF.w
+    cmp #KANA_SLOT_FREE.w
+    bcc JQP_low
+    sec
+    sbc #KANA_SLOT_FREE.w
+    clc
+    adc #KANA_SLOT_LOW_BASE.w
+    bra JQP_tile
+JQP_low:
+    clc
+    adc #KANA_SLOT_FREE_BASE.w
+JQP_tile:
+    asl a
+    asl a
+    asl a
+    clc
+    adc #BG3CHR.w
+    sta scr2
+    sep #$20
+    .ACCU 8
+    lda #:HudKana
+    jsl VrDmaFar
+    sep #$20
+    .ACCU 8
+    inc.b scr5
+    dec.b scr4
+    bne JQP_loop
+    lda #$0F.b
+    sta.l INIDISP
+    lda #$81.b
+    sta.l NMITIMEN
+    lda #1
+    sta.l JA_QUOTE_READY
+JQP_out:
+    pla
+    sta scr2+2
+    pla
+    sta scr2+1
+    pla
+    sta scr2
+    plp
+    rtl
+.ENDS

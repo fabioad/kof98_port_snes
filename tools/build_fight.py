@@ -24,6 +24,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from asset_paths import resolve as resolve_asset
 from sff import Sff, Sprite, snes_pal, tiles4bpp
 import close_normals
+from kana_charset import KANA
 from runtime_abi import ABI as RUNTIME_ABI, emit as emit_runtime_abi
 from calibration.projectiles import (PROJECTILE_ACTIONS,
                                      PROJECTILE_ACTION_SEQUENCES,
@@ -5857,7 +5858,44 @@ SPLIT_OLD = ("vice", "mature", "leona", "ralf",
              # Takuma's bank 83 low half was at the limit; the eight new
              # command slots need the metasprite blob moved out.
              "takuma")
-CHARSET = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:!?'-/+>,↑\"↓↘→↙←"
+ASCII_CHARSET = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:!?'-/+>,↑\"↓↘→↙←"
+
+# The fight HUD has no free 173-tile BG3 window: tiles 1004..1023 are the
+# only unused BG3 tiles, and the per-stage animation owns 384..703.  A
+# Japanese quote therefore gets a per-quote glyph cache: JaQuotePrepare
+# copies the kana it needs into the 20 free tiles plus 13 ASCII slots that
+# the win screen never uses (41..53, arrows/punctuation/solid block).
+# CHARSET appends the kana so normalisation and tests can see them.
+KANA_SLOT_MAX = 33
+KANA_SLOT_FREE = 20
+KANA_SLOT_FREE_BASE = 1004
+KANA_SLOT_LOW_BASE = 41
+KANA_INDEX = {ch: i for i, ch in enumerate(KANA)}
+KANA_CODE_BASE = len(ASCII_CHARSET)
+CHARSET = ASCII_CHARSET + KANA
+KANA_CODE = {ch: KANA_CODE_BASE + i for i, ch in enumerate(KANA)}
+
+
+def char_code(ch):
+    """Character -> byte stored in a length-prefixed HUD string.
+
+    ASCII keeps its historical tile index (0..53).  Kana use 54..226; the
+    renderer (WriteStr) maps that index to the real BG3 tile id so the
+    one-byte string format and all existing tables stay unchanged.
+    """
+    if ch in KANA_CODE:
+        return KANA_CODE[ch]
+    return ASCII_CHARSET.index(ch)
+
+
+def code_char(code):
+    """Inverse of char_code (used by the quote tests)."""
+    if code >= len(ASCII_CHARSET):
+        return KANA[code - len(ASCII_CHARSET)]
+    return ASCII_CHARSET[code]
+
+
+
 
 # The KOF99DM strip has no arrow glyphs.  The unused '@' slot becomes the
 # up arrow, and the four remaining directions used by the command list are
@@ -5882,15 +5920,21 @@ ARROW_GLYPHS = {
 
 # Victory-quote languages.  The first item is the JSON file name, the second
 # the runtime/label tag.  Q_LANG indexes this list, so keep the order stable
-# (0 = English, 1 = Portuguese, 2 = Spanish, 3 = French).
-QUOTE_LANGS = (("en", "en"), ("pt-BR", "pt"), ("es", "es"), ("fr", "fr"))
+# (0 = English, 1 = Portuguese, 2 = Spanish, 3 = French, 4 = Japanese).
+QUOTE_LANGS = (("en", "en"), ("pt-BR", "pt"), ("es", "es"), ("fr", "fr"),
+               ("ja", "ja"))
+# DrawWinQuote passes QuoteTab+120 to JaQuotePrepare; keep the fixed offset
+# in sync with the 40 24-bit pointers (5 languages x 4 pairs x 2 rows).
+assert len(QUOTE_LANGS) * 4 * 2 * 3 == 120
 QUOTE_DIR = os.path.join(ROOT, "assets", "data", "quotes")
 _QUOTE_DB = None
 # Unique quote strings collected while build_char runs.  Each language gets
 # its own generated include so the packer can drop them into free windows;
 # QuoteTab entries are 24-bit far pointers (.dl) into these sections.
 QUOTE_STRINGS = {tag: [] for _fname, tag in QUOTE_LANGS}
-# Per-character 16-pair tables (4 languages x 4 quotes, 24-bit far pointers).
+# name -> list of KANA indices used by that fighter's Japanese quote.
+JA_GLYPHS = {}
+# Per-character 20-pair tables (5 languages x 4 quotes, 24-bit far pointers).
 # They live in one shared section so tight character banks only keep their
 # gameplay tables; the descriptor's CH_QUOTE field holds the low address.
 QUOTE_TABLES = []
@@ -9672,8 +9716,8 @@ def build_command_list(name, cfg, button_rows, rules, cmddefs, max_sids=()):
 def emit_command_list(name, rows, inc):
     """Append strings + table to a character's _spr.inc buffer."""
     for i, row in enumerate(rows):
-        nids = [CHARSET.index(c) for c in row["name"]]
-        cids = [CHARSET.index(c) for c in row["cmd"]]
+        nids = [char_code(c) for c in row["name"]]
+        cids = [char_code(c) for c in row["cmd"]]
         inc.append(f"{name}CmdName{i}: .db {len(nids)}," +
                    ",".join(str(v) for v in nids) + "\n")
         inc.append(f"{name}CmdKey{i}: .db {len(cids)}," +
@@ -9712,7 +9756,7 @@ def emit_command_pool():
             out.append(f"    .db {row['sid']},{row['cat']}\n"
                        f"    .dw {nlab},{clab}\n")
     for label, text in strings:
-        ids = [CHARSET.index(c) for c in text]
+        ids = [char_code(c) for c in text]
         out.append(f"{label}: .db {len(ids)}," +
                    ",".join(str(v) for v in ids) + "\n")
     # A character skipped this run (stale calibration, missing asset) still
@@ -10494,14 +10538,28 @@ def load_quote_db():
     return _QUOTE_DB
 
 
+def _has_kana(text):
+    return any("\u3040" <= c <= "\u30ff" or "\uff66" <= c <= "\uff9f"
+               for c in text)
+
+
 def normalize_quote(text):
     """Fold a translated quote into the 8x8 HUD font's character set.
 
-    The KOF lifebar font only carries ASCII letters, digits and a handful of
-    punctuation marks.  Accented translations are kept in the JSON source;
-    they are transliterated here (á -> A, ç -> C, ...) so Portuguese, Spanish
-    and French render without extra font tiles.
+    The KOF lifebar font carries ASCII letters, digits, a handful of
+    punctuation marks and the Japanese kana added for the JAPANESE option.
+    Accented Latin translations are kept in the JSON source; they are
+    transliterated here (á -> A, ç -> C, ...).  Japanese text keeps its kana
+    (NFKC turns half-width kana into full-width and full-width !? into the
+    ASCII punctuation already used by the HUD).
     """
+    text = text.replace("\u3000", " ")
+    if _has_kana(text):
+        text = unicodedata.normalize("NFKC", text)
+        text = text.replace("\u2019", "'").replace("\u2018", "'")
+        text = "".join(c if c in CHARSET or c.isspace() else ""
+                       for c in text)
+        return re.sub(r"\s+", " ", text).strip()
     for src, dst in (("\u2019", "'"), ("\u2018", "'"), ("\u201c", '"'),
                      ("\u201d", '"'), ("\u2013", "-"), ("\u2014", "-"),
                      ("\u2026", "...")):
@@ -10515,7 +10573,27 @@ def normalize_quote(text):
 
 
 def wrap_quote(text, width=30, max_lines=2):
-    """Word-wrap a normalized quote; None when it cannot fit the HUD."""
+    """Word-wrap a normalized quote; None when it cannot fit the HUD.
+
+    Latin quotes break on spaces only.  Japanese has no word spaces, so it
+    may break between any two glyphs, preferring the last punctuation mark
+    (or space) inside the line.
+    """
+    if _has_kana(text):
+        lines, rest = [], text
+        while rest and len(lines) < max_lines:
+            if len(rest) <= width:
+                lines.append(rest)
+                rest = ""
+                break
+            cut = width
+            for i in range(width, max(width - 12, 0), -1):
+                if rest[i - 1] in " 。、！？":
+                    cut = i
+                    break
+            lines.append(rest[:cut].strip())
+            rest = rest[cut:].strip()
+        return None if rest else (lines if len(lines) <= max_lines else None)
     lines, cur = [], ""
     for word in text.split():
         if len(word) > width:
@@ -14126,7 +14204,7 @@ def build_char(name, cfg, global_pal=None):
                    f"{vx & 0xFFFF},{vy & 0xFFFF},{ay & 0xFFFF},0\n")
     print(f"{name}: {len(rules)} matcher rules, {len(mot_ids)} motions")
     display = cfg.get("display", name.upper())
-    name_ids = [CHARSET.index(c) for c in display]
+    name_ids = [char_code(c) for c in display]
     CHAR_NAMES.append(f"{name}Name: .db {len(name_ids)}," +
                       ",".join(str(i) for i in name_ids) + "\n")
 
@@ -14167,33 +14245,67 @@ def build_char(name, cfg, global_pal=None):
     #   Q_LANG*32 + (framecnt>>3 & 3)*4 -> pair offset (two .dw pointers).
     # Sources live in assets/data/quotes/*.json; the CNS [Quotes] block is
     # only a fallback for characters not yet in the database.
+    #
+    # The HUD has no free 173-tile BG3 window, so Japanese uses one quote
+    # per fighter and a per-fighter glyph cache (JaQuotePrepare): the kana
+    # it needs are stored as a list of indices into KANA and the text uses
+    # KANA_CODE_BASE+slot instead of a fixed kana tile id.
     quote_db = load_quote_db()
     lang_quotes = {}
     for fname, tag in QUOTE_LANGS:
         raw = quote_db[tag].get(name) or quote_db["en"].get(name) or []
         quotes = []
-        for text in raw:
-            lines = wrap_quote(normalize_quote(text))
-            if lines:
-                quotes.append(lines)
-            else:
-                print(f"{name}: quote skipped ({tag}): {text!r}")
-        if not quotes:
-            quotes = legacy_quote_lines(name, cfg)
-        quotes = quotes[:4]
+        if tag == "ja":
+            if raw:
+                lines = wrap_quote(normalize_quote(raw[0]))
+                if lines:
+                    kana_used = []
+                    for line in lines:
+                        for ch in line:
+                            if ch in KANA_INDEX and ch not in kana_used:
+                                kana_used.append(ch)
+                    if len(kana_used) > KANA_SLOT_MAX:
+                        raise ValueError(
+                            f"{name}: Japanese quote needs {len(kana_used)} "
+                            f"kana, cache holds {KANA_SLOT_MAX}: {lines!r}")
+                    slot = {ch: i for i, ch in enumerate(kana_used)}
+                    quotes.append([
+                        [KANA_CODE_BASE + slot[c] if c in slot
+                         else char_code(c) for c in line]
+                        for line in lines])
+                    JA_GLYPHS[name] = [KANA_INDEX[c] for c in kana_used]
+                else:
+                    print(f"{name}: quote skipped ({tag}): {raw[0]!r}")
+            if not quotes:
+                quotes = [[[], []]]
+        else:
+            for text in raw:
+                lines = wrap_quote(normalize_quote(text))
+                if lines:
+                    quotes.append([[char_code(c) for c in line]
+                                   for line in lines])
+                else:
+                    print(f"{name}: quote skipped ({tag}): {text!r}")
+            if not quotes:
+                legacy = legacy_quote_lines(name, cfg)
+                if legacy:
+                    quotes = [[[char_code(c) for c in line] for line in lines]
+                              for lines in legacy]
+            quotes = quotes[:4]
         while len(quotes) < 4:
-            quotes.append(quotes[-1] if quotes else ["", ""])
+            quotes.append(quotes[-1] if quotes else [[], []])
         lang_quotes[tag] = quotes
     pair_tab = {}
     for fname, tag in QUOTE_LANGS:
         # identical padded slots share one stored pair; QuoteTab rows alias
         pair_idx = {}
         for qi, lines in enumerate(lang_quotes[tag]):
-            pair_idx.setdefault(tuple(lines + [""] * (2 - len(lines))), qi)
+            key = tuple(tuple(line) for line in
+                        (lines + [[]] * (2 - len(lines))))
+            pair_idx.setdefault(key, qi)
         pair_tab[tag] = pair_idx
         for lines, ui in pair_idx.items():
-            for li, s in enumerate(lines):
-                ids = [CHARSET.index(c) for c in s]
+            for li, ids in enumerate(lines):
                 QUOTE_STRINGS[tag].append(
                     f"{name}Q{tag}{ui}{'ab'[li]}: .db {len(ids)}" +
                     (("," + ",".join(str(i) for i in ids)) if ids else "")
@@ -14202,9 +14314,18 @@ def build_char(name, cfg, global_pal=None):
     for fname, tag in QUOTE_LANGS:
         pair_idx = pair_tab[tag]
         for lines in lang_quotes[tag]:
-            ui = pair_idx[tuple(lines + [""] * (2 - len(lines)))]
+            key = tuple(tuple(line) for line in
+                        (lines + [[]] * (2 - len(lines))))
+            ui = pair_idx[key]
             QUOTE_TABLES.append(f"    .dl {name}Q{tag}{ui}a\n"
                                 f"    .dl {name}Q{tag}{ui}b\n")
+    # Japanese glyph list lives at a fixed +120 offset from QuoteTab (40
+    # 24-bit pointers).  DrawWinQuote passes that address to JaQuotePrepare,
+    # so team swaps automatically get the current fighter's kana.
+    glyphs = JA_GLYPHS.get(name, [])
+    QUOTE_TABLES.append(f"{name}QjaGlyphs: .db {len(glyphs)}" +
+                        (("," + ",".join(str(i) for i in glyphs))
+                         if glyphs else "") + "\n")
 
     def shade_pal(data, mul, lift):
         """15-bit palette -> scaled copy: each channel * mul/256 + lift*rem."""
@@ -15191,6 +15312,12 @@ def build_spark():
     """Emit spark.chr (tiles placed at fixed OBJ indices), spark.inc
     (animation cell tables) and spark_pal.bin from the generic impact and
     guard sprites.  Explods ride the same pipeline with their own palette."""
+    if os.environ.get("KOF_SKIP_SPARK") == "1" and all(
+            os.path.exists(os.path.join(OUT, f)) for f in
+            ("spark.chr", "spark_b.chr", "spark_pal.bin", "wood_pal.bin",
+             "spark.inc")):
+        print("spark: reused existing outputs (KOF_SKIP_SPARK=1)")
+        return
     sff_cache = {}
     air_cache = {}
 
@@ -16081,7 +16208,7 @@ def build_hud():
 
     # --- small font: KOF99DM 8x8 (Stage.fnt = Life Names Simul.fnt) ------
     fnt = _fnt_v1(os.path.join(lb_dir, files['font7']))
-    for ch in CHARSET:
+    for ch in ASCII_CHARSET:
         cell = bytearray(64)
         spr = fnt.get(ch) or fnt.get(ch.lower()) or fnt.get(ch.upper())
         if spr:
@@ -16112,7 +16239,7 @@ def build_hud():
     # Reuse the otherwise-unused '"' glyph slot as a solid 2bpp block for
     # panel fills (ORDER SELECT headers/frames).  Colour index 2 keeps it
     # usable with both palette 6 (steel blue) and the new side palettes.
-    solid_idx = CHARSET.index('"')
+    solid_idx = char_code('"')
     tiles[solid_idx * 16:(solid_idx + 1) * 16] = tiles2bpp(
         bytes([2] * 64), 8, 8)
 
@@ -16299,6 +16426,15 @@ def build_hud():
                          "($2000-$2BFF, before STGACHR=$2C00)")
     open(os.path.join(OUT, "hud.chr"), "wb").write(tiles)
 
+    # Japanese kana source tiles (2bpp).  JaQuotePrepare copies only the
+    # glyphs used by the current quote into the free HUD tiles at runtime.
+    kana_path = os.path.join(ROOT, "assets", "fonts", "kana8.chr")
+    kana = open(kana_path, "rb").read()
+    if len(kana) != len(KANA) * 16:
+        raise ValueError(f"{kana_path}: expected {len(KANA) * 16} bytes, "
+                         f"got {len(kana)}")
+    open(os.path.join(OUT, "hudkana.chr"), "wb").write(kana)
+
     strs = {
         "StrTitle": "FIGHTING ENGINE",
         "StrStart": "PRESS 1P OR 2P START",
@@ -16346,11 +16482,19 @@ def build_hud():
     strs["CmdListSide1"] = "P1"
     strs["CmdListSide2"] = "P2"
     strs["CmdListHelp"] = "UP/DN L/R SIDE  START EXIT"
+    # Both spellings exist in every profile; the runtime picks by Q_LANG.
+    strs["StrVega"] = "M.BISON"
+    strs["StrVegaJa"] = "VEGA"
     inc = []
+    inc.append(f"KANA_CODE_BASE = {len(ASCII_CHARSET)}\n"
+               f"KANA_SLOT_MAX = {KANA_SLOT_MAX}\n"
+               f"KANA_SLOT_FREE = {KANA_SLOT_FREE}\n"
+               f"KANA_SLOT_FREE_BASE = {KANA_SLOT_FREE_BASE}\n"
+               f"KANA_SLOT_LOW_BASE = {KANA_SLOT_LOW_BASE}\n")
     inc.append(f"PORTRAIT_P1 = {portrait_base}\n"
                f"PORTRAIT_P2 = {portrait_base + 9}\n")
     for label, s in strs.items():
-        ids = [CHARSET.index(c) for c in s]
+        ids = [char_code(c) for c in s]
         inc.append(f"{label}: .db {len(ids)}," +
                    ",".join(str(i) for i in ids) + "\n")
     # Runtime indexes these by row category / short tag.
@@ -16360,8 +16504,8 @@ def build_hud():
     inc.append("CmdCatShortTab: .dw " +
                ",".join(f"CmdCatShort{i}"
                         for i in range(len(CMD_CATEGORIES))) + "\n")
-    inc.append(f"CMD_CUR_TILE = {CHARSET.index('>')}\n"
-               f"CMD_USED_TILE = {CHARSET.index('+')}\n")
+    inc.append(f"CMD_CUR_TILE = {char_code('>')}\n"
+               f"CMD_USED_TILE = {char_code('+')}\n")
     bstrs = {
         "BStrKO": "K.O.",
         "BStrTime": "TIME OVER",
@@ -16391,6 +16535,8 @@ def build_hud():
         "BStrDaimon": "DAIMON",
         "BStrORugal": "OMEGA",
         "BStrSel": "SELECT",
+        "BStrVega": "M.BISON",
+        "BStrVegaJa": "VEGA",          # Q_LANG == 4, win banner
     }
     for _k in NEW_CHARS:
         if _k in CHARS:
@@ -16444,16 +16590,21 @@ def build_hud():
         (0, 0, 0), (20, 16, 20), (246, 91, 8), (255, 246, 201),
     ]
     open(os.path.join(OUT, "hud_pal.bin"), "wb").write(snes_pal(pals, 20))
-    print(f"hud: {len(CHARSET)} + {len(BIGSET)}x2 font tiles, "
-          f"{len(tiles) // 16} tiles total")
+    print(f"hud: {len(ASCII_CHARSET)} ascii + {len(KANA)} kana + "
+          f"{len(BIGSET)}x2 font tiles, {len(tiles) // 16} tiles total")
 
     # Arcade extras: hud2.chr (BG3 tiles 704+) + hud2.inc (blocks, HDMA).
     import build_hud_arcade
     arc = build_hud_arcade.build(lb_dir, files, fspr, go_key, ko_key,
-                                 _fnt_v1, _sff_imgs, _fnt_v2_sff, CHARSET,
+                                 _fnt_v1, _sff_imgs, _fnt_v2_sff,
+                                 ASCII_CHARSET,
                                  OUT, pow_box=(bottommap, bytes(tiles)),
                                  rounds=[fspr[k] for k in round_keys])
     print(f"hud2: {arc['tiles']} arcade tiles")
+    if 704 + arc['tiles'] > KANA_SLOT_FREE_BASE:
+        raise ValueError(f"arcade HUD uses tiles 704..{703 + arc['tiles']}; "
+                         f"the Japanese glyph cache starts at "
+                         f"{KANA_SLOT_FREE_BASE}")
 
 
 # Bank 59: HeidernData + ES quote strings from $0000, MatureData from here
@@ -16505,6 +16656,11 @@ def emit_newchars_inc(new_keys, msu_slices):
     with open(os.path.join(OUT, "char_names.inc"), "w") as f:
         f.write("; generated by tools/build_fight.py -- char name strings\n")
         f.write("".join(CHAR_NAMES))
+        # Always emit both Vega spellings: BASE4/TINY may not build the
+        # character's own table, but NamePtr still compares against them.
+        if not any(line.startswith("vegaName:") for line in CHAR_NAMES):
+            f.write("vegaName: .db 7,13,37,2,9,19,15,14\n")   # M.BISON
+        f.write("vegaNameJa: .db 4,22,5,7,1\n")               # VEGA
 
     def ai_label(k):
         # Kyo is the generic fallback: his EX variants and any character
@@ -16814,8 +16970,9 @@ def emit_newchars_inc(new_keys, msu_slices):
     # upper half.  A generated section there makes the linker reject
     # ShingoChrS once the allocation order changes, so leave the bank to
     # the fixed sections.
+    # Bank 117 is reserved for the Japanese quote strings + glyph lists.
     PVS_SLOTS += [(bank, 0, 32768)
-                  for bank in range(84, 118) if bank != 88]
+                  for bank in range(84, 117) if bank != 88]
     # Bank 82 is otherwise unused in the PVS build: its low half starts
     # after EndData18 (13 KiB) and its upper half is free.  Small overflow
     # tables/projectile atlases use these tail windows.
@@ -16943,7 +17100,8 @@ def emit_newchars_inc(new_keys, msu_slices):
         # 32 KiB once the GTA trio arrived.  QuoteTab stores 24-bit far
         # pointers, so the four blocks do not need to share a bank.
         out = []
-        _QSTR_BANKS = {"en": 52, "fr": 53, "pt": 54, "es": 55}
+        _QSTR_BANKS = {"en": 52, "fr": 53, "pt": 54, "es": 55,
+                       "ja": 56}
         for _tag, rel in qstr_files:
             _bank = _QSTR_BANKS.get(_tag, 52)
             out += [f".BANK {_bank} SLOT 0\n", ".ORGA $0000\n",
@@ -17260,7 +17418,8 @@ def emit_newchars_inc(new_keys, msu_slices):
         es_off = (_inc_size("heidern_spr.inc") + 0xFF) & ~0xFF
         assert es_off + qstr_sz["es"] <= MATURE_ORG   # MatureData above
         pvs_qstr = {"en": (44, en_off), "fr": (44, fr_off),
-                    "pt": (58, pt_off), "es": (59, es_off)}
+                    "pt": (58, pt_off), "es": (59, es_off),
+                    "ja": (117, 0x0000)}
     else:
         assert _inc_size("kyo_spr.inc") <= 0x9000   # ViceData starts there
         assert _inc_size("vice_spr.inc") <= 0x7000  # remainder of bank 60
@@ -17279,7 +17438,8 @@ def emit_newchars_inc(new_keys, msu_slices):
         es_off = (_inc_size("heidern_spr.inc") + 0xFF) & ~0xFF
         assert es_off + qstr_sz["es"] <= MATURE_ORG   # MatureData above
         pvs_qstr = {"en": (44, 0x3000), "fr": (44, 0x5000),
-                    "pt": (58, 0x9000), "es": (59, es_off)}
+                    "pt": (58, 0x9000), "es": (59, es_off),
+                    "ja": (117, 0x0000)}
     assert 0xC000 + qtab_sz <= 0x10000            # PVS bank 58
     # Standalone: each language gets its own free low half (see
     # qstr_standalone), so only the largest block must fit 32 KiB.

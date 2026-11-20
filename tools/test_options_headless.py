@@ -87,14 +87,14 @@ def run(library, rom):
         assert cursor(core) == ((24, 80), (216, 80)), (
             f"cursor not on LANGUAGE: {cursor(core)}")
         initial_lang = core.ram[LANG]
-        for _ in range(4):
+        for _ in range(5):
             before = core.ram[LANG]
             tap(core, RIGHT)
-            assert core.ram[LANG] == (before + 1) % 4
+            assert core.ram[LANG] == (before + 1) % 5
         tap(core, LEFT)
-        assert core.ram[LANG] == (initial_lang - 1) % 4
+        assert core.ram[LANG] == (initial_lang - 1) % 5
         tap(core, RIGHT)
-        print("PASS LANGUAGE cycles all four languages", flush=True)
+        print("PASS LANGUAGE cycles all five languages", flush=True)
 
         tap(core, DOWN)
         wait_for(core, lambda: core.ram[OPT] == 2, "sound-test module loaded")

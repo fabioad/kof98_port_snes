@@ -32,7 +32,7 @@ OptionsEnter:
     lda #8
     sta.w DIFFICULTY
 +   lda.w Q_LANG
-    cmp #4
+    cmp #5
     bcc +
     stz.w Q_LANG
 +   jsl ApplyDifficulty
@@ -287,11 +287,11 @@ OAD_lang:
     lda.w Q_LANG
     clc
     adc.b scr3
-    cmp #4
+    cmp #5
     bcc +
-    cmp #4
+    cmp #5
     beq ++
-    lda #3
+    lda #4
     bra +
 ++  lda #0
 +   sta.w Q_LANG

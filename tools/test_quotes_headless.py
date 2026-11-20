@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the four victory-quote languages render on the match-over screen.
+"""Verify the five victory-quote languages render on the match-over screen.
 
 Runs one Terry vs Iori match per language, writes Q_LANG before the KO and
 decodes rows 12/14 of the HUD tilemap.  Each rendered pair must match one of
@@ -8,6 +8,7 @@ the JSON quotes for that language.
 Usage: python3 tools/test_quotes_headless.py --launch
 """
 import argparse
+import re
 import sys
 import time
 from pathlib import Path
@@ -16,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
 import build_fight as bf                                  # noqa: E402
+from kana_charset import KANA                              # noqa: E402
 import test_fight_remote as t                             # noqa: E402
 from test_roster import (parse_tables, press, to_select,  # noqa: E402
                          lock_side, W_CPU2, W_LOCK1, W_LOCK2)
@@ -30,15 +32,37 @@ FP2_HP = 0x4050
 P1_ID, P2_ID = 15, 1
 
 
-def decode_row(ra, row):
+def ja_glyphs(name):
+    p = ROOT / "build" / "gen_fight" / "quote_tables.inc"
+    if not p.exists():
+        return []
+    m = re.search(rf"^{name}QjaGlyphs: \.db ([0-9,]+)$", p.read_text(),
+                  re.M)
+    if not m:
+        return []
+    vals = [int(x) for x in m.group(1).split(",")]
+    return vals[1:]                  # skip the length byte
+
+
+def decode_row(ra, row, glyphs=None):
     raw = ra.read_ram(HUDMAP + row * 64, 64)
-    ids = [raw[i] for i in range(0, 64, 2)]
+    # HUDMAP is a BG map: low byte + tile bits 8-9 in the high byte.
+    ids = [raw[i] | ((raw[i + 1] & 0x03) << 8) for i in range(0, 64, 2)]
     while ids and ids[0] == 0:
         ids.pop(0)
     while ids and ids[-1] == 0:
         ids.pop()
-    return "".join(bf.CHARSET[i] if i < len(bf.CHARSET) else "?"
-                   for i in ids)
+    if glyphs is not None:
+        def ch(i):
+            if 1004 <= i < 1024:
+                return KANA[glyphs[i - 1004]]
+            if 41 <= i <= 53:
+                return KANA[glyphs[20 + (i - 41)]]
+            return bf.code_char(i) if i < len(bf.ASCII_CHARSET) else "?"
+    else:
+        def ch(i):
+            return bf.code_char(i) if i < len(bf.ASCII_CHARSET) else "?"
+    return "".join(ch(i) for i in ids)
 
 
 def expected_pairs(name, tag):
@@ -87,7 +111,8 @@ def main():
             t.wait_for(ra, lambda s: ra.read_ram(NEXTFLAG, 1)[0] == 2,
                        timeout=40, interval=0.05)
             time.sleep(0.15)
-            pair = (decode_row(ra, 12), decode_row(ra, 14))
+            glyphs = ja_glyphs("terry") if tag == "ja" else None
+            pair = (decode_row(ra, 12, glyphs), decode_row(ra, 14, glyphs))
             print(f"{tag}: {pair!r}")
             if pair not in want[tag]:
                 raise AssertionError(

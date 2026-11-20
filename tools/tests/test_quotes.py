@@ -52,7 +52,7 @@ class QuoteTests(unittest.TestCase):
     def setUpClass(cls):
         cls.db = bf.load_quote_db()
 
-    def test_every_character_has_all_four_languages(self):
+    def test_every_character_has_all_languages(self):
         for _fname, tag in bf.QUOTE_LANGS:
             with self.subTest(lang=tag):
                 self.assertEqual(sorted(bf.CHARS), sorted(self.db[tag]))
@@ -81,6 +81,19 @@ class QuoteTests(unittest.TestCase):
                         for line in lines:
                             self.assertLessEqual(len(line), 30)
 
+    def test_kana_table_matches_the_committed_font(self):
+        from kana_charset import KANA
+        font = (ROOT / "assets" / "fonts" / "kana8.chr").read_bytes()
+        self.assertEqual(len(KANA) * 16, len(font))
+        self.assertEqual(len(bf.ASCII_CHARSET) + len(KANA), len(bf.CHARSET))
+        self.assertEqual(len(bf.ASCII_CHARSET), bf.KANA_CODE_BASE)
+        self.assertEqual(bf.KANA_SLOT_MAX,
+                         bf.KANA_SLOT_FREE + 13)
+        self.assertEqual(bf.KANA_SLOT_FREE_BASE, 1004)
+        self.assertEqual(bf.KANA_SLOT_LOW_BASE, 41)
+        for ch in KANA:
+            self.assertEqual(ch, bf.code_char(bf.char_code(ch)))
+
     def test_normalize_folds_accents_and_unsupported_punctuation(self):
         self.assertEqual("VOCE NAO E UM JOGUETE",
                          bf.normalize_quote("Você não é um joguete"))
@@ -89,26 +102,38 @@ class QuoteTests(unittest.TestCase):
         self.assertEqual("HOLA MUNDO!", bf.normalize_quote("¡Hola, mundo!"))
         self.assertEqual("DON'T STOP", bf.normalize_quote("Don’t stop"))
 
-    def test_table_has_four_languages_times_four_pairs(self):
+    def test_table_has_all_languages_times_four_pairs(self):
         # Language-major layout consumed by DrawWinQuote:
         # y = (Q_LANG*4 + quote)*6, i.e. Q_LANG*24 + quote*6.
-        self.assertEqual(4, len(bf.QUOTE_LANGS))
-        self.assertEqual(32, 4 * 4 * 2)
+        self.assertEqual(5, len(bf.QUOTE_LANGS))
+        self.assertEqual(40, 5 * 4 * 2)
 
     @unittest.skipUnless((GEN / "quote_tables.inc").exists(),
                          "generated fight data not built")
     def test_generated_tables_decode_to_the_json_quotes(self):
+        from kana_charset import KANA
         tables = _parse_tables(GEN / "quote_tables.inc")
         strings = {}
         for _fname, tag in bf.QUOTE_LANGS:
             strings.update(_parse_dbs(GEN / f"quote_strings_{tag}.inc"))
+        ja_glyphs = _parse_dbs(GEN / "quote_tables.inc")
+
+        def decode(name, tag, code):
+            if tag == "ja" and code >= bf.KANA_CODE_BASE:
+                glyphs = ja_glyphs[f"{name}QjaGlyphs"][1:]
+                return KANA[glyphs[code - bf.KANA_CODE_BASE]]
+            return bf.code_char(code)
 
         for name in bf.CHARS:
             table = tables[f"{name}QuoteTab"]
-            self.assertEqual(32, len(table),
-                             f"{name}: 4 languages x 4 pairs x 2 pointers")
+            self.assertEqual(40, len(table),
+                             f"{name}: 5 languages x 4 pairs x 2 pointers")
             for li, (_fname, tag) in enumerate(bf.QUOTE_LANGS):
                 raw = self.db[tag][name]
+                if tag == "ja":
+                    # One quote per fighter so the glyph cache stays small;
+                    # the other three runtime slots alias it.
+                    raw = raw[:1]
                 expected = [bf.wrap_quote(bf.normalize_quote(q))
                             for q in raw]
                 expected = expected[:4]
@@ -124,7 +149,8 @@ class QuoteTests(unittest.TestCase):
                         vals = strings[ptr]
                         length = vals[0] if vals else 0
                         ids = vals[1:1 + length]
-                        rows.append("".join(bf.CHARSET[i] for i in ids))
+                        rows.append("".join(decode(name, tag, i)
+                                            for i in ids))
                     want = expected[qi] + [""] * (2 - len(expected[qi]))
                     self.assertEqual(want, rows,
                                      f"{name} {tag} slot {qi}")

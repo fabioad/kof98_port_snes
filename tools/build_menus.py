@@ -26,6 +26,8 @@ TITLE_LOGO = (sys.argv[2] if len(sys.argv) > 2 else
 DST = os.path.join(ROOT, "src/gen_menu")
 INTRO_DST = os.path.join(DST, "intro")
 GEN_FIGHT = os.path.join(ROOT, "src/gen_fight")
+if not os.path.isdir(GEN_FIGHT):
+    GEN_FIGHT = os.path.join(ROOT, "build", "gen_fight")
 
 FONT_TILES = 49          # hud charset + ",@\"" for the MSU credits line
 CUR_TILE_IDX = 60        # OBJ tile index the bracket pair lands on

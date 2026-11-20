@@ -365,7 +365,9 @@ Hidden forms:
   frozen timer and idle CPU for testing setups.
 - **Attract demo:** after a few seconds without input, the ROM plays a
   CPU vs CPU fight and then enters the opening.
-- **Options and sound test:** game settings and music playback.
+- **Options and sound test:** game settings, five victory-quote languages
+  (English, Portuguese, Spanish, French and Japanese) and music playback.
+  Japanese uses an 8x8 kana glyph cache and kana-only quotes (no kanji).
 - **P2 palettes:** in a mirror match, the second player gets the next palette
   from the source package.
 - **AI:** zoner, rush, grappler and balanced profiles; aggression, defense,
