@@ -161,6 +161,16 @@ PROJECTILE_ALT_EFFECTS = {
         "squeeze_w": 64,
         "squeeze_h": 64,
     },
+    # John's Flame Raid (states 1400/1410) draws the fire with Explod 6040
+    # and the source projectile itself is invisible.  Keep the native hitbox
+    # invisible too, so the alternate ProjFx clip does not draw a second
+    # fireball over the authored flame.
+    "john": {
+        "action": 6040,
+        "invisible": True,
+        "sids": (56, 57),
+        "release": 6,
+    },
 
 }
 

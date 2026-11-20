@@ -6850,6 +6850,97 @@ REV_VICTIM_SLOT = {
 # for 0.  Apply it on the TargetState slam (AnimElem 7 -> frame 6).
 _late_act("mary", {1525: [(6, 3, -55, 0)]})
 
+# John: the source puts the real attack in child states and chains on
+# MoveHit/MoveContact + NumTarget, which trans_rules cannot encode.  The
+# root moves therefore played only their startup pose (Flying Attack did
+# 0, Spiral Leg Bomber 1, Overdrive Kick only the first contact).  Wire the
+# child attack states and cinematic follow-ups into synthetic sids
+# 103-109; the engine already treats S_EXT_GRAB..S_EXT_LAST as special
+# follow-ups and keeps the bound victim while the owner is there.
+if "john" in CHARS:
+    _wire_followups("john", [
+        (103, 1101, 1102),   # Flying Attack weak: leap + attack clip
+        (104, 1120, 1120),   # Flying Attack catch + 12 hits
+        (105, 1201, 1201),   # Spiral Leg Bomber weak: hit state
+        (106, 1220, 1220),   # Spiral Leg Bomber catch + hits
+        (107, 1305, 1305),   # Overdrive Kick multi-hit follow-up
+        (108, 1111, 1102),   # Flying Attack strong (same attack clip)
+        (109, 1211, 1201),   # Spiral Leg Bomber strong (same clip)
+    ], [
+        (103, 104, 3, 0), (108, 104, 3, 0),
+        (105, 106, 3, 0), (109, 106, 3, 0),
+        (58, 106, 3, 0), (59, 106, 3, 0),   # air Spiral -> same follow-up
+        (54, 107, 3, 0), (55, 107, 3, 0),   # Overdrive contact -> 1305
+        # Whiff/landing exits: these states otherwise sit on their last
+        # animation frame until the engine's 255-tick fallback.
+        (103, 0, 0, 0), (108, 0, 0, 0),
+        (105, 0, 0, 0), (109, 0, 0, 0),
+        (104, 0, 0, 0), (106, 0, 0, 0), (107, 0, 0, 0),
+    ])
+    # 1130/1230 are John's held victim poses; map them to the generic held
+    # slot so the TargetState rows in 1120/1220 survive ActTab compilation.
+    # 1131/1231 are the release/flight poses.
+    VICTIM_STATE_IDS.update({1130: 76, 1230: 76, 1131: 77, 1231: 77})
+    # The auto projectile heuristic misread the Spiral Leg Bomber's dash
+    # HitDef as a travelling shot (1 damage).  John's real shots are Mega
+    # Smash (48/49) and the five super slots (85-89).
+    PROJECTILE_EXCLUDE["john"] = tuple(range(50, 60))
+    # 1120/1220 bind the victim on entry with BindToTarget (attacker follows
+    # the victim), which the native engine does not implement.  Bind the
+    # victim to the attacker instead for the whole catch window so the
+    # TargetLifeAdd rows in the follow-up can connect; the source's release
+    # TargetBind at element 13 still lands on frame 12.
+    _tweak("john", "bind_extra", {
+        1120: [(0, 11, 0, 0)],
+        1220: [(0, 11, 0, 0)],
+    })
+    # 1305 is a five-contact flurry.  The source re-arms the HitDef with
+    # MoveHitReset, but each contact launched the victim out of range and
+    # only the first 8-point hit landed.  Keep the victim grounded through
+    # the re-arms; the final contact still ends in the generic knockdown.
+    # The strong Spiral Leg Bomber (1211) launches at 6 px/tick, twice the
+    # weak version, and overshoots the 1201 hit window at every tested
+    # spacing.  Keep the 1201 trajectory so both strengths connect; the
+    # strong row keeps its larger damage.
+    _late_act("john", {
+        1211: [(0, 5, 3, 0), (0, 15, 220, 0),
+               (6, 5, 3, 0), (6, 15, 32, 0)],
+        # Same overshoot on the strong air version (1260 at 4 px/tick).
+        1260: [(0, 5, 2, 0), (0, 15, 232, 0),
+               (6, 5, 3, 0), (6, 15, 32, 0)],
+    })
+    _tweak("john", "hitdef_override", {
+        # Flying Attack / Spiral Leg Bomber open with a catch: mark the
+        # victim as held so the follow-up TargetLifeAdd rows pass
+        # MkThrowComboFar instead of being skipped.
+        103: {"p2state": 76, "throw": 1, "fall": 0,
+              "gvx": 0, "gvy": 0, "avx": 0, "avy": 0},
+        105: {"p2state": 76, "throw": 1, "fall": 0,
+              "gvx": 0, "gvy": 0, "avx": 0, "avy": 0},
+        108: {"p2state": 76, "throw": 1, "fall": 0,
+              "gvx": 0, "gvy": 0, "avx": 0, "avy": 0},
+        109: {"p2state": 76, "throw": 1, "fall": 0,
+              "gvx": 0, "gvy": 0, "avx": 0, "avy": 0},
+        58: {"p2state": 76, "throw": 1, "fall": 0,
+             "gvx": 0, "gvy": 0, "avx": 0, "avy": 0},
+        59: {"p2state": 76, "throw": 1, "fall": 0,
+             "gvx": 0, "gvy": 0, "avx": 0, "avy": 0},
+        # Overdrive Kick: the source's first HitDef launches on contact, so
+        # the 1305 flurry never reached the victim.  Keep them grounded for
+        # the multi-hit; the flurry's last contact still ends the combo.
+        54: {"fall": 0, "gvx": 0, "gvy": 0, "avx": 0, "avy": 0},
+        55: {"fall": 0, "gvx": 0, "gvy": 0, "avx": 0, "avy": 0},
+        107: {"damage": 4, "gdamage": 1, "fall": 0,
+              "gvx": 0, "gvy": 0, "avx": 0, "avy": 0},
+    })
+    # Flame Raid (56/57) is a stationary flame burst.  The source helper
+    # spawns an invisible projectile whose damage/guard lives in 1402; the
+    # visible flame is Explod 6040, so keep the hitbox invisible.
+    POST_CAL_PROJS_FULL.setdefault("john", {}).update({
+        56: (0x0000, 14, 4, 0x0A),
+        57: (0x0000, 20, 4, 0x0A),
+    })
+
 # Runtime SFX ids -- kept in sync with the SAMPLES order in
 # tools/build_audio.py (spc_ids.inc is generated from that list).
 CHAR_VOICES = {}                        # name -> {(snd group,item): voice id}
