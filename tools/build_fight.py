@@ -26,6 +26,7 @@ from sff import Sff, Sprite, snes_pal, tiles4bpp
 import close_normals
 from kana_charset import KANA
 from runtime_abi import ABI as RUNTIME_ABI, emit as emit_runtime_abi
+from walk_speed import read_walk_speed
 from calibration.projectiles import (PROJECTILE_ACTIONS,
                                      PROJECTILE_ACTION_SEQUENCES,
                                      PROJECTILE_SOURCE_PALETTES,
@@ -2093,13 +2094,13 @@ POST_CAL_CATEGORIES = {
 # super command.
 POST_CAL_POW_OVERRIDE = {
     "daimon": {60: -1000},
-}
     # The blowback (sid 67) inherits the source guard-cancel PowerAdd
     # (-1000/-2000), which spent a stock and lit the super flash/dim.  The
     # normal blowback is free, as it already is for Jason and Lucia.
     "mature": {67: 0},
     "athena": {67: 0},
     "mary": {67: 0},
+}
 
 
 def max_sid_mask(sids):
@@ -17341,6 +17342,14 @@ def emit_newchars_inc(new_keys, msu_slices):
     for k in new_keys:
         C = cap(k)
         pfx = CHARS[k].get("projfx_alias", k)
+        # Per-character walk speed (walk.fwd/walk.back from the MUGEN source,
+        # 8.8 px/tick).  The engine used to share one WALKSPD for everyone.
+        ws = read_walk_speed(CHARS[k].get("cns", ""),
+                             CHARS[k].get("coord_scale", 1))
+        if ws is None:
+            print(f"walk_speed: {k}: [Velocity] not found, using 2.40/-2.20",
+                  file=sys.stderr)
+            ws = (0x0266, 0xFD9A)          # 2.40 / -2.20 px/tick
         if k in msu_slices:
             sl = msu_slices[k]
             chr_fields = [f"    .dw {sl >> 8}\n",
@@ -17387,7 +17396,8 @@ def emit_newchars_inc(new_keys, msu_slices):
               f"    .dw {k}CmdList\n",
               f"    .db :{k}CmdList, {MAX_MASKS.get(k, 0)}\n",
               f"    .dw {k}CancelRow\n",
-              f"    .dw {k}PoseTab\n"]
+              f"    .dw {k}PoseTab\n",
+              f"    .dw ${ws[0]:04X}, ${ws[1]:04X}\n"]
     for k in new_keys:
         C = cap(k)
         d += [f"{C}Pal: .INCBIN \"gen_fight/{k}_pal.bin\"\n",

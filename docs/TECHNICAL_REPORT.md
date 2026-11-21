@@ -147,8 +147,7 @@ Os stages 3D não podem ser executados como GLB no SNES. A aproximação recomen
 
 Constantes clássicas relevantes:
 
-- walk forward: 2,4 px/tick;
-- walk backward: 2,2 px/tick;
+- walk forward/backward: **por personagem** — cada descritor carrega `CH_WALKF`/`CH_WALKB` lidos de `[Velocity]` (`walk.fwd`/`walk.back`) do CNS/Constants MUGEN de origem (ex.: Kyo 2,80/-2,80; Choi 4,00/-2,50; Chang 1,82/-1,77);
 - run: 4,6 px/tick;
 - jump neutral: -8,4 px/tick;
 - pulo baixo: -6,5 px/tick; pulo alto: -10,5 px/tick;

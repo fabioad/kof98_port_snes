@@ -363,6 +363,8 @@
 .DEFINE CH_CANCELROW 92                 ; 22 normal cancel opens (sids 5..26)
 .DEFINE CH_POSETAB  94                 ; held-victim pose anims (TargetPose op)
                                         ;   in the CancelData bank (.db each)
+.DEFINE CH_WALKF    96                 ; walk.fwd  (8.8 px/tick, facing-relative)
+.DEFINE CH_WALKB    98                 ; walk.back (8.8 px/tick, signed)
 .DEFINE CH_MAXMASK   91                 ; bit0..bit4 = sids 85..89 are MAX/SDM
                                         ;   (byte uses the padding after
                                         ;   CH_CMDLISTBANK; layout unchanged)
@@ -9295,34 +9297,62 @@ SM_walk:
     jmp StMove
 
 StMove:
-    ; A = held dpad mask; x = fofs; decide fwd/back by facing
-    rep #$20
+    ; A = held dpad mask (already 16-bit); x = fofs; decide fwd/back by facing.
+    ; Speed is per character: CH_WALKF/CH_WALKB hold walk.fwd/walk.back
+    ; from the MUGEN source, so light and heavy fighters move differently.
     .ACCU 16
     and #(JOY_RT).w
-    bne +
-        jmp SM_left
-    + 
+    beq SM_left
+    ldx fofs
     lda FP+F_FACING,x
-    bmi +
-    lda #WALKSPD.w
+    bmi SM_right_back
+    jsr WalkFwdSpd
     sta FP+F_VX,x
     lda #S_WALKF
     jmp StSetMove
-+   lda #WALKSPD.w
+SM_right_back:
+    jsr WalkBackSpd
     sta FP+F_VX,x
     lda #S_WALKB
     jmp StSetMove
 SM_left:
+    ldx fofs
     lda FP+F_FACING,x
-    bmi +
-    lda #-WALKSPD.w
+    bmi SM_left_fwd
+    jsr WalkBackSpd
+    eor #$FFFF.w
+    inc a
     sta FP+F_VX,x
     lda #S_WALKB
     jmp StSetMove
-+   lda #-WALKSPD.w
+SM_left_fwd:
+    jsr WalkFwdSpd
+    eor #$FFFF.w
+    inc a
     sta FP+F_VX,x
     lda #S_WALKF
     jmp StSetMove
+
+.IFNDEF PVSNESLIB
+; A(16) = |walk speed| from the character descriptor.  fofs = fighter.
+WalkFwdSpd:
+    ldy #CH_WALKF
+    bra WalkSpd
+WalkBackSpd:
+    ldy #CH_WALKB
+WalkSpd:
+    rep #$20
+    .ACCU 16
+    phx
+    ldx #scr2
+    jsr CharPtr
+    lda scr2
+    bpl +                             ; walk.back is negative in the source
+    eor #$FFFF.w
+    inc a
++   plx
+    rts
+.ENDIF
 
 StSetMove:                              ; A(16) target sid, x = fofs.  Walk is
     cmp FP+F_STATE,x                    ;   re-requested every held tick: skip
@@ -19672,6 +19702,26 @@ DFC_done:
     rep #$20
     .ACCU 16
     rts
+
+; A(16) = |walk speed| from the character descriptor.  fofs = fighter.
+; Same bank as Fight, outside the 32 KiB Fight window.
+WalkFwdSpd:
+    ldy #CH_WALKF
+    bra WalkSpd
+WalkBackSpd:
+    ldy #CH_WALKB
+WalkSpd:
+    rep #$20
+    .ACCU 16
+    phx
+    ldx #scr2
+    jsr CharPtr
+    lda scr2
+    bpl +                             ; walk.back is negative in the source
+    eor #$FFFF.w
+    inc a
++   plx
+    rts
 .ENDS
 .ENDIF
 
@@ -22855,6 +22905,7 @@ CharIori:
     .db 0, ioriMaxMask
     .dw ioriCancelRow
     .dw ioriPoseTab
+    .dw $02CD, $FD33                 ; walk.fwd / walk.back (8.8)
 CharKyo:
     .dw kyoSprOfs, kyoBoxTab, kyoAnimTab
     .dw kyoActiveTab, kyoDamageTab, kyoHitTimeTab
@@ -22894,6 +22945,7 @@ CharKyo:
     .db 0, kyoMaxMask
     .dw kyoCancelRow
     .dw kyoPoseTab
+    .dw $02CD, $FD33                 ; walk.fwd / walk.back (8.8)
 CharShingo:
     .dw shingoSprOfs, shingoBoxTab, shingoAnimTab
     .dw shingoActiveTab, shingoDamageTab, shingoHitTimeTab
@@ -22933,6 +22985,7 @@ CharShingo:
     .db :shingoCmdList, shingoMaxMask
     .dw shingoCancelRow
     .dw shingoPoseTab
+    .dw $02CD, $FD33                 ; walk.fwd / walk.back (8.8)
 CharRugal:
     .dw rugalSprOfs, rugalBoxTab, rugalAnimTab
     .dw rugalActiveTab, rugalDamageTab, rugalHitTimeTab
@@ -22967,6 +23020,7 @@ CharRugal:
     .db 0, rugalMaxMask
     .dw rugalCancelRow
     .dw rugalPoseTab
+    .dw $0233, $FDCD                 ; walk.fwd / walk.back (8.8)
 CharOmegaRugal:
     .dw omegarugalSprOfs, omegarugalBoxTab, omegarugalAnimTab
     .dw omegarugalActiveTab, omegarugalDamageTab, omegarugalHitTimeTab
@@ -23006,6 +23060,7 @@ CharOmegaRugal:
     .db 0, omegarugalMaxMask
     .dw omegarugalCancelRow
     .dw omegarugalPoseTab
+    .dw $0233, $FDCD                 ; walk.fwd / walk.back (8.8)
 
 .IFNDEF BASE4
 CharSaisyu:
@@ -23042,6 +23097,7 @@ CharSaisyu:
     .db 0, saisyuMaxMask
     .dw saisyuCancelRow
     .dw saisyuPoseTab
+    .dw $029A, $FD66                 ; walk.fwd / walk.back (8.8)
 CharHeidern:
     .dw heidernSprOfs, heidernBoxTab, heidernAnimTab
     .dw heidernActiveTab, heidernDamageTab, heidernHitTimeTab
@@ -23076,6 +23132,7 @@ CharHeidern:
     .db 0, heidernMaxMask
     .dw heidernCancelRow
     .dw heidernPoseTab
+    .dw $02CD, $FD33                 ; walk.fwd / walk.back (8.8)
 CharTakuma:
     .dw takumaSprOfs, takumaBoxTab, takumaAnimTab
     .dw takumaActiveTab, takumaDamageTab, takumaHitTimeTab
@@ -23110,6 +23167,7 @@ CharTakuma:
     .db 0, takumaMaxMask
     .dw takumaCancelRow
     .dw takumaPoseTab
+    .dw $029A, $FD66                 ; walk.fwd / walk.back (8.8)
 CharClark:
     .dw clarkSprOfs, clarkBoxTab, clarkAnimTab
     .dw clarkActiveTab, clarkDamageTab, clarkHitTimeTab
@@ -23144,6 +23202,7 @@ CharClark:
     .db 0, clarkMaxMask
     .dw clarkCancelRow
     .dw clarkPoseTab
+    .dw $029A, $FD66                 ; walk.fwd / walk.back (8.8)
 CharRalf:
     .dw ralfSprOfs, ralfBoxTab, ralfAnimTab
     .dw ralfActiveTab, ralfDamageTab, ralfHitTimeTab
@@ -23178,6 +23237,7 @@ CharRalf:
     .db 0, ralfMaxMask
     .dw ralfCancelRow
     .dw ralfPoseTab
+    .dw $0266, $FE33                 ; walk.fwd / walk.back (8.8)
 CharLeona:
     .dw leonaSprOfs, leonaBoxTab, leonaAnimTab
     .dw leonaActiveTab, leonaDamageTab, leonaHitTimeTab
@@ -23212,6 +23272,7 @@ CharLeona:
     .db 0, leonaMaxMask
     .dw leonaCancelRow
     .dw leonaPoseTab
+    .dw $0266, $FDCD                 ; walk.fwd / walk.back (8.8)
 CharMature:
     .dw matureSprOfs, matureBoxTab, matureAnimTab
     .dw matureActiveTab, matureDamageTab, matureHitTimeTab
@@ -23246,6 +23307,7 @@ CharMature:
     .db 0, matureMaxMask
     .dw matureCancelRow
     .dw maturePoseTab
+    .dw $0326, $FCDA                 ; walk.fwd / walk.back (8.8)
 CharVice:
     .dw viceSprOfs, viceBoxTab, viceAnimTab
     .dw viceActiveTab, viceDamageTab, viceHitTimeTab
@@ -23280,6 +23342,7 @@ CharVice:
     .db 0, viceMaxMask
     .dw viceCancelRow
     .dw vicePoseTab
+    .dw $02DA, $FD45                 ; walk.fwd / walk.back (8.8)
 CharBenimaru:
     .dw benimaruSprOfs, benimaruBoxTab, benimaruAnimTab
     .dw benimaruActiveTab, benimaruDamageTab, benimaruHitTimeTab
@@ -23324,6 +23387,7 @@ CharBenimaru:
     .db 0, benimaruMaxMask
     .dw benimaruCancelRow
     .dw benimaruPoseTab
+    .dw $02CD, $FD33                 ; walk.fwd / walk.back (8.8)
 CharDaimon:
     .dw daimonSprOfs, daimonBoxTab, daimonAnimTab
     .dw daimonActiveTab, daimonDamageTab, daimonHitTimeTab
@@ -23358,6 +23422,7 @@ CharDaimon:
     .db 0, daimonMaxMask
     .dw daimonCancelRow
     .dw daimonPoseTab
+    .dw $0266, $FD9A                 ; walk.fwd / walk.back (8.8)
 .ENDIF
 
 ; sel index -> descriptor / generated-data bank.  Ids 0-13 = visible
