@@ -86,15 +86,24 @@ PROJECTILE_ACTION_SEQUENCES = {
 # engine's default third-frame launch (0-based AnimElem 7 = frame 6).
 PROJECTILE_ALT_EFFECTS = {
     "terry": {
-        # Source frame 3010,5 is a 94x149 flame pillar.  Fit it to the
-        # 16-cell page as 48x80 (3x5 = 15 cells) instead of squeezing it to
-        # a 32px-wide strip: the earlier 32x127 version read as a thin line.
+        # Source frame 3010,6 (AIR index 5) is a 92x156 flame pillar.  Fit
+        # it to the 16-cell page as 48x80 (3x5 = 14 cells) and then tile the
+        # middle rows once: duplicating each row next to itself makes an
+        # 8-row, 48x128 pillar without adding unique tiles (still 14).  The
+        # signed-byte cell offset caps a ground-anchored pillar at 128 px, so
+        # this is the tallest seamless version the effect page can draw.
         "action": 3020,
         "frames": ((5, 20),),
         "pre_scale": 1,
         "squeeze_w": 48,
         "squeeze_h": 80,
         "zoom": 1,
+        # Repeat the three middle rows (keep the tip and the base unique).
+        # 2x each gives 1 + 6 + 1 = 8 rows and 23 cells in one frame.
+        "tile_rows": {"skip_top": 1, "skip_bottom": 1, "repeat": 2},
+        # The page still holds 16 unique cells; this only raises the
+        # per-frame OAM cell budget so the tiled rows can be drawn.
+        "max_cells": 24,
         # Draw the pillar again.  The height/width fit the 16-cell effect
         # page, and the runtime fixes keep the stationary geyser from pushing
         # the victim or running the camera to the wall.

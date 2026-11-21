@@ -2,7 +2,7 @@
 """Power Geyser must keep its tall hitbox and draw its flame pillar.
 
 The spark object exists for the tall column, ProjTab damage/guard and the
-visible 48x80 alternate clip.  Its OBJ cells use the shared FX palette and
+visible 48x128 tiled alternate clip.  Its OBJ cells use the shared FX palette and
 are emitted before the fighter bodies so the pillar covers the opponent
 instead of disappearing behind it.
 
@@ -99,8 +99,12 @@ def check_visible_clip():
     m = re.search(r"terryProjFx2F0:\s*\.db\s+\d+,(\d+)\b", meta)
     assert m, "terryProjFx2F0 record missing"
     cells = int(m.group(1))
-    assert cells > 0, (
-        f"terryProjFx2F0 has {cells} cells; the geyser pillar must be visible")
+    # 3 columns x 8 rows with the top row missing one cell = 23.  Guard
+    # against a silent regression to the old 5-row (14-cell) pillar; the
+    # tiled rows reuse the same tiles, so the unique-cell page still fits.
+    assert cells >= 20, (
+        f"terryProjFx2F0 has {cells} cells; the tiled 48x128 geyser "
+        f"pillar must keep its repeated rows")
     print(f"PASS Power Geyser: alternate clip has {cells} drawable cells")
 
 

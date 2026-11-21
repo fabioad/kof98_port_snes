@@ -15129,6 +15129,45 @@ def projectile_effect(name, cfg, sff, air, statedefs, headers, move_ids,
                      f"{len(SPARK_SLOTS)}-tile OBJ page")
 
 
+def tile_pillar_rows(cells, spec):
+    """Repeat a band of 16 px cell rows inside one projectile frame.
+
+    The SNES effect page holds at most 16 *unique* 16x16 cells, but a frame
+    may reference the same cell more than once.  Repeating a middle band of
+    rows makes the pillar taller without adding tiles.  Duplicating each row
+    next to itself (instead of repeating the whole band) keeps the seam
+    invisible: the only new borders are identical-row borders.
+
+    ``spec`` keys: skip_top (rows kept unique at the top), skip_bottom (rows
+    kept unique at the bottom) and repeat (how many times each middle row is
+    drawn).  The bottom row keeps its original Y, so the pillar stays on the
+    floor; rows stack upward and the signed-byte limit (-128) is enforced
+    later by the existing cell filter.
+    """
+    rows = {}
+    for dx, dy, slot in cells:
+        rows.setdefault(dy, []).append((dx, slot))
+    ys = sorted(rows)
+    if len(ys) < 3:
+        return cells
+    skip_top = max(0, int(spec.get("skip_top", 1)))
+    skip_bottom = max(0, int(spec.get("skip_bottom", 1)))
+    repeat = max(1, int(spec.get("repeat", 2)))
+    middle = ys[skip_top:len(ys) - skip_bottom] if skip_bottom else ys[skip_top:]
+    if not middle:
+        return cells
+    order = ys[:skip_top] + [y for y in middle for _ in range(repeat)]
+    if skip_bottom:
+        order += ys[len(ys) - skip_bottom:]
+    # Re-stack upward from the original bottom row so the base stays put.
+    bottom_dy = ys[-1]
+    out = []
+    for i, y in enumerate(reversed(order)):
+        dy = bottom_dy - i * CELL
+        out.extend((dx, dy, slot) for dx, slot in rows[y])
+    return out
+
+
 def projectile_effect_alt(name, sff, air, spec):
     """Compile a second, explicitly selected projectile effect clip.
 
@@ -15280,6 +15319,9 @@ def projectile_effect_alt(name, sff, air, spec):
                                   + xoff // (pre_scale * scale),
                                   cy * CELL - spr.h // 2
                                   + yoff // (pre_scale * scale), slot))
+            tile_rows = spec.get("tile_rows")
+            if tile_rows:
+                cells = tile_pillar_rows(cells, tile_rows)
             out_frames.append((ticks, cells))
         if (len(all_cells) <= max_cells
                 and all(len(cells) <= max_cells
