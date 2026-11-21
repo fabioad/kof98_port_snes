@@ -3248,8 +3248,10 @@ ThrowTechFx:
     sta scr1
     lda #1                              ; SparkGuard
     jsr SparkSpawnAt
-    lda #SFX_GUARD.b
-    jmp SfxPlay
+    sep #$20                            ; SfxPlay takes an 8-bit id; the
+    .ACCU 8                             ;   surrounding code is A16, and a
+    lda #SFX_GUARD.b                    ;   16-bit immediate would swallow
+    jmp SfxPlay                         ;   the next opcode and corrupt DP.
 
 ; fofs = victim, acc16.  Called from AO_tstat (TargetState release) and from
 ; ThrowRelease (natural end of a bind).
@@ -3309,9 +3311,11 @@ LaunchVictim:
     sta scr1
     lda #0                              ; SparkHit
     jsr SparkSpawnAt
-    lda #SFX_THROW.b
-    jsr SfxPlay
-    rts
+    sep #$20                            ; SfxPlay takes an 8-bit id; LaunchVictim
+    .ACCU 8                             ;   is A16, so an 8-bit immediate here
+    lda #SFX_THROW.b                    ;   used to become LDA #$200F and the
+    jsr SfxPlay                         ;   leftover bytes executed ROL $84,
+    rts                                 ;   doubling sel1 on every throw.
 
 ; fofs = victim; acc16 on entry.  Horizontal flight step.  The 16 px margin
 ; doubles as the corner treatment: a body that reaches it bounces back toward
