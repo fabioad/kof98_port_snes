@@ -12,7 +12,8 @@
 ; compete with Mr. Karate's code in bank 122 or the full Fight/menu bank.
 ; All near helpers are reached through the MkCall_* trampolines in fight.asm.
 ; ============================================================================
-.BASE $00
+.BASE $C0                              ; bank 126 is reached through its $3E mirror;
+                                        ;   $7E would be WRAM, not ROM
 .BANK 126 SLOT 0
 .ORGA $FC00
 .SECTION "ThunderCode" FORCE

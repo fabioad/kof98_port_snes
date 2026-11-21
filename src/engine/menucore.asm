@@ -1980,7 +1980,9 @@ TTN_out:
 ; in the ROM), matching the select screen's rule and avoiding streamed garbage
 ; on the attract fight.
 .DEFINE DEMO_FRAMES 1800                ; 30 s at 60 frames/second
-.DEFINE DEMO_KOHOLD 60                  ; let the KO fall play before the reroll
+.DEFINE DEMO_KOHOLD 140                 ; KO fall + winner pose (starts at
+                                        ;   kotimer 200) play ~1.7 s before
+                                        ;   the cut/reroll
 
 DemoEnter:
     sep #$20
@@ -2939,6 +2941,11 @@ DemoToIntro:
     sep #$20
     .ACCU 8
     stz.w DM_ON
+    lda #$80.b
+    sta.l INIDISP                         ; force blank now: the intro/flash-card
+                                          ;   loads below run with NMI off for
+                                          ;   ~25 frames and would otherwise
+                                          ;   leave the winner pose frozen
 .IFDEF KOF_TINY
     jmp OpnEnter                          ; bank 82 is character CHR here
 .ELSE
