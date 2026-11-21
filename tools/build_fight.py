@@ -43,6 +43,8 @@ from calibration.projectiles import (PROJECTILE_ACTIONS,
                                      PROJECTILE_ALT_EFFECTS,
                                      PROJECTILE_X_OFFSET,
                                      PROJECTILE_RELEASE,
+                                     PROJECTILE_GIF_CLIPS,
+                                     PROJECTILE_GIF_USERS,
                                      BODY_ANIMATIONS as
                                      PROJECTILE_BODY_ANIMATIONS)
 
@@ -1824,10 +1826,10 @@ PROJECTILE_EXCLUDE = {
     "kyo": (61, 63, 66, 68, 87),
     "kyonests": (61, 63, 66, 68, 87),
     "kyoash": (61, 63, 66, 68, 87),
-    # Iori's 108 Shiki: Yami Barai (sids 48/49) is converted to a close-range
-    # body flame.  Dropping the source helper shot keeps the move and its
-    # damage but removes the travelling projectile from the port.
-    "iori": (48, 49),
+    # Iori's 108 Shiki: Yami Barai (sids 48/49) is a real travelling shot in
+    # this port again: the imported arcade flame clip is recoloured purple
+    # (PROJECTILE_GIF_CLIPS).  The source helper 1020 owns the damage, so the
+    # ProjTab rows come from PROJECTILE_CALIBRATION.
     # Ryu's QCBx2+kick super (3200) is a close-range rush that must finish
     # with the 3201 Shoryuken; the HitDef/dash heuristic invented a
     # stationary shot for it, which the super-projectile pin then dragged
@@ -2777,30 +2779,12 @@ if "iori" in CHARS:
     _iori["hitdef_override"][87] = {
         "damage": 6, "gdamage": 1, "gvx": 0, "gvy": 0,
     }
-    # --- Yami Barai (QCF+P): melee flame, no travelling shot -------------
-    # The source states 1000/1010 only spawn helper 1020, whose Projectile
-    # controller owns the damage.  The port keeps the move but drops the
-    # shot: a body HitDef at the flame-release frame preserves the damage
-    # (14 weak / 18 strong) and the same knockdown-free hit reaction.
-    # Frames 3-8 of the launch clips carry the flame box; the source's
-    # 48 px spawn point becomes the position of a compact attached flame.
-    _yami = {
-        "active": 3, "damage": 14, "gdamage": 1, "fall": 0,
-        "animtype": 2, "low": 1, "guard": 0x0A,
-        # Match the old ProjHit feel: 6 px/tick pushback, 8 hitstun ticks
-        # and a 5-tick slide window.  Using the source's -10.5 ground
-        # velocity here threw the victim more than half a screen away.
-        "gvx": 0x0600, "gvy": 0, "avx": 0x0600, "avy": 0,
-        "grvx": 0x0600, "agvx": 0x0400, "agvy": -0x0100,
-        "hittime": 8, "slidetime": 5,
-    }
-    _iori["hitdef_override"][48] = dict(_yami)
-    _iori["hitdef_override"][49] = dict(_yami, damage=18)
-    _iori.setdefault("air_box_patch_frames", {})
-    for _anum in (1000, 1010):
-        _iori["air_box_patch_frames"][_anum] = {
-            _frame: [(12, -80, 88, -4)]
-            for _frame in range(3, 9)}
+    # --- Yami Barai (QCF+P): travelling flame ----------------------------
+    # Source states 1000/1010 spawn helper 1020, whose Projectile controller
+    # owns the damage; the shot now uses the imported arcade flame clip in
+    # Iori's purple ramp.  The old port made this move a close-range body
+    # flame; the ProjTab rows live in PROJECTILE_CALIBRATION["iori"], so no
+    # HitDef override is needed here.
     # --- Aoi Hana (QCB+P): three-part rekka -----------------------------
     # Source states 1200/1201/1210/1211 mark the victim as knocked down
     # (fall/air.fall), so the native hit path sent it to S_DOWN on the first
@@ -14989,6 +14973,10 @@ PROJECTILE_ALL_FRAMES = {"athena", "kensou"}
 def projectile_effect(name, cfg, sff, air, statedefs, headers, move_ids,
                       palidx, global_pal, mapped_color):
     """Compile source AIR frames into the eight-cell OBJ cache per side."""
+    if name in PROJECTILE_GIF_USERS:
+        # Hand-imported arcade flame (see PROJECTILE_GIF_CLIPS).
+        return projectile_effect_gif(name, PROJECTILE_GIF_CLIPS,
+                                     PROJECTILE_ACTIONS.get(name, 0))
     sequence = PROJECTILE_ACTION_SEQUENCES.get(name)
     if sequence is not None:
         return projectile_effect_sequence(name, cfg, sff, air, sequence)
@@ -15335,6 +15323,160 @@ def projectile_effect_alt(name, sff, air, spec):
         chr_data += page
         zoom_frames.append((ticks, cells))
     return action, zoom_frames, bytes(chr_data)
+
+
+def _rgb_dist(a, b):
+    """Squared RGB distance used for the imported-flame colour match."""
+    return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2
+            + (a[2] - b[2]) ** 2)
+
+
+def _obj_palette_rgb():
+    """Current shared OBJ palette (CGADD 160) as RGB888 tuples.
+
+    build_spark() writes gen_fight/spark_pal.bin before any character is
+    compiled, so the imported flame can resolve its colour ramp against the
+    exact palette the SNES will upload.
+    """
+    raw = open(os.path.join(OUT, "spark_pal.bin"), "rb").read()
+    out = []
+    for i in range(16):
+        w = raw[i * 2] | (raw[i * 2 + 1] << 8)
+        out.append(((w & 31) * 255 // 31, ((w >> 5) & 31) * 255 // 31,
+                    ((w >> 10) & 31) * 255 // 31))
+    return out
+
+
+def projectile_effect_gif(name, spec, action):
+    """Compile the hand-imported KOF'98 Yami Barai flame.
+
+    The source GIF shows the fighter throwing the flame; every listed frame
+    is cropped from its own left edge so only the travelling flame remains.
+    Each crop is scaled, quantised onto the shared OBJ palette through the
+    per-fighter ramp and packed into the usual 16-cell effect page.  The
+    16 px cell grid phase is searched per frame, which keeps the wide arcade
+    flame inside the page without shrinking it further.
+    """
+    import numpy as np
+    from PIL import Image
+
+    gif_path = resolve_asset(ROOT, spec["gif"])
+    scale = float(spec.get("scale", 1.0))
+    ticks = max(2, min(255, int(spec.get("ticks", 3))))
+    ramp = spec["ramps"].get(name, spec["ramps"]["kyo"])
+    pal_rgb = _obj_palette_rgb()
+    # Resolve each ramp slot to the closest compiled OBJ colour.  Index 0 is
+    # transparent, so only 1-15 are candidates.
+    indices = [min(range(1, 16),
+                   key=lambda k: _rgb_dist(pal_rgb[k], target[1]))
+               for target in ramp]
+    anchors = [target[0] for target in ramp]
+
+    frames = []
+    with Image.open(gif_path) as gif:
+        nframes = getattr(gif, "n_frames", 1)
+        for frame_spec in spec["frames"]:
+            fi, left = int(frame_spec[0]), int(frame_spec[1])
+            top = int(frame_spec[2]) if len(frame_spec) > 2 else 0
+            if fi >= nframes:
+                continue
+            gif.seek(fi)
+            rgba = np.asarray(gif.convert("RGBA"))
+            r = rgba[:, :, 0].astype(int)
+            g = rgba[:, :, 1].astype(int)
+            b = rgba[:, :, 2].astype(int)
+            a = rgba[:, :, 3]
+            fire = (a > 0) & (r > 140) & (r > g + 30) & (g >= b - 10)
+            fire[:, :left] = False
+            fire[:top, :] = False
+            ys, xs = np.nonzero(fire)
+            if not len(xs):
+                continue
+            y0, y1 = int(ys.min()), int(ys.max())
+            x0, x1 = int(xs.min()), int(xs.max())
+            crop = Image.fromarray(rgba[y0:y1 + 1, x0:x1 + 1])
+            w = max(1, int(round(crop.width * scale)))
+            h = max(1, int(round(crop.height * scale)))
+            crop = crop.resize((w, h), Image.LANCZOS)
+            arr = np.asarray(crop)
+            opaque = arr[:, :, 3] >= 96
+            tone = np.zeros((h, w), dtype=np.uint8)
+            for yy in range(h):
+                for xx in range(w):
+                    if not opaque[yy, xx]:
+                        continue
+                    px = (int(arr[yy, xx, 0]), int(arr[yy, xx, 1]),
+                          int(arr[yy, xx, 2]))
+                    tone[yy, xx] = indices[min(
+                        range(len(anchors)),
+                        key=lambda k: _rgb_dist(px, anchors[k]))]
+            frames.append((tone, w, h))
+    if not frames:
+        return None
+
+    def pack(tone, ox, oy, min_px=8):
+        h, w = tone.shape
+        cells = []
+        for cy in range(-(-(h + oy) // CELL)):
+            for cx in range(-(-(w + ox) // CELL)):
+                x = cx * CELL - ox
+                y = cy * CELL - oy
+                block = bytearray(CELL * CELL)
+                count = 0
+                for yy in range(CELL):
+                    sy = y + yy
+                    if sy < 0 or sy >= h:
+                        continue
+                    for xx in range(CELL):
+                        sx = x + xx
+                        if sx < 0 or sx >= w:
+                            continue
+                        v = int(tone[sy, sx])
+                        block[yy * CELL + xx] = v
+                        count += bool(v)
+                if count > min_px:
+                    cells.append((x, y, bytes(block)))
+        return cells
+
+    out_frames = []
+    chr_data = bytearray()
+    for tone, w, h in frames:
+        # Search the 16 px grid phase that wastes the fewest cells.
+        best = None
+        for oy in range(CELL):
+            for ox in range(CELL):
+                cells = pack(tone, ox, oy)
+                if best is None or len(cells) < len(best):
+                    best = cells
+                    if len(best) <= 1:
+                        break
+            if len(best) <= 1:
+                break
+        if len(best) > len(SPARK_SLOTS):
+            raise ValueError(f"{name}: imported flame frame needs "
+                             f"{len(best)} cells, page holds "
+                             f"{len(SPARK_SLOTS)}")
+        atlas = {}
+        page = bytearray(2048)
+        cells = []
+        # Anchor on the real pixel bounds: centre horizontally on the flame
+        # and sit its lowest lit row on the shot origin (the floor).
+        ys, xs = np.nonzero(tone)
+        cx = (int(xs.min()) + int(xs.max()) + 1) // 2
+        floor = int(ys.max()) + 1
+        for x, y, block in best:
+            quad = tiles4bpp(block, CELL, CELL)[0]
+            idx = atlas.setdefault(bytes(quad), len(atlas))
+            if idx >= len(SPARK_SLOTS):
+                raise ValueError(f"{name}: imported flame frame exceeds "
+                                 f"its {len(SPARK_SLOTS)}-tile page")
+            cells.append((x - cx, y - floor, idx))
+            offset = (SPARK_SLOTS[idx] - 192) * 32
+            page[offset:offset + 64] = quad[:64]
+            page[offset + 512:offset + 576] = quad[64:]
+        chr_data += page
+        out_frames.append((ticks, cells))
+    return action, out_frames, bytes(chr_data)
 
 
 # Shared 15-colour projectile palette weighting: the Kyo/Iori/Saisyu flames

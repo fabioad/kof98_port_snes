@@ -462,11 +462,15 @@ PROJECTILE_CALIBRATION = {
     # than a Hadouken.  Keep the source speed and give it a commensurate
     # HUD value.
     "chunli": {48: (0x0300, 24)},
-    # Iori's Yami Barai is intentionally melee in this port (see
-    # PROJECTILE_EXCLUDE in tools/build_fight.py).
+    # Iori's Yami Barai uses the imported arcade flame clip recoloured with
+    # his purple ramp; same speed/damage as Kyo's fire.
+    "iori": {48: (0x0300, 14), 49: (0x0400, 18)},
     "kyo": {48: (0x0300, 14), 49: (0x0400, 18)},
     "rugal": {48: (0x0300, 16), 49: (0x0400, 20)},
-    "saisyu": {48: (0x0280, 14), 49: (0x0380, 18)},
+    # Saisyu's Yami Barai uses the same compiled clip as Kyo
+    # (PROJECTILE_FX_ALIAS below), so it must also use Kyo's speed/damage.
+    # The old 0x0280/0x0380 rows made his flame visibly slower than Kyo's.
+    "saisyu": {48: (0x0300, 14), 49: (0x0400, 18)},
     "heidern": {48: (0x0400, 14), 49: (0x0500, 18)},
     "takuma": {48: (0x0280, 16), 49: (0x0380, 20)},
     "benimaru": {48: (0x0300, 14), 49: (0x0400, 18),
@@ -525,3 +529,54 @@ BODY_ANIMATIONS = {
     "kyo": {48: 1000, 49: 1010},
     "iori": {48: 1000, 49: 1010},
 }
+
+# --- arcade Yami Barai flame (hand import) -------------------------------
+# The KOF98 packs only carry a sparse two-frame wisp for the 108 Shiki
+# projectile: the compiled clip shrinks to three tiles after the release
+# frame, which reads as a faint flicker on the SNES.  The arcade move uses a
+# wide, bright ground flame, so this clip is imported from the standard
+# KOF'98 rip (fightersgeneration "kyo98-projectile.gif") instead of the SFF
+# artwork.  The GIF frames show Kyo plus the travelling flame; each sampled
+# frame is cropped from the listed left edge so only the flame is kept, then
+# scaled, quantised to the shared OBJ colour ramp and packed into the usual
+# 16-cell effect page.  Kyo and Saisyu (FX alias) share the fire ramp; Iori
+# gets the same shapes recoloured with his purple Yami Barai palette.
+#
+# The flame is sampled from frame 7 on, where it has fully left Kyo's hand
+# and reads as the travelling shot.  Frames alternate tall/low in the source
+# animation, which is exactly the arcade flicker the loop reproduces.
+PROJECTILE_GIF_CLIPS = {
+    "gif": "assets/fx/kyo98-projectile.gif",
+    # (gif frame, left crop edge[, top crop edge]).  The first two frames
+    # still carry the ember chain trailing from Kyo's hand above the flame,
+    # so they also clip the top rows.
+    "frames": ((7, 74, 46), (8, 76, 80), (9, 95), (10, 96), (11, 115),
+               (12, 116), (13, 135), (14, 136), (15, 155)),
+    # The port scales fighter art to 0.81; 0.9 keeps the flame dominant
+    # without overflowing the 16-cell page (15 cells max after packing).
+    "scale": 0.9,
+    # 3 ticks per source frame keeps the arcade's 60 ms cadence (the engine
+    # clamps projectile frames to 2 ticks minimum).
+    "ticks": 3,
+    # Source tone -> shared OBJ palette colour.  The palette indices are
+    # resolved at build time against gen_fight/spark_pal.bin, so the flame
+    # follows the compiled palette instead of hard-coding slot numbers.
+    "ramps": {
+        # Pale yellow core, then the arcade orange ramp down to the shadow.
+        "kyo": (((248, 216, 160), (246, 230, 156)),
+                ((240, 168, 56), (246, 180, 98)),
+                ((216, 104, 8), (238, 115, 24)),
+                ((184, 80, 0), (156, 49, 16)),
+                ((144, 104, 72), (180, 98, 32))),
+        # Iori's Yami Barai is a purple flame (KOF XV reference): white-hot
+        # core, light purple, purple body, deep purple shadow.
+        "iori": (((248, 216, 160), (246, 246, 246)),
+                 ((240, 168, 56), (197, 106, 255)),
+                 ((216, 104, 8), (115, 74, 230)),
+                 ((184, 80, 0), (41, 32, 65)),
+                 ((144, 104, 72), (41, 32, 65))),
+    },
+}
+# Characters whose compiled ProjFx is replaced by the imported flame.  Kyo's
+# clip is shared by Saisyu through PROJECTILE_FX_ALIAS.
+PROJECTILE_GIF_USERS = ("kyo", "iori")

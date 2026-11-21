@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""Headless regression for Iori's Yami Barai converted to a melee flame.
+"""Headless regression for Iori's Yami Barai flaming projectile.
 
-The port dropped the source helper projectile from 108 Shiki: Yami Barai
-(sids 48/49).  The move must still enter the launch states, hit at close
-range with the old damage (14 weak / 18 strong) and never spawn a travelling
-shot in the spark pool.
+108 Shiki: Yami Barai (sids 48/49) is a travelling ground flame again.  The
+port imports the arcade KOF'98 flame clip and recolours it with Iori's purple
+ramp; the shot must spawn from the launch state, travel forward along the
+floor, connect with a distant dummy and keep the source damage (14 weak /
+18 strong).
 
 Run after a PVSnesLib build:
 
-    python3 tools/test_iori_yami_melee_headless.py
+    python3 tools/test_iori_yami_projectile_headless.py
 """
 import argparse
 import sys
@@ -38,41 +39,50 @@ def qcf(core, button, hold=3):
     core.buttons[0] = set()
 
 
-def projectile_fired(core):
-    """SPK_ATTR bit7 marks a pooled shot; hit sparks and Explods do not."""
-    return any(core.ram[SPARKS + slot * SPK_SIZE + SPK_ATTR] & 0x80
-               for slot in range(2))
+def projectile_x(core):
+    """X of the pooled shot, or None.  SPK_ATTR bit7 marks a shot."""
+    for slot in range(2):
+        base = SPARKS + slot * SPK_SIZE
+        if core.ram[base + SPK_ATTR] & 0x80:
+            return core.word(base)
+    return None
 
 
 def run(core, select, button, sid, damage):
     enter_fight(core, select, "iori", "kyo")
-    core.put(F_X, 100 << 8)
-    core.put(F_X + FP2, 145 << 8)
+    core.put(F_X, 60 << 8)
+    core.put(F_X + FP2, 190 << 8)
     core.put(F_HP, 200)
     core.put(F_HP + FP2, 200)
-    core.put(0x4030, 3000)
     core.step(25)
 
     qcf(core, button)
     seen = False
-    fired = False
+    xs = []
     hit = False
-    for _ in range(90):
+    for _ in range(140):
         if core.ram[F_STATE] == sid:
             seen = True
-        fired |= projectile_fired(core)
+        x = projectile_x(core)
+        if x is not None:
+            xs.append(x)
         if core.word(F_HP + FP2) < 200:
             hit = True
         core.step()
-        if seen and core.ram[F_STATE] == 0:
+        if seen and not xs and core.ram[F_STATE] == 0:
             break
 
     if not seen:
         raise AssertionError(f"Yami Barai did not enter state {sid}")
-    if fired:
-        raise AssertionError("Yami Barai still spawned a travelling projectile")
+    if not xs:
+        raise AssertionError(
+            f"Yami Barai sid {sid} did not spawn a travelling projectile")
+    if len(xs) < 8 or xs[-1] <= xs[0]:
+        raise AssertionError(
+            f"Yami Barai sid {sid} shot did not travel: {xs}")
     if not hit:
-        raise AssertionError("Yami Barai lost its damage")
+        raise AssertionError(
+            f"Yami Barai sid {sid} shot never reached the opponent")
     lost = 200 - core.word(F_HP + FP2)
     if lost != damage:
         raise AssertionError(
@@ -80,20 +90,20 @@ def run(core, select, button, sid, damage):
     if core.ram[F_STATE + FP2] not in (0, 9):
         raise AssertionError(
             f"victim did not enter hitstun; state={core.ram[F_STATE + FP2]}")
-    return lost
+    return lost, xs[0], xs[-1]
 
 
 def main(core_path, rom):
     core = Core(core_path, rom)
     try:
         select = boot_select(core)
-        lost = run(core, select, X, STRONG, 18)
-        print(f"PASS Iori Yami Barai strong: melee flame, {lost} damage",
+        lost, x0, x1 = run(core, select, X, STRONG, 18)
+        print(f"PASS Iori Yami Barai strong: shot {x0}->{x1}, {lost} damage",
               flush=True)
-        lost = run(core, select, Y, WEAK, 14)
-        print(f"PASS Iori Yami Barai weak: melee flame, {lost} damage",
+        lost, x0, x1 = run(core, select, Y, WEAK, 14)
+        print(f"PASS Iori Yami Barai weak: shot {x0}->{x1}, {lost} damage",
               flush=True)
-        print("PASS Iori Yami Barai: no projectile, damage preserved",
+        print("PASS Iori Yami Barai: purple flame projectile travels and hits",
               flush=True)
     finally:
         core.close()

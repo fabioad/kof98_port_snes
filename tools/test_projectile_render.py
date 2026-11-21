@@ -147,11 +147,13 @@ def run(ra):
             dx, dy, tile = struct.unpack_from("<bbH", rom, record + (5 if projectile else 2) + i * 4)
             if side:
                 tile |= 0x100
-            attr = 0x04 | (tile >> 8)
+            # DrawSparks uses OBJ palette 2 at priority 3 ($34).
+            attr = 0x34 | (tile >> 8)
             expected.append(bytes(((120 + dx) & 255, (100 + dy) & 255,
                                    tile & 255, attr)))
-        effect = bytearray(36)
-        struct.pack_into("<HHHBBhhhBBBB", effect, side * 18,
+        # SPK_SIZE is 20: slot 1 starts at +20, not +18.
+        effect = bytearray(40)
+        struct.pack_into("<HHHBBhhhBBBB", effect, side * 20,
                          120, 100, addr & 0xFFFF, frame, 200,
                          0, 0, 0, 200,
                          (0x80 | side * 0x40) if projectile else 0x34,
