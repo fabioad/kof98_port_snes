@@ -145,7 +145,8 @@ def main():
                 break
             core.step()
         hp1 = core.word(HP1 + FP2)
-        assert hp0 - hp1 == 38, f"Raging Storm hp {hp0}->{hp1}, wanted 38"
+        # Five-contact blue storm: 5 x 8 = 40 total.
+        assert hp0 - hp1 == 40, f"Raging Storm hp {hp0}->{hp1}, wanted 40"
         assert down, "Raging Storm did not knock the victim down"
         print(f"OK Geese Raging Storm: native hit {hp0}->{hp1}, knockdown")
 

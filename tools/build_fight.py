@@ -5166,24 +5166,25 @@ if "geese" in CHARS:
     # so the move showed only the startup and returned to stand.  Wire both
     # and let them recover to stand at the end of the attack clip.
     _gcfg = CHARS["geese"]
-    # Raging Storm (85/86): in the source the damage and the Clsn1 live in
-    # the invisible helper 3005, spawned at element 9 together with the two
-    # Explods that draw the pillar.  The port carried it as a stationary
-    # projectile in the shared two-slot spark pool, which the Explods reuse
-    # on that same frame; the shot ended up with damage 0 and never hit.
-    # Compile the helper's HitDef onto the fighter (the native engine has no
-    # helpers) and paint its wide, tall Clsn1 on the frames where the pillar
-    # appears.  guard=M, fall=1 = sweep-style knockdown.
-    _gee.setdefault("atk_box_add", {}).update({
-        3000: (8, 10, (-80, -156, 79, -1)),
-        3010: (8, 10, (-80, -156, 79, -1)),
+    # Raging Storm (85/86/87): the source paints the blue storm with Explod
+    # 3001/3002 and puts the HitDef in the invisible helper 3005.  The old
+    # port baked a one-frame body Clsn1 onto the fighter, which read as a
+    # shield that vanished on the first contact.  Give the storm its own
+    # stationary projectile instead: the alternate ProjFx clip (blue 48x112
+    # tiled pillar) draws it, the engine's five-contact super tail keeps it
+    # alive through the whole sequence, and SPK_GRD bit0 keeps the tall
+    # anti-air column.  8 damage per contact keeps the source's ~38 total.
+    _gcfg.setdefault("projs", {}).update({
+        85: (0x0000, 8, 4, 0x02),
+        86: (0x0000, 8, 4, 0x02),
+        87: (0x0000, 8, 6, 0x02),
     })
-    _gee["projs_drop"] = [85, 86]
-    _gee.setdefault("hitdef_from_state", {}).update({
-        85: (3005, {"active": 9, "damage": 38, "gdamage": 2, "fall": 1,
-                    "guard": 2, "gvy": -1664}),
-        86: (3005, {"active": 9, "damage": 38, "gdamage": 2, "fall": 1,
-                    "guard": 2, "gvy": -1664}),
+    # Full post-calibration rows guarantee the guard nibble (M=2) and let
+    # PROJECTILE_X_OFFSET supply the 48 px spawn code (6) in the low nibble.
+    POST_CAL_PROJS_FULL.setdefault("geese", {}).update({
+        85: (0x0000, 8, 4, 0x02),
+        86: (0x0000, 8, 4, 0x02),
+        87: (0x0000, 8, 6, 0x02),
     })
     _gcfg["moves"].update({55: 1301, 56: 1311})
     _gcfg["anims"].update({55: 1302, 56: 1312})
@@ -12628,7 +12629,10 @@ def build_char(name, cfg, global_pal=None):
         palidx, global_pal, mapped_color)
     alt_spec = PROJECTILE_ALT_EFFECTS.get(name)
     proj_fx_alt = None
-    if alt_spec is not None and not cfg.get("projfx_alias"):
+    # An alternate clip is independent of the primary alias: Geese keeps
+    # Terry's compiled Reppuken (projfx_alias) but still needs his own blue
+    # Raising Storm page, so compile the alt even when aliased.
+    if alt_spec is not None:
         proj_fx_alt = projectile_effect_alt(name, sff, air, alt_spec)
     # A clip with no drawable cells still costs a 2 KiB CHR page.  Empty
     # inferred/invalid clips are exactly the invisible projectiles this
@@ -13137,15 +13141,15 @@ def build_char(name, cfg, global_pal=None):
     if not cfg.get("projfx_alias"):
         PROJECTILE_BLOBS[name] = proj_chr
         PROJECTILE_TABLES[name] = proj_frames
-        if proj_fx_alt is not None:
-            PROJECTILE_BLOBS2[name] = proj_fx_alt[2]
-            PROJECTILE_TABLES2[name] = proj_fx_alt[1]
-            PROJECTILE_ALT_SIDS[name] = set(alt_spec.get("sids", ()))
-            _rel = alt_spec.get("release", 2)
-            PROJECTILE_ALT_RELEASE[name] = {
-                sid: (int(_rel.get(sid, 2)) if isinstance(_rel, dict)
-                      else int(_rel))
-                for sid in PROJECTILE_ALT_SIDS[name]}
+    if proj_fx_alt is not None:
+        PROJECTILE_BLOBS2[name] = proj_fx_alt[2]
+        PROJECTILE_TABLES2[name] = proj_fx_alt[1]
+        PROJECTILE_ALT_SIDS[name] = set(alt_spec.get("sids", ()))
+        _rel = alt_spec.get("release", 2)
+        PROJECTILE_ALT_RELEASE[name] = {
+            sid: (int(_rel.get(sid, 2)) if isinstance(_rel, dict)
+                  else int(_rel))
+            for sid in PROJECTILE_ALT_SIDS[name]}
 
     # Box IDs index 16-bit record pointers in this table. ID 0 is no box.
     inc.append(f"{name}BoxTab:\n    .dw 0\n")
@@ -14561,7 +14565,9 @@ EXPLOD_SKIP_STATES = {
 EXPLOD_ANIM_BY_CHAR = {
     # John's Flame Raid fire (CNS anim 6040).
     "john": {6040: "JohnFlame"},
-    "geese": {3001: "FlameRise", 3002: "FlameTop"},
+    # Geese's Raising Storm Explods (3001/3002) are not painted here: the
+    # alternate projectile clip draws the blue storm.  Leaving them
+    # unmapped skips them instead of stamping Kyo's orange flame on top.
     # Category E: reuse the compiled magic/flame clips for the source
     # effects that lived in Explod controllers.
     "ralf": {11001: "FlameRise", 11003: "FlameTop",
@@ -15299,6 +15305,23 @@ def tile_pillar_rows(cells, spec):
     return out
 
 
+def repeat_pillar_x(cells, spec):
+    """Duplicate a compiled pillar frame horizontally (front/back copies).
+
+    The copies reuse the same cell slots, so the unique-cell page does not
+    grow; only the OAM cell count does.  ``offset`` is the dx step between
+    copies (negative = toward/behind the fighter) and ``copies`` is the
+    total number of copies.
+    """
+    offset = int(spec.get("offset", -48))
+    copies = max(1, int(spec.get("copies", 2)))
+    out = []
+    for c in range(copies):
+        shift = c * offset
+        out.extend((dx + shift, dy, slot) for dx, dy, slot in cells)
+    return out
+
+
 def projectile_effect_alt(name, sff, air, spec):
     """Compile a second, explicitly selected projectile effect clip.
 
@@ -15453,6 +15476,9 @@ def projectile_effect_alt(name, sff, air, spec):
             tile_rows = spec.get("tile_rows")
             if tile_rows:
                 cells = tile_pillar_rows(cells, tile_rows)
+            repeat_x = spec.get("repeat_x")
+            if repeat_x:
+                cells = repeat_pillar_x(cells, repeat_x)
             out_frames.append((ticks, cells))
         if (len(all_cells) <= max_cells
                 and all(len(cells) <= max_cells
@@ -15662,13 +15688,15 @@ def projectile_effect_gif(name, spec, action):
 # (purple Yami Barai, orange Kyo/Saisyu fire) are the most visible shots, so
 # their ramps get extra weight in the median cut.
 PROJ_PAL_BOOST = {"kyo": 8, "kyonests": 8, "kyoash": 8, "iori": 12,
+                  "geese": 10,
                   "saisyu": 8}
 
 # Colours the shared 15-slot OBJ effect palette must keep for the external
 # projectile art (see PROJECTILE_EXTERNAL_ART).  build_spark's median cut is
 # driven by the whole roster, so the violet Yami Barai ramp is pinned here and
 # missing entries are taken from the least-used colours.
-PROJECTILE_PALETTE_PINS = ((74, 36, 120), (150, 92, 200), (214, 186, 245))
+PROJECTILE_PALETTE_PINS = ((74, 36, 120), (150, 92, 200), (214, 186, 245),
+                           (98, 213, 254), (8, 114, 221))
 
 
 def build_spark():
@@ -17348,7 +17376,8 @@ def emit_newchars_inc(new_keys, msu_slices):
               f"    .db :{C}PalHi, 0\n",
               f"    .dw {k}ProjTab\n",
               f"    .db :{k}SprData, 0\n",
-              f"    .dw {pfx}ProjFxTab, {pfx}ProjFxChr\n",
+              f"    .dw {k if k in PROJECTILE_BLOBS2 else pfx}ProjFxTab, "
+              f"{pfx}ProjFxChr\n",
               f"    .dw {k}CmdList\n",
               f"    .db :{k}CmdList, {MAX_MASKS.get(k, 0)}\n",
               f"    .dw {k}CancelRow\n",
@@ -17701,14 +17730,17 @@ def emit_newchars_inc(new_keys, msu_slices):
                          f"largest windows {biggest})")
     # Animation records share one bank; 2x frame pages are scattered into
     # free ROM windows and carry their own bank byte for DMA.
-    proj_order = [k for k in CHARS if k in PROJECTILE_BLOBS]
+    # Include alternate-clip-only characters (Geese keeps the Terry primary
+    # alias but owns the blue Raising Storm page).
+    proj_order = [k for k in CHARS
+                  if k in PROJECTILE_BLOBS or k in PROJECTILE_BLOBS2]
     proj_blob = bytearray()
     proj_offsets = {}
     proj_lengths = {}
     proj_length1 = {}
     proj_length2 = {}
     for k in proj_order:
-        payload = PROJECTILE_BLOBS[k]
+        payload = PROJECTILE_BLOBS.get(k, b"")
         payload2 = PROJECTILE_BLOBS2.get(k, b"")
         proj_offsets[k] = len(proj_blob)
         proj_length1[k] = len(payload)
@@ -17718,15 +17750,20 @@ def emit_newchars_inc(new_keys, msu_slices):
     open(os.path.join(OUT, "projectiles.bin"), "wb").write(proj_blob)
     proj_meta = []
     for k in proj_order:
-        frames = PROJECTILE_TABLES[k]
+        frames = PROJECTILE_TABLES.get(k)
         frames2 = PROJECTILE_TABLES2.get(k)
-        second = f"{k}ProjFxAnim" if frames2 is None else f"{k}ProjFx2Anim"
+        # A character may keep another fighter's primary clip (projfx_alias)
+        # while owning only the alternate page (Geese's blue Raising Storm).
+        primary = CHARS[k].get("projfx_alias", k)
+        prim_label = (f"{k}ProjFxAnim" if frames is not None
+                      else f"{primary}ProjFxAnim")
+        second = prim_label if frames2 is None else f"{k}ProjFx2Anim"
         # ProjFxTab header: primary anim, alternate anim, then the spawn
         # height byte at offset 4.  ProjSpawn reads the height from offset 4
         # regardless of which clip is selected; keep this layout in sync.
         # Offsets 5-7 are the optional ballistic profile (spawn height,
         # gravity in 1/16 px/tick^2, flags).  Ordinary characters emit zeros.
-        proj_meta.append(f"{k}ProjFxTab: .dw {k}ProjFxAnim, {second}\n")
+        proj_meta.append(f"{k}ProjFxTab: .dw {prim_label}, {second}\n")
         spawn_row = 2 if k in TORSO_PROJECTILES else int(k in GROUND_PROJECTILES)
         proj_meta.append(f"    .db {spawn_row}\n")
         ball = PROJECTILE_BALLISTIC.get(k)
@@ -17737,20 +17774,22 @@ def emit_newchars_inc(new_keys, msu_slices):
                 f"{int(ball['gravity']) & 0x0F},${flags:02X}\n")
         else:
             proj_meta.append("    .db 0,0,0\n")
-        proj_meta.append(f"{k}ProjFxAnim: .db {len(frames)}\n")
-        for fi in range(len(frames)):
-            proj_meta.append(f"    .dw {k}ProjFxF{fi}\n")
+        if frames is not None:
+            proj_meta.append(f"{k}ProjFxAnim: .db {len(frames)}\n")
+            for fi in range(len(frames)):
+                proj_meta.append(f"    .dw {k}ProjFxF{fi}\n")
         if frames2 is not None:
             proj_meta.append(f"{k}ProjFx2Anim: .db {len(frames2)}\n")
             for fi in range(len(frames2)):
                 proj_meta.append(f"    .dw {k}ProjFx2F{fi}\n")
-        for fi, (ticks, cells) in enumerate(frames):
-            proj_meta.append(f"{k}ProjFxF{fi}: .db {ticks},{len(cells)}\n")
-            proj_meta.append(f"    .dw {k}ProjFxChr+{fi * 2048}\n"
-                             f"    .db :{k}ProjFxChr\n")
-            for dx, dy, slot in cells:
-                proj_meta.append(f"    .db {dx & 0xFF},{dy & 0xFF}\n"
-                f"    .dw ${SPARK_SLOTS[slot]:04X}\n")
+        if frames is not None:
+            for fi, (ticks, cells) in enumerate(frames):
+                proj_meta.append(f"{k}ProjFxF{fi}: .db {ticks},{len(cells)}\n")
+                proj_meta.append(f"    .dw {k}ProjFxChr+{fi * 2048}\n"
+                                 f"    .db :{k}ProjFxChr\n")
+                for dx, dy, slot in cells:
+                    proj_meta.append(f"    .db {dx & 0xFF},{dy & 0xFF}\n"
+                    f"    .dw ${SPARK_SLOTS[slot]:04X}\n")
         if frames2 is not None:
             for fi, (ticks, cells) in enumerate(frames2):
                 proj_meta.append(f"{k}ProjFx2F{fi}: .db {ticks},{len(cells)}\n")
@@ -17927,10 +17966,14 @@ def emit_newchars_inc(new_keys, msu_slices):
     for k in proj_order:
         bk, org = pvs_projgfx[k]
         gfx_inc += [pvs_bank(bk), f".ORGA ${org:04X}\n",
-                    f'.SECTION "{k}ProjGfx" FORCE\n',
-                    f"{k}ProjFxChr:\n",
-                    f'    .INCBIN "gen_fight/projectiles.bin" '
-                    f'SKIP {proj_offsets[k]} READ {proj_length1[k]}\n']
+                    f'.SECTION "{k}ProjGfx" FORCE\n']
+        # Alternate-only characters (Geese) keep the alias's primary CHR;
+        # emitting a zero-byte ProjFxChr label would break .INCBIN READ 0.
+        if proj_length1[k]:
+            gfx_inc += [
+                f"{k}ProjFxChr:\n",
+                f'    .INCBIN "gen_fight/projectiles.bin" '
+                f'SKIP {proj_offsets[k]} READ {proj_length1[k]}\n']
         if k in PROJECTILE_BLOBS2:
             gfx_inc += [
                 f"{k}ProjFx2Chr:\n",

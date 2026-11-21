@@ -1121,36 +1121,31 @@ PTS_idx0:
     lda #5
     ldy scr3
     sta.w RT_PROJHITS,y
-    ; Geese's Raging Storm is a single-hit tall anti-air pillar in KOF98,
-    ; not the generic five-contact super projectile.  SPK_GRD bit0 marks
-    ; the tall hitbox (the guard bits themselves live in 4-7).
-    rep #$20
-    .ACCU 16
-    ldy fofs
-    lda FP+F_CHAR,y
-    cmp #CharGeese
-    bne PTS_notstorm
+    ; Geese's Raising Storm keeps the five-contact super tail but needs the
+    ; tall anti-air column and the one-proj-per-fall exemption.  Geese's
+    ; runtime F_CHAR is 253 (0xFD); the descriptor labels are 16-bit
+    ; addresses, which is why the old cmp #CharGeese never matched.
     sep #$20
     .ACCU 8
+    ldy fofs
+    lda FP+F_CHAR,y
+    cmp #253
+    bne PTS_notstorm
     lda FP+F_STATE,y
     cmp #85
     beq PTS_storm
     cmp #86
     beq PTS_storm
-PTS_notstorm:
-    sep #$20
-    .ACCU 8
-    lda.w SPARKS+SPK_ATTR,x
-    ora #$01.b                        ; multi-hit shot: exempt from the
-    sta.w SPARKS+SPK_ATTR,x           ;   one-proj-per-fall cap
-    bra PTS_sakura_check
+    cmp #87
+    bne PTS_notstorm
 PTS_storm:
-    lda #1
-    ldy scr3
-    sta.w RT_PROJHITS,y
     lda.w SPARKS+SPK_GRD,x
     ora #$01.b
     sta.w SPARKS+SPK_GRD,x
+PTS_notstorm:
+    lda.w SPARKS+SPK_ATTR,x
+    ora #$01.b
+    sta.w SPARKS+SPK_ATTR,x
 PTS_sakura_check:
     ; Sakura's Shinkuu travels far, so it lands 8 contacts (9 HP each)
     ; instead of the generic five-contact super sequence.
@@ -1268,3 +1263,4 @@ PVD_stun:
     rtl
 
 .ENDS
+

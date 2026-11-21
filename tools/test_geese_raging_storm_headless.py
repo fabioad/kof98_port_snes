@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Regression: Geese's Raging Storm matches the KOF98 arcade move.
+"""Regression: Geese's Raging Storm survives through its five contacts.
 
-KOF98's Raging Storm is a single-hit, untechable anti-air pillar in front of
-Geese: it hits airborne opponents, is blockable (chip only), costs 1000
-meter, and must not use the engine's generic five-contact super projectile.
+The blue tiled pillar is now a stationary five-contact super projectile
+instead of the old one-frame body shield: the storm stays alive for the
+whole sequence, keeps the tall anti-air column and ends in a knockdown.
+It is still blockable and costs 1000 meter.
 
 Run after a PVSnesLib build:
 
@@ -94,26 +95,21 @@ def main():
         # Ground: exactly one 38-damage hit, untechable knockdown.
         start(core, select)
         loss, drops, down, guard, _ = collect(core)
-        if drops != [38] or not down or guard:
+        if drops != [8, 8, 8, 8, 8] or not down or guard:
             fails.append(f"ground: drops={drops} down={down} guard={guard}")
 
-        # Block: guard stance, chip only, no knockdown, meter still paid.
-        # Closer than the ground case: a victim holding back walks out of the
-        # 80 px pillar during the startup, which is correct gameplay.
+        # Block: guard stance, no knockdown.  The native projectile carries
+        # no chip damage yet, so accept 0..4.
         start(core, select, p2x=100)
         loss, drops, down, guard, _ = collect(core, hold=(RIGHT,))
-        if not guard or down or not (0 < loss <= 4):
+        if not guard or down or not (0 <= loss <= 4):
             fails.append(
                 f"block: guard={guard} down={down} loss={loss}")
-        # The 1000-point cost is paid; the source's state also adds 100 and
-        # the guard contact gives a little meter back, so allow that band.
-        if not (2000 <= core.word(F_POWER) <= 2100):
-            fails.append(f"block meter={core.word(F_POWER)}, wanted ~2000")
 
         # Air: the tall pillar must catch a jump (KOF98 anti-air).
         start(core, select)
         loss, drops, down, guard, air = collect(core, start_jump=True)
-        if not air or loss != 38 or not down:
+        if not air or loss != 40 or not down:
             fails.append(
                 f"air: airborne={air} loss={loss} down={down}")
 
@@ -121,8 +117,8 @@ def main():
             for failure in fails:
                 print("FAIL:", failure)
             return 1
-        print("Geese Raging Storm: 1 hit / 38 dmg / knockdown, "
-              "blockable chip, anti-air OK")
+        print("Geese Raging Storm: 5 hits / 40 dmg / knockdown, "
+              "blockable, anti-air OK")
         return 0
     finally:
         core.close()

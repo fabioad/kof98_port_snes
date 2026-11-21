@@ -111,6 +111,33 @@ PROJECTILE_ALT_EFFECTS = {
         "sids": (85, 86, 87),
         "release": 6,
     },
+    # Geese's Raising Storm.  The source paints it with Explod 3001 (front)
+    # and 3002 (back) from SFF groups 3005/3010, both already blue.  Compile
+    # the front cel as the alternate projectile clip for the super rows
+    # 85/86/87: squeezed to 48x80 and row-tiled to 48x128, exactly like
+    # Terry's geyser, so the storm reads as a tall pillar instead of the old
+    # orange FlameRise alias.  The shared projectile palette is rebuilt from
+    # these pixels; PROJ_PAL_BOOST/pins keep the cyan-blue ramp.
+    "geese": {
+        "action": 3001,
+        "frames": ((3, 20),),
+        "pre_scale": 1,
+        "squeeze_w": 48,
+        "squeeze_h": 80,
+        "zoom": 1,
+        # 7 rows (1 tip + 2 middle rows doubled + 2 base rows) = 112 px.
+        # 8 rows overflowed the Fight bank by 24 bytes after the second
+        # horizontal copy; 7 keeps the storm tall and the ROM linking.
+        "tile_rows": {"skip_top": 1, "skip_bottom": 2, "repeat": 2},
+        # Draw a second copy 48 px back (centred on Geese) so the storm
+        # surrounds him instead of standing only in front.  Both copies
+        # reuse the same cell slots; only OAM cells double.
+        "repeat_x": {"offset": -48, "copies": 2},
+        "max_cells": 48,
+        "invisible": False,
+        "sids": (85, 86, 87),
+        "release": 9,
+    },
     # Athena's Phoenix Fang charge levels (3000/3050/3100).  The source
     # helper 3050 plays the visible ball on AIR 7700; 7701 is only the
     # blank Clsn1 hitbox.  Use 7700 as the alternate projectile clip.
@@ -217,7 +244,10 @@ PROJECTILE_FX_ALIAS = {
     # PROJECTILE_ACTIONS rows above still document the source action.
     "benimaru": "athena",   # electric orb
     "andy": "yuri",         # Hishou Ken reuses the compiled Ko'ou Ken orb
-    "geese": "terry",       # ground wave
+    # Geese keeps Terry's primary ground-wave clip for the Reppuken (the
+    # source action 1053 atlas would add another full page), but he compiles
+    # his own blue Raising Storm alternate clip below.
+    "geese": "terry",       # primary ground wave
     "leona": "terry",       # ground wave
     # Mr. Big's own Ground Blaster (action 1020) is a flame wave.  The old
     # Heavy D beam alias was a streaky horizontal beam: shrunk into the
@@ -366,6 +396,8 @@ PROJECTILE_X_OFFSET = {
     # 12-tick lifetime).  Code 4 spawns the flame 32 px ahead with the
     # ordinary 90-tick shot lifetime, giving it full-screen reach.
     "john": {56: 32, 57: 32},
+    # Raising Storm erupts in front of Geese's hands, like Terry's geyser.
+    "geese": {85: 48, 86: 48, 87: 48},
 }
 
 # Per-shot release frame override (0-based source animation frame).  Used
@@ -428,7 +460,7 @@ _PROJECTILE_RELEASE_AUDIT = {
     # Yamazaki's travelling super shot is drawn by helper 3141.
     "yamazaki": {85: 11},
     # Reppuken / Shippuu Ken helpers and the Raging Storm pillar.
-    "geese": {58: 3, 60: 4, 62: 4, 65: 4, 85: 8, 86: 8},
+    "geese": {58: 3, 60: 4, 62: 4, 65: 4, 85: 9, 86: 9, 87: 9},
     # Kaiser Wave helpers.
     "krauser": {54: 3, 55: 3, 56: 3, 57: 3},
     # Ground Blaster helper.

@@ -14099,6 +14099,8 @@ PH_hitbox:
     cmp #terryProjFxAnim.w
     beq PR_wide
     cmp #terryProjFx2Anim.w             ; Power Geyser's stationary pillar
+    beq PR_wide
+    cmp #geeseProjFx2Anim.w             ; Raising Storm's blue pillar
     bne +
 PR_wide:
     ; Power Wave extends ~24px from its origin and the geyser pillar is
