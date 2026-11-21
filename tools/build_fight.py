@@ -2094,6 +2094,12 @@ POST_CAL_CATEGORIES = {
 POST_CAL_POW_OVERRIDE = {
     "daimon": {60: -1000},
 }
+    # The blowback (sid 67) inherits the source guard-cancel PowerAdd
+    # (-1000/-2000), which spent a stock and lit the super flash/dim.  The
+    # normal blowback is free, as it already is for Jason and Lucia.
+    "mature": {67: 0},
+    "athena": {67: 0},
+    "mary": {67: 0},
 
 
 def max_sid_mask(sids):
