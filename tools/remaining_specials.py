@@ -319,3 +319,171 @@ def repair(name,cfg,anims,air,moves,headers,states,binds,acts,posadds):
         Path(output,f'{name}_remaining_specials.json').write_text(json.dumps({
             'moves':cfg['moves'],'repairs':changed},indent=2)+'\n')
     return changed
+
+
+def complete_video_feedback(name, cfg, anims, air, moves, headers, states,
+                            binds, acts, posadds):
+    """Restore the source phases omitted by the original command import.
+
+    These repairs run after calibration and generic flattening. Capturing a
+    victim is the precondition for cinematic life changes; a whiff never plays
+    the continuation or deals its damage. No source helper/variable is needed.
+    """
+    if os.environ.get("KOF_NO_FB") or name not in ("kim", "chunli", "heidern"):
+        return []
+    changes = []
+
+    def clip(slot, state, action, frames):
+        if not frames:
+            raise ValueError(f'{name}: empty feedback continuation {state}')
+        if len(frames) > 120:
+            raise ValueError(f'{name}: feedback continuation exceeds element budget')
+        air[action] = (frames, -1)
+        cfg['moves'][slot] = state
+        cfg.setdefault('anims', {})[slot] = anims[slot] = action
+        for key in ('slices', 'frame_cap', 'slice_hits', 'state_vel'):
+            cfg.get(key, {}).pop(slot, None)
+        cfg.setdefault('loop_off', []).append(slot)
+        headers[state] = dict(type='S', movetype='A', physics='N',
+                              velset='0,0', anim=str(action), poweradd='0')
+        states[state] = [{'type': 'ChangeState', 'value': '0',
+                          'triggers': ['AnimTime = 0'],
+                          'trigger_groups': ['trigger1']}]
+        posadds[state] = []
+        cfg.setdefault('trans_drop', []).extend((slot, k) for k in (0, 1, 3))
+        cfg['extra_trans'] = [r for r in cfg.get('extra_trans', [])
+                              if r[0] != slot]
+        cfg['extra_trans'].append((slot, 0, 0, 0))
+        return state
+
+    def source_frames(action):
+        frames = air.get(action, ([], -1))[0]
+        return [(*f[:4], max(1, min(12, f[4] if f[4] > 0 else 4)), *f[5:])
+                for f in frames]
+
+    def capture(root_sid, follow, damage=1):
+        row = dict(moves.get(cfg['moves'][root_sid], {}))
+        row.update(cfg.get('hitdef_override', {}).get(root_sid, {}))
+        row.update(damage=damage, gdamage=0, fall=0, trip=0,
+                   gvx=0, gvy=0, avx=0, avy=0, p1mugen=follow,
+                   p2state=76, target_flags=1, throw=0)
+        cfg.setdefault('hitdef_override', {})[root_sid] = row
+        cfg.setdefault('slice_damage', {})[root_sid] = damage
+
+    if name == 'kim':
+        # Houou Kyaku is 3000 -> 3010 -> 3012 -> 3013. MAX is
+        # 3020 -> 3030 -> 3035. The old table only exposed the dash.
+        # Native extended slots 114/115 retain the victim through all cels.
+        for root_sid, slot, state, action, phases, per_hit, final in (
+                (107, 114, 23001, 65201, (3010, 3012, 3013), 3, 8),
+                (108, 115, 23002, 65202, (3030, 3035, 3013), 3, 12)):
+            frames, contacts = [], []
+            for phase in phases:
+                fs = source_frames(phase)
+                base = len(frames)
+                contacts.extend(base + i for i, f in enumerate(fs) if f[6])
+                # Contact damage is driven by the captured-target timeline,
+                # never by the residual hitboxes on the actor's source cels.
+                frames.extend((*f[:6], [], f[7]) for f in fs)
+            clip(slot, state, action, frames)
+            cfg.setdefault('hitdef_override', {})[slot] = {
+                'active': 0, 'damage': 0, 'gdamage': 0, 'p2state': 255}
+            cfg.setdefault('slice_damage', {})[slot] = 0
+            binds[state] = [(0, len(frames) - 1, 42, 0)]
+            acts[state] = [(0, 5, 0, 0), (0, 15, 0, 0), (0, 24, 0, 0)]
+            for frame in contacts:
+                amount = final if frame == contacts[-1] else per_hit
+                acts[state] += [(frame, 19, -amount, 0), (frame, 7, 5, 0)]
+            acts[state].append((min(len(frames) - 1, contacts[-1] + 1),
+                                4, 77, 0))
+            capture(root_sid, state)
+            changes.append((root_sid, slot, phases))
+
+    elif name == 'chunli':
+        # State 1200 is Spinning Bird Kick, not Hyakuretsu. The actual
+        # rapid-kick command points at 1100: startup -> 1105 looping kicks
+        # (AIR 1110/1115) -> 1110 recovery (AIR1120). Render a full cycle.
+        # Chun-Li's metasprite blob already sits 54 bytes under the 64 KiB
+        # CH_MBANK window, so the flurry keeps only its key cels: the last
+        # startup pose (holding the whole windup), the four attack cels (merging the in-between cels'
+        # ticks into them) and a recovery hold on the last kick cel.
+        def thin(frames, keep):
+            out = []
+            for i, f in enumerate(frames):
+                if i in keep or not out:
+                    out.append(list(f))
+                else:
+                    out[-1][4] = min(12, out[-1][4] + f[4])
+            return [tuple(f) for f in out]
+
+        raw_kicks = source_frames(1110)
+        keep = {i for i, f in enumerate(raw_kicks) if f[6]}
+        raw_start = source_frames(1100)
+        startup = [(*raw_start[-1][:4],
+                    min(12, sum(f[4] for f in raw_start)), *raw_start[-1][5:])]
+        kicks = thin(raw_kicks, keep)
+        recovery = []
+        # A special only knocks down on its fifth contact (MoveHitFinisher),
+        # so the last kick cel repeats once as a fifth strike.
+        kicks[-1] = (*kicks[-1][:4], 5, *kicks[-1][5:])
+        kicks.append((*kicks[-1][:4], 12, *kicks[-1][5:]))
+        frames = startup + kicks + recovery
+        contacts = [len(startup) + i for i, f in enumerate(kicks) if f[6]]
+        clip(57, 1100, 65210, frames)
+        acts[1100] = [(0, 5, 0, 0), (0, 15, 0, 0)]
+        for frame in contacts[1:]:
+            acts[1100].append((frame, 18, 1, 0))
+        row = dict(moves.get(1105, {}))
+        row.update(active=contacts[0] + 1, damage=7, gdamage=2,
+                   fall=0, trip=0, gvx=0, gvy=0, avx=0, avy=0,
+                   hittime=22, slidetime=22, p2state=255, p1mugen=-1)
+        cfg.setdefault('hitdef_override', {})[57] = row
+        cfg.setdefault('slice_damage', {})[57] = 9
+        cfg['slice_no_fall'] = sorted(set(cfg.get('slice_no_fall', ())) | {57})
+        cfg.setdefault('hit_soft_resets', {})[1100] = [i + 1 for i in contacts[1:]]
+        # Three fresh presses fit across the opening normal's recovery.
+        # Both kick strengths are listed and use the same actual flurry.
+        cfg['cmd_disable'] = list(set(cfg.get('cmd_disable', [])) | {'M_b', 'HYAKU_A'})
+        cfg.setdefault('cmd_extra', []).extend([
+            {'name': 'HYAKU_A_NATIVE', 'label': 'HYAKURETSU KYAKU',
+             'state': 1100, 'posture': 3, 'time': 50,
+             'elems': [(0, 4), (0, 4), (0, 4)]},
+            {'name': 'HYAKU_B_NATIVE', 'label': 'HYAKURETSU KYAKU S',
+             'state': 1100, 'posture': 3, 'time': 50,
+             'elems': [(0, 8), (0, 8), (0, 8)]}])
+        cfg.setdefault('cmd_priority', []).extend(['HYAKU_A_NATIVE', 'HYAKU_B_NATIVE'])
+        changes.append((57, 1100, (1100, 1105, 1110)))
+
+    elif name == 'heidern':
+        # The leap was flattened as a normal knockdown strike. It must
+        # capture instead, enter the head-spin, then detach and recover.
+        # Keep the actor axis on the floor and offset the source spinning
+        # body to the victim's head; logical hitboxes are not left airborne.
+        frames = source_frames(1220)
+        mounted = [(*f[:3], f[3] - 66, f[4], f[5], [], f[7]) for f in frames]
+        clip(117, 1220, 65211, mounted)
+        recovery = source_frames(1221)
+        total = max(1, len(recovery) - 1)
+        recovery = [(*f[:3], f[3] - round(66 * (1 - i / total)),
+                     min(8, f[4]), f[5], [], f[7])
+                    for i, f in enumerate(recovery)]
+        clip(118, 1221, 65212, recovery)
+        cfg['extra_trans'] = [r for r in cfg['extra_trans'] if r[0] == 117 and r[2] == 0 and False
+                              or r[0] not in (117, 118)]
+        cfg['extra_trans'] += [(117, 118, 0, 0), (118, 0, 0, 0)]
+        binds[1220] = [(0, len(mounted) - 1, 8, 0)]
+        binds[1221] = []
+        # Source1220 damages on these eight elements. Each now counts and
+        # sounds as a real contact while the victim remains captured.
+        acts[1220] = [(0, 5, 0, 0), (0, 15, 0, 0), (0, 24, 0, 0)]
+        for frame in (10, 17, 24, 31, 38, 45, 52, 59):
+            acts[1220] += [(frame, 19, -3, 0), (frame, 7, 5, 0)]
+        acts[1221] = [(0, 4, 77, 0), (0, 5, 0, 0), (0, 15, 0, 0)]
+        for sid in (117, 118):
+            cfg.setdefault('hitdef_override', {})[sid] = {
+                'active': 0, 'damage': 0, 'gdamage': 0, 'p2state': 255}
+            cfg.setdefault('slice_damage', {})[sid] = 0
+        for sid in (52, 53):
+            capture(sid, 1220, 0)
+        changes.append(((52, 53), 117, (1220, 1221)))
+    return changes

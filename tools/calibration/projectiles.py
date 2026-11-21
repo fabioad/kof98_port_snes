@@ -244,6 +244,19 @@ PROJECTILE_SOURCE_PALETTES = {
 }
 PROJECTILE_ZOOM = 2
 
+# Projectile effects drawn from external PNG art instead of the fighter's SFF
+# (see tools/extract_yamibarai_art.py).  Value: (ticks per frame, files in
+# assets/projectiles).  Two frames at most: the build shrinks them just
+# enough to fit the 16-cell effect page.  Kyo's clip also draws Saisyu,
+# Shingo and Yamazaki through PROJECTILE_FX_ALIAS; Saisyu is listed so its
+# old SFF flame stops contributing to the shared 15-colour projectile
+# palette.  Iori is the same burst in the purple ramp of his Yami Barai.
+PROJECTILE_EXTERNAL_ART = {
+    "kyo": (4, ("kyo_yamibarai_a.png", "kyo_yamibarai_b.png")),
+    "saisyu": (4, ("kyo_yamibarai_a.png", "kyo_yamibarai_b.png")),
+    "iori": (4, ("iori_yamibarai_a.png", "iori_yamibarai_b.png")),
+}
+
 # The Ko'ou Ken cels are solid ovals (not sparse flame streaks), so the
 # generic 2x upscale overflows the shared 16-cell OBJ page.  Yuri uses the
 # rational resize + per-frame atlas quantizer below instead; keep her generic

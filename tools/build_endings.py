@@ -7,9 +7,8 @@ src/gen_menu/end/endNN.{chr,map,pal}; endings 00-04 are the Rugal-defeat
 cinematic (ending1), 05-22 the credits/"Thank you" sequence (ending2).
 
 ending2 screens 06-20 are the fifteen per-team ending+credits pairs
-from assets/ending_pairs; they run as a fast montage (60 frames each,
-same total as the three 300-frame screens they replaced: 1880/2902/
-3445).  21-22 remain the SNK logo + "Thank you" cards.
+from assets/ending_pairs; the runtime holds each for 180 frames so the
+team art remains readable. 21-22 remain the SNK logo + "Thank you" cards.
 """
 import os
 import struct
@@ -17,7 +16,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = (sys.argv[1] if len(sys.argv) > 1 else
-       "/run/media/fabio/Dados/Fabio/kof98java/opening_ending")
+       os.path.join(ROOT, "assets/ending_frames"))
 PAIRS = os.path.join(ROOT, "assets/ending_pairs")
 DST = os.path.join(ROOT, "src/gen_menu/end")
 
@@ -43,7 +42,11 @@ def main():
            [os.path.join(SRC, f) for f in FRAMES[6:]])
     assert len(seq) == 23, len(seq)
     for i, path in enumerate(seq):
-        n = build_frame(path, os.path.join(DST, f"end{i:02d}"))
+        # The ocean/helicopter cards lose their subject in the SNES shadow
+        # steps. Lift midtones before quantizing; leave black/white and the
+        # other cards alone. This is an art correction, not palette flashing.
+        n = build_frame(path, os.path.join(DST, f"end{i:02d}"),
+                        gamma=0.72 if i in (4, 5) else 1.0)
         print(f"  end{i:02d}: {os.path.basename(path)} -> {n}B chr")
 
 
@@ -71,7 +74,7 @@ def _enc4(px):
     return bytes(out)
 
 
-def build_frame(path, outbase, crop=None, colors=15, blur=0.0):
+def build_frame(path, outbase, crop=None, colors=15, blur=0.0, gamma=1.0):
     from PIL import Image
     im = Image.open(path).convert("RGB")
     if crop is not None:
@@ -80,6 +83,13 @@ def build_frame(path, outbase, crop=None, colors=15, blur=0.0):
     if blur:
         from PIL import ImageFilter
         im = im.filter(ImageFilter.GaussianBlur(blur))
+    if gamma != 1.0:
+        if gamma <= 0:
+            raise ValueError("gamma must be positive")
+        # A shared monotonic curve preserves relative RGB values and both
+        # endpoints, unlike a constant brightness offset that washes out ink.
+        curve = [round(255 * (v / 255) ** gamma) for v in range(256)]
+        im = im.point(curve * 3)
     tiles, lut = [], {}
     pal = bytearray()
     mwords = [0] * (32 * 32)

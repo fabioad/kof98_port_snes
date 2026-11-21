@@ -8176,8 +8176,10 @@ TickFighter:
     dec a
     sta FP+F_MAX,x
     beq +
-    lda #2.b                           ; keep the bright MAX palette alive
-    sta FP+F_PFX,x
+    ; MAX is shown by the meter tag and its activation flash.  F_PFX is
+    ; the source's short PalFX/impact flash, whose high palette can be a
+    ; flat silhouette.  Re-arming it every tick hid the fighter for the
+    ; whole MAX window (Kyo/Robert/Geese).  Let genuine flashes expire.
 +   rep #$20
     .ACCU 16
     jsr ApplyTimeActions
