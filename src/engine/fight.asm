@@ -47,11 +47,14 @@
 .DEFINE OAMADDL     $002102
 .DEFINE BGMODE      $002105
 .DEFINE BG1SC       $002107
+.DEFINE BG2SC       $002108
 .DEFINE BG3SC       $002109
 .DEFINE BG12NBA     $00210B
 .DEFINE BG34NBA     $00210C
 .DEFINE BG1HOFS     $00210D
 .DEFINE BG1VOFS     $00210E
+.DEFINE BG2HOFS     $00210F
+.DEFINE BG2VOFS     $002110
 .DEFINE VMAIN       $002115
 .DEFINE VMADDL      $002116
 .DEFINE VMDATAL     $002118
@@ -76,10 +79,21 @@
 .DEFINE MDMAEN      $00420B
 .DEFINE HDMAEN      $00420C
 
-.DEFINE BG1MAP      $4000
+.DEFINE BG1MAP      $4800               ; 64x32 stage map ($4800-$4FFF)
 .DEFINE BG1CHR      $0000
-.DEFINE BG3MAP      $5000               ; BG1's 64x32 map spans $4000-$4FFF
+.DEFINE BG2MAP      $4400               ; 32x32 fight-portrait map (BG2 overlay)
+.DEFINE BG2CHR      $4000               ; 20 4bpp portrait tiles ($4000-$413F)
+; ORDER SELECT reuses BG2 for its six 32x32 cards: 97 tiles run from $4000 to
+; $460F, so its map sits at $4C00 (right after the 32x32 BG1 art map).
+.DEFINE ORDER_BG2MAP $4C00
+.DEFINE BG3MAP      $5000
 .DEFINE BG3CHR      $2000
+; BG2 portrait overlay slots.  Keep in sync with build_portraits() in
+; tools/build_fight.py (HUD_TILE_P1/P2, HUD_PAL_P1/P2) and its map builder.
+.DEFINE HUD_P1_TILE 1                   ; tiles 1..9
+.DEFINE HUD_P2_TILE 11                  ; tiles 11..19 (map carries H-FLIP)
+.DEFINE HUD_PAL_P1  5                   ; BG2 palette 5 -> CGRAM 80
+.DEFINE HUD_PAL_P2  6                   ; BG2 palette 6 -> CGRAM 96
 .DEFINE P1CHR       $6000
 .DEFINE P2CHR       $7000
 .DEFINE P2TILEOF    256
@@ -1350,16 +1364,51 @@ PpuInit:
     sta.l OBSEL
     lda #(BG1MAP>>10<<2|1).b            ; 64x32 map: stage scrolls L/R 512px
     sta.l BG1SC
+    lda #(BG2MAP>>10<<2).b              ; BG2 portrait overlay (32x32)
+    sta.l BG2SC
     lda #(BG3MAP>>10<<2).b
     sta.l BG3SC
-    lda #(BG1CHR>>12).b
+    lda #((BG2CHR>>12)<<4|(BG1CHR>>12)).b
     sta.l BG12NBA
     lda #(BG3CHR>>12).b
     sta.l BG34NBA
+    stz.w BG2HOFS                       ; overlay is fixed; the select screen
+    stz.w BG2HOFS                       ;   leaves its scrolling backdrop here
+    stz.w BG2VOFS
+    stz.w BG2VOFS
+    ; BG2 portrait overlay map.  Static for the whole fight (P1 window,
+    ; mirrored P2 window, everything else blank); LoadPortraits only swaps
+    ; the two 4bpp faces and their palettes.
+    rep #$20
+    .ACCU 16
+    lda #HudPortraitMap.w
+    sta scr0
+    lda #2048.w
+    sta scr1
+    lda #BG2MAP.w
+    sta scr2
+    sep #$20
+    .ACCU 8
+    lda #:HudPortraitMap
+    jsl VrDmaFar
+    ; Tile 0 of the overlay stays zero: every map cell outside the two
+    ; face windows points at it and must be transparent.
+    rep #$20
+    .ACCU 16
+    lda #HudBlankTile.w
+    sta scr0
+    lda #32.w
+    sta scr1
+    lda #BG2CHR.w
+    sta scr2
+    sep #$20
+    .ACCU 8
+    lda #:HudBlankTile
+    jsl VrDmaFar
     lda #$01.b                          ; TM = stage only while it loads: the
     sta.l TM                            ;   previous screen's layers (select
                                         ;   BG2 backdrop, OBJ) would show stale
-                                        ;   VRAM; StartFight sets $15 later
+                                        ;   VRAM; StartFight sets $17 later
     lda #32                             ; BG palettes 2-4: stage regions are
     sta.l CGADD                         ;   uploaded per pick by StagePick;
     jsr ClearCgram96                    ;   black them out until then
@@ -1665,7 +1714,10 @@ SfxDone:
     plp
     rts
 
-; Copy the selected 3x3 portrait tiles into the two reserved BG3 slots.
+; Copy each side's 4bpp face into its BG2 overlay slot and load the
+; matching 15-colour palette (P1 -> BG2 palette 5 / CGRAM 80, P2 -> palette 6
+; / CGRAM 96).  The BG2 map is static (see PpuInit) and carries the H-FLIP
+; bit for P2, so both sides read the same 288-byte portrait.
 LoadPortraits:
     rep #$20
     .ACCU 16
@@ -1679,9 +1731,9 @@ LoadPortraits:
     clc
     adc scr0
     sta scr0
-    lda #144.w
+    lda #288.w                          ; 3x3 4bpp tiles
     sta scr1
-    lda #(BG3CHR + PORTRAIT_P1*8).w
+    lda #(BG2CHR + HUD_P1_TILE*16).w
     sta scr2
     sep #$20
     .ACCU 8
@@ -1699,9 +1751,9 @@ LoadPortraits:
     clc
     adc scr0
     sta scr0
-    lda #144.w
+    lda #288.w
     sta scr1
-    lda #(BG3CHR + PORTRAIT_P2*8).w
+    lda #(BG2CHR + HUD_P2_TILE*16).w
     sta scr2
     sep #$20
     .ACCU 8
@@ -1709,31 +1761,35 @@ LoadPortraits:
     jsl VrDmaFar
     rep #$20
     .ACCU 16
-    ; P1 portrait palette -> CGRAM 0..3
+    ; P1 portrait palette -> CGRAM 80..95 (BG2 palette 5)
     lda sel1
     and #$00FF.w
     asl a
     asl a
     asl a
+    asl a
+    asl a                               ; *32: one 16-colour palette
     sta scr0
     lda #PortraitPal.w
     clc
     adc scr0
     sta scr0
-    lda #8
+    lda #32
     sta scr1
     sep #$20
     .ACCU 8
-    lda #0
+    lda #HUD_PAL_P1*16
     sta.l CGADD
     lda #:PortraitPal
     sta scr3
     jsr CgDma
     rep #$20
     .ACCU 16
-    ; P2 portrait palette -> CGRAM 4..7
+    ; P2 portrait palette -> CGRAM 96..111 (BG2 palette 6)
     lda sel2
     and #$00FF.w
+    asl a
+    asl a
     asl a
     asl a
     asl a
@@ -1742,11 +1798,11 @@ LoadPortraits:
     clc
     adc scr0
     sta scr0
-    lda #8
+    lda #32
     sta scr1
     sep #$20
     .ACCU 8
-    lda #4
+    lda #HUD_PAL_P2*16
     sta.l CGADD
     lda #:PortraitPal
     sta scr3
@@ -1755,65 +1811,47 @@ LoadPortraits:
     .ACCU 16
     rts
 
-; Point the 3x3 red/blue face-window cells at the portrait tiles.
+; Clear the two 3x3 face windows in the BG3 map: the portraits are drawn by
+; the BG2 overlay now (BG3 is high priority in mode 1, so any tile left there
+; would cover the face).  The window frames around them stay in the HUD art.
 PortraitMap:
     rep #$20
     .ACCU 16
-    lda #((1*32+0)*2).w
+    stz scr5
+PM_window:
+    ldx scr5
+    lda.l PM_Windows,x
+    cmp #$FFFF.w
+    beq PM_done
+    asl a
+    clc
+    adc #((1*32)*2).w                   ; row 1 of the window
     sta scr0
-    lda #PORTRAIT_P1.w
-    sta scr1
-    lda #$2000.w                          ; BG3 palette 0 (P1)
-    sta scr2
     ldy #3
-PM_p1_row:
+PM_row:
     ldx scr0
     lda #3
-    sta scr3
-PM_p1_col:
-    lda scr1
-    ora scr2
+    sta scr2
+PM_col:
+    lda #0
     sta HUDMAP,x
     inx
     inx
-    inc scr1
-    dec scr3
-    bne PM_p1_col
+    dec scr2
+    bne PM_col
     lda scr0
     clc
     adc #(32*2).w
     sta scr0
     dey
-    bne PM_p1_row
-    lda #((1*32+29)*2).w
-    sta scr0
-    lda #PORTRAIT_P2.w
-    sta scr1
-    lda #$2400.w                          ; BG3 palette 1 (P2)
-    sta scr2
-    ldy #3
-PM_p2_row:
-    ldx scr0
-    lda #3
-    sta scr3
-PM_p2_col:
-    lda scr1
-    ora scr2
-    sta HUDMAP,x
-    inx
-    inx
-    inc scr1
-    dec scr3
-    bne PM_p2_col
-    lda scr0
-    clc
-    adc #(32*2).w
-    sta scr0
-    dey
-    bne PM_p2_row
-    rep #$20
-    .ACCU 16
+    bne PM_row
+    inc scr5
+    inc scr5
+    bra PM_window
+PM_done:
     rts
+PM_Windows:
+    .dw 0,29,$FFFF                      ; P1 left edge, P2 right edge
 
 LoadStaticGfx:
     rep #$20
@@ -2398,7 +2436,7 @@ ShowTitle:
     .ACCU 8
     jsr ResetSuperFx                    ; no super dim/tint may survive into
                                         ;   the ROUND/winner screen or stage
-    lda #$15.b                          ; BG1 stage + BG3 HUD + OBJ
+    lda #$17.b                          ; BG1 stage + BG2 faces + BG3 HUD + OBJ
     sta.l TM
     rep #$20
     .ACCU 16
@@ -4785,7 +4823,7 @@ SF_p2_state:
     jsr EnterState
     sep #$20
     .ACCU 8
-    lda #$15.b                          ; BG1 stage + BG3 HUD + OBJ
+    lda #$17.b                          ; BG1 stage + BG2 faces + BG3 HUD + OBJ
     sta.l TM
     sep #$20
     .ACCU 8
@@ -4829,6 +4867,11 @@ SF_gs_store:
 +   lda huddirty
     ora #HUD_FULL
     sta huddirty
+    ; StartFight still runs with gamestate=5, so HudHdmaTick has been
+    ; scrolling BG2 (the select backdrop) while the fight PPU is rebuilt.
+    ; The BG2 fight map is at rows 1..3; a leftover vscroll (e.g. 75)
+    ; moves the portrait windows off screen.  Reset it after the game
+    ; state changes, so the next NMI leaves BG2 alone.
     rts
 
 DrawBars:
@@ -18651,8 +18694,8 @@ TS_hud:
     jsr LoadPortraits
     sep #$20
     .ACCU 8
-    lda #$15.b                          ; PpuInit left TM = stage only
-    sta.l TM                            ;   (loading screen): HUD + fighters
+    lda #$17.b                          ; PpuInit left TM = stage only
+    sta.l TM                            ;   (loading screen): HUD + faces
     lda #$0F.b
     sta.l INIDISP
     rep #$30
@@ -20747,6 +20790,27 @@ SuperFxApply:
     .ACCU 8
     lda #0
     sta.l CGWSEL
+    sta.l $002106                       ; no mosaic
+    sta.l $002123                       ; keep windows/color math clean: BG2
+    sta.l $002124                       ;   carries the HUD portraits now, and
+    sta.l $002125                       ;   random power-on masks (bsnes,
+    sta.l $00212E                       ;   Mesen GUI) or a loaded state must
+    sta.l $00212F                       ;   not hide them
+    sta.l $002133
+    lda gamestate
+    cmp #1.b
+    beq SFX_bg2_zero
+    cmp #2.b
+    beq SFX_bg2_zero
+    cmp #4.b
+    bne SFX_bg2_done
+SFX_bg2_zero:
+    lda #0
+    sta.l $00210F
+    sta.l $00210F
+    sta.l $002110
+    sta.l $002110
+SFX_bg2_done:
     lda.l SUPERFX_MODE
     beq SFA_off
     phy
@@ -23420,6 +23484,7 @@ Portraits:  .INCBIN "gen_fight/portraits.chr"
 Portraits_End:
 PortraitPal: .INCBIN "gen_fight/portrait_pal.bin"
 PortraitPal_End:
+HudBlankTile: .dsb 32, $00              ; BG2 overlay tile 0 (transparent)
 ; Source glyphs for the Japanese quote cache.  The fight HUD has no free
 ; 176-tile BG3 window, so JaQuotePrepare copies only the kana used by the
 ; winner's quote into the free 1004..1023 tiles (plus 13 unused ASCII slots
@@ -23611,13 +23676,22 @@ TitleRingFar:
 
 ; standalone build has no ORDER SELECT, so it does not emit this section.
 .IFDEF PVSNESLIB
+; BG2 overlay maps (2 KiB DMA blobs) + the six-card palette table.
 .BANK 64 SLOT 0
 .ORGA $B700
 .SECTION "OrderPortraitData" FORCE
-OrderPortraits: .INCBIN "gen_fight/order_portraits.chr"
-OrderPortraits_End:
 OrderPortraitPal: .INCBIN "gen_fight/order_portrait_pal.bin"
 OrderPortraitPal_End:
+.INCLUDE "gen_fight/portrait_maps.inc"
+.ENDS
+
+; 4bpp 32x32 ORDER SELECT faces: 57 x 512 B no longer fit bank 64's 18 KiB
+; tail, so the tile stream gets its own 32 KiB window.
+.BANK 87 SLOT 0
+.ORGA $8000
+.SECTION "OrderPortraitChr" FORCE
+OrderPortraits: .INCBIN "gen_fight/order_portraits.chr"
+OrderPortraits_End:
 .ENDS
 .ENDIF
 
@@ -25629,7 +25703,7 @@ CineApply:
     beq CA_done
     lda #0
     sta.l CINE_ACTIVE
-    lda #$15.b                          ; BG1 stage + BG3 HUD + OBJ
+    lda #$17.b                          ; BG1 stage + BG2 faces + BG3 HUD + OBJ
     sta.l TM
     lda #0
     sta.l $2121                        ; CGRAM colour 0

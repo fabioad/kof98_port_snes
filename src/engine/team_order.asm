@@ -1,6 +1,7 @@
 ; TEAM PLAY only: choose the original trio's first, second and third fighter.
-; BG1 owns the blue/red art; BG3 holds the unchanged 32x32 portraits and UI.
-; StartFight restores stage/portrait VRAM and palettes.
+; BG1 owns the blue/red art, BG2 holds the six 32x32 4bpp portraits (15
+; colours each) and BG3 carries only the UI text.  StartFight restores the
+; fight's BG2 overlay (tiles + map + palettes) on the way out.
 .BASE $00
 .BANK 64 SLOT 0
 .ORGA $3000
@@ -99,8 +100,8 @@ TOE_copy:
     sta.l $2111
     sta.l $2112
     sta.l $2112
-    lda #$05.b
-    sta.l TM                           ; BG1 art + BG3 portraits/text
+    lda #$07.b
+    sta.l TM                           ; BG1 art + BG2 faces + BG3 text
     jsr OrderLoadPortraits
     jsr OrderLoadBackground
     stz.w OR_SIDE
@@ -469,7 +470,10 @@ OC_next:
     stz.w T_I2
     rts
 
-; Portraits are six independent 2bpp palettes, UI text uses palettes 6/7.
+; The six 32x32 cards are 4bpp faces on the BG2 overlay: window tiles
+; 1+slot*16 (tile 0 stays blank) and one 16-colour palette per card at
+; CGRAM 0/48/64/80/96/112.  BG3 now draws only text, so its old 2bpp face
+; palettes at 0..23 are free for the first BG2 palette.
 OrderLoadPortraits:
     stz.w OR_SIDE
 OL_side:
@@ -478,6 +482,13 @@ OL_card:
     jsr OrderCardIndex
     rep #$20
     .ACCU 16
+    lda.w OR_SIDE
+    and #$00FF.w
+    tax
+    lda.w OR_CARD
+    and #$00FF.w
+    cmp.w OR_SIZE,x                    ; card outside this team: keep the
+    bcs OL_blank                       ;   BG2 window fully transparent
     lda.w OR_TEAM,y
     and #$00FF.w
     cmp #PORTRAIT_COUNT.w
@@ -496,23 +507,36 @@ OL_face:
     clc
     adc #OrderPortraits.w
     sta.b scr0
-    lda #256.w
-    sta.b scr1
+    lda #:OrderPortraits
+    bra OL_bank
+OL_blank:
+    lda #OrderBg2Zero.w
+    sta.b scr0
+    lda #:OrderBg2Zero
+OL_bank:
+    sta.b scr4
+    rep #$20
+    .ACCU 16
     lda.w OR_INDEX
     and #$00FF.w
     asl a
     asl a
     asl a
-    asl a                              ; portrait slot*16 tiles
-    asl a
-    asl a
-    asl a                              ; *8 -> words
+    asl a                              ; slot*16 tiles
     clc
-    adc #(BG3CHR+512*8).w
+    adc #1.w                           ; tile 0 holds the blank pattern
+    asl a
+    asl a
+    asl a
+    asl a                              ; *16 words per 4bpp tile
+    clc
+    adc #BG2CHR.w
     sta.b scr2
+    lda #512.w                         ; 4x4 4bpp tiles
+    sta.b scr1
     sep #$20
     .ACCU 8
-    lda #:OrderPortraits
+    lda.b scr4
     jsl VrDmaFar
     jsr OrderCardIndex
     rep #$20
@@ -525,6 +549,8 @@ OL_face:
 +   asl a
     asl a
     asl a
+    asl a
+    asl a                              ; *32: 16-colour palette
     clc
     adc #OrderPortraitPal.w
     sta.b scr2
@@ -532,9 +558,14 @@ OL_face:
     .ACCU 8
     lda #:OrderPortraitPal
     sta.b scr2+2
+    rep #$20
+    .ACCU 16
     lda.w OR_INDEX
-    asl a
-    asl a
+    and #$00FF.w
+    tax
+    sep #$20
+    .ACCU 8
+    lda.l OrderPalBase,x
     sta.l CGADD
     rep #$20
     .ACCU 16
@@ -550,7 +581,7 @@ OL_palette:
     .ACCU 16
     iny
     iny
-    cpy #8.w
+    cpy #32.w
     bcc OL_palette
     sep #$20
     .ACCU 8
@@ -730,8 +761,7 @@ OD_card:
     .ACCU 8
     cmp.w OR_SIZE,x
     bcs OD_empty
-    jsr OrderDrawPortrait
-    jsr OrderDrawName
+    jsr OrderDrawName                  ; the face itself is already on BG2
     jsr OrderDrawRank
 OD_empty:
     sep #$20
@@ -839,57 +869,48 @@ OLB_palette:
     bcc OLB_palette
     sep #$20
     .ACCU 8
-    lda #$40.b                         ; BG1 map at $4000, 32x32
+    lda #(BG1MAP>>10<<2).b             ; BG1 map at $4000, 32x32
     sta.l BG1SC
+    lda #(ORDER_BG2MAP>>10<<2).b       ; BG2 overlay: the six 32x32 faces
+    sta.l BG2SC
+    lda #((BG2CHR>>12)<<4|(BG1CHR>>12)).b
+    sta.l BG12NBA                      ; BG1 art $0000, BG2 faces $1000
     lda #0.b
-    sta.l BG12NBA                      ; BG1 CHR base $0000
+    sta.l BG2HOFS
+    sta.l BG2HOFS
+    sta.l BG2VOFS
+    sta.l BG2VOFS
     sta.l $210D
     sta.l $210D
     sta.l $210E
     sta.l $210E
-    rts
-
-OrderDrawPortrait:
-    rep #$30
+    ; Fixed BG2 map (six framed windows, everything else blank) + the zero
+    ; tile the empty cells point at.  OrderLoadPortraits then only swaps the
+    ; face tiles and palettes, exactly like the fight HUD overlay.
+    rep #$20
     .ACCU 16
-    .INDEX 16
-    lda.w OR_INDEX
-    and #$00FF.w
+    lda #OrderBg2Map.w
     sta.b scr0
-    asl a
-    asl a
-    asl a
-    asl a                              ; slot*16 tiles
-    clc
-    adc #512.w
-    sta.w OR_TILE
-    lda.w OR_INDEX
-    and #$00FF.w
-    xba
-    asl a
-    asl a
-    ora #$2000.w
+    lda #2048.w
+    sta.b scr1
+    lda #ORDER_BG2MAP.w
     sta.b scr2
-    ldx.w OR_ROWPOS
-    ldy #4.w
-ODP_row:
-    lda #4.w
+    sep #$20
+    .ACCU 8
+    lda #:OrderBg2Map
+    jsl VrDmaFar
+    rep #$20
+    .ACCU 16
+    lda #OrderBg2Blank.w
     sta.b scr0
-ODP_col:
-    lda.w OR_TILE
-    ora.b scr2
-    sta.w HUDMAP,x
-    inc.w OR_TILE
-    inx
-    inx
-    dec.b scr0
-    bne ODP_col
-    txa
-    clc
-    adc #56.w
-    tax
-    dey
-    bne ODP_row
+    lda #32.w
+    sta.b scr1
+    lda #BG2CHR.w
+    sta.b scr2
+    sep #$20
+    .ACCU 8
+    lda #:OrderBg2Blank
+    jsl VrDmaFar
     rts
 
 OrderDrawName:
@@ -1076,7 +1097,7 @@ TeamOrderPresent:
     sta.l $4361
     lda #$40.b
     sta.l MDMAEN
-    lda #$05.b
+    lda #$07.b
     sta.l TM
     lda #0.b
     sta.l $212D
@@ -1106,6 +1127,11 @@ OrderChoose: .db 6,3,8,15,15,19,5
 OrderFixed: .db 5,6,9,24,5,4
 OrderBits: .db 1,2,4
 OrderPalette: .dw $0000,$1441,$1441,$6318, $0000,$1441,$1441,$0910
+; CGRAM colour index of each card's 16-colour BG2 palette (palette 0/3/4/5/6/7).
+; Byte table: lda.l OrderPalBase,x indexes bytes, not words.
+OrderPalBase: .db 0,48,64,80,96,112
+OrderBg2Blank: .dsb 32, $00
+OrderBg2Zero: .dsb 512, $00
 OrderTitle: .db 12,15,18,4,5,18,0,19,5,12,5,3,20
 OrderStage: .db 5,19,20,1,7,5
 OrderPlayer: .db 6,16,12,1,25,5,18

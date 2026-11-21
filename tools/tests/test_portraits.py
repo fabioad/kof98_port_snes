@@ -7,21 +7,30 @@ from build_fight import ROOT  # noqa: E402
 
 
 class PortraitLayoutTests(unittest.TestCase):
-    def test_p1_portrait_is_moved_to_left_edge(self):
+    def test_hud_faces_draw_on_the_bg2_overlay(self):
         text = open(os.path.join(ROOT, "src/engine/fight.asm"),
                     encoding="utf-8").read()
-        self.assertIn("#((1*32+0)*2).w", text)
-        self.assertIn("PORTRAIT_P1.w", text)
+        self.assertIn("HudPortraitMap", text)
+        self.assertIn("BG2CHR", text)
+        self.assertIn("HUD_P1_TILE", text)
+        self.assertIn("HUD_PAL_P1", text)
 
-    def test_p2_portrait_uses_mirrored_asset_table(self):
+    def test_p2_portrait_mirrors_through_the_map_flip_bit(self):
         fight = open(os.path.join(ROOT, "src/engine/fight.asm"),
                      encoding="utf-8").read()
         build = open(os.path.join(ROOT, "tools/build_fight.py"),
                      encoding="utf-8").read()
         self.assertIn("lda.l PortraitOfsP2,x", fight)
         self.assertIn("PortraitOfsP2:", build)
-        self.assertIn("size - 1 - x", build)
+        self.assertIn("0x4000", build)
         self.assertIn('"PortraitOfsP2:\\n"', build)
+
+    def test_portraits_are_4bpp_with_15_colours(self):
+        build = open(os.path.join(ROOT, "tools/build_fight.py"),
+                     encoding="utf-8").read()
+        self.assertIn("def _face_palette", build)
+        self.assertIn("colors=min(15, len(set(px)))", build)
+        self.assertIn("tiles4bpp(bytes(vals), size, size)[0]", build)
 
     def test_portraits_load_after_active_team_member_is_selected(self):
         """Team modes must not DMA the select-cursor pick into the HUD."""

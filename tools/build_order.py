@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Native 256x224 ORDER SELECT art; BG1 sits behind the six 32x32 BG3 faces.
+"""Native 256x224 ORDER SELECT art; BG1 sits behind the six BG2 faces.
 
 Only the background is redrawn: the blue/red fields now use the arcade
 capture's textures and the title/VS are the real arcade logos, pasted exactly
 where the old procedural lettering sat.  Panels, frames, name plates and the
 footer keep the previous geometry, so the screen code is untouched.
 
-Uses one 4bpp palette at CGRAM 32, leaving all six portrait palettes and
-both text palettes intact.
+Uses one 4bpp palette at CGRAM 32, leaving the six BG2 card palettes
+(CGRAM 0/48/64/80/96/112) and both text palettes at 24..31 intact.
 """
 import struct
 from pathlib import Path

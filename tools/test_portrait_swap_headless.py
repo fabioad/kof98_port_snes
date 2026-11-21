@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """TEAM PLAY: the HUD portraits must follow member swaps (P1 and P2).
 
-TeamSwap uploads the 3x3 portrait tiles with a CPU loop (VrDma).  With the
+TeamSwap uploads the 3x3 4bpp face into the BG2 overlay (VrDma).  With the
 display on, those VMDATA writes were dropped, leaving the first member's
 face on screen while only the palette changed.  The upload now runs under
 forced blank, like PpuInit/StagePick.
@@ -22,12 +22,13 @@ TI1, TI2 = 0x10C8, 0x10C9
 M_ITEM = 0xF070
 HP1, HP2 = 0x4010, 0x4050
 
-BG3CHR = 0x2000
-hud = (ROOT / "build/gen_fight/hud.inc").read_text()
-P1_TILE = int(re.search(r"PORTRAIT_P1 = (\d+)", hud).group(1))
-P2_TILE = int(re.search(r"PORTRAIT_P2 = (\d+)", hud).group(1))
-P1_BYTE = (BG3CHR + P1_TILE * 8) * 2
-P2_BYTE = (BG3CHR + P2_TILE * 8) * 2
+# 4bpp faces on the BG2 overlay (see build_portraits / HudPortraitMap)
+BG2CHR = 0x4000
+P1_TILE = 1
+P2_TILE = 11
+FACE_BYTES = 288                      # 3x3 4bpp tiles
+P1_BYTE = (BG2CHR + P1_TILE * 16) * 2
+P2_BYTE = (BG2CHR + P2_TILE * 16) * 2
 
 inc = (ROOT / "build/gen_fight/portraits.inc").read_text()
 P1_OFS = [int(x) for x in re.findall(
@@ -43,12 +44,13 @@ def main():
     vram = (C.c_ubyte * core.lib.retro_get_memory_size(3)).from_address(
         core.lib.retro_get_memory_data(3))
     try:
-        wait(core, lambda: core.ram[GS] == 7, "opening")
-        tap(core, 3)
-        wait(core, lambda: core.ram[GS] == 0, "title")
-        core.step(4)
-        tap(core, 3)
-        wait(core, lambda: core.ram[GS] == 6, "menu")
+        # Boot path differs with/without the .msu opening video: START through
+        # whatever intro runs until the main menu is up.
+        for _ in range(60):
+            if core.ram[GS] == 6:
+                break
+            tap(core, 3)
+        wait(core, lambda: core.ram[GS] == 6, "menu", 900)
         core.ram[M_ITEM] = 2                     # TEAM PLAY
         tap(core, 3)
         wait(core, lambda: core.ram[GS] == 5, "team select")
@@ -68,12 +70,12 @@ def main():
         core.step(120)
 
         def check(tag):
-            p1 = bytes(vram[P1_BYTE:P1_BYTE + 144])
-            p2 = bytes(vram[P2_BYTE:P2_BYTE + 144])
+            p1 = bytes(vram[P1_BYTE:P1_BYTE + FACE_BYTES])
+            p2 = bytes(vram[P2_BYTE:P2_BYTE + FACE_BYTES])
             s1, s2 = core.ram[SEL1], core.ram[SEL2]
-            assert p1 == PORTRAITS[P1_OFS[s1]:P1_OFS[s1] + 144], \
+            assert p1 == PORTRAITS[P1_OFS[s1]:P1_OFS[s1] + FACE_BYTES], \
                 f"{tag}: P1 portrait is not sel {s1}"
-            assert p2 == PORTRAITS[P2_OFS[s2]:P2_OFS[s2] + 144], \
+            assert p2 == PORTRAITS[P2_OFS[s2]:P2_OFS[s2] + FACE_BYTES], \
                 f"{tag}: P2 portrait is not sel {s2}"
             print(f"  {tag}: P1 sel {s1} OK, P2 sel {s2} OK")
             return s1, s2

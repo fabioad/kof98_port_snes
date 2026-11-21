@@ -16126,34 +16126,95 @@ def _lifebar_backdrop(imgs, tiles, top_keys, bottom_keys):
     return maps
 
 
+# Fight HUD and ORDER SELECT portraits are 4bpp with a full 16-colour
+# palette (15 face colours + transparent index 0), matching the 15-colour
+# shared palettes the SELECT screen composites its faces with.
+#
+# The fight pair is no longer drawn on BG3: mode 1 makes BG3 2bpp, so the
+# faces move to a BG2 overlay ("HudPortraitMap") that sits above the stage
+# and under the priority-BG3 HUD.  BG2 palette 5 (CGRAM 80) holds P1 and
+# palette 6 (CGRAM 96) holds P2 -- CGRAM 80..127 is the only free 16-colour
+# window while a fight is up (32..79 stage, 12..31 BG3 HUD, 128..255 OBJ).
+# P2 reuses P1's tiles mirrored by the BG2 map's H-FLIP bit, so only one
+# 288-byte copy per character is stored.
+HUD_PAL_P1 = 5
+HUD_PAL_P2 = 6
+HUD_TILE_P1 = 1                     # BG2 tiles 1..9   (tile 0 = blank)
+HUD_TILE_P2 = 11                    # BG2 tiles 11..19 (map carries H-FLIP)
+# ORDER SELECT: six 32x32 cards, one palette per card.  ORDER SELECT only
+# has BG palettes 0 and 3..7 free (1 = text/UI, 2 = the BG1 artwork).
+ORDER_PALS = (0, 3, 4, 5, 6, 7)
+ORDER_TILE = 1                      # BG2 tiles 1+slot*16 (tile 0 = blank)
+
+
+def _hud_portrait_map():
+    """32x32 BG2 map: P1 3x3 window at col 0, P2 mirrored at col 29."""
+    words = [0] * 1024
+    for r in range(3):
+        for c in range(3):
+            words[(1 + r) * 32 + c] = (
+                (HUD_TILE_P1 + r * 3 + c) | (HUD_PAL_P1 << 10) | 0x2000)
+            words[(1 + r) * 32 + 29 + c] = (
+                (HUD_TILE_P2 + r * 3 + (2 - c)) | (HUD_PAL_P2 << 10)
+                | 0x2000 | 0x4000)
+    return words
+
+
+def _order_portrait_map():
+    """32x32 BG2 map: the six 32x32 cards at x16/x144, rows 8/13/18."""
+    words = [0] * 1024
+    for side in range(2):
+        for card in range(3):
+            slot = side * 3 + card
+            pal = ORDER_PALS[slot]
+            row0 = 8 + card * 5
+            col0 = 2 + side * 16
+            for r in range(4):
+                for c in range(4):
+                    words[(row0 + r) * 32 + col0 + c] = (
+                        (ORDER_TILE + slot * 16 + r * 4 + c)
+                        | (pal << 10) | 0x2000)
+    return words
+
+
+def _face_palette(im, size):
+    """15 opaque face colours, index 0 stays transparent/backdrop."""
+    from PIL import Image
+    px = [im.getpixel((x, y))[:3]
+          for y in range(size) for x in range(size)
+          if im.getpixel((x, y))[3] >= 96]
+    if not px:
+        px = [(0, 0, 0)]
+    strip = Image.new("RGB", (len(px), 1))
+    strip.putdata(px)
+    q = strip.quantize(colors=min(15, len(set(px))),
+                       method=Image.MEDIANCUT, dither=Image.NONE)
+    raw = list(q.getpalette() or [])
+    raw += [0] * (768 - len(raw))
+    return [tuple(raw[i * 3:i * 3 + 3]) for i in range(15)]
+
+
 def build_portraits():
-    """Build HUD (24x24) and ORDER SELECT (32x32) 2bpp portraits.
+    """Build HUD (24x24) and ORDER SELECT (32x32) 4bpp portraits.
 
     Both sets come from the same select-cell icon and use a per-character
-    3-colour palette plus transparent index 0.  The HUD keeps the original
+    15-colour palette plus transparent index 0.  The HUD keeps the original
     3x3 face-window size; ORDER SELECT gets a 4x4 portrait that fits the
-    framed card layout.
+    framed card layout.  The two BG2 maps are emitted here as well, because
+    the tile/palette slots above are part of the same layout contract.
     """
     from build_select import ROSTER, icon_rgba
     from PIL import Image
 
-    def encode(im, size, data, paldata, table, table_p2, mirror=True):
-        # Quantise only opaque face pixels; transparent -> tile index 0.
-        rgb = Image.new("RGB", (size, size), (128, 128, 128))
-        rgb.paste(im, (0, 0), im)
-        q = rgb.quantize(colors=3, method=Image.MEDIANCUT,
-                         dither=Image.NONE)
-        qp = q.getpalette() or []
-        cols = []
-        for i in range(3):
-            chunk = qp[i * 3:i * 3 + 3]
-            cols.append(tuple(chunk) if len(chunk) == 3 else (0, 0, 0))
-        pal = [(0, 0, 0)] + cols
-        for r, g, b in pal:
-            c = (r * 31 // 255) | ((g * 31 // 255) << 5) \
-                | ((b * 31 // 255) << 10)
-            paldata += struct.pack("<H", c)
-        vals = []
+    def encode(im, size, data, paldata, table):
+        cols = _face_palette(im, size)
+        qpal = Image.new("P", (1, 1))
+        qpal.putpalette([v for col in cols for v in col]
+                        + [0] * (768 - 45))
+        q = im.convert("RGB").quantize(palette=qpal,
+                                       dither=Image.Dither.NONE)
+        paldata += snes_pal([(0, 0, 0)] + cols, 16)
+        vals = bytearray()
         alpha = im.split()[3]
         for y in range(size):
             for x in range(size):
@@ -16162,19 +16223,14 @@ def build_portraits():
                 else:
                     vals.append(q.getpixel((x, y)) + 1)
         table.append(len(data))
-        data += tiles2bpp(bytes(vals), size, size)
-        if mirror:
-            mirrored = [vals[y * size + (size - 1 - x)]
-                        for y in range(size) for x in range(size)]
-            table_p2.append(len(data))
-            data += tiles2bpp(bytes(mirrored), size, size)
+        data += tiles4bpp(bytes(vals), size, size)[0]
 
     data = bytearray()
     paldata = bytearray()
-    table, table_p2 = [], []
+    table = []
     odata = bytearray()
     opaldata = bytearray()
-    otable, otable_p2 = [], []
+    otable = []
 
     for entry in ROSTER:
         rel = entry[0]
@@ -16184,9 +16240,9 @@ def build_portraits():
         except Exception:
             base = Image.new("RGBA", (25, 25), (0, 0, 0, 0))
         encode(base.resize((24, 24), Image.LANCZOS), 24,
-               data, paldata, table, table_p2)
+               data, paldata, table)
         encode(base.resize((32, 32), Image.LANCZOS), 32,
-               odata, opaldata, otable, otable_p2, mirror=False)
+               odata, opaldata, otable)
 
     open(os.path.join(OUT, "portraits.chr"), "wb").write(data)
     open(os.path.join(OUT, "portrait_pal.bin"), "wb").write(paldata)
@@ -16198,21 +16254,31 @@ def build_portraits():
     for i in range(0, len(table), 8):
         inc.append("    .dw " + ",".join(str(v) for v in table[i:i + 8])
                    + "\n")
+    # P2 mirrors through the BG2 map's H-FLIP bit: same offsets, no copy.
     inc.append("PortraitOfsP2:\n")
-    for i in range(0, len(table_p2), 8):
-        inc.append("    .dw " + ",".join(str(v) for v in table_p2[i:i + 8])
+    for i in range(0, len(table), 8):
+        inc.append("    .dw " + ",".join(str(v) for v in table[i:i + 8])
                    + "\n")
-    otable_p2 = list(otable)
     inc.append(f"ORDER_PORTRAIT_COUNT = {len(otable)}\n")
     inc.append("OrderPortraitOfs:\n")
     for i in range(0, len(otable), 8):
         inc.append("    .dw " + ",".join(str(v) for v in otable[i:i + 8])
                    + "\n")
     inc.append("OrderPortraitOfsP2:\n")
-    for i in range(0, len(otable_p2), 8):
-        inc.append("    .dw " + ",".join(str(v) for v in otable_p2[i:i + 8])
+    for i in range(0, len(otable), 8):
+        inc.append("    .dw " + ",".join(str(v) for v in otable[i:i + 8])
                    + "\n")
     open(os.path.join(OUT, "portraits.inc"), "w").write("".join(inc))
+    # The two BG2 maps are 2 KiB blobs DMA'd from ROM, so they live in their
+    # own window (bank 64's tail) instead of the portrait data bank.
+    maps = []
+    for label, words in (("HudPortraitMap", _hud_portrait_map()),
+                         ("OrderBg2Map", _order_portrait_map())):
+        maps.append(f"{label}:\n")
+        for i in range(0, len(words), 8):
+            maps.append("    .dw " + ",".join(str(v)
+                                              for v in words[i:i + 8]) + "\n")
+    open(os.path.join(OUT, "portrait_maps.inc"), "w").write("".join(maps))
     print(f"hud portraits: {len(table)} chars, {len(data)}B + "
           f"{len(paldata)}B pal; order: {len(odata)}B + {len(opaldata)}B pal")
 
@@ -16445,8 +16511,8 @@ def build_hud():
         tiles += tiles2bpp(cell, 8, 8)
 
     topmap, bottommap = _lifebar_backdrop(fspr, tiles, life_bg, power_bg)
-    portrait_base = len(tiles) // 16
-    tiles += bytes(16) * 18                 # reserve 3x3 tiles per side
+    # The fight portraits are no longer BG3 tiles: they are 4bpp faces on the
+    # BG2 overlay (see build_portraits), so BG3 only carries the HUD art.
     # The old stable HUD occupied the full 384-tile BG3 window.  The redraw
     # uses three fewer tiles, but the real-hardware upload/VRAM extent must
     # stay at 6144 bytes (the portrait and stage-anim DMAs follow the same
@@ -16527,8 +16593,6 @@ def build_hud():
                f"KANA_SLOT_FREE = {KANA_SLOT_FREE}\n"
                f"KANA_SLOT_FREE_BASE = {KANA_SLOT_FREE_BASE}\n"
                f"KANA_SLOT_LOW_BASE = {KANA_SLOT_LOW_BASE}\n")
-    inc.append(f"PORTRAIT_P1 = {portrait_base}\n"
-               f"PORTRAIT_P2 = {portrait_base + 9}\n")
     for label, s in strs.items():
         ids = [char_code(c) for c in s]
         inc.append(f"{label}: .db {len(ids)}," +
