@@ -26082,16 +26082,25 @@ PPM_slot1:
     bne PPM_go
     jmp PPM_out
 PPM_go:
-    ; Terry's geyser uses the alternate pillar clip for all three strengths.
-    ; Keep the pillar in front of Terry and stop the victim's horizontal
-    ; pushback so they stay inside the 40 px hitbox for all five contacts.
+    ; Terry's geyser and Geese's Raising Storm use the alternate pillar clip
+    ; for all three strengths.  Keep the pillar on the floor where it spawned
+    ; (pinning it to the victim lifted it to chest height) and stop the
+    ; victim's horizontal pushback so they stay inside the 40 px hitbox for
+    ; all five contacts.
     rep #$20
     .ACCU 16
     lda.w SPARKS+SPK_ANIM,x
     cmp #terryProjFx2Anim.w
+    beq PPM_stationary
+    cmp #geeseProjFx2Anim.w
     sep #$20
     .ACCU 8
     bne PPM_pin
+    bra PPM_stationary8
+PPM_stationary:
+    sep #$20
+    .ACCU 8
+PPM_stationary8:
     lda.w SPARKS+SPK_ATTR,x
     and #$40.b                        ; bit6 = owner is P2
     beq +
