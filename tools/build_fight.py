@@ -360,6 +360,30 @@ AI_TUNING = {
                    AI_PF_PRESSURE | AI_PF_ADAPT),
 }
 
+# Per-character CPU move-table overrides.  The default generator keeps the
+# eight most defining moves and floors projectile rows (supers included) at
+# 64 px.  John's ground kit is larger than eight rows: the cap used to drop
+# every special except Flame Raid, and the 64 px floor meant that once he
+# walked into clinch range the CPU had only normals and the throw left.  He
+# keeps the full 16-row scan window (AI_ScanMove starts with `& $0F`) and gets
+# explicit windows so the command-grab super is used at grab range.
+AI_MOVE_OVERRIDES = {
+    "john": {
+        "max_rows": 16,
+        "exclude": {58, 59},            # air Spiral: jump-in path only
+        "windows": {
+            48: (0, 255), 49: (0, 255),  # Mega Smash
+            50: (0, 140), 51: (0, 140),  # Flying Attack
+            52: (0, 140), 53: (0, 140),  # Spiral Leg Bomber
+            54: (0, 140), 55: (0, 140),  # Overdrive Kick
+            56: (0, 255), 57: (0, 255),  # Flame Raid
+            85: (0, 255), 86: (0, 255),  # Mega Smasher
+            87: (0, 255),                # MAX Mega Smasher
+            88: (0, 45),  89: (0, 45),   # Atomic Smash command grab
+        },
+    },
+}
+
 # Style fallbacks for a roster entry added without an AI_TUNING row.
 AI_STYLE_PROFILE = {
     0: (44, 104, 190, 200, 180,  70, 150, AI_PF_ADAPT),
@@ -10018,6 +10042,8 @@ def ai_move_table(name, rules, move_ids, pow_costs, max_sids, projs, cfg):
     actual kit: projectile-heavy kits keep space, dragon punches anti-air,
     command grabs close in, and rush specials drive aggression.
     """
+    override = AI_MOVE_OVERRIDES.get(name, {})
+    excluded = override.get("exclude", ())
     rows = []
     seen = set()
     for rule in rules:
@@ -10027,6 +10053,8 @@ def ai_move_table(name, rules, move_ids, pow_costs, max_sids, projs, cfg):
         if sid in seen:
             continue
         if not (48 <= sid <= 66 or 74 <= sid <= 75 or 85 <= sid <= 89):
+            continue
+        if sid in excluded:
             continue
         motion = rule["motion"].split("#", 1)[0].upper()
         flags = 0
@@ -10096,7 +10124,15 @@ def ai_move_table(name, rules, move_ids, pow_costs, max_sids, projs, cfg):
             return 3
         return 4
     rows.sort(key=lambda row: (_prio(row), row[0]))
-    rows = rows[:8]
+    rows = rows[:min(16, int(override.get("max_rows", 8)))]
+    # Explicit per-character windows take precedence over the generic
+    # projectile/anti-air floors (John's command grab and ground specials).
+    windows = override.get("windows")
+    if windows:
+        rows = [(sid, *windows[sid], flags, cost100, weight)
+                if sid in windows else
+                (sid, lo, hi, flags, cost100, weight)
+                for sid, lo, hi, flags, cost100, weight in rows]
 
     proj_n = sum(1 for r in rows if r[3] & AI_F_PROJ)
     aa_n = sum(1 for r in rows if r[3] & AI_F_AA)

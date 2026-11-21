@@ -52,6 +52,21 @@ class AiTableTests(unittest.TestCase):
                 self.assertEqual(len(rows), header[0])
                 self.assertTrue(all(len(row) == 6 for row in rows))
 
+    def test_john_keeps_his_ground_specials_and_supers(self):
+        # Regression: the eight-row cap used to leave John with only Flame
+        # Raid (56/57), and every super started at 64 px, so a CPU John that
+        # walked into clinch range never fired a special or a super.
+        table = next((t for t in self.tables if t[0] == "john"), None)
+        self.assertIsNotNone(table)
+        _name, header, rows = table
+        self.assertEqual(16, header[0])
+        self.assertEqual(set(range(48, 58)) | set(range(85, 90)) | {74},
+                         {row[0] for row in rows})
+        by_sid = {row[0]: row for row in rows}
+        self.assertEqual((0, 45), (by_sid[88][1], by_sid[88][2]))
+        self.assertEqual((0, 45), (by_sid[89][1], by_sid[89][2]))
+        self.assertEqual((0, 255), (by_sid[85][1], by_sid[85][2]))
+
     def test_every_row_sid_is_dispatchable(self):
         # AI_ScanMove feeds the row sid straight to EnterState, which indexes
         # StateTab.  A sid outside 0..S_EXT_LAST would jump into unrelated

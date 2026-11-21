@@ -23,7 +23,8 @@ class AiProfileTests(unittest.TestCase):
                 for value in rates:
                     self.assertGreaterEqual(value, 0)
                     self.assertLessEqual(value, 255)
-                self.assertEqual(0, flags & ~0x1F)
+                # AI_PF_BOSS (0x20) is also a valid personality bit.
+                self.assertEqual(0, flags & ~0x3F)
 
     def test_kyo_is_the_generic_fallback(self):
         self.assertIn("kyo", bf.AI_TUNING)
@@ -102,6 +103,32 @@ class AiProfileTests(unittest.TestCase):
          profile) = bf.ai_move_table(
             "athena", rows, {48: 1000}, {}, {}, {}, {"moves": {96: 750}})
         self.assertTrue(profile[5] & bf.AI_PF_METER)
+
+    def test_john_override_supports_the_full_ground_kit(self):
+        # John has ten ground specials + five supers.  The generic eight-row
+        # cap dropped everything except Flame Raid, and the projectile floor
+        # kept his supers out of clinch range.  The override keeps the whole
+        # ground kit and gives the command grab a close-range window.
+        override = bf.AI_MOVE_OVERRIDES["john"]
+        self.assertEqual(16, override["max_rows"])   # AI_ScanMove uses &$0F
+        self.assertEqual({58, 59}, override["exclude"])
+        ground = set(range(48, 58)) | set(range(85, 90))
+        self.assertTrue(ground <= set(override["windows"]))
+        self.assertEqual((0, 45), override["windows"][88])
+        self.assertEqual((0, 45), override["windows"][89])
+
+        rules = [{"state": sid, "motion": "QCF_X", "dist": 0}
+                 for sid in sorted(ground | {74})]
+        (style, aggr, deff, spec, super_rate, rows,
+         profile) = bf.ai_move_table(
+            "john", rules, {}, {}, {}, {}, {})
+        self.assertEqual(16, len(rows))
+        self.assertEqual(ground | {74}, {row[0] for row in rows})
+        self.assertEqual(255, spec)              # 128 + 8 * 16, capped
+        self.assertEqual(184, super_rate)        # five super rows
+        by_sid = {row[0]: row for row in rows}
+        self.assertEqual((0, 45), (by_sid[88][1], by_sid[88][2]))
+        self.assertEqual((0, 255), (by_sid[85][1], by_sid[85][2]))
 
 
 if __name__ == "__main__":
