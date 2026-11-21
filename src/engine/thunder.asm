@@ -8,13 +8,13 @@
 ; It starts as a pure white screen (thunder flash), fades quickly to the art,
 ; holds, then fades slowly back to black before handing off to OpnEnter.
 ;
-; This code lives in the free tail of bank 122 so the Fight/menu bank does not
-; have to grow: Mr. Karate's code ends at $7B3A and EndData8 starts at $8000.
+; This code lives in the free tail of bank 126 ($FC00+) so it does not
+; compete with Mr. Karate's code in bank 122 or the full Fight/menu bank.
 ; All near helpers are reached through the MkCall_* trampolines in fight.asm.
 ; ============================================================================
 .BASE $00
-.BANK 122 SLOT 0
-.ORGA $7B40
+.BANK 126 SLOT 0
+.ORGA $FC00
 .SECTION "ThunderCode" FORCE
 .IFDEF KOF_TINY
 ; TINY reuses bank 82's upper half for character CHR; the card stays disabled.

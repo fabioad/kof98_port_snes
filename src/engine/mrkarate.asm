@@ -1,5 +1,6 @@
 ; Secret Robert form and flawless campaign boss route. All entry points
 ; preserve the engine DBR/D conventions; cinematic never runs in attract.
+.DEFINE SAFE1       $7E7F12             ; trusted P1 pick (campaign/survivor)
 .BASE $00
 .BANK 122 SLOT 0
 .ORGA $0000
@@ -53,16 +54,72 @@ MKSEL_p2:
 MKSEL_latched:
     sta.w MK_PICK
     lda #MRKARATE_ID.b
-    rtl
+    bra MKSEL_out
 MKSEL_base:
     pla
 MKSEL_out:
+    ; A = final pick.  Keep the human P1 pick outside sel1's DP byte, which
+    ; the fight/presentation path can double during a long round.  Resolve
+    ; Kyo's L/R variants here too so the trusted value is the real fighter.
+    cpx #0
+    bne MKSEL_ret
+    pha
+    lda.b cpu1
+    bne MKSEL_ret_pla
+    pla
+    cmp #KYO_BASE_ID.b
+    bne MKSEL_save
+    lda.b msuok
+    beq MKSEL_save
+    rep #$20
+    .ACCU 16
+    lda FP+F_JOY,x
+    and #(JOY_L|JOY_R).w
+    cmp #JOY_L.w
+    beq MKSEL_save_nests
+    cmp #JOY_R.w
+    beq MKSEL_save_ash
+    sep #$20
+    .ACCU 8
+    lda #KYO_BASE_ID.b
+    bra MKSEL_save
+MKSEL_save_nests:
+    sep #$20
+    .ACCU 8
+    lda #KYO_NESTS_ID.b
+    bra MKSEL_save
+MKSEL_save_ash:
+    sep #$20
+    .ACCU 8
+    lda #KYO_ASH_ID.b
+MKSEL_save:
+    sta.l SAFE1
+MKSEL_ret:
+    rtl
+MKSEL_ret_pla:
+    pla
     rtl
 
 ; Stage policy runs after team members have populated sel1/sel2.
 MkSanitizeFar:
     sep #$20
     .ACCU 8
+    ; Single Play/Survivor: the fight/presentation path can double sel1
+    ; during a long round.  Restore the human's trusted pick before the
+    ; descriptor is loaded; Team Play reloads sel1 from T_TEAM1 itself.
+    lda.w G_MODE
+    cmp #1.b
+    beq MKST_restore1
+    cmp #4.b
+    bne MKST_after_restore1
+MKST_restore1:
+    lda.w C_HUMAN_SIDE
+    bne MKST_after_restore1
+    lda.l SAFE1
+    cmp #NROSTER.b
+    bcs MKST_after_restore1
+    sta.b sel1
+MKST_after_restore1:
     lda.b msuok
     beq MKST_strip
     lda.w MK_PICK                        ; a human selected the form: keep it
