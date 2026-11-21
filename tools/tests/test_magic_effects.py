@@ -110,14 +110,27 @@ class MagicEffectTests(unittest.TestCase):
 
     def test_athena_and_kensou_acts_emit_the_effect(self):
         burst = self.index_of("MagicBurst")
-        for text, name, sid in ((self.athena, "athena", 49),
-                                (self.athena, "athena", 85),
+        # The Psycho Sword (Athena 1020/1030) is deliberately excluded: its
+        # source reuses anims 1022-1024 for the sword aura and stamping this
+        # 2x2 burst there produced the pale square with a transparent circle.
+        for text, name, sid in ((self.athena, "athena", 85),
                                 (self.kensou, "kensou", 48),
                                 (self.kensou, "kensou", 85)):
             rows = db_rows(text, f"{name}Act{sid}")
             valid = exp_indexes(text, f"{name}ExpTab", burst)
             self.assertTrue(any(row[1] == 14 and row[2] in valid
                                 for row in rows), (sid, rows))
+
+    def test_psycho_sword_never_stamps_the_burst(self):
+        # Regression: Athena's DP+P (states 1020/1030) must not spawn the
+        # magic burst.  Re-adding it puts the pale square back on screen.
+        burst = self.index_of("MagicBurst")
+        valid = exp_indexes(self.athena, "athenaExpTab", burst)
+        for sid in (49, 58):
+            rows = db_rows(self.athena, f"athenaAct{sid}")
+            stamped = [row for row in rows
+                       if row[1] == 14 and row[2] in valid]
+            self.assertEqual(stamped, [], (sid, rows))
 
     def test_chin_bottle_follows_each_sip(self):
         bottle = self.index_of("Bottle")

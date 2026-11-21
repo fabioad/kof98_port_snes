@@ -14521,6 +14521,12 @@ EXPLODS = {
                   [(1005, 0, 3)],
                   0x3E),
 }
+# Explods flagged `ownpal` are painted from the owner's palette, not the
+# sprite sheet's built-in copy.  The magic burst's own copy (palette 1) is
+# all black, so compiling it from there turned the disc into a transparent
+# hole and left the flat backdrop visible as a pale square.  Use the
+# character palette for it.
+EXPLOD_PALETTE = {"MagicBurst": 0}
 # mugen explod anim id -> compiled clip label.  Kyo's flames ride AIR
 # actions 1120/1121; Iori's (identical art) ride 1101/1102.  KFM's two intro
 # debris anims share the one compiled chunk.
@@ -15607,7 +15613,11 @@ def build_spark():
     palidx = {c: i for i, c in enumerate(pal)}
     def shared_color_index(color):
         exact = palidx.get(color)
-        if exact is not None:
+        # Slot 0 is the transparent key.  A visible source colour must never
+        # collapse into it: that turned Athena's magic disc into a hole and
+        # left only the sprite's flat background painted, the pale square with
+        # a see-through circle reported on the Psycho Sword.
+        if exact:
             return exact
         return min(range(1, len(pal)),
                    key=lambda i: sum((pal[i][ch] - color[ch]) ** 2
@@ -15719,7 +15729,11 @@ def build_spark():
                     continue
                 s = spark_sprite(csff.get(g, n), scale)
                 remap = [0] * 256
-                srcpal = csff.palettes[s.palidx]
+                # `ownpal` effects (Athena/Kensou's magic bursts) must read
+                # the character palette.  Their own SFF palette copy is all
+                # black, which mapped the disc's interior to transparent and
+                # left the flat background as a pale square with a hole.
+                srcpal = csff.palettes[EXPLOD_PALETTE.get(label, s.palidx)]
                 # OBJ palette 2 (0x34/0x24) is SparkPal, the same shared
                 # atlas palette projectiles use; palette 5 entries (0x2A)
                 # also index shared colours.
