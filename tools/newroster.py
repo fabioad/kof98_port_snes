@@ -1259,3 +1259,181 @@ NEW_CHARS['lucia'] = {
     'pow_override': {67: 0},
     'cmd_priority': ['MDFDF_df+xy', 'MDFDF_df+x', 'MDFDF_df+y', 'MAX_ATRACO', 'MDBDB_a+db', 'MBDF_a+db+df', 'MBDF_b+db+df', 'MFD_a+df', 'MFD_b+df', 'MDB_db+x', 'MDB_db+y'],
 }
+
+# CJ's MUGEN kit has six normals per posture. The four face buttons keep
+# their KOF roles; both punches/kicks together give the remaining strength.
+_cj_moves = {
+    5: 200, 6: 220, 7: 230, 8: 250,
+    19: 400, 20: 420, 21: 430, 22: 450,
+    23: 600, 24: 620, 25: 630, 26: 650,
+    45: 100, 46: 105, 47: 195,
+    48: 1000, 49: 2000, 50: 2200, 51: 2300,
+    52: 1011, 53: 1020, 54: 1010, 55: 1100,
+    56: 245, 67: 250, 69: 720, 74: 800, 75: 810,
+    85: 3400, 86: 3000, 87: 3100, 88: 3200,
+    90: 180, 91: 170, 92: 191, 94: 710, 95: 700,
+    108: 210, 109: 240, 110: 410, 111: 440, 112: 610, 113: 640,
+    58: 3400, 59: 3000, 60: 3000, 61: 3100,
+    96: 750, 114: 3202, 116: 1005, 117: 821,
+    118: 2010, 119: 3201, 120: 3210, 121: 3211,
+}
+
+
+def _cj_cmd(name, state, dirs, button, posture=3, held=0):
+    return {'name': name, 'state': state, 'posture': posture, 'held': held,
+            'elems': [(d, 0) for d in dirs] + [(0, button)],
+            'time': 34 if len(dirs) > 3 else 18}
+
+
+_qcf, _qcb = (2, 6, 4), (2, 10, 8)
+NEW_CHARS['cj'] = {
+    'sff': 'assets/characters/cj/cj.sff',
+    'air': 'assets/characters/cj/cj.air',
+    'cns': 'assets/characters/cj/cj.cns',
+    'cmd': 'assets/characters/cj/cj_SNES.cmd',
+    'snd': 'assets/characters/cj/cj.snd',
+    'buttons': {'x': 16384, 'y': 64, 'a': 32768, 'b': 128},
+    'moves': _cj_moves,
+    'anims': {**_cj_moves, **{0: 0, 1: 20, 2: 21, 3: 11, 4: 41,
+        9: 5000, 10: 5050, 11: 5300, 12: 10, 13: 12, 14: 40, 15: 42,
+        16: 43, 17: 47, 18: 5120, 27: 130, 28: 131, 29: 132, 30: 150,
+        31: 5000, 32: 5001, 33: 5002, 34: 5010, 35: 5011, 36: 5012,
+        37: 5020, 38: 5021, 39: 5022, 40: 5030, 41: 5110,
+        42: 150, 43: 151, 44: 152, 70: 5020, 71: 5030, 72: 5050,
+        58: 3400, 59: 3000, 60: 3000, 61: 3100,
+        73: 5050, 92: 190, 93: 5070, 96: 195, 97: 195,
+        116: 1001, 117: 5050}},
+    'coord_scale': 1, 'char_scale': 0.81, 'damage_scale': 0.38,
+    'msu': True, 'display': 'CJ',
+    'wire_dash': True,
+    'pow_override': {85: -1000, 86: -1000, 87: -1000, 88: -3000,
+                     96: -1000},
+    # Intro: theme and callout mastered together by tools/mix_cj_intro.py.
+    # They share one digi channel; the beat leads and stays above the voice.
+    # moves[92] = 191 so the intro PlaySnd row is emitted on engine sid 92;
+    # anims[92] stays on AIR 190 (the 191 header is the same pose).
+    'voice_wavs': {(21, 0): 'assets/audio/cj_intro_0.wav'},
+    'voice_wav_gain': {(21, 0): 1.25},
+    'target_life_fix': {810: -8},
+    'damage_tab_scale': 1.0,
+    'projectile_anims': [2005],
+    'projectile_recovery': 0,
+    # Keep the ally's feet at ground level; the projectile's collision
+    # origin remains at torso height (40 px above the floor).
+    'projectile_alt': {'sids': [53], 'action': 1050, 'release': 3,
+                       'fit_to_page': True, 'feet_y': 60,
+                       'frames': [(3, 8), (6, 8), (7, 24)]},
+    # The native pool has two slots; use the real muzzle and ally art.
+    'projs': {52: (0x1400, 2, 2005, 10), 53: (0x0380, 14, 1051, 10)},
+    'projs_drop': [49],  # 2001 is BMX scenery, not a damaging projectile
+    'state_vel': {49: (-5, 0), 69: (0, 0), 94: (-4.4, 0), 95: (4.8, 0),
+                  118: (3.25, 0), 119: (4.5, 0)},
+    'loop_off': [69, 94, 95],
+    'velset_sids': [118, 119],
+    'hitdef_by_sid': {48: 0, 51: 0, 85: 0, 86: 0},
+    'hitdef_from_state': {118: (2000, {}), 119: (3200, {}),
+                          120: (3202, {})},
+    # Supers keep their rush rows in the first slice and end on a launcher
+    # slice (fall=1) so the last contact always knocks down.
+    'slices': {85: (3400, 0, 21), 58: (3400, 22, 26),
+               86: (3000, 0, 44), 59: (3000, 45, 64), 60: (3000, 65, 69),
+               61: (3100, 17, 18)},
+    'slice_hits': {85: (0, 58), 58: (1, 0),
+                   86: (0, 59), 59: (3, 60), 60: (2, 0), 61: (0, 0)},
+    # The spray's last pose becomes a knockdown finisher; the chainsaw's
+    # compressed barrage pays its damage in the two contacts that remain.
+    'hitdef_override': {
+                        # CJ's heavy normals keep the victim on its feet;
+                        # only the CD/R blowback (sid 67) and throws drop it.
+                        # StHit also drops any victim that lands while still
+                        # in hitstun, so the stand/crouch strong kicks must
+                        # lose their source upward launch (gvy) as well as
+                        # fall/trip.  The crouching strong punch (20) keeps
+                        # gvy=-13; its 30-tick hitstun expires mid-air, so it
+                        # recovers in the jump pose instead of landing into
+                        # S_DOWN, and the air chain is unaffected.
+                        8: {'fall': 0, 'gvy': 0},
+                        # The crouching strong kick keeps its standard trip
+                        # knockdown, but a higher launch leaves the victim
+                        # airborne long enough for the crouching strong
+                        # punch to juggle him (engine exception below).
+                        22: {'gvy': -6 << 8},
+                        23: {'fall': 0},
+                        24: {'fall': 0},
+                        26: {'fall': 0},
+                        118: {'active': 2},
+                        119: {'active': 1, 'damage': 20},
+                        120: {'active': 4, 'p2state': 77, 'fall': 1,
+                              'damage': 60},
+                        88: {'damage': 20},
+                        # Keep the spray's victim in place so the
+                        # knockdown finisher can reach; the 8-bit
+                        # box coordinates cannot exceed 127 px.
+                        87: {'damage': 8, 'gvx': 0, 'grvx': 0,
+                             'agvx': 0},
+                        59: {'fall': 0}, 60: {'fall': 1},
+                        61: {'fall': 1, 'damage': 25},
+                        # Bat combo: the source pushes -9/-14 px/tick and
+                        # relies on the corner; 4 px keeps all three swings
+                        # in reach in the open.
+                        51: {'gvx': 4 << 8}},
+    # CJ's supers reach a little further than the source Clsn1 arm.
+    'atk_reach_pad': {3000: 26, 3201: 26, 3210: 70, 3400: 26,
+                      3100: 80},
+    # The pistol animation starts walking backward on source element 2, but
+    # its x = const(velocity.walk.back.x) is an expression the extractor
+    # skips, so CJ fired on the spot.  Op5 stores a signed byte whose
+    # negative path is half-scale (arg -3 integrates to about -2 px/frame),
+    # matching the source -1.8.  Replacing the one extracted op5 row (the
+    # frame-21 stop) keeps the ActTab the same size, which matters because
+    # the packed CjData bank has no spare bytes.
+    'act_override': {1011: [(1, 5, -3, 0)],
+                     # Reset the bat's hit latch one tick before the second
+                     # and third swings; the source's same-frame reset ran
+                     # after the hit check and dropped the middle contact.
+                     2300: [(8, 18, 0, 0), (15, 18, 0, 0)]},
+    'act_extra': {700: [(0, 11, 14, 0), (3, 5, 0, 0)],
+                  710: [(0, 11, 14, 0), (3, 5, 0, 0)],
+                  720: [(0, 11, 14, 0)],
+                  1011: [(f - 1, 24, 0, 0) for f in (4, 7, 10, 13, 16, 19)],
+                  1100: [(2, 25, 50, 0)],
+                  3100: [(f - 1, 18, 0, 0) for f in (15, 16, 17, 18, 19)],
+                  3201: [(f - 1, 18, 0, 0) for f in (3, 5, 7, 9)],
+                  3211: [(0, 4, 77, 0)],
+                  # The source repeats HitDefs at several elements; the
+                  # native engine keeps one row per state, so re-arm the hit
+                  # on each of those elements.
+                  3000: [(f, 18, 0, 0) for f in (50, 55, 60, 65)],
+                  3400: [(f, 18, 0, 0) for f in (4, 9, 12, 16)]},
+    'tween_skip_sids': list(range(122)),
+    'extra_trans': [(50, 17, 1, 0), (50, 0, 0, 0), (96, 0, 0, 0),
+                    (87, 61, 0, 0),
+                    (49, 118, 0, 0), (88, 119, 0, 0), (119, 114, 3, 0),
+                    (114, 120, 0, 0), (120, 121, 0, 0), (121, 0, 0, 0)],
+    'cmd_labels': {48: 'LAS VENTURAS STYLE', 49: 'BMX', 50: 'RUNNING KICK',
+        51: 'BASEBALL BAT', 52: 'PISTOL', 53: 'GROVE STREET', 54: 'PHOTO',
+        55: 'FOOD', 56: 'STEP KICK', 85: 'LOS SANTOS STYLE',
+        86: 'SAN FIERRO STYLE', 87: 'SPRAY CAN', 88: 'CHAINSAW',
+        45: 'FORWARD DASH', 46: 'BACK DASH', 69: 'DODGE',
+        94: 'BACK ROLL', 95: 'FORWARD ROLL'},
+    'cmd_extra': [
+        *[_cj_cmd(f'CJ_{st}_{btn}', st, mx, btn)
+          for st, mx, buttons in [(1000, _qcf, (1, 2)), (2000, _qcb, (1, 2)),
+              (2200, _qcf, (4, 8)), (2300, _qcb, (4, 8)), (1011, _qcf, (3,)),
+              (1020, _qcb, (3,)), (1010, _qcf, (12,)), (1100, _qcb, (12,)),
+              (3400, _qcf * 2, (1, 2)), (3000, _qcf * 2, (4, 8)),
+              (3100, _qcb * 2, (1, 2)), (3200, _qcb * 2, (4, 8))]
+          for btn in buttons],
+        # The source CMD has no CD entry, so CJ had no ground blowback.
+        # X+A (or R, which the input layer translates to the same tokens)
+        # now enters the shared state-250 clip on the system sid 67, which
+        # keeps its knockdown while the stand-HK normal (sid 8) loses it.
+        {'name': 'CD', 'state': 250, 'posture': 1, 'held': 0,
+         'elems': [(0, 10)], 'time': 15},   # 10 = y|b
+        _cj_cmd('CJ_STEP', 245, (), 8, posture=1, held=4),
+        _cj_cmd('CJ_MAX', 750, (), 7, posture=3),
+        *[_cj_cmd(f'CJ_N_{st}', st, (), btn, posture=posture)
+          for st, btn, posture in [(210, 3, 1), (240, 12, 1),
+              (410, 3, 2), (440, 12, 2), (610, 3, 4), (640, 12, 4)]],
+    ],
+}

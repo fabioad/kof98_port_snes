@@ -21,6 +21,31 @@ MkResetFar:
 ; the side is latched so the round sanitizer can tell a real pick apart from
 ; a form the CPU was never allowed to choose.
 MkSelectFar:
+    ; Resolve CJ before recording the trusted P1 pick for campaign/Survivor.
+    cmp #JOHN_ID.b
+    bne MKSEL_robert
+    lda.b msuok
+    beq MKSEL_john
+    cpx #0
+    bne +
+    lda.b cpu1
+    bra ++
++   lda.b cpu2
+++  bne MKSEL_john
+    rep #$20
+    .ACCU 16
+    lda FP+F_JOY,x
+    and #(JOY_L|JOY_R).w
+    cmp #(JOY_L|JOY_R).w
+    sep #$20
+    .ACCU 8
+    bne MKSEL_john
+    lda #CJ_ID.b
+    bra MKSEL_out
+MKSEL_john:
+    lda #JOHN_ID.b
+    bra MKSEL_out
+MKSEL_robert:
     cmp #ROBERT_ID.b
     bne MKSEL_out
     pha
@@ -503,6 +528,16 @@ MkLoadStillFar:
     sta.l NMITIMEN
     rtl
 MkNormalIntro:
+    php
+    sep #$20
+    .ACCU 8
+    lda.w INTRO_DUCK
+    bne +
+    lda #1
+    sta.w INTRO_DUCK
+    lda #32                             ; duck the stage music under the intro
+    jsr MkVolume
++   plp
     ldx #0
     jsl MkCall_KoMute
     stx fofs
@@ -565,6 +600,14 @@ IT_start:
     sta.w T_ENTERFLAG                    ; entrance finished: camera free
     lda #1.b                              ; GO over -> round is live
     sta gamestate
+    php
+    sep #$20
+    .ACCU 8
+    lda #240                            ; restore the stage music for the bout
+    jsr MkVolume
+    lda #0
+    sta.w INTRO_DUCK
+    plp
     rep #$20
     .ACCU 16
     rtl
@@ -639,6 +682,89 @@ MkBossEndingFar:
     sta.b gamestate
     rtl
 
+
+
+; HitOne's downed-victim gate, called with vofs set.  Returns scr5=1 when
+; the hit must be refused.  CJ's crouching strong punch may juggle an
+; airborne S_DOWN victim launched by his crouching strong kick.
+; Crouch-cancel selector for StCrouchAtk.  Returns 1 for CJ's connected
+; crouching strong punch -> long jump, 2 for the connected crouching strong
+; kick -> crouching strong punch (trip juggle), 0 otherwise.
+CrouchCancelFar:
+    php
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    ldx fofs
+    lda FP+F_CHAR,x
+    cmp #CharCj.w
+    bne CCH_no
+    lda FP+F_HITDONE,x
+    and #$00FF.w
+    beq CCH_no
+    lda FP+F_STATE,x
+    and #$00FF.w
+    cmp #S_CSPUNCH.w
+    bne CCH_chk
+    lda FP+F_JOY,x
+    and #(JOY_UP).w
+    beq CCH_no
+    lda #1.w
+    bra CCH_out
+CCH_chk:
+    cmp #S_CSKICK.w
+    bne CCH_no
+    lda FP+F_JOY,x
+    and #(JOY_X).w
+    beq CCH_no
+    lda #2.w
+    bra CCH_out
+CCH_no:
+    lda #0.w
+CCH_out:
+    plp
+    rtl
+
+DownedGateFar:
+    php
+    rep #$30
+    .ACCU 16
+    .INDEX 16
+    ldx vofs
+    lda FP+F_GRAB,x
+    and #$00FF.w
+    bne DG_block
+    lda FP+F_STATE,x
+    and #$00FF.w
+    cmp #S_DOWN.w
+    bne DG_getup
+    lda FP+F_Y,x
+    beq DG_block
+    ldx aofs
+    lda FP+F_CHAR,x
+    cmp #CharCj.w
+    bne DG_block
+    lda FP+F_STATE,x
+    and #$00FF.w
+    cmp #S_CSPUNCH.w
+    bne DG_block
+    bra DG_allow
+DG_getup:
+    cmp #S_GETUP.w
+    beq DG_block
+DG_allow:
+    sep #$20
+    .ACCU 8
+    stz scr5
+    plp
+    rtl
+DG_block:
+    sep #$20
+    .ACCU 8
+    lda #1
+    sta scr5
+    plp
+    rtl
 
 MkSleepChr: .INCBIN "gen_fight/mrkarate_sleep.chr"
 MkSleepChrEnd:

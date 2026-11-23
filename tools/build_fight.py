@@ -362,6 +362,8 @@ AI_TUNING = {
                    AI_PF_METER | AI_PF_ADAPT),
     "lucia":      (24,  68, 210, 180, 190, 190, 200,
                    AI_PF_PRESSURE | AI_PF_ADAPT),
+    "cj":         (96, 180, 190, 210, 160,  40, 110,
+                   AI_PF_ADAPT | AI_PF_ZONER),
 }
 
 # Per-character CPU move-table overrides.  The default generator keeps the
@@ -372,6 +374,7 @@ AI_TUNING = {
 # keeps the full 16-row scan window (AI_ScanMove starts with `& $0F`) and gets
 # explicit windows so the command-grab super is used at grab range.
 AI_MOVE_OVERRIDES = {
+    "cj": {"max_rows": 14, "windows": {54: (0, 60), 55: (115, 255)}},
     "john": {
         "max_rows": 16,
         "exclude": {58, 59},            # air Spiral: jump-in path only
@@ -2155,7 +2158,7 @@ for _c, _cfg in NEW_CHARS.items():
         # Final Psycho Crusher (3050) and MAX Knee Press Nightmare (3150)
         # are part of Vega's move list; 89 is unused.
         _drop = (89,)
-    elif _c in ("kasumi", "duckking", "yuki", "jason", "john", "lucia"):
+    elif _c in ("kasumi", "duckking", "yuki", "jason", "john", "lucia", "cj"):
         # The 1.1.2 newcomers and the GTA trio keep their full super/MAX
         # slots 87-89 (user-facing move list requires every super and MAX).
         _drop = ()
@@ -7650,7 +7653,7 @@ def parse_cns(path, coord_scale=1, damage_scale=1, char=None, char_scale=1.0):
     powadds = {}                             # statedef -> power delta
     current_state = None
     current_ctrl = None
-    for raw in open(path, encoding="utf-8-sig"):
+    for raw in _read_text_any(path).splitlines():
         line = raw.split(";", 1)[0].strip()
         if not line:
             continue
@@ -11371,6 +11374,19 @@ def build_char(name, cfg, global_pal=None):
             frames[idx] = (g, n, x, y, t, flip,
                            list(atk) + [tuple(b) for b in boxes], hurt)
         air[anum] = (frames, loopstart)
+    # Per-action attack-box reach: widen the front edge of every Clsn1
+    # rectangle.  Imported supers often keep the source's short arm box,
+    # which misses a victim pushed to the edge of the move's own spacing.
+    for anum, pad in (cfg.get("atk_reach_pad") or {}).items():
+        if anum not in air:
+            continue
+        frames, loopstart = air[anum]
+        frames = [
+            (g, n, x, y, t, flip,
+             [(b[0], b[1], b[2] + int(pad), b[3]) for b in atk],
+             hurt) if atk else (g, n, x, y, t, flip, atk, hurt)
+            for g, n, x, y, t, flip, atk, hurt in frames]
+        air[anum] = (frames, loopstart)
     # A few imported clips end a phase with a trailing t=255 "hold until the
     # next ChangeState" element.  When the caller only needs a short recovery
     # (or an anim-end hand-over), replace that hold with a bounded tick count.
@@ -12097,7 +12113,8 @@ def build_char(name, cfg, global_pal=None):
     # Skip airborne clips (they end on landing), the
     # landing-placeholder anim 47 and any animation shared with a normal
     # state -- shortening those would affect movement or recovery poses.
-    recovery = PROJECTILE_RECOVERY.get(name, PROJECTILE_RECOVERY_TICKS)
+    recovery = cfg.get("projectile_recovery",
+                       PROJECTILE_RECOVERY.get(name, PROJECTILE_RECOVERY_TICKS))
     anim_sharing = {}
     for sid, anum in anims.items():
         anim_sharing.setdefault(anum, []).append(sid)
@@ -12634,7 +12651,7 @@ def build_char(name, cfg, global_pal=None):
     proj_fx = None if cfg.get("projfx_alias") else projectile_effect(
         name, cfg, sff, air, cns_statedefs, cns_headers, move_ids,
         palidx, global_pal, mapped_color)
-    alt_spec = PROJECTILE_ALT_EFFECTS.get(name)
+    alt_spec = cfg.get("projectile_alt") or PROJECTILE_ALT_EFFECTS.get(name)
     proj_fx_alt = None
     # An alternate clip is independent of the primary alias: Geese keeps
     # Terry's compiled Reppuken (projfx_alias) but still needs his own blue
@@ -13244,7 +13261,10 @@ def build_char(name, cfg, global_pal=None):
         lst = cns_hitdef_lists.get(move_ids.get(sid, -1))
         if lst and hidx < len(lst):
             row = dict(lst[hidx])
-            row["active"] = max(0, row["active"] - slices[sid][1])
+            # active == 0 means "no attack" in the hit gate; a finisher
+            # slice whose source row starts before the slice must stay
+            # armed from its first local frame.
+            row["active"] = max(1, row["active"] - slices[sid][1])
             move_rows[sid] = row
     # Cloned normal states carry every HitDef of the source; pick the row
     # whose anim/strength matches the cloned header instead of the first.
@@ -13748,8 +13768,16 @@ def build_char(name, cfg, global_pal=None):
             # slices often carry no PowerAdd of their own.
             d = -1000
         if sid in slices:
-            anum = slices[sid][0]
-            first = min(s for s, spec in slices.items() if spec[0] == anum)
+            # The runtime-first slice is the one whose animation starts at
+            # frame 0, not the numerically smallest sid: CJ's finisher
+            # slices are sids 58/59/61 while the initial supers are 85/86/87.
+            # Charging the finisher restarted SuperFxCheck at the end.
+            # Group by the MUGEN state (the slices of one state share it);
+            # a state's animation number is not necessarily a state number
+            # (Kyo's sliced supers use animations that are not state ids).
+            state = move_ids.get(sid)
+            same = [s for s, m in move_ids.items() if m == state]
+            first = min(same, key=lambda s: slices.get(s, (state, 0, 0))[1])
             if sid != first:
                 d = 0
         pow_costs[sid] = d
@@ -15047,12 +15075,18 @@ def _external_cells(rgba):
     grid origin at (-padx, -pady) from the image's top-left corner.
     """
     import numpy as np
-    h, w = rgba.shape[:2]
     pal = np.array(PROJECTILE_PALETTE[1:], dtype=np.int32)
     opaque = rgba[..., 3] >= 128
     rgb = rgba[..., :3].astype(np.int32)
     dist = ((rgb[:, :, None, :] - pal[None, None, :, :]) ** 2).sum(-1)
     idx = np.where(opaque, dist.argmin(-1) + 1, 0).astype(np.uint8)
+    return _fit_fx_grid(idx)
+
+
+def _fit_fx_grid(idx):
+    """Find the sparsest 16x16 grid for a palette-indexed effect frame."""
+    import numpy as np
+    h, w = idx.shape
     best = None
     for pady in range(CELL):
         for padx in range(CELL):
@@ -15443,6 +15477,48 @@ def projectile_effect_alt(name, sff, air, spec):
     if not originals:
         return None
 
+    if spec.get("fit_to_page"):
+        # Large helpers are actors, not little sparks.  Give each pose its
+        # own atlas (the runtime already stores one 2 KiB page per frame) and
+        # keep the largest common scale whose poses each fit the 16-cell OBJ
+        # page.  ``feet_y`` anchors the sprite's bottom to the collision
+        # origin's height above the floor instead of centring it on the
+        # projectile origin.
+        import numpy as np
+        limit = min(max_cells, len(SPARK_SLOTS))
+        for ratio in range(16, 0, -1):
+            frames, data = [], bytearray()
+            for original, xoff, yoff, ticks in originals:
+                spr = resize_projectile(original, ratio, 16)
+                remap = np.zeros(256, dtype=np.uint8)
+                for i in set(spr.pix) - {0}:
+                    remap[i] = projectile_remap_index(sff, spr, i, name)
+                pixels = remap[np.frombuffer(
+                    spr.pix, dtype=np.uint8)].reshape(spr.h, spr.w)
+                blocks, padx, pady, w, h = _fit_fx_grid(pixels)
+                if not blocks or len(blocks) > limit:
+                    break
+                page = bytearray(2048)
+                atlas, cells = {}, []
+                for cx, cy, block in blocks:
+                    quad = bytes(tiles4bpp(block, CELL, CELL)[0])
+                    slot = atlas.setdefault(quad, len(atlas))
+                    offset = (SPARK_SLOTS[slot] - 192) * 32
+                    page[offset:offset + 64] = quad[:64]
+                    page[offset + 512:offset + 576] = quad[64:]
+                    cells.append((cx * CELL - padx - w // 2 + round(xoff * ratio / 16),
+                                  cy * CELL - pady - h + spec.get("feet_y", 0)
+                                  + round(yoff * ratio / 16), slot))
+                if any(not (-128 <= x < 128 and -128 <= y < 128) for x, y, _ in cells):
+                    break
+                frames.append((ticks, cells))
+                data.extend(page)
+            else:
+                print(f"{name}: helper AIR {action} at {ratio}/16 scale "
+                      f"({max(len(cells) for _, cells in frames)}/{limit} cells per pose)")
+                return action, frames, bytes(data)
+        raise ValueError(f"{name}: helper AIR {action} cannot fit the OBJ page")
+
     scale = 1
     while True:
         all_cells = {}
@@ -15787,7 +15863,7 @@ def build_spark():
         # Alternate effect clips (Terry's Power Geyser pillar) use their own
         # SFF palette bank.  Include those colours in the shared OBJ palette
         # or the flame collapses to its white core.
-        alt_spec = PROJECTILE_ALT_EFFECTS.get(name)
+        alt_spec = cfg.get("projectile_alt") or PROJECTILE_ALT_EFFECTS.get(name)
         if (alt_spec is not None and not alt_spec.get("invisible")
                 and not cfg.get("projfx_alias")):
             alt_action = alt_spec.get("action")
@@ -16574,8 +16650,8 @@ def _order_portrait_map():
     return words
 
 
-def _face_palette(im, size):
-    """15 opaque face colours, index 0 stays transparent/backdrop."""
+def _face_palette(im, size, colors=15):
+    """Opaque face colours; the caller reserves index 0/15 for the backdrop."""
     from PIL import Image
     px = [im.getpixel((x, y))[:3]
           for y in range(size) for x in range(size)
@@ -16584,11 +16660,11 @@ def _face_palette(im, size):
         px = [(0, 0, 0)]
     strip = Image.new("RGB", (len(px), 1))
     strip.putdata(px)
-    q = strip.quantize(colors=min(15, len(set(px))),
+    q = strip.quantize(colors=min(colors, len(set(px))),
                        method=Image.MEDIANCUT, dither=Image.NONE)
     raw = list(q.getpalette() or [])
     raw += [0] * (768 - len(raw))
-    return [tuple(raw[i * 3:i * 3 + 3]) for i in range(15)]
+    return [tuple(raw[i * 3:i * 3 + 3]) for i in range(colors)]
 
 
 def build_portraits():
@@ -16603,20 +16679,27 @@ def build_portraits():
     from build_select import ROSTER, icon_rgba
     from PIL import Image
 
-    def encode(im, size, data, paldata, table):
-        cols = _face_palette(im, size)
+    def encode(im, size, data, paldata, table, black_bg=False):
+        # The HUD face previously used transparent index 0, which let the
+        # stage show through semi-transparent portrait pixels.  Reserve index
+        # 15 as an opaque black backdrop and fill every transparent pixel
+        # with it; the order-select cards keep their transparent corners.
+        cols = _face_palette(im, size, 14 if black_bg else 15)
+        if black_bg:
+            cols = list(cols) + [(0, 0, 0)]
         qpal = Image.new("P", (1, 1))
         qpal.putpalette([v for col in cols for v in col]
-                        + [0] * (768 - 45))
+                        + [0] * (768 - len(cols) * 3))
         q = im.convert("RGB").quantize(palette=qpal,
                                        dither=Image.Dither.NONE)
         paldata += snes_pal([(0, 0, 0)] + cols, 16)
         vals = bytearray()
         alpha = im.split()[3]
+        backdrop = 15 if black_bg else 0
         for y in range(size):
             for x in range(size):
                 if alpha.getpixel((x, y)) < 96:
-                    vals.append(0)
+                    vals.append(backdrop)
                 else:
                     vals.append(q.getpixel((x, y)) + 1)
         table.append(len(data))
@@ -16637,7 +16720,7 @@ def build_portraits():
         except Exception:
             base = Image.new("RGBA", (25, 25), (0, 0, 0, 0))
         encode(base.resize((24, 24), Image.LANCZOS), 24,
-               data, paldata, table)
+               data, paldata, table, black_bg=True)
         encode(base.resize((32, 32), Image.LANCZOS), 32,
                odata, opaldata, otable)
 
@@ -17271,10 +17354,13 @@ def emit_newchars_inc(new_keys, msu_slices):
     # overwrote SURV_COUNT/SURV_HP and the mode hung.  Fail the build instead
     # of regressing silently when another character is added.
     visible = hidden.count(0)
-    if visible > 54:
+    surv_max = int(re.search(r"^\.DEFINE SURV_MAX\s+(\d+)",
+                             _read_text_any(os.path.join(ROOT, "src/engine/menucore.asm")),
+                             re.M)[1])
+    if visible > surv_max:
         raise SystemExit(
             f"SURVIVOR roster overflow: {visible} visible fighters do not fit "
-            f"SURV_LIST (54 bytes, see menucore.asm)")
+            f"SURV_LIST ({surv_max} bytes, see menucore.asm)")
     new_ids = {k: 15 + i for i, k in enumerate(new_keys)}
     t += [".ENDIF\n",
           "SelCols:    .db 1, 9, 17, 25\n",
@@ -17286,6 +17372,8 @@ def emit_newchars_inc(new_keys, msu_slices):
           f"KYO_ASH_ID = {new_ids.get('kyoash', 0)}\n",
           f"ROBERT_ID = {new_ids.get('robert', 0)}\n",
           f"MRKARATE_ID = {new_ids.get('mrkarate', 255)}\n",
+          f"JOHN_ID = {new_ids.get('john', 255)}\n",
+          f"CJ_ID = {new_ids.get('cj', 255)}\n",
           "RomFlags:   .db " + ",".join(str(f) for f in rom_flags) + "\n",
           "HiddenTab:  .db " + ",".join(str(h) for h in hidden) + "\n",
           "CpuPool:    .db " + ",".join(str(i) for i in pool[:20]) + "\n",
@@ -17441,7 +17529,7 @@ def emit_newchars_inc(new_keys, msu_slices):
     # The GTA trio reuses the base palette too: three extra P2 ramps would
     # push the table past bank 124's EndData2 tail (the check below).
     _base_pal = {"kasumi", "duckking", "yuki", "kyonests", "kyoash",
-                 "jason", "john", "lucia"}
+                 "jason", "john", "lucia", "cj"}
     for _k in alt_roster:
         _c = alt_label.get(_k, cap(_k))
         if _k in _base_pal:
@@ -18123,7 +18211,8 @@ def emit_voices(msu, rom_voice_chars):
     no MSU-1 device is present while music and SPC sound effects keep working.
     """
     from build_spc_neogeo import (encode_brr, load_mugen_snd,
-                                  load_wav_mono_bytes, resample_mono)
+                                  load_wav_mono, load_wav_mono_bytes,
+                                  resample_mono)
     id_order = ["kyo", "iori", "shingo", "rugal", "saisyu", "heidern",
                 "takuma", "clark", "ralf", "leona", "mature", "vice",
                 "benimaru", "daimon", "omegarugal", *NEW_CHARS]
@@ -18144,20 +18233,34 @@ def emit_voices(msu, rom_voice_chars):
         if snd not in cache:
             from pathlib import Path
             cache[snd] = load_mugen_snd(Path(snd))
+        overrides = CHARS[name].get("voice_wavs") or {}
+        override_gains = CHARS[name].get("voice_wav_gain") or {}
         items = []
         for pair, vid in sorted(voices.items(), key=lambda kv: kv[1]):
-            raw = cache[snd].get(pair)
-            if raw is None:
-                missing.append((name, pair))
-                items.append(encode_brr([0] * 16, loop=False))
-                continue
-            pcm, rate = load_wav_mono_bytes(raw)
-            pcm = resample_mono(pcm, rate, 4000)
-            while pcm and abs(pcm[0]) < 600:
-                pcm.pop(0)
-            while pcm and abs(pcm[-1]) < 600:
-                pcm.pop()
-            pcm = pcm[:6000]
+            ext = overrides.get(pair)
+            if ext:
+                # Pre-mastered clip (intro music + speech).  Keep its full
+                # length: the 1.5 s voice cap would cut the theme, and the
+                # 6 KiB bank-$7F voice cache is checked by the runtime.
+                pcm, rate = load_wav_mono(Path(ROOT) / ext)
+                pcm = resample_mono(pcm, rate, 4000)
+            else:
+                raw = cache[snd].get(pair)
+                if raw is None:
+                    missing.append((name, pair))
+                    items.append(encode_brr([0] * 16, loop=False))
+                    continue
+                pcm, rate = load_wav_mono_bytes(raw)
+                pcm = resample_mono(pcm, rate, 4000)
+                while pcm and abs(pcm[0]) < 600:
+                    pcm.pop(0)
+                while pcm and abs(pcm[-1]) < 600:
+                    pcm.pop()
+                # The SNESMOD sample record stores the BRR block count in a
+                # single byte.  A longer voice (CJ's 344-block pistol shot)
+                # wrapped to 88 blocks and played as an inaudible fragment.
+                # 255 blocks is the longest sample the player can address.
+                pcm = pcm[:255 * 16]
             peak = max((abs(v) for v in pcm), default=1) or 1
             pcm = [int(v * 30000 / peak) for v in pcm]
             gain = VOICE_LOUDNESS_GAIN.get(name)
@@ -18165,6 +18268,9 @@ def emit_voices(msu, rom_voice_chars):
                 pcm = voice_makeup(pcm, gain)
                 peak = max((abs(v) for v in pcm), default=1) or 1
                 pcm = [int(v * 30000 / peak) for v in pcm]
+            if ext and pair in override_gains:
+                # Apply the mix gain last so peak normalization doesn't undo it.
+                pcm = [int(v * override_gains[pair]) for v in pcm]
             items.append(encode_brr(pcm or [0] * 16, loop=False))
         tab_label = f"VoiceTab_{name}"
         ofs_label = f"VoiceOfs_{name}"

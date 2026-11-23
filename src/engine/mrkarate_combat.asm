@@ -58,6 +58,7 @@ MkCombatResetFar:
     inx
     cpx #$80.w
     bcc -
+    stz.w INTRO_DUCK
     plx
     plp
     rtl

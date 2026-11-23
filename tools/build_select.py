@@ -110,6 +110,7 @@ ROSTER = [
     (_nsff("jason"),                 50),
     (_nsff("john"),                  51),
     (_nsff("lucia"),                 52),
+    (_nsff("cj"),                    51, True),  # L+R on John; no grid icon
 ]
 
 if os.environ.get("KOF_BASE4"):        # 8 MiB fallback: original roster

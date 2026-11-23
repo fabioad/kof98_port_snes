@@ -41,7 +41,8 @@ ACTOR = {False: (99, 100), True: (101, 102)}
 # Hidden roster forms: L+R on the Rugal cell selects Omega Rugal; L/R on
 # the Kyo cell selects Nests/Ash.  The select code reads held buttons, so
 # the A press must include the shoulder buttons on the same frame.
-HIDDEN = {"omegarugal": {10, 11}, "kyonests": {10}, "kyoash": {11}}
+HIDDEN = {"omegarugal": {10, 11}, "kyonests": {10}, "kyoash": {11},
+          "cj": {10, 11}}
 
 
 def tap(core, button, port=0):
@@ -59,7 +60,7 @@ def wait(core, pred, label, limit=8000):
     raise AssertionError(f"{label}: gs={core.word(GS)}")
 
 
-def boot_select(core):
+def boot_select(core, item=1):
     # The shipping build opens with the MSU video (gs14); older ROMs went
     # straight to the short intro (gs7).  Skip whichever is present, then
     # wait for the title.
@@ -70,10 +71,11 @@ def boot_select(core):
     core.step(60)
     tap(core, START)
     wait(core, lambda: core.word(GS) == 6, "mode menu")
-    core.ram[0xF070] = 1
+    core.ram[0xF070] = item
     tap(core, START)
     wait(core, lambda: core.word(GS) == 5, "select")
-    core.ram[0x1091] = 0
+    if item == 1:
+        core.ram[0x1091] = 0
     core.step(10)
     return core.save()
 

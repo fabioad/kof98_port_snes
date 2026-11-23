@@ -4531,8 +4531,8 @@ IntPersistIndex = 60
 FloatPersistIndex = 40
 
 [Size]
-xscale = 1
-yscale = 1
+xscale = 1.13   ; body drawn on the KOF'98 (Terry) scale: 100 px -> 113 px
+yscale = 1.13
 ground.back = 16
 ground.front = 18
 air.back = 13

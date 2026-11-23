@@ -85,6 +85,8 @@ ROM_SAFE = {0, 1, 2, 12, 13, 14, 15}
 # Como cada personagem escondido é escolhido na tela de seleção.
 # (célula do cursor, botões segurados, descrição)
 HIDDEN = {
+    # CJ shares John's select portrait; L+R on it picks the ported fighter.
+    "cj": (51, ("L", "R"), "L+R sobre o John"),
     "omegarugal": (37, ("L", "R"), "L+R sobre o Rugal"),
     "kyonests": (3, ("L",), "L sobre o Kyo"),
     "kyoash": (3, ("R",), "R sobre o Kyo"),
@@ -337,7 +339,8 @@ def lock_side(core: Core, side: int, ch: Character, msuok: bool) -> None:
     )
 
 
-def start_fight(core: Core, p1: Character, p2: Character, level: int) -> None:
+def start_fight(core: Core, p1: Character, p2: Character, level: int,
+                skip_intro: bool = True) -> None:
     """Seleciona os dois lados como humanos e liga o CPU no início da luta."""
     core.ram[CPU1] = 0
     core.ram[CPU2] = 0
@@ -349,7 +352,16 @@ def start_fight(core: Core, p1: Character, p2: Character, level: int) -> None:
 
     wait(core, lambda: core.ram[GS] in (1, 4), "carregamento da luta")
     if core.ram[GS] == 4:
-        tap(core, BTN["START"])             # pula a apresentação
+        if skip_intro:
+            tap(core, BTN["START"])         # pula a apresentação
+        else:
+            # The caller records from here; the scripted intro states do not
+            # read the AI flags, so the CPU can take over at GS 1.
+            core.ram[CPU1] = 1
+            core.ram[CPU2] = 1
+            core.ram[AI_LEVEL] = max(1, min(9, level))
+            core.buttons = [set(), set()]
+            return
     wait(core, lambda: core.ram[GS] == 1, "início da luta")
 
     # Só agora o CPU assume. O jogo preserva os personagens escondidos
@@ -387,7 +399,8 @@ def run_match(p1: Character, p2: Character, args: argparse.Namespace) -> int:
         if not msuok and (p1.id not in ROM_SAFE or p2.id not in ROM_SAFE):
             print("  aviso: .msu ausente; personagens externos podem ser "
                   "recusados pelo jogo.", flush=True)
-        start_fight(core, p1, p2, args.level)
+        start_fight(core, p1, p2, args.level,
+                    skip_intro=not args.intro)
 
         info = av_info(core)
         fps = info.timing.fps or 60.0988
@@ -669,6 +682,8 @@ def main() -> int:
                         help="limite de segurança quando não há --seconds")
     parser.add_argument("--level", type=int, default=8,
                         help="nível da IA, 1 a 9 (padrão: 8)")
+    parser.add_argument("--intro", action="store_true",
+                        help="grava também a apresentação dos lutadores")
     parser.add_argument("--no-video", action="store_true",
                         help="não grava MP4; só simula e mostra o resultado")
     parser.add_argument("--no-audio", action="store_true",

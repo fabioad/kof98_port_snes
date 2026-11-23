@@ -338,6 +338,10 @@ TORSO_PROJECTILES = {"jason", "lucia"}
 # is not this projectile.
 PROJECTILE_BALLISTIC = {
     "lucky": {"height": 120, "gravity": 11, "drift": 0},
+    # CJ's pistol shot leaves the raised gun arm, not the knee line.  Keep
+    # it at 67 px: the projectile body-height window spans GROUND_Y-32 +-36,
+    # and 68 px lands exactly on the edge (|122-158| == 36) and misses.
+    "cj": {"height": 67, "gravity": 0, "drift": 0},
 }
 
 # Per-sid airborne shots for characters that also have ground projectiles.
@@ -347,6 +351,9 @@ PROJECTILE_BALLISTIC = {
 # bit1 of the ProjTab "present" byte; the engine reads it as a per-shot height
 # override and does not change the character descriptor.
 PROJECTILE_TORSO_SIDS = {
+    # The homie helper stays at chest height (60 px); the pistol uses the
+    # per-character ballistic height.
+    "cj": {53},
     "geese": {58},
 }
 
@@ -572,6 +579,8 @@ PROJECTILE_CALIBRATION = {
 # reads that bit to switch the victim to the trip-fall knockdown instead of
 # the ordinary 8-tick hitstun.
 PROJECTILE_KNOCKDOWN = {
+    # CJ's bat-swinging homie drops the victim on contact.
+    "cj": (53,),
     # John's Flame Raid (states 1400/1410): floor wave that trips on contact.
     "john": (56, 57),
 }

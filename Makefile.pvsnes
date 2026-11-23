@@ -245,7 +245,8 @@ CHAR_SFFS := $(filter-out $(wildcard assets/characters/*/*\ *.sff),$(wildcard as
 
 $(FIGHT_GEN) &: $(wildcard tools/calibration/*.py assets/calibration/*.json assets/characters/*/*_SNES.cns assets/characters/*/*_SNES.cmd assets/characters/*/*.air assets/data/quotes/*.json) \
 	$(CHAR_SFFS) \
-	tools/build_fight.py tools/walk_speed.py tools/build_mrkarate_scene.py tools/normal_throws.py tools/close_normals.py tools/remaining_specials.py tools/runtime_abi.py assets/runtime_abi.json tools/newroster.py tools/build_spc_neogeo.py \
+	tools/build_fight.py tools/build_select.py tools/walk_speed.py tools/build_mrkarate_scene.py tools/normal_throws.py tools/close_normals.py tools/remaining_specials.py tools/runtime_abi.py assets/runtime_abi.json tools/newroster.py tools/build_spc_neogeo.py \
+	$(wildcard assets/characters/cj/cj.cns assets/characters/cj/cj.def assets/characters/cj/pals/pl[123].act) src/engine/menucore.asm \
 	tools/extract_yamibarai_art.py $(wildcard assets/projectiles/*.png) \
 	Makefile.pvsnes $(wildcard Makefile.hi Makefile.old Makefile.mid) \
 	tools/build_stages.py tools/build_hud_arcade.py tools/sff.py tools/build_endings.py \

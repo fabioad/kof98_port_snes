@@ -30,6 +30,7 @@ if not os.path.isdir(GEN_FIGHT):
     GEN_FIGHT = os.path.join(ROOT, "build", "gen_fight")
 
 FONT_TILES = 49          # hud charset + ",@\"" for the MSU credits line
+UNDERSCORE_TILE = (bytes([0, 0] * 7 + [0x7E, 0x7E] + [0] * 16))
 CUR_TILE_IDX = 60        # OBJ tile index the bracket pair lands on
 
 
@@ -137,11 +138,14 @@ def main():
     for i in range(FONT_TILES):
         font += hud[i * 16:(i + 1) * 16]
         font += bytes(16)
+    # Tile 49: the HUD charset has no "_"; append one so the MSU-1 CHECK
+    # screen can spell ARMIN_IUF exactly (row 7, 6 px wide).
+    font += UNDERSCORE_TILE
     open(os.path.join(DST, "menufont.chr"), "wb").write(bytes(font))
     total += len(font)
 
     print(f"gen_menu: {n} intro files + title/modes + "
-          f"{FONT_TILES} font tiles = {total} bytes")
+          f"{FONT_TILES + 1} font tiles = {total} bytes")
 
 
 if __name__ == "__main__":

@@ -70,7 +70,14 @@ as "my love" / "meu amor" / "mi amor" / "mon amour", never as his sister.
   (`Jason_Quotes.md` / `Lucia_Quotes.md`, groups 12 and 13). The victory slots
   reuse the taunt/victory lines ("Stuck together..." / "What matters is who
   you know..."), shortened to fit the two 30-column rows.
+- **CJ (Carl Johnson)**: [GTA Fandom — Carl Johnson/Quotes](https://gta.fandom.com/wiki/Carl_Johnson/Quotes),
+  picking lines from the "Car-jacking", "Fighting" and "Shooting pedestrians"
+  groups: "Welcome to San Andreas, fool!", "You picked the wrong playa, fool!",
+  "Is that the best you got? Too bad." and "CJ, remember the name!". The
+  stronger profanity is dropped because the lifebar font only carries
+  `A-Z 0-9 . : ! ? ' - / +`; the street tone stays.
 
 Translations are free adaptations. John keeps his AOF2 bravado in all four
-languages; Jason/Lucia keep the trailer dialogue's tone.
+languages; Jason/Lucia keep the trailer dialogue's tone; CJ keeps the San
+Andreas slang ("playa", "fool", Ganton bravado) in every language.
 References to an opposing Ryo remain references to Ryo.

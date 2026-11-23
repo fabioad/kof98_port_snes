@@ -133,18 +133,18 @@
 ; free low-WRAM gap at $2000.
 .IFDEF PVSNESLIB
 .DEFINE SURV_LIST   $4F00                 ; right after the 2 KiB HUD shadow
-.DEFINE SURV_MAX    54                    ; list bytes: one per visible char
-.DEFINE SURV_COUNT  $4F36                 ; eligible opponents (byte)
-.DEFINE SURV_HP     $4F37                 ; human HP carried between rounds
-.DEFINE SURV_KOSP   $4F38                 ; 0 none / 1 special finish / 2 special finish with human >50% HP
-.DEFINE SV_FIN      $4F39                 ; SURVIVOR ending fade-in frames
+.DEFINE SURV_MAX    60                    ; list ends before the four status bytes
+.DEFINE SURV_COUNT  $4F3C                 ; eligible opponents (byte)
+.DEFINE SURV_HP     $4F3D                 ; human HP carried between rounds
+.DEFINE SURV_KOSP   $4F3E                 ; 0 none / 1 special finish / 2 special finish with human >50% HP
+.DEFINE SV_FIN      $4F3F                 ; SURVIVOR ending fade-in frames
 .ELSE
 .DEFINE SURV_LIST   $2000
-.DEFINE SURV_MAX    54
-.DEFINE SURV_COUNT  $2036
-.DEFINE SURV_HP     $2037
-.DEFINE SURV_KOSP   $2038
-.DEFINE SV_FIN      $2039
+.DEFINE SURV_MAX    60
+.DEFINE SURV_COUNT  $203C
+.DEFINE SURV_HP     $203D
+.DEFINE SURV_KOSP   $203E
+.DEFINE SV_FIN      $203F
 .ENDIF
 ; A 48-byte list fitted the 50-character roster; the 1.1.2 newcomers pushed
 ; it past that, so SurvBuild overwrote SURV_COUNT/SURV_HP and SURVIVOR hung

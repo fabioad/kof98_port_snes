@@ -1,0 +1,31 @@
+
+;cj from GTA San Andreas
+;made by armin_iuf
+
+; Player information
+[Info]
+name ="Carl Johnson"       
+displayname ="Carl Johnson" 
+versiondate =2019
+mugenversion =2019
+author ="armin_iuf" 
+pal.defaults =1,2,3   
+
+; Files for the player
+[Files]
+cmd     =cj.cmd
+cns     =cj.cns
+st      =cj.cns
+stcommon =common1.cns
+sprite  =cj.sff
+anim    =cj.air
+sound   =cj.snd
+pal1=pals/pl1.act
+pal2=pals/pl2.act
+pal3=pals/pl3.act
+
+
+
+
+
+

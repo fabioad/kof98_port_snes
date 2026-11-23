@@ -217,7 +217,7 @@
 .DEFINE S_REVACT    103                 ;   follow-ups (Yamazaki, Kyo,
 .DEFINE S_REVACT_LAST 106               ;   Shingo, Billy); dispatched as
                                         ;   ordinary ground specials
-.DEFINE S_EXT_LAST 118                  ; 107-118 = imported extended
+.DEFINE S_EXT_LAST 121                  ; 107+ = imported extended
                                         ;   follow-ups (Blue Mary/Clark);
                                         ;   treated as specials by
                                         ;   HitOne/AI/survivor
@@ -695,6 +695,7 @@
 .DEFINE FUS_TMP     FUSION_BASE+12     ; word: AddPower scratch
 .DEFINE movehits    $5070              ; per-side same-move hit count
 .DEFINE lastsid     $50B2              ; per-side last runtime move sid
+.DEFINE ACHAIN      $50B8              ; per-side CJ air-chain hits left
 .DEFINE andykuuha   $5060              ; word: 0/1/2 Kuuha Dan hit state
 .DEFINE andykuut    $5064              ; word: state time of its first hit
 .DEFINE sdmaside    COMBO_BASE+$80    ; sprite-DMA arbiter for the current
@@ -919,6 +920,7 @@
 .DEFINE VQ_SLACK_LINE 168               ; idle tick only when V is below this
 .DEFINE VQ_MISS_MAX 2                   ; then fall back to the frame-start slot
 .DEFINE VQ_TABLE    $51A0               ; mutable 8-byte SNESMOD sample record
+.DEFINE INTRO_DUCK  $51A8               ; stage music ducked under the intro SFX
 .DEFINE VQ_CACHE0   $0000               ; bank $7F, 6 KiB per slot
 .DEFINE VQ_CACHE1   $1800
 
@@ -4636,6 +4638,8 @@ SF_carry:
     lda #30.w                             ; fresh juggle budget per round
     sta FUS_JUGGLE
     sta FUS_JUGGLE+FP2OFS
+    stz.w ACHAIN                          ; no stale air-chain hits
+    stz.w ACHAIN+FP2OFS
     sep #$20
     .ACCU 8
     stz FP+F_AIRPROJ                     ; no projectile juggle used yet
@@ -6197,6 +6201,15 @@ ActOp:
 +   cmp #23
     bne +
     jmp AO_stepin
++   cmp #24
+    bne +
+    jsr ProjRepeat
+    sep #$20
+    .ACCU 8
+    rts
++   cmp #25
+    bne +
+    jmp AO_selfheal
 +   rts
 AO_stepin:                              ; StepInOn: BodySep lets this state
     ldx fofs                            ;   close the gap while F_VX is live
@@ -8345,6 +8358,7 @@ StateTab:
     ; 117-118 Mary's Dynamite Swing air phases (3103 jump kick, 3110 grab):
     ;   both fly under Physics and land through their TransTab rules.
     .dw StAirSpec, StAirSpec
+    .dw StSpecial, StThrow, StSpecial      ; 119-121 CJ chainsaw phases
 
 StateRet:
     rep #$20
@@ -9839,7 +9853,7 @@ StAirAtk:                               ; air attack keeps jump momentum;
     .ACCU 16
     ldx fofs
     lda FP+F_Y,x
-    bne +
+    bne ACH_air_check
     stz FP+F_VX,x                         ; landed mid-attack
     stz FP+F_VY,x
     sep #$20
@@ -9850,7 +9864,23 @@ StAirAtk:                               ; air attack keeps jump momentum;
     .ACCU 16
     lda #S_LAND
     jmp SetState16
-+   jsr TryQuickMax                       ; FUSION: air Quick MAX on contact
+ACH_air_check:
+    sep #$20
+    .ACCU 8
+    lda.w ACHAIN,x
+    beq ACH_air_none
+    rep #$20
+    .ACCU 16
+    lda FP+F_JOYPR,x
+    and #(JOY_A|JOY_B|JOY_X|JOY_Y).w
+    beq ACH_air_none
+    jmp StTryAir
+ACH_air_none:
+    sep #$20
+    .ACCU 8
+    rep #$20
+    .ACCU 16
+    jsr TryQuickMax                       ; FUSION: air Quick MAX on contact
     bcc +
     jmp StateRet
 +   jsr CancelGate                      ; connected air normal: on contact,
@@ -9862,6 +9892,11 @@ StLand:                                 ; grounded recovery, no control
     rep #$20
     .ACCU 16
     ldx fofs
+    sep #$20
+    .ACCU 8
+    stz.w ACHAIN,x                     ; air chain ends on the ground
+    rep #$20
+    .ACCU 16
     stz FP+F_VX,x
     stz FP+F_VY,x
     jmp StateRet                          ; anim end -> S_STAND
@@ -9896,7 +9931,20 @@ SA_koho:
 StCrouchAtk:                            ; low hits; anim end -> S_CROUCH
     rep #$20
     .ACCU 16
-    jsr PinVXUnlessVelSet                ; VelSet-driven crouching attacks
+    ; CJ cancels a connected crouching strong punch into the long jump,
+    ; and a connected crouching strong kick into the crouching strong
+    ; punch to juggle the falling trip victim.  The far helper keeps the
+    ; full Fight bank within its window.
+    jsl CrouchCancelFar
+    cmp #1.w
+    bne +
+    lda #1.w                           ; F_SLIDE+1 = high/long jump
+    jmp JG_enter
++   cmp #2.w
+    bne ++
+    lda #S_CSPUNCH.w
+    jmp SetState16
+++  jsr PinVXUnlessVelSet                ; VelSet-driven crouching attacks
     jsr TryQuickMax                     ;   (M.Bison's sweep) keep F_VX
     bcc +
     jmp StateRet
@@ -11227,18 +11275,15 @@ HitOne:                                 ; X=attacker, Y=victim
 HO_atkst:
     sep #$20
     .ACCU 8
-    ; a custom-state victim, or one already down/rising, cannot be hit again
+    ; A grabbed/downed/rising victim is normally untouchable; the far
+    ; helper adds CJ's airborne-S_DOWN crouching-punch juggle exception.
     ldy vofs
-    lda FP+F_GRAB,y
-    bne +
-    lda FP+F_STATE,y
-    cmp #S_DOWN.b
-    beq +
-    cmp #S_GETUP.b
-    beq +
-    bra ++
-+       jmp HO_no
-++  lda FP+F_INVUL,y                    ; NotHitBy: the attack passes
+    jsl DownedGateFar
+    lda scr5
+    beq HO_invul
+    jmp HO_no
+HO_invul:
+    lda FP+F_INVUL,y                    ; NotHitBy: the attack passes
     beq +                               ;   through entirely
         jmp HO_no
 +   ldx aofs
@@ -11363,6 +11408,44 @@ HO_hit:
     sta FP+F_HITDONE,x
     rep #$20
     .ACCU 16
+    ; CJ's crouching strong punch launches the victim into the slow fall
+    ; that owns the five-hit air chain.
+    lda FP+F_STATE,x
+    and #$00FF.w
+    cmp #S_CSPUNCH.w
+    bne HO_nochain
+    lda FP+F_CHAR,x
+    cmp #CharCj.w
+    bne HO_nochain
+    sep #$20
+    .ACCU 8
+    lda #5.b                           ; five air hits
+    sta.w ACHAIN,x
+    ; The launched victim's juggle budget is capped too, so ground light
+    ; punches cannot extend the slow fall past the five-hit chain.
+    rep #$20
+    .ACCU 16
+    ldx vofs
+    lda #5.w
+    sta FUS_JUGGLE,x
+    ldx aofs
+HO_nochain:
+    ; each air normal contact spends one of the five chain hits
+    lda FP+F_STATE,x
+    and #$00FF.w
+    cmp #23.w
+    bcc +
+    cmp #27.w
+    bcs +
+    sep #$20
+    .ACCU 8
+    lda.w ACHAIN,x
+    beq ++
+    dec a
+    sta.w ACHAIN,x
+++  rep #$20
+    .ACCU 16
++
     lda FP+F_STATE,x
     and #$00FF.w
     asl a
@@ -14477,101 +14560,7 @@ PH_miss:
 ; fixed upper-torso height, 2 = alternate ProjFx clip, 3-7 = 1-based
 ; release frame (0 keeps the engine default).  Called from AnimSetFrame;
 ; F_PROJDONE prevents a ChangeAnim/loop from firing twice.
-ProjTrySpawn:
-    rep #$20
-    .ACCU 16
-    ldx fofs
-    lda FP+F_PROJDONE,x
-    and #$00FF.w
-    beq PTS_first
-    jmp PTS_out                         ; the expanded release-row code put
-PTS_first:                              ;   PTS_out beyond a short branch
-    ldy #CH_PROJTAB.w
-    ldx #lptr
-    jsr CharPtr                         ; lptr -> ProjTab
-    ldx fofs
-    lda FP+F_STATE,x
-    and #$00FF.w
-    sta scr2
-    asl a
-    clc
-    adc scr2
-    asl a                               ; 6-byte rows
-    tay
-    lda [lptr],y                        ; vx magnitude (zero is stationary)
-    sta scr0
-    iny
-    iny
-    lda [lptr],y                        ; dmg.b | hitsfx.b<<8
-    sta scr1
-    iny
-    iny
-    stz.w RT_PROJAIR                    ; no per-shot height override by default
-    stz.w RT_PROJREL                    ; no per-shot release override yet
-    stz.w RT_PROJFX2                    ; use the character's primary clip
-    lda [lptr],y                        ; guard.b | present.b<<8
-    sta scr3
-    xba
-    and #$00FF.w                        ; present | air flag
-    sta scr4
-    and #$01.w                          ; bit0 = the shot exists
-    beq PTS_out
-    lda scr4
-    and #$02.w                          ; bit1 = spawn at fixed upper torso
-    beq +
-    lda #1.w
-    sta.w RT_PROJAIR
-+   lda scr4
-    and #$04.w                          ; bit2 = alternate ProjFx clip
-    beq +
-    lda #1.w
-    sta.w RT_PROJFX2
-+   lda scr4
-    and #$F8.w                          ; bits3-7 = 1-based release frame
-    beq +
-    lsr a
-    lsr a
-    lsr a
-    sta.w RT_PROJREL
-+   lda scr3
-    and #$00FF.w                        ; guard mask
-    sta scr3
-    ; Release early in the launch animation: the third frame (or the last
-    ; frame of a shorter clip).  Waiting for the penultimate frame added the
-    ; whole startup of the imported anim, and its long recovery frames pushed
-    ; the shot past the normal's hitstun, so cr.HP could never combo into it.
-    ; A row may pin a later source frame for stationary supers whose effect
-    ; appears on the ground punch (Terry's Power Geyser: AnimElem 7).
-    ldx fofs
-    lda.w RT_PROJREL
-    bne PTS_rel_have
-    lda FP+F_NFR,x
-    and #$00FF.w
-    dec a                               ; last frame
-    cmp #2.w
-    bcc PTS_rel_short
-    lda #2.w                            ; third frame (0-based: 2)
-PTS_rel_short:
-    inc a                               ; keep the value 1-based
-    sta.w RT_PROJREL
-PTS_rel_have:
-    lda.w RT_PROJREL
-    dec a
-    cmp FP+F_FRAME,x
-    bne PTS_out
-    .ACCU 16
-    jsr ProjSpawn
-    bcc PTS_out                         ; no slot: retry on the next frame
-    sep #$20
-    .ACCU 8
-    ldx fofs
-    lda #1
-    sta FP+F_PROJDONE,x
-PTS_out:
-    rep #$20
-    .ACCU 16
-    rts
-
+; ProjTrySpawn and ProjRepeat live in the same CPU bank's low window.
 ProjSpawn:
     jsl MkProjectileSpawnFar
     rts
@@ -19975,6 +19964,123 @@ RRT_no:
     rts
 .ENDS
 
+; Projectile launch and self-heal share the free low window after CancelData.
+.IFDEF PVSNESLIB
+.BANK 50 SLOT 0
+.ELSE
+.BANK 70 SLOT 0
+.ENDIF
+.ORGA $0600
+.SECTION "ProjLaunchLow" FORCE
+ProjRepeat:                             ; scheduled additional volley shot
+    rep #$20
+    .ACCU 16
+    lda #1.w
+    sta scr5
+    bra PTS_first
+ProjTrySpawn:
+    rep #$20
+    .ACCU 16
+    stz scr5
+    ldx fofs
+    lda FP+F_PROJDONE,x
+    and #$00FF.w
+    beq PTS_first
+    rts
+PTS_first:
+    ldy #CH_PROJTAB.w
+    ldx #lptr
+    jsr CharPtr
+    ldx fofs
+    lda FP+F_STATE,x
+    and #$00FF.w
+    sta scr2
+    asl a
+    clc
+    adc scr2
+    asl a
+    tay
+    lda [lptr],y
+    sta scr0
+    iny
+    iny
+    lda [lptr],y
+    sta scr1
+    iny
+    iny
+    stz.w RT_PROJAIR
+    stz.w RT_PROJREL
+    stz.w RT_PROJFX2
+    lda [lptr],y
+    sta scr3
+    xba
+    and #$00FF.w
+    sta scr4
+    and #$01.w
+    beq PTS_out
+    lda scr4
+    and #$02.w
+    beq +
+    lda #1.w
+    sta.w RT_PROJAIR
++   lda scr4
+    and #$04.w
+    beq +
+    lda #1.w
+    sta.w RT_PROJFX2
++   lda scr4
+    and #$F8.w
+    beq +
+    lsr a
+    lsr a
+    lsr a
+    sta.w RT_PROJREL
++   lda scr3
+    and #$00FF.w
+    sta scr3
+    lda scr5
+    bne PTS_fire
+    lda.w RT_PROJREL
+    bne PTS_rel_have
+    lda FP+F_NFR,x
+    and #$00FF.w
+    cmp #3.w
+    bcc PTS_rel_have
+    lda #3.w
+PTS_rel_have:
+    dec a
+    cmp FP+F_FRAME,x
+    bne PTS_out
+PTS_fire:
+    jsr ProjSpawn
+    bcc PTS_out
+    sep #$20
+    .ACCU 8
+    ldx fofs
+    lda #1
+    sta FP+F_PROJDONE,x
+PTS_out:
+    rep #$20
+    .ACCU 16
+    rts
+
+AO_selfheal:                            ; add HP without overhealing
+    rep #$20
+    .ACCU 16
+    lda scr6+1
+    and #$00FF.w
+    ldx fofs
+    clc
+    adc FP+F_HP,x
+    cmp #200.w
+    bcc +
+    lda #200.w
++   sta FP+F_HP,x
+    sep #$20
+    .ACCU 8
+    rts
+.ENDS
+
 ; MoveHitReset helper: the Fight window is full, so the routine lives in
 ; the free low-bank gap before ProjClash ($0F00).
 ; ActOp calls it with a 16-bit jsr (same 64K bank).
@@ -20336,6 +20442,12 @@ PBL_no_x:
     and #$00FF.w
     and #$0001.w
     beq PBL_clear
+    sep #$20
+    .ACCU 8
+    lda.w RT_PROJAIR                    ; per-shot torso override owns the Y
+    bne PBL_flags
+    rep #$20
+    .ACCU 16
     ldy #5
     sep #$20
     .ACCU 8
@@ -20348,6 +20460,7 @@ PBL_no_x:
     sec
     sbc scr6
     sta.w SPARKS+2,x
+PBL_flags:
     sep #$20
     .ACCU 8
     ldy #7

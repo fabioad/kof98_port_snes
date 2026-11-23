@@ -115,6 +115,11 @@ Com o arquivo `kof98-snes.msu` ao lado da ROM:
 - Os tiles de personagem são streamados do MSU-1.
 - As vozes streamadas e o final do Survivor (13 stills) funcionam.
 - O attract demo pode sortear o roster completo.
+- Para jogar com **CJ**, segure **L+R** sobre **John** e confirme. CJ não
+  ocupa outro espaço na seleção e pode aparecer como adversário da CPU em
+  Single Play, Team Play e Survivor. Em luta, **L** esquiva no lugar,
+  **L + direção** rola para frente ou para trás, e dois toques na direção
+  fazem o dash correspondente.
 - O jogo usa o arquivo para gráficos, vozes e extras; música e efeitos
   continuam saindo do SPC700/SNESMOD.
 
@@ -174,11 +179,11 @@ A lista aparece na tela **MSU-1 CHECK**, a primeira do jogo:
 THANKS FOR IKARUGA, ZELGADIS,
 NEOGOUKI, OHGAKI, M.M.R.,
 AHURON, LE@N, MDK, JUANXOC,
-TESTP, JERZY, 119WAY,
+TESTP, JERZY, 119WAY, ARMIN_IUF,
 FERVICANTE, KAMRANBERNSTEIN,
 KOOPAKOOT, SANDER71113, EHNYD,
 MOUSER, H", VICE, BRAZOMBIE,
-GONZO-, JIN, J.LEE
+GONZO-, JIN, J.LEE, BLUE BLOOD
 ```
 
 Muito obrigado também à comunidade MUGEN, aos mantenedores do PVSnesLib e do
@@ -441,11 +446,11 @@ screen of the game:
 THANKS FOR IKARUGA, ZELGADIS,
 NEOGOUKI, OHGAKI, M.M.R.,
 AHURON, LE@N, MDK, JUANXOC,
-TESTP, JERZY, 119WAY,
+TESTP, JERZY, 119WAY, ARMIN_IUF,
 FERVICANTE, KAMRANBERNSTEIN,
 KOOPAKOOT, SANDER71113, EHNYD,
 MOUSER, H", VICE, BRAZOMBIE,
-GONZO-, JIN, J.LEE
+GONZO-, JIN, J.LEE, BLUE BLOOD
 ```
 
 Thank you also to the MUGEN community, the PVSnesLib and WLA-DX maintainers,
