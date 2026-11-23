@@ -1408,7 +1408,7 @@ NEW_CHARS['cj'] = {
     'tween_skip_sids': list(range(122)),
     'extra_trans': [(50, 17, 1, 0), (50, 0, 0, 0), (96, 0, 0, 0),
                     (87, 61, 0, 0),
-                    (49, 118, 0, 0), (88, 119, 0, 0), (119, 114, 3, 0),
+                    (49, 118, 0, 0), (88, 119, 0, 0), (119, 114, 0, 0),
                     (114, 120, 0, 0), (120, 121, 0, 0), (121, 0, 0, 0)],
     'cmd_labels': {48: 'LAS VENTURAS STYLE', 49: 'BMX', 50: 'RUNNING KICK',
         51: 'BASEBALL BAT', 52: 'PISTOL', 53: 'GROVE STREET', 54: 'PHOTO',
